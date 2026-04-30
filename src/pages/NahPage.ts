@@ -22,6 +22,8 @@ let stationMarkers: maplibregl.Marker[] = [];
 let targetMarker: maplibregl.Marker | null = null;
 let currentResults: any[] = [];
 let currentIncidentCoord: [number, number] | null = null;
+let schedulerInterval: any = null;
+let connectionInterval: any = null;
 
 /**
  * Loads NAH station data and updates markers on the map.
@@ -97,6 +99,9 @@ export const refreshStations = async (map: maplibregl.Map) => {
 export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElement, lng: number, lat: number) => {
   currentIncidentCoord = [lng, lat];
 
+  // Source-Guard
+  if (!map.getSource('nah-lines')) return;
+
   // Reset previous results state (we always have at most 5 lines)
   for (let i = 0; i < 5; i++) {
     map.setFeatureState({ source: 'nah-lines', id: i }, { selected: false });
@@ -154,7 +159,9 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
  * This ensures the operational status of helicopters (daylight vs. night) is updated.
  */
 const initScheduler = (map: maplibregl.Map, sidebarResults: HTMLElement) => {
-  setInterval(async () => {
+  if (schedulerInterval) clearInterval(schedulerInterval);
+
+  schedulerInterval = setInterval(async () => {
     const now = new Date();
     const min = now.getMinutes();
     
@@ -168,12 +175,25 @@ const initScheduler = (map: maplibregl.Map, sidebarResults: HTMLElement) => {
         performCalculation(map, sidebarResults, currentIncidentCoord[0], currentIncidentCoord[1]);
       }
       
-      Toast.success('Stationen automatisch aktualisiert.');
+      console.log('[NahPage] Stationen automatisch aktualisiert.');
     }
   }, 60000); // Check every minute
 };
 
 export const initNahPage = async (container: HTMLElement) => {
+  // Clear all current state to prevent "ghost" markers or multiple schedulers
+  stationMarkers.forEach(m => m.remove());
+  stationMarkers = [];
+  stations = [];
+  currentResults = [];
+  currentIncidentCoord = null;
+  if (targetMarker) {
+    targetMarker.remove();
+    targetMarker = null;
+  }
+  if (schedulerInterval) clearInterval(schedulerInterval);
+  if (connectionInterval) clearInterval(connectionInterval);
+
   try {
     // 1. Inventar laden (CI-konform)
     const invRes = await fetch('https://tiles.oe5ith.at/inventory.json');
@@ -292,5 +312,5 @@ export const initNahPage = async (container: HTMLElement) => {
   };
 
   checkConnection();
-  setInterval(checkConnection, 30000); // Alle 30 Sekunden
+  connectionInterval = setInterval(checkConnection, 30000); // Alle 30 Sekunden
 };
