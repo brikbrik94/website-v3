@@ -123,9 +123,12 @@ export const initNahPage = async (container: HTMLElement) => {
 
     // 6. Map-Click Logik für Luftlinie & Sidebar
     let targetMarker: maplibregl.Marker | null = null;
+    let currentResults: any[] = [];
+    let currentIncidentCoord: [number, number] | null = null;
 
     map.on('click', (e) => {
       const { lng, lat } = e.lngLat;
+      currentIncidentCoord = [lng, lat];
 
       // Reset previous results state (we always have at most 5 lines)
       for (let i = 0; i < 5; i++) {
@@ -155,6 +158,8 @@ export const initNahPage = async (container: HTMLElement) => {
         .sort((a: any, b: any) => a.distance - b.distance)
         .slice(0, 5); // Top 5
 
+      currentResults = results;
+
       // Linien-Features generieren (mit index als ID für zuverlässiges Feature-State)
       const lineFeatures = results.map((s, index) => ({
         type: 'Feature',
@@ -181,11 +186,16 @@ export const initNahPage = async (container: HTMLElement) => {
     sidebarResults.addEventListener('click', (e) => {
       const item = (e.target as HTMLElement).closest('.result-item-simple') as HTMLElement;
       if (item) {
-        const lat = parseFloat(item.dataset.lat!);
-        const lon = parseFloat(item.dataset.lon!);
         const index = item.dataset.index;
         
-        map.flyTo({ center: [lon, lat], zoom: 12 });
+        // Auf alle Ergebnisse zoomen (Overview)
+        const bounds = new maplibregl.LngLatBounds();
+        if (currentIncidentCoord) bounds.extend(currentIncidentCoord);
+        currentResults.forEach(r => bounds.extend([r.lon, r.lat]));
+        
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, { padding: 80 });
+        }
         
         // Linien-Highlighting
         for (let i = 0; i < 5; i++) {
