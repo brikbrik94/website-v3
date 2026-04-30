@@ -287,9 +287,7 @@
    LEAFLET CSS OVERRIDES
    Überschreibt Leaflet-Default-Styles
    auf die CI-Popup-Struktur.
-   In der jeweiligen app.css einbinden.
    ═══════════════════════════════════════ */
-/*
 .leaflet-popup-content-wrapper {
   background: var(--card-bg) !important;
   border: 1px solid var(--border-strong) !important;
@@ -311,12 +309,10 @@
   top: 4px !important; right: 4px !important;
 }
 .leaflet-popup-close-button:hover { color: var(--text) !important; }
-*/
 
 /* ═══════════════════════════════════════
    MAPLIBRE CSS OVERRIDES
    ═══════════════════════════════════════ */
-/*
 .maplibregl-popup-content {
   background: var(--card-bg) !important;
   border: 1px solid var(--border-strong) !important;
@@ -335,7 +331,6 @@
   border: none !important;
 }
 .maplibregl-popup-close-button:hover { color: var(--text) !important; }
-*/
 
 /* ═══════════════════════════════════════
    ═══════════════════════════════════════ */
