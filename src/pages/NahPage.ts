@@ -16,6 +16,139 @@ interface Inventory {
   maps: MapItem[];
 }
 
+// Module-level state to persist across reloads
+let stations: any[] = [];
+let stationMarkers: maplibregl.Marker[] = [];
+let targetMarker: maplibregl.Marker | null = null;
+let currentResults: any[] = [];
+let currentIncidentCoord: [number, number] | null = null;
+
+/**
+ * Loads NAH station data and updates markers on the map.
+ * Can be called independently for periodic reloads.
+ */
+export const refreshStations = async (map: maplibregl.Map) => {
+  try {
+    const nahRes = await fetch('/api/nah');
+    if (!nahRes.ok) throw new Error(`API Error: ${nahRes.status}`);
+    stations = await nahRes.json();
+    
+    // Clear existing markers
+    stationMarkers.forEach(m => m.remove());
+    stationMarkers = [];
+
+    stations.forEach((station: any) => {
+      const color = station.is_active ? '#10b981' : '#6b7280'; // CI Success vs CI Muted
+      const statusText = station.is_active ? 'EINSATZBEREIT' : 'NICHT AKTIV';
+      
+      const el = document.createElement('div');
+      el.innerHTML = `<i class="fa-solid fa-helicopter" style="color: ${color}; font-size: 24px; text-shadow: 0 0 3px rgba(0,0,0,0.5); cursor: pointer;"></i>`;
+      
+      let hoursHtml = '';
+      if (station.op_type === 'fixed' && station.fixed_start && station.fixed_end) {
+        hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end}</td></tr>`;
+      } else if (station.op_type === 'daylight') {
+        if (station.fixed_start && station.fixed_end) {
+          hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end} (max. Daylight)</td></tr>`;
+        } else if (station.fixed_start) {
+          hoursHtml = `<tr><td>Zeiten</td><td>Ab ${station.fixed_start} bis Sonnenuntergang</td></tr>`;
+        } else {
+          hoursHtml = `<tr><td>Zeiten</td><td>Sonnenauf- bis untergang</td></tr>`;
+        }
+      } else if (station.op_type === '24/7') {
+        hoursHtml = `<tr><td>Zeiten</td><td>24 Stunden / 7 Tage</td></tr>`;
+      }
+
+      const popupHtml = `
+        <div class="map-popup-detail">
+          <div class="popup-header">
+            <div class="popup-header-title">${station.callsign}</div>
+            <div class="popup-header-org">${station.name}</div>
+          </div>
+          <table class="popup-kv">
+            <tr><td>Status</td><td style="color: ${color}; font-weight: 700;">${statusText}</td></tr>
+            <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
+            ${hoursHtml}
+            <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>
+          </table>
+        </div>
+      `;
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([station.lon, station.lat])
+        .setPopup(new maplibregl.Popup({ offset: 25, maxWidth: '300px' }).setHTML(popupHtml))
+        .addTo(map);
+      
+      stationMarkers.push(marker);
+    });
+
+    if (stations.length > 0) {
+      Toast.success(`${stations.length} NAH-Stützpunkte geladen.`);
+    }
+  } catch (err) {
+    console.error('[NahPage] Refresh failed', err);
+    Toast.error('Fehler beim Aktualisieren der NAH-Daten');
+  }
+};
+
+/**
+ * Calculates distances to active stations from a given point and updates UI/Map.
+ */
+export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElement, lng: number, lat: number) => {
+  currentIncidentCoord = [lng, lat];
+
+  // Reset previous results state (we always have at most 5 lines)
+  for (let i = 0; i < 5; i++) {
+    map.setFeatureState({ source: 'nah-lines', id: i }, { selected: false });
+  }
+
+  // Ziel-Marker setzen
+  if (targetMarker) targetMarker.remove();
+  targetMarker = new maplibregl.Marker({ color: '#3b82f6' })
+    .setLngLat([lng, lat])
+    .addTo(map);
+
+  // Distanz zu allen AKTIVEN Stationen berechnen
+  const results = stations
+    .filter((s: any) => s.is_active)
+    .map((s: any) => {
+      const dist = calculateDistance(lat, lng, s.lat, s.lon);
+      const duration = calculateFlightTime(dist);
+      return {
+        ...s,
+        distance: dist,
+        duration,
+        durationStr: formatDuration(duration),
+        eta: formatETA(duration)
+      };
+    })
+    .sort((a: any, b: any) => a.distance - b.distance)
+    .slice(0, 5); // Top 5
+
+  currentResults = results;
+
+  // Linien-Features generieren (mit index als ID für zuverlässiges Feature-State)
+  const lineFeatures = results.map((s, index) => ({
+    type: 'Feature',
+    id: index,
+    geometry: {
+      type: 'LineString',
+      coordinates: [[lng, lat], [s.lon, s.lat]]
+    },
+    properties: { osm_id: s.osm_id }
+  }));
+
+  const source = map.getSource('nah-lines') as maplibregl.GeoJSONSource;
+  if (source) {
+    source.setData({
+      type: 'FeatureCollection',
+      features: lineFeatures as any
+    });
+  }
+
+  renderNahResults(sidebarResults, results);
+};
+
 export const initNahPage = async (container: HTMLElement) => {
   try {
     // 1. Inventar laden (CI-konform)
@@ -73,59 +206,10 @@ export const initNahPage = async (container: HTMLElement) => {
     initNahSidebar(sidebarMount);
     const sidebarResults = document.getElementById('nah-sidebar-results')!;
 
-    // 5. NAH-Daten laden und Marker setzen
-    const nahRes = await fetch('/api/nah');
-    if (!nahRes.ok) throw new Error(`API Error: ${nahRes.status}`);
-    const stations = await nahRes.json();
-    
-    stations.forEach((station: any) => {
-      const color = station.is_active ? '#10b981' : '#6b7280'; // CI Success vs CI Muted
-      const statusText = station.is_active ? 'EINSATZBEREIT' : 'NICHT AKTIV';
-      
-      const el = document.createElement('div');
-      el.innerHTML = `<i class="fa-solid fa-helicopter" style="color: ${color}; font-size: 24px; text-shadow: 0 0 3px rgba(0,0,0,0.5); cursor: pointer;"></i>`;
-      
-      let hoursHtml = '';
-      if (station.op_type === 'fixed' && station.fixed_start && station.fixed_end) {
-        hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end}</td></tr>`;
-      } else if (station.op_type === 'daylight') {
-        if (station.fixed_start && station.fixed_end) {
-          hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end} (max. Daylight)</td></tr>`;
-        } else if (station.fixed_start) {
-          hoursHtml = `<tr><td>Zeiten</td><td>Ab ${station.fixed_start} bis Sonnenuntergang</td></tr>`;
-        } else {
-          hoursHtml = `<tr><td>Zeiten</td><td>Sonnenauf- bis untergang</td></tr>`;
-        }
-      } else if (station.op_type === '24/7') {
-        hoursHtml = `<tr><td>Zeiten</td><td>24 Stunden / 7 Tage</td></tr>`;
-      }
-
-      const popupHtml = `
-        <div class="map-popup-detail">
-          <div class="popup-header">
-            <div class="popup-header-title">${station.callsign}</div>
-            <div class="popup-header-org">${station.name}</div>
-          </div>
-          <table class="popup-kv">
-            <tr><td>Status</td><td style="color: ${color}; font-weight: 700;">${statusText}</td></tr>
-            <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
-            ${hoursHtml}
-            <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>
-          </table>
-        </div>
-      `;
-
-      new maplibregl.Marker({ element: el })
-        .setLngLat([station.lon, station.lat])
-        .setPopup(new maplibregl.Popup({ offset: 25, maxWidth: '300px' }).setHTML(popupHtml))
-        .addTo(map);
-    });
+    // 5. NAH-Daten laden und Marker setzen (Initialer Load)
+    await refreshStations(map);
 
     // 6. Map-Click Logik für Luftlinie & Sidebar
-    let targetMarker: maplibregl.Marker | null = null;
-    let currentResults: any[] = [];
-    let currentIncidentCoord: [number, number] | null = null;
-
     map.on('click', (e) => {
       // Ignorieren, wenn der Klick auf einen Marker erfolgte
       if ((e.originalEvent.target as HTMLElement).closest('.maplibregl-marker')) {
@@ -133,58 +217,7 @@ export const initNahPage = async (container: HTMLElement) => {
       }
 
       const { lng, lat } = e.lngLat;
-      currentIncidentCoord = [lng, lat];
-
-      // Reset previous results state (we always have at most 5 lines)
-      for (let i = 0; i < 5; i++) {
-        map.setFeatureState({ source: 'nah-lines', id: i }, { selected: false });
-      }
-
-      // Ziel-Marker setzen
-      if (targetMarker) targetMarker.remove();
-      targetMarker = new maplibregl.Marker({ color: '#3b82f6' })
-        .setLngLat([lng, lat])
-        .addTo(map);
-
-      // Distanz zu allen AKTIVEN Stationen berechnen
-      const results = stations
-        .filter((s: any) => s.is_active)
-        .map((s: any) => {
-          const dist = calculateDistance(lat, lng, s.lat, s.lon);
-          const duration = calculateFlightTime(dist);
-          return {
-            ...s,
-            distance: dist,
-            duration,
-            durationStr: formatDuration(duration),
-            eta: formatETA(duration)
-          };
-        })
-        .sort((a: any, b: any) => a.distance - b.distance)
-        .slice(0, 5); // Top 5
-
-      currentResults = results;
-
-      // Linien-Features generieren (mit index als ID für zuverlässiges Feature-State)
-      const lineFeatures = results.map((s, index) => ({
-        type: 'Feature',
-        id: index,
-        geometry: {
-          type: 'LineString',
-          coordinates: [[lng, lat], [s.lon, s.lat]]
-        },
-        properties: { osm_id: s.osm_id }
-      }));
-
-      const source = map.getSource('nah-lines') as maplibregl.GeoJSONSource;
-      if (source) {
-        source.setData({
-          type: 'FeatureCollection',
-          features: lineFeatures as any
-        });
-      }
-
-      renderNahResults(sidebarResults, results);
+      performCalculation(map, sidebarResults, lng, lat);
     });
 
     // Klick auf Sidebar-Result zentriert Karte
@@ -215,10 +248,6 @@ export const initNahPage = async (container: HTMLElement) => {
         item.classList.add('active');
       }
     });
-
-    if (stations.length > 0) {
-      Toast.success(`${stations.length} NAH-Stützpunkte geladen.`);
-    }
 
   } catch (err) {
     console.error('[NahPage]', err);
