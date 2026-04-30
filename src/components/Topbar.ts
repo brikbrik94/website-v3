@@ -47,6 +47,7 @@ export const initTopbar = (
       <div class="topbar-right">
         <a href="/karte" class="topbar-nav-link nav-link ${currentPath === '/karte' ? 'active' : ''}">Karte</a>
         <a href="/routing" class="topbar-nav-link nav-link ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
+        <a href="/nah" class="topbar-nav-link nav-link ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
       </div>
 
       <div class="controls-overlay" id="controls-overlay">
