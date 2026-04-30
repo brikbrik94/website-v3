@@ -123,15 +123,14 @@ export const initNahPage = async (container: HTMLElement) => {
 
     // 6. Map-Click Logik für Luftlinie & Sidebar
     let targetMarker: maplibregl.Marker | null = null;
-    let currentResultIds: string[] = [];
 
     map.on('click', (e) => {
       const { lng, lat } = e.lngLat;
 
-      // Reset previous results state
-      currentResultIds.forEach(id => {
-        map.setFeatureState({ source: 'nah-lines', id }, { selected: false });
-      });
+      // Reset previous results state (we always have at most 5 lines)
+      for (let i = 0; i < 5; i++) {
+        map.setFeatureState({ source: 'nah-lines', id: i }, { selected: false });
+      }
 
       // Ziel-Marker setzen
       if (targetMarker) targetMarker.remove();
@@ -156,12 +155,10 @@ export const initNahPage = async (container: HTMLElement) => {
         .sort((a: any, b: any) => a.distance - b.distance)
         .slice(0, 5); // Top 5
 
-      currentResultIds = results.map(s => s.osm_id.toString());
-
-      // Linien-Features generieren
-      const lineFeatures = results.map(s => ({
+      // Linien-Features generieren (mit index als ID für zuverlässiges Feature-State)
+      const lineFeatures = results.map((s, index) => ({
         type: 'Feature',
-        id: s.osm_id,
+        id: index,
         geometry: {
           type: 'LineString',
           coordinates: [[lng, lat], [s.lon, s.lat]]
@@ -186,16 +183,16 @@ export const initNahPage = async (container: HTMLElement) => {
       if (item) {
         const lat = parseFloat(item.dataset.lat!);
         const lon = parseFloat(item.dataset.lon!);
-        const osmId = item.dataset.id;
+        const index = item.dataset.index;
         
         map.flyTo({ center: [lon, lat], zoom: 12 });
         
         // Linien-Highlighting
-        currentResultIds.forEach(id => {
-          map.setFeatureState({ source: 'nah-lines', id: id }, { selected: false });
-        });
-        if (osmId) {
-          map.setFeatureState({ source: 'nah-lines', id: osmId }, { selected: true });
+        for (let i = 0; i < 5; i++) {
+          map.setFeatureState({ source: 'nah-lines', id: i }, { selected: false });
+        }
+        if (index !== undefined) {
+          map.setFeatureState({ source: 'nah-lines', id: parseInt(index) }, { selected: true });
         }
 
         // Items optisch markieren
