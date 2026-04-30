@@ -1,0 +1,178 @@
+/*
+ * OE5ITH CI — buttons.css
+ * Extrahiert aus components/buttons.html
+ *
+ * Verwendung:
+ *   1. common.css einbinden (Tokens)
+ *   2. Diese Datei einbinden
+ *
+ * <link rel="stylesheet" href="shared/css/common.css">
+ * <link rel="stylesheet" href="shared/css/buttons.css">
+ */
+
+
+/* → common.css */
+
+/* → common.css */
+
+/* ═══════════════════════════════════════
+   ═══════════════════════════════════════ */
+
+
+.hint code {
+  background: #1e1e1e;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #7ba8d4;
+}
+
+/* ═══════════════════════════════════════
+   BUTTON BASE
+   ═══════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  text-decoration: none;
+  position: relative;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn i { font-size: 0.8rem; }
+
+/* ═══════════════════════════════════════
+   VARIANTEN
+   ═══════════════════════════════════════ */
+
+/* Primary */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+/* Secondary */
+.btn-secondary {
+  background: rgba(59, 130, 246, 0.10);
+  color: var(--accent);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+.btn-secondary:hover {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.40);
+}
+
+/* Ghost */
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: #555;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Danger */
+.btn-danger {
+  background: rgba(239, 68, 68, 0.10);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.20);
+}
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.20);
+  border-color: rgba(239, 68, 68, 0.40);
+}
+
+/* ═══════════════════════════════════════
+   GRÖSSEN
+   ═══════════════════════════════════════ */
+.btn-sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 0.75rem;
+  border-radius: 5px;
+}
+
+/* Default = 36px (keine extra Klasse) */
+
+.btn-lg {
+  height: 44px;
+  padding: 0 22px;
+  font-size: 0.95rem;
+}
+
+/* ═══════════════════════════════════════
+   DISABLED
+   ═══════════════════════════════════════ */
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════
+   LOADING
+   ═══════════════════════════════════════ */
+.btn.loading {
+  pointer-events: none;
+  color: transparent;
+}
+
+.btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+
+.btn-secondary.loading::after,
+.btn-ghost.loading::after {
+  border-color: rgba(59, 130, 246, 0.20);
+  border-top-color: var(--accent);
+}
+
+.btn-danger.loading::after {
+  border-color: rgba(239, 68, 68, 0.20);
+  border-top-color: #ef4444;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════
+   EVENT LOG
+   ═══════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════
+   STATE MATRIX — visuelle Übersicht
+   ═══════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════
+   SEKTIONS-TRENNLINIE
+   ═══════════════════════════════════════ */

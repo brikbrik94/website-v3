@@ -1,0 +1,226 @@
+/*
+ * OE5ITH CI — demo.css
+ * Hilfsklassen ausschließlich für die Referenz-Seiten in components/*.html
+ * Nicht in produktive Sites einbinden.
+ *
+ * Voraussetzung: css/common.css
+ */
+
+/* ── Seiten-Layout (Referenzseiten) ── */
+.page-content {
+  padding: 40px;
+  max-width: 960px;
+}
+
+/* ── Sektionen ── */
+.demo-section { margin-bottom: 48px; }
+
+.demo-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--subtle);
+  margin-bottom: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #222;
+}
+
+.demo-section-desc {
+  font-size: 0.82rem;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.demo-section-desc code {
+  background: #1e1e1e;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #7ba8d4;
+}
+
+/* ── Zeilen/Grids ── */
+.demo-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.demo-cols {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.demo-wrap {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.demo-col { flex: 0 0 auto; }
+
+.demo-col-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--subtle);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.demo-item { display: flex; flex-direction: column; gap: 8px; }
+
+.demo-item-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #444;
+}
+
+.demo-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  max-width: 260px;
+}
+
+/* ── Token-Referenz (tokens.html) ── */
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.swatch { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.swatch-color { height: 56px; }
+.swatch-info { background: var(--panel-deep); padding: 8px 10px; }
+.swatch-name { font-size: 0.72rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.swatch-token { font-family: var(--font-mono); font-size: 0.62rem; color: var(--subtle); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.swatch-hex { font-family: var(--font-mono); font-size: 0.62rem; color: #444; display: block; }
+
+.token-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.token-table th { text-align: left; padding: 7px 12px; background: var(--panel-deep); color: var(--subtle); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); }
+.token-table td { padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
+.token-table tr:hover td { background: rgba(255,255,255,0.02); }
+.token-table td:first-child { font-family: var(--font-mono); font-size: 0.75rem; color: #7ba8d4; }
+.token-table td:last-child { font-family: var(--font-mono); font-size: 0.75rem; color: var(--subtle); }
+.token-desc { color: var(--muted); font-size: 0.78rem; }
+
+.subtle-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.subtle-chip { height: 28px; padding: 0 12px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; border: 1px solid; }
+
+/* ── Typografie-Referenz (typography.html) ── */
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--subtle);
+  margin-bottom: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #222;
+  margin-top: 36px;
+}
+.section-title:first-child { margin-top: 0; }
+
+.type-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 20px;
+  align-items: start;
+  padding: 18px 0;
+  border-bottom: 1px solid #1a1a1a;
+}
+.type-row:last-child { border-bottom: none; }
+.type-meta-name { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #444; margin-bottom: 5px; }
+.type-token { font-family: var(--font-mono); font-size: 0.65rem; color: #333; display: block; line-height: 1.7; }
+.type-token b { color: #4a4a4a; }
+
+/* ── Sidebar-Referenz ── */
+.ref-title { font-size: 1.6rem; font-weight: 300; color: #fff; margin-bottom: 6px; }
+.ref-title strong { font-weight: 700; color: var(--accent); }
+.ref-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.6; margin-bottom: 32px; max-width: 560px; }
+.ref-section { margin-bottom: 48px; }
+.ref-section-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--subtle); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #222; }
+
+/* ── Forms-Referenz ── */
+.sidebar-ctx { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 12px; display: flex; flex-direction: column; gap: 14px; }
+.sidebar-ctx-title { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
+.ctx-sep { height: 1px; background: var(--border); margin: 2px 0; }
+
+/* ── Modal-Referenz ── */
+.fake-map { background: #2d3a2d; border: 1px solid var(--border); border-radius: 8px; padding: 24px; position: relative; display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.fake-map-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: rgba(255,255,255,0.25); position: absolute; top: 8px; left: 12px; }
+.demo-trigger { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; font-family: inherit; cursor: pointer; border: none; background: var(--accent); color: #fff; transition: background 0.15s; margin-bottom: 16px; }
+.demo-trigger:hover { background: var(--accent-hover); }
+
+/* ── Footer-Typ-Switcher ── */
+.type-switcher { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.type-btn { background: #2a2a2a; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); font-size: 0.8rem; font-weight: 600; padding: 6px 14px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.type-btn:hover { border-color: #555; color: var(--text); }
+.type-btn.active { background: var(--accent-subtle-md); color: var(--accent); border-color: var(--accent-border); }
+.type-info { font-size: 0.82rem; color: var(--muted); background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 5px; padding: 10px 14px; margin-bottom: 0; line-height: 1.6; }
+
+/* ── Element-Übersicht (sidebar.html) ── */
+.element-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.element-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.element-card-header { display: flex; align-items: center; gap: 9px; margin-bottom: 5px; }
+.element-card-icon { font-size: 0.85rem; color: var(--accent); width: 16px; text-align: center; flex-shrink: 0; }
+.element-card-name { font-size: 0.85rem; font-weight: 600; color: #fff; }
+.element-card-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.5; }
+
+/* ── Event Log ── */
+.event-log { background: #0d0d0d; border: 1px solid #222; border-radius: 6px; padding: 12px 14px; font-family: var(--font-mono); font-size: 0.78rem; color: #4ade80; min-height: 80px; max-height: 160px; overflow-y: auto; line-height: 1.9; }
+.log-muted { color: #444; }
+
+/* ── Breakpoint-Indikator ── */
+.bp-indicator { display: inline-flex; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 4px; background: var(--accent-subtle-md); border: 1px solid var(--accent-border); color: var(--accent); margin-bottom: 20px; }
+
+/* ── Button State Matrix ── */
+.matrix { display: grid; grid-template-columns: 80px repeat(4, 1fr); gap: 1px; background: #222; border: 1px solid #222; border-radius: 8px; overflow: hidden; font-size: 0.75rem; }
+.matrix-cell { background: var(--bg); padding: 10px 12px; display: flex; align-items: center; justify-content: center; }
+.matrix-header { background: #1a1a1a; color: #555; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+.matrix-row-label { background: #161616; color: #555; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px; justify-content: flex-start; padding-left: 12px; }
+.divider { height: 1px; background: #1e1e1e; margin: 8px 0; }
+.hint { font-size: 0.78rem; color: #444; line-height: 1.6; }
+.hint code { background: #1e1e1e; padding: 1px 6px; border-radius: 3px; font-family: monospace; font-size: 0.75rem; color: #7ba8d4; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .page-content { padding: 20px 16px; }
+  .swatch-grid { grid-template-columns: repeat(2, 1fr); }
+  .demo-cols { grid-template-columns: 1fr; }
+  .type-row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* ── Button Demo Event-Log ── */
+.log-variant { color: #7ba8d4; }
+.log-text    { color: #555; }
+.log-success { color: var(--success); }
+.log-loading { color: #f59e0b; }
+
+/* ── Button Demo Layout ── */
+.page { max-width: 800px; }
+.section { margin-bottom: 48px; }
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #222;
+}

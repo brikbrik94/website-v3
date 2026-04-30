@@ -1,0 +1,149 @@
+/*
+ * OE5ITH CI — common.css
+ * Einzige Quelle der Wahrheit für alle Design Tokens.
+ * Wird per Deploy-Script in jede Site kopiert.
+ * Nie direkt in Sites bearbeiten — immer hier ändern.
+ *
+ * Docs: ci-repo/docs/tokens.md
+ */
+
+:root {
+
+  /* ── FARBEN: Basis ── */
+  --bg:               #1a1a1a;
+  --card-bg:          #252525;
+  --panel:            #202020;
+  --panel-deep:       #161616;
+  --text:             #e0e0e0;
+  --muted:            #888888;
+  --subtle:           #555555;
+  --border:           #333333;
+  --border-strong:    #444444;
+
+  /* ── FARBEN: Akzent ── */
+  --accent:           #3b82f6;
+  --accent-hover:     #2563eb;
+  --accent-subtle:    rgba(59,130,246,0.07);   /* Nav-Items, Hover */
+  --accent-subtle-md: rgba(59,130,246,0.10);
+  --accent-border:    rgba(59,130,246,0.25);
+  --sidebar-tab-bg:   rgba(59,130,246,0.15);   /* Sidebar-Tab Hintergrund */
+  --sidebar-tab-border: rgba(59,130,246,0.35); /* Sidebar-Tab Border */
+
+  /* ── FARBEN: Semantisch ── */
+  --success:          #22c55e;
+  --success-subtle:   rgba(34,197,94,0.10);
+  --success-border:   rgba(34,197,94,0.25);
+
+  --warning:          #eab308;
+  --warning-subtle:   rgba(234,179,8,0.10);
+  --warning-border:   rgba(234,179,8,0.25);
+
+  --danger:           #ef4444;
+  --danger-subtle:    rgba(239,68,68,0.10);
+  --danger-border:    rgba(239,68,68,0.25);
+
+  --auth:             #a78bfa;
+  --auth-subtle:      rgba(139,92,246,0.10);
+  --auth-border:      rgba(139,92,246,0.25);
+
+  /* ── FARBEN: Code / Terminal ── */
+  --code-bg:          #000000;
+  --code-text:        #4ade80;
+  --code-inline-bg:   #2a2a2a;
+  --code-inline-text: #e6e6e6;
+  --url-bg:           #0d0d0d;
+  --url-text:         #4ade80;
+
+  /* ── TYPOGRAFIE ── */
+  --font-sans:        'Segoe UI', system-ui, sans-serif;
+  --font-mono:        'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+
+  /* ── SPACING & LAYOUT ── */
+  --topbar-height:        60px;
+  --topbar-height-mobile: 52px;
+  --sidebar-width:        260px;
+  --container-max:        1000px;
+  --card-radius:          12px;
+  --card-padding:         20px;
+  --card-gap:             20px;
+  --btn-radius:           6px;
+  --badge-radius:         4px;
+
+  /* ── Z-INDEX ── */
+  /* Z-Index Kaskade
+   * Werte sind für Karten-Applikationen ausgelegt:
+   * Leaflet/MapLibre Controls liegen bei 400–1000, Popups bei 700.
+   * CI-Elemente beginnen bei 1000+ damit sie immer darüber liegen. */
+  --z-content:        1;
+  --z-sidebar-tab:    1010;
+  --z-backdrop:       1040;
+  --z-sidebar:        1050;
+  --z-overlay:        1090;
+  --z-topbar:         1100;
+  --z-dropdown:       1200;
+  --z-tooltip:        1300;
+  --z-modal:          1500;
+  --z-toast:          1600;
+
+  /* ── TRANSITIONS ── */
+  --transition-fast:  0.15s ease;
+  --transition-base:  0.20s ease;
+  --transition-slow:  0.25s ease;
+
+  /* ── SHADOWS ── */
+  --shadow-topbar:    0 2px 10px rgba(0,0,0,0.20);
+  --shadow-card:      0 10px 20px rgba(0,0,0,0.30);
+  --shadow-dropdown:  0 8px 20px rgba(0,0,0,0.40);
+  --shadow-sidebar:   4px 0 20px rgba(0,0,0,0.50);
+  --shadow-toast:     0 8px 24px rgba(0,0,0,0.50);
+}
+
+/* ── BASIS-RESET ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Verhindert dass Klassen-Styles (flex, grid etc.) das [hidden] Attribut ignorieren */
+[hidden] {
+  display: none !important;
+}
+
+/* ── SEITEN-LAYOUT ── */
+
+/* Haupt-Layout: Topbar + Sidebar + Content */
+.layout {
+  display: flex;
+  height: calc(100vh - var(--topbar-height));  /* Viewport minus Topbar */
+  overflow: hidden;                             /* verhindert Scroll auf Seiten-Ebene */
+}
+
+/* Haupt-Content-Bereich */
+.page-content {
+  flex: 1;
+  padding: 40px;
+  min-width: 0;
+  overflow-y: auto;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    height: calc(100dvh - var(--topbar-height-mobile));
+  }
+  .page-content { padding: 20px 16px; }
+}

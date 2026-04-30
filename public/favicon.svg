@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Hintergrund -->
+  <rect width="32" height="32" fill="#1a1a1a" rx="4"/>
+  <!-- Hexagon-Rahmen (skaliert von 32x32 original auf 28x28, zentriert) -->
+  <polygon points="16,2.5 26.5,8.25 26.5,19.75 16,25.5 5.5,19.75 5.5,8.25"
+           stroke="#3b82f6" stroke-width="1.5" fill="none"/>
+  <!-- Inneres Rhombus (leichte Füllung) -->
+  <polygon points="16,7 22,16 16,25 10,16"
+           fill="#3b82f6" opacity="0.15"/>
+  <!-- Kreuz-Linien -->
+  <line x1="16" y1="10.5" x2="16" y2="21.5" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="10.5" y1="16" x2="21.5" y2="16" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Eck-Punkte -->
+  <circle cx="16" cy="10.5" r="1.5" fill="#3b82f6"/>
+  <circle cx="21.5" cy="16" r="1.5" fill="#3b82f6"/>
+  <circle cx="16" cy="21.5" r="1.5" fill="#3b82f6"/>
+  <circle cx="10.5" cy="16" r="1.5" fill="#3b82f6"/>
+</svg>

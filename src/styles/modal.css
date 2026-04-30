@@ -1,0 +1,489 @@
+/*
+ * OE5ITH CI — modal.css
+ * Extrahiert aus components/modal.html
+ *
+ * Verwendung:
+ *   1. common.css einbinden (Tokens)
+ *   2. Diese Datei einbinden
+ *
+ * <link rel="stylesheet" href="shared/css/common.css">
+ * <link rel="stylesheet" href="shared/css/modal.css">
+ */
+
+
+/* → common.css */
+
+/* ═══════════════════════════════════════
+   MODAL BACKDROP
+   ═══════════════════════════════════════ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: var(--z-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ═══════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════ */
+.modal {
+  background: var(--card-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--card-radius);
+  box-shadow: 0 24px 48px rgba(0,0,0,0.55);
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-modal);
+  transform: translateY(6px);
+  transition: transform var(--transition-base);
+}
+.modal-backdrop.open .modal {
+  transform: translateY(0);
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-title {
+  font-size: 1.0rem;
+  font-weight: 600;
+  color: #fff;
+}
+.modal-close {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 5px; border: none;
+  background: transparent; color: var(--subtle);
+  cursor: pointer; font-size: 0.85rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+.modal-close:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.modal-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Modal Body — scrollbar wenn Inhalt zu lang */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+
+/* ═══════════════════════════════════════
+   MODAL CONTENT TYPEN
+   Strukturierter Inhalt innerhalb von
+   .modal-body: Headings, Listen, Code
+   ═══════════════════════════════════════ */
+.modal-body h2 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+  margin-top: 18px;
+}
+.modal-body h2:first-child { margin-top: 0; }
+
+.modal-body p {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.modal-body ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.modal-body ul li {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+  padding-left: 14px;
+  position: relative;
+}
+.modal-body ul li::before {
+  content: '·';
+  position: absolute;
+  left: 3px;
+  color: var(--accent);
+  font-weight: 700;
+}
+.modal-body ul li strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.modal-body code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  background: var(--panel-deep);
+  color: #e6e6e6;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid #1a1a1a;
+}
+
+/* ═══════════════════════════════════════
+   KARTEN-POPUP — Basis
+   Gültig für Leaflet und MapLibre.
+   Beide werden per CSS-Override
+   auf diese Struktur umgeleitet.
+   ═══════════════════════════════════════ */
+.map-popup {
+  background: var(--card-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow-dropdown);
+  overflow: hidden;
+  min-width: 200px;
+  max-width: 300px;
+  position: relative;
+}
+
+/* Schließen-Button */
+.map-popup-close {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 3px; border: none;
+  background: transparent; color: var(--subtle);
+  cursor: pointer; font-size: 0.65rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.map-popup-close:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+/* ── Variante 1: Kompakt ──
+   Titel + 1–2 Info-Zeilen.
+   Für Karten mit vielen Punkten. */
+.map-popup-compact {
+  padding: 10px 12px;
+}
+.map-popup-compact .popup-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+  padding-right: 20px; /* Platz für Close-Button */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-popup-compact .popup-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.map-popup-compact .popup-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 5px;
+  background: var(--accent-subtle-md);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+}
+
+/* ── Variante 2: Detailliert ──
+   Header (Titel + Typ-Icons) +
+   Key-Value Tabelle für Attribute. */
+.map-popup-detail .popup-header {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.map-popup-detail .popup-header-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+  padding-right: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-popup-detail .popup-header-id {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+.map-popup-detail .popup-header-org {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Icons-Zeile (Fahrzeugtypen etc.) */
+.popup-icons {
+  display: flex;
+  gap: 6px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.popup-icon-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  color: var(--subtle);
+  background: var(--panel-deep);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+.popup-icon-tag i { font-size: 0.7rem; }
+
+/* Key-Value Tabelle */
+.popup-kv {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.popup-kv tr { border-bottom: 1px solid rgba(255,255,255,0.03); }
+.popup-kv tr:last-child { border-bottom: none; }
+.popup-kv td {
+  padding: 5px 12px;
+  vertical-align: top;
+  line-height: 1.4;
+}
+.popup-kv td:first-child {
+  color: var(--subtle);
+  font-weight: 600;
+  white-space: nowrap;
+  width: 80px;
+  font-size: 0.72rem;
+}
+.popup-kv td:last-child { color: var(--text); }
+
+/* ═══════════════════════════════════════
+   LEAFLET CSS OVERRIDES
+   Überschreibt Leaflet-Default-Styles
+   auf die CI-Popup-Struktur.
+   In der jeweiligen app.css einbinden.
+   ═══════════════════════════════════════ */
+/*
+.leaflet-popup-content-wrapper {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-dropdown) !important;
+  padding: 0 !important;
+  color: var(--text) !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 200px !important;
+  max-width: 300px !important;
+}
+.leaflet-popup-tip-container { display: none !important; }
+.leaflet-popup-close-button {
+  color: var(--subtle) !important;
+  font-size: 16px !important;
+  padding: 6px 8px !important;
+  top: 4px !important; right: 4px !important;
+}
+.leaflet-popup-close-button:hover { color: var(--text) !important; }
+*/
+
+/* ═══════════════════════════════════════
+   MAPLIBRE CSS OVERRIDES
+   ═══════════════════════════════════════ */
+/*
+.maplibregl-popup-content {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-dropdown) !important;
+  padding: 0 !important;
+  color: var(--text) !important;
+}
+.maplibregl-popup-tip { display: none !important; }
+.maplibregl-popup-close-button {
+  color: var(--subtle) !important;
+  font-size: 16px !important;
+  padding: 4px 8px !important;
+  top: 4px !important; right: 4px !important;
+  background: transparent !important;
+  border: none !important;
+}
+.maplibregl-popup-close-button:hover { color: var(--text) !important; }
+*/
+
+/* ═══════════════════════════════════════
+   ═══════════════════════════════════════ */
+
+
+/* Trigger-Buttons */
+
+
+/* Fake-Map Kontext */
+
+
+@media (max-width: 768px) {
+  
+}
+/* ═══════════════════════════════════════
+   CONTEXT-MENU & ACTION-MENU
+   Context-Menu: öffnet per Rechtsklick
+   Action-Menu:  öffnet per ⋮ Button
+   Beide verwenden dieselbe .ctx-menu Komponente.
+   ═══════════════════════════════════════ */
+
+.ctx-menu {
+  position: fixed;              /* Context-Menu: fixed im Viewport */
+  background: var(--card-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: var(--shadow-dropdown);
+  padding: 4px;
+  min-width: 180px;
+  max-width: 260px;
+  z-index: var(--z-dropdown);
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: top left;
+  pointer-events: none;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+.ctx-menu.open {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: all;
+}
+
+/* Öffnet nach links wenn zu nah am rechten Rand */
+.ctx-menu.flip-x { transform-origin: top right; }
+/* Öffnet nach oben wenn zu nah am unteren Rand */
+.ctx-menu.flip-y { transform-origin: bottom left; }
+.ctx-menu.flip-x.flip-y { transform-origin: bottom right; }
+
+/* ── Menü-Item ── */
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+.ctx-item:hover {
+  background: var(--accent-subtle-md);
+  color: var(--accent);
+}
+.ctx-item i {
+  font-size: 0.76rem;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.ctx-item:hover i { opacity: 1; }
+
+/* Danger-Variante */
+.ctx-item.danger { color: var(--text); }
+.ctx-item.danger:hover {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+/* Disabled */
+.ctx-item.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Trenner ── */
+.ctx-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ── Label (nicht klickbar, Gruppen-Überschrift) ── */
+.ctx-label {
+  padding: 4px 10px 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--subtle);
+  user-select: none;
+}
+
+/* ── Wert rechts im Item (z.B. Koordinaten) ── */
+.ctx-item-value {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--subtle);
+  flex-shrink: 0;
+}
+.ctx-item:hover .ctx-item-value { color: var(--accent); opacity: 0.7; }
+
+/* ── Action-Menu Button (⋮) ── */
+.action-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--subtle);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+.action-menu-btn:hover {
+  background: var(--accent-subtle-md);
+  color: var(--accent);
+}
+
+/* Action-Menu: position absolute relativ zum Elternelement */
+.action-menu-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.action-menu-wrap .ctx-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  fixed: unset;
+  transform-origin: top right;
+}

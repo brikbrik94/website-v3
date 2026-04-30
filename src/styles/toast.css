@@ -1,0 +1,175 @@
+/*
+ * OE5ITH CI — toast.css
+ * Kurze Status-Meldungen, auto-dismiss, stapelbar.
+ * Varianten: success, warning, danger, info
+ * Modifier:  .toast--rich (Titel + Body + optionale Action)
+ *
+ * Voraussetzung: css/common.css
+ * TypeScript API: scripts/ui/toast.ts
+ */
+
+/* ═══════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════
+   TOAST — BASE
+   ═══════════════════════════════════════ */
+.toast {
+  pointer-events: all;
+  background: var(--card-bg);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--border-strong);  /* wird per Variante überschrieben */
+  border-radius: var(--btn-radius);
+  box-shadow: var(--shadow-toast);
+  padding: 10px 12px;
+  min-width: 260px;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  /* Eintritt: von rechts einfahren */
+  opacity: 0;
+  transform: translateX(16px);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+}
+
+.toast--visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Austritt: zurück nach rechts */
+.toast--hiding {
+  opacity: 0;
+  transform: translateX(16px);
+}
+
+/* ── Hauptzeile (Icon + Text + Close) ── */
+.toast-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast-icon {
+  font-size: 0.78rem;
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+  line-height: 1;
+}
+
+.toast-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.toast-close {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--subtle);
+  font-size: 0.65rem;
+  cursor: pointer;
+  border-radius: 3px;
+  flex-shrink: 0;
+  font-family: inherit;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.toast-close:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+}
+.toast-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ═══════════════════════════════════════
+   VARIANTEN
+   ═══════════════════════════════════════ */
+.toast--success { border-left-color: var(--success); }
+.toast--success .toast-icon { color: var(--success); }
+
+.toast--warning { border-left-color: var(--warning); }
+.toast--warning .toast-icon { color: var(--warning); }
+
+.toast--danger  { border-left-color: var(--danger); }
+.toast--danger  .toast-icon { color: var(--danger); }
+
+.toast--info    { border-left-color: var(--accent); }
+.toast--info    .toast-icon { color: var(--accent); }
+
+/* ═══════════════════════════════════════
+   MODIFIER: RICH
+   .toast--rich — zusätzlicher Body-Text
+   und optionaler Action-Button
+   ═══════════════════════════════════════ */
+.toast--rich .toast-body {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 5px;
+  padding-left: 22px;  /* fluchtet mit .toast-text nach dem Icon */
+}
+
+.toast--rich .toast-action {
+  margin-top: 8px;
+  margin-left: 22px;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--badge-radius);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-subtle);
+  color: var(--accent);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+}
+.toast--rich .toast-action:hover {
+  background: var(--accent-subtle-md);
+  border-color: var(--accent);
+}
+
+/* ═══════════════════════════════════════
+   MOBILE
+   ═══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+  }
+  .toast {
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+    transform: translateY(12px);
+  }
+  .toast--visible  { transform: translateY(0); }
+  .toast--hiding   { transform: translateY(12px); }
+}
