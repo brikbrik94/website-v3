@@ -85,7 +85,7 @@ export const renderNahResults = (container: HTMLElement, results: any[]) => {
   container.innerHTML = `
     <div class="result-list">
       ${results.map((res, index) => `
-        <div class="result-item-simple" data-lat="${res.lat}" data-lon="${res.lon}" data-id="${res.osm_id}">
+        <div class="result-item-simple" data-lat="${res.lat}" data-lon="${res.lon}" data-id="${res.osm_id}" data-index="${index}">
           <div class="result-item-header">
             <span class="result-num">${index + 1}</span>
             <span class="result-simple-title">${res.callsign}</span>
