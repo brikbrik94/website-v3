@@ -26,6 +26,16 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:8080',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/stations/, 'stations.php')
+        },
+        '/api/nah': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/nah/, 'nah.php')
+        },
+        '/api/ping': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/ping/, 'ping.php')
         }
       }
     },
