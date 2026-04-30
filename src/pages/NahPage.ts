@@ -149,6 +149,30 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
   renderNahResults(sidebarResults, results);
 };
 
+/**
+ * Initializes a scheduler that reloads station data every :00 and :30 minutes.
+ * This ensures the operational status of helicopters (daylight vs. night) is updated.
+ */
+const initScheduler = (map: maplibregl.Map, sidebarResults: HTMLElement) => {
+  setInterval(async () => {
+    const now = new Date();
+    const min = now.getMinutes();
+    
+    // Trigger at :00 and :30
+    if (min === 0 || min === 30) {
+      console.log(`[NahPage] Periodic reload triggered at ${now.toLocaleTimeString()}`);
+      await refreshStations(map);
+      
+      // If a calculation was active, re-trigger it automatically
+      if (currentIncidentCoord) {
+        performCalculation(map, sidebarResults, currentIncidentCoord[0], currentIncidentCoord[1]);
+      }
+      
+      Toast.success('Stationen automatisch aktualisiert.');
+    }
+  }, 60000); // Check every minute
+};
+
 export const initNahPage = async (container: HTMLElement) => {
   try {
     // 1. Inventar laden (CI-konform)
@@ -248,6 +272,9 @@ export const initNahPage = async (container: HTMLElement) => {
         item.classList.add('active');
       }
     });
+
+    // 7. Scheduler für periodische Aktualisierung
+    initScheduler(map, sidebarResults);
 
   } catch (err) {
     console.error('[NahPage]', err);
