@@ -1,0 +1,583 @@
+/*
+ * OE5ITH CI — topbar.css
+ * Extrahiert aus components/topbar.html
+ *
+ * Voraussetzung: css/common.css
+ */
+
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════
+   TOPBAR — BASE
+   ═══════════════════════════════════════ */
+.topbar {
+  background: var(--card-bg);
+  height: var(--topbar-height);
+  border-bottom: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+  gap: 0;
+}
+
+/* Three zones */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.topbar-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  min-width: 0;
+}
+
+.topbar-right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* ═══════════════════════════════════════
+   BRAND (topbar-left)
+   ═══════════════════════════════════════ */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.brand-logo {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  /* Desktop + Tablet: sichtbar */
+}
+
+/* ═══════════════════════════════════════
+   CENTER — DROPDOWN
+   ═══════════════════════════════════════ */
+.topbar-dropdown {
+  position: relative;
+}
+
+.topbar-dropdown-toggle {
+  background: #2a2a2a;
+  border: 1px solid #4b5563;
+  border-radius: 5px;
+  color: #d1d5db;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 36px;
+  /* FIXE BREITE — orientiert am längsten Options-Text + Padding + Chevron.
+     Bei dynamischen Dropdowns muss diese Breite vorab definiert werden,
+     damit die Topbar beim Wechsel der Auswahl nicht springt.
+     Faustregel: längster Text in px (ca. 7px/Zeichen bei 0.82rem) + 24px Padding + 20px Chevron */
+  width: 140px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.topbar-dropdown-toggle:hover {
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Label-Text nimmt verfügbaren Platz, Chevron bleibt rechts */
+.dropdown-label {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-dropdown-toggle .chevron {
+  font-size: 0.65rem;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.topbar-dropdown-toggle.open .chevron {
+  transform: rotate(180deg);
+}
+
+.topbar-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #1f1f1f;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  min-width: 180px;
+  z-index: var(--z-dropdown);
+  padding: 4px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.topbar-dropdown-menu.open {
+  display: block;
+}
+
+.topbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.topbar-dropdown-item:hover {
+  background: rgba(59,130,246,0.1);
+  color: #fff;
+}
+
+.topbar-dropdown-item.active {
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════
+   CENTER — TOGGLE BUTTON
+   ═══════════════════════════════════════ */
+.topbar-toggle {
+  background: #2a2a2a;
+  border: 1px solid #4b5563;
+  border-radius: 5px;
+  color: #d1d5db;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.topbar-toggle:hover {
+  border-color: rgba(59,130,246,0.5);
+  color: #fff;
+}
+
+.topbar-toggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.topbar-toggle-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.topbar-toggle.active .topbar-toggle-indicator {
+  background: rgba(255,255,255,0.8);
+}
+
+/* ═══════════════════════════════════════
+   CENTER — SEARCHBAR
+   ═══════════════════════════════════════ */
+.topbar-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.topbar-search-input {
+  background: #2a2a2a;
+  border: 1px solid #4b5563;
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 0.82rem;
+  padding: 6px 36px 6px 12px;
+  height: 36px;
+  width: 200px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.topbar-search-input::placeholder {
+  color: #555;
+}
+
+.topbar-search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
+.topbar-search-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 3px;
+  transition: color 0.15s;
+  font-size: 0.8rem;
+  padding: 0;
+}
+
+.topbar-search-btn:hover {
+  color: var(--accent);
+}
+
+.topbar-search-result {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #1f1f1f;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: none;
+  z-index: var(--z-dropdown);
+}
+
+.topbar-search-result.visible {
+  display: block;
+}
+
+/* ═══════════════════════════════════════
+   RIGHT — NAV LINKS
+   ═══════════════════════════════════════ */
+.topbar-nav-link {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.topbar-nav-link:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+}
+
+.topbar-nav-link.active {
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════
+   SIDEBAR + TAB TOGGLE
+   ═══════════════════════════════════════ */
+
+
+/* Halbkreis Tab an der rechten Kante */
+.sidebar-tab {
+  position: absolute;
+  right: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 44px;
+  background: rgba(59,130,246,0.15);       /* 15% statt 7% — besser sichtbar */
+  border: 1px solid rgba(59,130,246,0.35); /* 35% statt 25% — besser sichtbar */
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  z-index: var(--z-sidebar-tab);
+  user-select: none;
+}
+
+.sidebar-tab:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ═══════════════════════════════════════
+   TOOLS PANEL — Tablet & Mobile
+   ═══════════════════════════════════════
+   Desktop:  Controls inline in .topbar-center, immer sichtbar
+   Tablet:   Controls ausgeblendet → Toggle-Button mit Icon + Text
+             → öffnet .controls-overlay unter der Topbar
+   Mobile:   Controls ausgeblendet → Toggle-Button nur Icon (kein Text)
+             → öffnet .controls-overlay unter der Topbar
+   ═══════════════════════════════════════ */
+
+/* Desktop: Controls direkt inline — kein Toggle nötig */
+.controls-panel {
+  display: contents;  /* verhält sich nicht als eigener Container */
+}
+
+/* Toggle-Button — Desktop: unsichtbar */
+.controls-toggle {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 6px 12px;
+  background: #2a2a2a;
+  border: 1px solid #4b5563;
+  border-radius: 5px;
+  color: #d1d5db;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+.controls-toggle:hover {
+  border-color: var(--accent);
+  color: #fff;
+}
+.controls-toggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Text-Label im Toggle — Tablet: sichtbar, Mobile: ausgeblendet */
+.controls-toggle-text {
+  display: inline;  /* Tablet default */
+}
+
+/* Overlay-Panel — öffnet sich unter der Topbar, volle Breite */
+.controls-overlay {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--topbar-height);      /* direkt unter Topbar */
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  z-index: var(--z-overlay);
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-dropdown);
+}
+.controls-overlay.open {
+  display: flex;
+}
+
+/* ── Controls im Overlay: Layout-Regeln ──
+   Dropdowns/Selects: volle Breite, immer oben
+   Buttons: ab 2 Stück im 2er-Grid nebeneinander
+   Trenner zwischen Dropdown-Gruppe und Button-Gruppe */
+
+/* Dropdowns und Inputs: immer volle Breite */
+.controls-overlay .form-field              { width: 100%; }
+.controls-overlay .form-select             { width: 100%; }
+.controls-overlay .form-input              { width: 100%; }
+.controls-overlay .topbar-dropdown-toggle  { width: 100%; }
+.controls-overlay .segmented               { width: 100%; }
+
+/* Eingabefelder (Geocoder, Suche): volle Breite */
+.controls-overlay .form-input              { width: 100%; }
+.controls-overlay .form-input-wrap         { width: 100%; }
+
+/* Trenner zwischen Dropdown-Gruppe und Button-Gruppe */
+.controls-overlay .controls-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* Button-Grid: ab 2 Buttons → 2 Spalten */
+.controls-overlay .controls-btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* 1 Button allein: volle Breite */
+.controls-overlay .controls-btn-group.single {
+  grid-template-columns: 1fr;
+}
+
+/* Buttons im Grid: volle Breite, zentriert */
+.controls-overlay .controls-btn-group .topbar-toggle,
+.controls-overlay .controls-btn-group .topbar-nav-link {
+  width: 100%;
+  justify-content: center;
+  height: 36px;
+}
+
+/* Backdrop — schließt Overlay bei Klick außerhalb */
+.controls-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-backdrop);
+}
+.controls-backdrop.visible {
+  display: block;
+}
+
+/* Slider icon for tools button */
+.slider-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.slider-icon span {
+  display: block;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+.slider-icon span:nth-child(2) { width: 65%; }
+
+/* ═══════════════════════════════════════
+   BREAKPOINTS
+   ═══════════════════════════════════════ */
+
+/* ── Tablet: 769px–1024px ──
+   Controls-Panel ausblenden → Toggle mit Icon + Text einblenden
+   Max. 2 Nav-Links in der Topbar-Right Zone */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .controls-panel       { display: none; }
+  .controls-toggle      { display: flex; }
+  .controls-toggle-text { display: inline; }
+  .controls-overlay     { top: var(--topbar-height); }
+
+  /* Overlay beginnt rechts neben der Sidebar — Sidebar bleibt bedienbar */
+  .controls-overlay     { left: var(--sidebar-width); }
+
+  /* Sidebar eingeklappt: Overlay wieder volle Breite ab left: 0 */
+  body.sidebar-collapsed .controls-overlay { left: 0; }
+
+  /* Ab dem 3. Nav-Link ausblenden */
+  .topbar-nav-link:nth-child(n+3) { display: none; }
+}
+
+/* ── Mobile: ≤768px ──
+   Topbar kompakter, nur Icon im Toggle, keine Nav-Links */
+@media (max-width: 768px) {
+  /* Topbar kompakter */
+  .topbar { height: var(--topbar-height-mobile); padding: 0 14px; }
+
+  /* Brand: kein Logo, kleinere Schrift */
+  .brand-logo { display: none; }
+  .brand      { font-size: 1.1rem; letter-spacing: 1px; }
+
+  /* Topbar-Center (Desktop-Controls) komplett ausblenden */
+  .topbar-center { display: none; }
+
+  /* Toggle: nur Icon, kein Text */
+  .controls-toggle      { display: flex; }
+  .controls-toggle-text { display: none !important; } /* kein Text auf Mobile */
+  .controls-overlay     { top: var(--topbar-height-mobile); }
+
+  /* Sidebar-Tab Position */
+  .sidebar-tab { right: -13px; top: 50%; }
+
+  
+  }
+
+/* ═══════════════════════════════════════
+   DEMO CONTENT STYLES
+   ═══════════════════════════════════════ */
+
+/* ═══════════════════════════════════════
+   BREAKPOINT-HILFSKLASSEN
+   Für Elemente die nur auf einem bestimmten
+   Breakpoint sichtbar sein sollen.
+   ═══════════════════════════════════════ */
+
+/* Nur auf Tablet sichtbar (769px–1024px) */
+.tablet-only {
+  display: none;
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tablet-only { display: flex; }
+}
+
+/* Nur auf Mobile sichtbar (≤768px) */
+.mobile-only {
+  display: none;
+}
+@media (max-width: 768px) {
+  .mobile-only { display: flex; }
+}
+
+/* Nur auf Desktop sichtbar (≥1025px) */
+.desktop-only {
+  display: flex;
+}
+@media (max-width: 1024px) {
+  .desktop-only { display: none; }
+}
+
+/* ═══════════════════════════════════════
+   STRIKTES MOBILE NAV-HIDING
+   Überschreibt flex/inline-flex Layout-Regeln
+   damit Nav-Links auf Mobile garantiert
+   verschwinden — unabhängig von anderen Styles.
+   ═══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .topbar-nav-link { display: none !important; }
+  .topbar .nav-list { display: none !important; }
+}

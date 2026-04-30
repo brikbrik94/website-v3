@@ -1,0 +1,24 @@
+/* Lokale Schriftarten & Icons (npm) */
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/700.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* Importiere CI-Komponenten */
+@import "./styles/common.css";
+@import "./styles/typography.css";
+@import "./styles/topbar.css";
+@import "./styles/sidebar.css";
+@import "./styles/cards.css";
+@import "./styles/buttons.css";
+@import "./styles/badges.css";
+@import "./styles/page.css";
+@import "./styles/forms.css";
+@import "./styles/modal.css";
+@import "./styles/toast.css";
+
+/* App-spezifische Overrides */
+:root {
+  /* Verwende die installierte Monospace Schrift */
+  --font-mono: "JetBrains Mono", monospace;
+}

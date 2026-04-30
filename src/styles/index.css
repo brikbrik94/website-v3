@@ -1,0 +1,34 @@
+/*
+ * OE5ITH CI — index.css
+ * Master-Import für produktive Sites.
+ * demo.css ist hier NICHT enthalten — nur für components/*.html
+ *
+ * Alle Komponenten:
+ *   <link rel="stylesheet" href="css/index.css">
+ *
+ * Selektiv:
+ *   <link rel="stylesheet" href="css/common.css">
+ *   <link rel="stylesheet" href="css/topbar.css">
+ *   ...
+ */
+
+/* 1. Tokens, Reset, Layout-Gerüst — immer zuerst */
+@import "common.css";
+
+/* 2. Basis */
+@import "typography.css";
+@import "badges.css";
+@import "buttons.css";
+@import "cards.css";
+
+/* 3. Layout */
+@import "topbar.css";
+@import "sidebar.css";
+
+/* 4. Seitenstruktur */
+@import "page.css";
+
+/* 5. Interaktion */
+@import "forms.css";
+@import "modal.css";
+@import "toast.css";

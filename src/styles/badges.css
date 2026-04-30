@@ -1,0 +1,110 @@
+/*
+ * OE5ITH CI — badges.css
+ * Extrahiert aus components/badges.html
+ *
+ * Verwendung:
+ *   1. common.css einbinden (Tokens)
+ *   2. Diese Datei einbinden
+ *
+ * <link rel="stylesheet" href="shared/css/common.css">
+ * <link rel="stylesheet" href="shared/css/badges.css">
+ */
+
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════ */
+
+/* ═══════════════════════════════════════
+   TOPBAR (minimal)
+   ═══════════════════════════════════════ */
+
+/* ═══════════════════════════════════════
+   BADGE — BASE
+   Alle Badges teilen diese Basis.
+   ═══════════════════════════════════════ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;       /* eckig — kein Pill */
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ── Dot (inline, CSS-only) ── */
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── Icon (Font Awesome) ── */
+.badge i {
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   BADGE FARBEN — 6 Varianten
+   ═══════════════════════════════════════ */
+
+/* Blau — Info, allgemein */
+.badge-blue {
+  background: rgba(59,130,246, 0.10);
+  color: #3b82f6;
+  border-color: rgba(59,130,246, 0.25);
+}
+
+/* Grün — OK, Online, Aktiv */
+.badge-green {
+  background: rgba(34,197,94, 0.10);
+  color: #22c55e;
+  border-color: rgba(34,197,94, 0.25);
+}
+
+/* Gelb — Warnung, Auth required, Pending */
+.badge-yellow {
+  background: rgba(234,179,8, 0.10);
+  color: #eab308;
+  border-color: rgba(234,179,8, 0.25);
+}
+
+/* Rot — Fehler, Offline */
+.badge-red {
+  background: rgba(239,68,68, 0.10);
+  color: #ef4444;
+  border-color: rgba(239,68,68, 0.25);
+}
+
+/* Grau — Typ-Info, keine Semantik (z.B. "Basemap", "v1.4.2") */
+.badge-gray {
+  background: rgba(255,255,255, 0.04);
+  color: #666;
+  border-color: #2a2a2a;
+}
+
+/* Lila — Auth / Security (Authentik, SSO, OIDC) */
+.badge-purple {
+  background: rgba(139,92,246, 0.10);
+  color: #a78bfa;
+  border-color: rgba(139,92,246, 0.25);
+}
+
+/* ═══════════════════════════════════════
+   ═══════════════════════════════════════ */
+
+
+/* Sidebar-Kontext Demo */
+
+
+@media (max-width: 768px) {
+  
+}
