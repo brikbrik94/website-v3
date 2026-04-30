@@ -224,6 +224,22 @@
 
 /* ═══ PAGE CONTENT ═══ */
 
+/* ═══ TYP 5 — LEERZUSTAND ═══ */
+.result-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 4px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.result-empty > i {
+  flex-shrink: 0;
+  margin-top: 2px;
+  opacity: 0.5;
+  font-size: 0.85rem;
+}
 
 /* ═══ MOBILE ═══ */
 @media (max-width: 768px) {
