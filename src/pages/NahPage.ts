@@ -1,41 +1,45 @@
 import { MapCore } from '../lib/MapCore';
 import { initTopbar } from '../components/Topbar';
 import maplibregl from 'maplibre-gl';
-import { showToast } from '../lib/Toast';
-
-export interface MapItem {
-  id: string;
-  name: string;
-  style: {
-    version: number;
-    url: string;
-  };
-}
+import { Toast } from '../lib/Toast';
+import { MapItem } from './MapPage';
 
 const BASEMAPS: MapItem[] = [
-  { id: 'alidade-satellite', name: 'Stadia Satellite', style: { version: 8, url: 'https://tiles.stadiamaps.com/styles/alidade_satellite.json' } },
-  { id: 'osm-bright', name: 'OSM Bright', style: { version: 8, url: 'https://tiles.stadiamaps.com/styles/osm_bright.json' } }
+  { 
+    name: 'Stadia Satellite', 
+    type: 'basemap', 
+    style: { url: 'https://tiles.stadiamaps.com/styles/alidade_satellite.json' },
+    file: { url: '' }
+  },
+  { 
+    name: 'OSM Bright', 
+    type: 'basemap', 
+    style: { url: 'https://tiles.stadiamaps.com/styles/osm_bright.json' },
+    file: { url: '' }
+  }
 ];
 
 export const initNahPage = async (container: HTMLElement) => {
   container.innerHTML = `
     <div class="topbar-container"></div>
     <div class="layout" style="height: calc(100dvh - 60px);">
-      <div id="map" style="flex: 1;"></div>
+      <div id="map" style="flex: 1; position: relative;">
+        ${MapCore.getAttributionHtml()}
+      </div>
     </div>
   `;
 
   const topbarContainer = container.querySelector('.topbar-container') as HTMLElement;
   const mapContainer = document.getElementById('map') as HTMLElement;
 
-  const mapCore = new MapCore(mapContainer, BASEMAPS[0].style);
-  await mapCore.init();
+  const map = MapCore.init(mapContainer, BASEMAPS[0].style.url);
   
   // Set initial view roughly to Austria
-  mapCore.getMap().jumpTo({ center: [14.0, 47.5], zoom: 6 });
+  map.jumpTo({ center: [14.0, 47.5], zoom: 6 });
 
   initTopbar(topbarContainer, BASEMAPS, (url) => {
-    mapCore.setStyle(url);
+    map.setStyle(url);
+    map.once('style.load', () => MapCore.reapplyBaseLayers());
   });
 
   try {
@@ -62,16 +66,16 @@ export const initNahPage = async (container: HTMLElement) => {
       new maplibregl.Marker({ element: el })
         .setLngLat([station.lon, station.lat])
         .setPopup(popup)
-        .addTo(mapCore.getMap());
+        .addTo(map);
     });
 
     if (stations.length > 0) {
-      showToast(`${stations.length} NAH-Stützpunkte geladen.`, 'success');
+      Toast.success(`${stations.length} NAH-Stützpunkte geladen.`);
     } else {
-      showToast('Keine NAH-Stützpunkte gefunden.', 'warning');
+      Toast.warning('Keine NAH-Stützpunkte gefunden.');
     }
   } catch (err) {
     console.error(err);
-    showToast('Fehler beim Laden der NAH-Daten', 'error');
+    Toast.error('Fehler beim Laden der NAH-Daten');
   }
 };
