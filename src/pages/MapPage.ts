@@ -1,4 +1,3 @@
-import maplibregl from 'maplibre-gl';
 import { initTopbar } from '../components/Topbar';
 import { initSidebar } from '../components/Sidebar';
 import { MapCore } from '../lib/MapCore';

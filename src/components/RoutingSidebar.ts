@@ -160,9 +160,6 @@ export const initRoutingSidebar = async (
   `;
   document.head.appendChild(style);
 
-  const sidebar = document.getElementById('sidebar')!;
-  const sidebarTab = document.getElementById('sidebar-tab')!;
-  const sidebarBackdrop = document.getElementById('sidebar-backdrop')!;
   const btnStart = document.getElementById('btn-start-routing')!;
   const routeMode = document.getElementById('route-mode')!;
   const fieldStart = document.getElementById('field-start')!;

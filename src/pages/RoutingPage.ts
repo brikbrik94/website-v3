@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { initTopbar } from '../components/Topbar';
-import { initRoutingSidebar, updateRoutingSummary, renderStationResults, setRoutingCoord, renderRoutingError, renderRoutingLoading } from '../components/RoutingSidebar';
+import { initRoutingSidebar, updateRoutingSummary, renderStationResults, setRoutingCoord, renderRoutingError } from '../components/RoutingSidebar';
 import { RoutingService } from '../lib/RoutingService';
 import { MapCore } from '../lib/MapCore';
 import { ContextMenu } from '../components/ContextMenu';
@@ -74,7 +74,7 @@ export const initRoutingPage = async (container: HTMLElement) => {
     currentHighlightedId = null;
   };
 
-  const updateRouteVisuals = (id: number, params: any) => {
+  const updateRouteVisuals = (id: number, _params: any) => {
     const layerId = `route-${id}`;
     if (!map.getLayer(layerId)) return;
 
