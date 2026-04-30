@@ -128,6 +128,11 @@ export const initNahPage = async (container: HTMLElement) => {
     map.on('click', (e) => {
       const { lng, lat } = e.lngLat;
 
+      // Reset previous results state
+      currentResultIds.forEach(id => {
+        map.setFeatureState({ source: 'nah-lines', id }, { selected: false });
+      });
+
       // Ziel-Marker setzen
       if (targetMarker) targetMarker.remove();
       targetMarker = new maplibregl.Marker({ color: '#3b82f6' })
