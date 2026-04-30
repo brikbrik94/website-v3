@@ -85,11 +85,6 @@ export const initNahPage = async (container: HTMLElement) => {
       const el = document.createElement('div');
       el.innerHTML = `<i class="fa-solid fa-helicopter" style="color: ${color}; font-size: 24px; text-shadow: 0 0 3px rgba(0,0,0,0.5); cursor: pointer;"></i>`;
       
-      // Verhindern, dass ein Klick auf den Marker die Map-Click Logik auslöst
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-
       let hoursHtml = '';
       if (station.op_type === 'fixed' && station.fixed_start && station.fixed_end) {
         hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end}</td></tr>`;
@@ -132,6 +127,11 @@ export const initNahPage = async (container: HTMLElement) => {
     let currentIncidentCoord: [number, number] | null = null;
 
     map.on('click', (e) => {
+      // Ignorieren, wenn der Klick auf einen Marker erfolgte
+      if ((e.originalEvent.target as HTMLElement).closest('.maplibregl-marker')) {
+        return;
+      }
+
       const { lng, lat } = e.lngLat;
       currentIncidentCoord = [lng, lat];
 
