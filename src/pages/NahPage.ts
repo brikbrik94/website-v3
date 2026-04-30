@@ -123,6 +123,7 @@ export const initNahPage = async (container: HTMLElement) => {
 
     // 6. Map-Click Logik für Luftlinie & Sidebar
     let targetMarker: maplibregl.Marker | null = null;
+    let currentResultIds: string[] = [];
 
     map.on('click', (e) => {
       const { lng, lat } = e.lngLat;
@@ -150,6 +151,27 @@ export const initNahPage = async (container: HTMLElement) => {
         .sort((a: any, b: any) => a.distance - b.distance)
         .slice(0, 5); // Top 5
 
+      currentResultIds = results.map(s => s.osm_id.toString());
+
+      // Linien-Features generieren
+      const lineFeatures = results.map(s => ({
+        type: 'Feature',
+        id: s.osm_id,
+        geometry: {
+          type: 'LineString',
+          coordinates: [[lng, lat], [s.lon, s.lat]]
+        },
+        properties: { osm_id: s.osm_id }
+      }));
+
+      const source = map.getSource('nah-lines') as maplibregl.GeoJSONSource;
+      if (source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: lineFeatures as any
+        });
+      }
+
       renderNahResults(sidebarResults, results);
     });
 
@@ -159,8 +181,18 @@ export const initNahPage = async (container: HTMLElement) => {
       if (item) {
         const lat = parseFloat(item.dataset.lat!);
         const lon = parseFloat(item.dataset.lon!);
+        const osmId = item.dataset.id;
+        
         map.flyTo({ center: [lon, lat], zoom: 12 });
         
+        // Linien-Highlighting
+        currentResultIds.forEach(id => {
+          map.setFeatureState({ source: 'nah-lines', id: id }, { selected: false });
+        });
+        if (osmId) {
+          map.setFeatureState({ source: 'nah-lines', id: osmId }, { selected: true });
+        }
+
         // Items optisch markieren
         document.querySelectorAll('.result-item-simple').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
