@@ -1,0 +1,3 @@
+[submodule "oe5ith-ci"]
+	path = oe5ith-ci
+	url = git@github.com:brikbrik94/oe5ith-ci.git
