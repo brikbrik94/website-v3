@@ -1,6 +1,7 @@
 import './app.css';
 import { initMapPage } from './pages/MapPage';
 import { initRoutingPage } from './pages/RoutingPage';
+import { initNahPage } from './pages/NahPage';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 
@@ -52,6 +53,13 @@ const renderLandingPage = () => {
             <p>Berechne die optimale Route zwischen zwei Punkten über den OE5ITH ORS Dienst.</p>
             <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
           </a>
+
+          <a href="/nah" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-helicopter"></i></div>
+            <h3>Luftrettung</h3>
+            <p>Übersicht der NAH-Stützpunkte und Live-Verfügbarkeit.</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
         </div>
       </main>
     </div>
@@ -65,6 +73,8 @@ const router = () => {
     if (app) initMapPage(app);
   } else if (path === '/routing') {
     if (app) initRoutingPage(app);
+  } else if (path === '/nah') {
+    if (app) initNahPage(app);
   } else {
     renderLandingPage();
   }
