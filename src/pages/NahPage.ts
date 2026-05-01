@@ -16,33 +16,63 @@ interface Inventory {
   maps: MapItem[];
 }
 
+export interface NahStation {
+  osm_id: string;
+  name: string;
+  callsign: string;
+  region: string;
+  op_type: string;
+  is_active: boolean;
+  is_night_ready: boolean;
+  fixed_start: string | null;
+  fixed_end: string | null;
+  lat: number;
+  lon: number;
+}
+
+export interface NahStationResult extends NahStation {
+  distance: number;
+  duration: number;
+  durationStr: string;
+  eta: string;
+}
+
 // Module-level state to persist across reloads
-let stations: any[] = [];
+let stations: NahStation[] = [];
 let stationMarkers: maplibregl.Marker[] = [];
 let targetMarker: maplibregl.Marker | null = null;
-let currentResults: any[] = [];
+let currentResults: NahStationResult[] = [];
 let currentIncidentCoord: [number, number] | null = null;
 let refreshTimeout: any = null;
 let connectionInterval: any = null;
 
 /**
- * Manages the next automatic refresh based on server-provided timestamp.
+ * Manages the next automatic refresh based on server-provided timestamp or fixed delay.
  */
-const scheduleNextRefresh = (map: maplibregl.Map, sidebarResults: HTMLElement, refreshAt: string) => {
+const scheduleNextRefresh = (map: maplibregl.Map, sidebarResults: HTMLElement, refreshAtOrDelay: string | number) => {
   if (refreshTimeout) clearTimeout(refreshTimeout);
 
-  const targetTime = Date.parse(refreshAt);
-  const now = Date.now();
+  // Prevent memory leaks: stop if map is no longer in DOM
+  if (!map.getContainer().isConnected) return;
+
+  let delay: number;
+  if (typeof refreshAtOrDelay === 'string') {
+    const targetTime = Date.parse(refreshAtOrDelay);
+    const now = Date.now();
+    // Calculate delay: target + 10s buffer
+    delay = targetTime - now + 10000;
+  } else {
+    delay = refreshAtOrDelay;
+  }
   
-  // Calculate delay: target + 10s buffer
-  let delay = targetTime - now + 10000;
-  
-  // Enforce minimum delay of 30s to prevent rapid loops if clocks are out of sync
+  // Enforce minimum delay of 30s to prevent rapid loops
   if (delay < 30000) delay = 30000;
 
-  console.log(`[NahPage] Next reload scheduled in ${Math.round(delay/1000)}s (at ${new Date(now + delay).toLocaleTimeString()})`);
+  console.log(`[NahPage] Next reload scheduled in ${Math.round(delay/1000)}s`);
 
   refreshTimeout = setTimeout(async () => {
+    if (!map.getContainer().isConnected) return;
+    
     console.log(`[NahPage] Dynamic reload triggered...`);
     await refreshStations(map, sidebarResults);
     
@@ -70,7 +100,7 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
     stationMarkers.forEach(m => m.remove());
     stationMarkers = [];
 
-    stations.forEach((station: any) => {
+    stations.forEach((station) => {
       const color = station.is_active ? '#10b981' : '#6b7280'; // CI Success vs CI Muted
       const statusText = station.is_active ? 'EINSATZBEREIT' : 'NICHT AKTIV';
       
@@ -126,6 +156,8 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
   } catch (err) {
     console.error('[NahPage] Refresh failed', err);
     Toast.error('Fehler beim Aktualisieren der NAH-Daten');
+    // Error recovery: retry in 60s
+    scheduleNextRefresh(map, sidebarResults, 60000);
   }
 };
 
@@ -150,9 +182,9 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
     .addTo(map);
 
   // Distanz zu allen AKTIVEN Stationen berechnen
-  const results = stations
-    .filter((s: any) => s.is_active)
-    .map((s: any) => {
+  const results: NahStationResult[] = stations
+    .filter((s) => s.is_active)
+    .map((s) => {
       const dist = calculateDistance(lat, lng, s.lat, s.lon);
       const duration = calculateFlightTime(dist);
       return {
@@ -163,7 +195,7 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
         eta: formatETA(duration)
       };
     })
-    .sort((a: any, b: any) => a.distance - b.distance)
+    .sort((a, b) => a.distance - b.distance)
     .slice(0, 5); // Top 5
 
   currentResults = results;
@@ -191,6 +223,8 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
 };
 
 export const initNahPage = async (container: HTMLElement) => {
+  let map: maplibregl.Map | null = null;
+
   // Clear all current state to prevent "ghost" markers or multiple schedulers
   stationMarkers.forEach(m => m.remove());
   stationMarkers = [];
@@ -227,10 +261,11 @@ export const initNahPage = async (container: HTMLElement) => {
     const mapContainer = document.getElementById('map')!;
 
     // 3. Karte initialisieren
-    const map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
+    map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
     map.jumpTo({ center: [13.5, 48.0], zoom: 7 });
 
     map.on('load', () => {
+      if (!map) return;
       if (!map.getSource('nah-lines')) {
         map.addSource('nah-lines', {
           type: 'geojson',
@@ -253,8 +288,8 @@ export const initNahPage = async (container: HTMLElement) => {
 
     // 4. Komponenten initialisieren
     initTopbar(topbarMount, basemaps, (url) => {
-      map.setStyle(url);
-      map.once('style.load', () => MapCore.reapplyBaseLayers());
+      map?.setStyle(url);
+      map?.once('style.load', () => MapCore.reapplyBaseLayers());
     });
 
     initNahSidebar(sidebarMount);
@@ -266,6 +301,7 @@ export const initNahPage = async (container: HTMLElement) => {
 
     // 6. Map-Click Logik für Luftlinie & Sidebar
     map.on('click', (e) => {
+      if (!map) return;
       // Ignorieren, wenn der Klick auf einen Marker erfolgte
       if ((e.originalEvent.target as HTMLElement).closest('.maplibregl-marker')) {
         return;
@@ -277,6 +313,7 @@ export const initNahPage = async (container: HTMLElement) => {
 
     // Klick auf Sidebar-Result zentriert Karte
     sidebarResults.addEventListener('click', (e) => {
+      if (!map) return;
       const item = (e.target as HTMLElement).closest('.result-item-simple') as HTMLElement;
       if (item) {
         const index = item.dataset.index;
@@ -311,6 +348,11 @@ export const initNahPage = async (container: HTMLElement) => {
 
   // Alive Ping Logik (Heartbeat)
   const checkConnection = async () => {
+    // Prevent memory leaks: stop if map is no longer in DOM
+    if (!map || !map.getContainer().isConnected) {
+      if (connectionInterval) clearInterval(connectionInterval);
+      return;
+    }
     try {
       const res = await fetch('/api/ping');
       updateNahServerStatus(res.ok);
