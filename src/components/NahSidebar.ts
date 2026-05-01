@@ -1,3 +1,5 @@
+import { NahStationResult } from '../pages/NahPage';
+
 /**
  * OE5ITH NAH Sidebar Komponente
  */
@@ -71,7 +73,7 @@ export const updateNahServerStatus = (online: boolean) => {
   }
 };
 
-export const renderNahResults = (container: HTMLElement, results: any[]) => {
+export const renderNahResults = (container: HTMLElement, results: NahStationResult[]) => {
   if (results.length === 0) {
     container.innerHTML = `
       <div class="result-empty">
