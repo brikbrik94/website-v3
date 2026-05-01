@@ -1,4 +1,5 @@
 import { initTopbar } from '../components/Topbar';
+import { Toast } from '../lib/Toast';
 
 interface NahStation {
   name: string;
@@ -14,6 +15,44 @@ interface NahStation {
 interface NahResponse {
   refresh_at: string;
   stations: NahStation[];
+}
+
+interface InventoryMap {
+  name: string;
+  project: string;
+  type: string;
+  file: {
+    url: string;
+    stats: {
+      size_str: string;
+      date_str: string;
+    };
+  };
+  style: {
+    url: string;
+  };
+}
+
+interface InventoryFont {
+  family: string;
+  variants: Array<{
+    name: string;
+    style: string;
+    url: string;
+  }>;
+}
+
+interface InventorySprite {
+  name: string;
+  url: string;
+  preview: string;
+}
+
+interface InventoryResponse {
+  generated_at: string;
+  maps: InventoryMap[];
+  fonts: InventoryFont[];
+  sprites: InventorySprite[];
 }
 
 const formatTime = (iso: string | null): string => {
@@ -253,6 +292,143 @@ const renderNahStatusModule = async (container: HTMLElement) => {
       renderTable();
     });
   });
+
+  refreshBtn.addEventListener('click', fetchData);
+  fetchData();
+};
+
+/**
+ * Renders the Map Inventory module.
+ */
+const renderInventoryModule = async (container: HTMLElement) => {
+  container.innerHTML = `
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Karten <span>Inventar</span></h1>
+        <p class="page-subtitle">Verzeichnis der verfügbaren Karten-Layer, Schriftarten und Sprites.</p>
+      </div>
+      <div class="page-header-right">
+        <div class="page-meta" id="inventory-meta">Lade Verzeichnis...</div>
+        <button class="page-action" id="inventory-refresh-btn">
+          <i class="fa-solid fa-sync"></i> Aktualisieren
+        </button>
+      </div>
+    </header>
+
+    <div class="content-body" id="inventory-content">
+      <div style="text-align: center; padding: 4rem;">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Lade Karten-Inventar...
+      </div>
+    </div>
+  `;
+
+  const content = document.getElementById('inventory-content')!;
+  const meta = document.getElementById('inventory-meta')!;
+  const refreshBtn = document.getElementById('inventory-refresh-btn') as HTMLButtonElement;
+
+  const fetchData = async () => {
+    refreshBtn.classList.add('loading');
+    refreshBtn.disabled = true;
+
+    try {
+      const response = await fetch('https://tiles.oe5ith.at/inventory.json');
+      if (!response.ok) throw new Error('Failed to fetch inventory');
+      const data: InventoryResponse = await response.json();
+
+      meta.textContent = `Stand: ${new Date(data.generated_at).toLocaleString()}`;
+      renderData(data);
+    } catch (error) {
+      Toast.error('Fehler beim Laden des Karten-Inventars');
+      content.innerHTML = `
+        <div class="card card-warn">
+          <strong>Fehler:</strong> Das Inventar konnte nicht geladen werden. Bitte versuchen Sie es später erneut.
+        </div>
+      `;
+    } finally {
+      refreshBtn.classList.remove('loading');
+      refreshBtn.disabled = false;
+    }
+  };
+
+  const renderData = (data: InventoryResponse) => {
+    const types = ['basemap', 'overlay', 'elevation'];
+    const typeLabels: Record<string, string> = {
+      'basemap': 'Basemaps',
+      'overlay': 'Overlays',
+      'elevation': 'Elevation'
+    };
+
+    let html = '';
+
+    // Render Maps grouped by type
+    types.forEach(type => {
+      const maps = data.maps.filter(m => m.type === type);
+      if (maps.length === 0) return;
+
+      html += `
+        <h2 class="section-title" style="margin-top: 0;">${typeLabels[type]}</h2>
+        <div class="card-grid" style="margin-bottom: 32px;">
+          ${maps.map(map => `
+            <div class="card">
+              <div class="card-content-header">
+                <h3 title="${map.name}">${map.name}</h3>
+                <span class="card-badge">${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+              </div>
+              <p class="card-content">
+                Projekt: <strong>${map.project}</strong><br>
+                Größe: ${map.file.stats.size_str}
+              </p>
+              <span class="card-url" title="${map.file.url}">${map.file.url}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    });
+
+    // Render Assets (Fonts & Sprites)
+    html += `<h2 class="section-title">Assets</h2>`;
+    html += `<div class="card-grid">`;
+
+    // Fonts Card
+    html += `
+      <div class="card">
+        <div class="card-content-header">
+          <h3>Schriftarten</h3>
+          <span class="card-badge">Fonts</span>
+        </div>
+        <div style="font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 12px;">
+          ${data.fonts.map(f => `
+            <div style="margin-bottom: 8px;">
+              <div style="color: #fff; font-weight: 600;">${f.family}</div>
+              <div style="font-size: 0.75rem;">${f.variants.length} Varianten</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    // Sprites Card
+    html += `
+      <div class="card">
+        <div class="card-content-header">
+          <h3>Icon Sprites</h3>
+          <span class="card-badge">Sprites</span>
+        </div>
+        <div style="font-size: 0.82rem; color: var(--muted); line-height: 1.5;">
+          ${data.sprites.map(s => `
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <img src="${s.preview}" style="width: 20px; height: 20px; background: #000; padding: 2px; border-radius: 2px;">
+              <span>${s.name}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    html += `</div>`; // end Assets grid
+
+    content.innerHTML = html;
+  };
 
   refreshBtn.addEventListener('click', fetchData);
   fetchData();
@@ -505,6 +681,9 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
           <a href="/info/regions" class="sidebar-nav-item nav-link ${subpath === 'regions' ? 'active' : ''}" data-module="regions">
             <i class="fa-solid fa-map-location nav-icon"></i> Regions Analyse
           </a>
+          <a href="/info/inventory" class="sidebar-nav-item nav-link ${subpath === 'inventory' ? 'active' : ''}" data-module="inventory">
+            <i class="fa-solid fa-layer-group nav-icon"></i> Karten Inventar
+          </a>
           <a href="/info/debug" class="sidebar-nav-item nav-link ${subpath === 'debug' ? 'active' : ''}" data-module="debug">
             <i class="fa-solid fa-terminal nav-icon"></i> API Debug
           </a>
@@ -536,6 +715,8 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
     renderHealthModule(contentMount);
   } else if (subpath === 'regions') {
     renderRegionsModule(contentMount);
+  } else if (subpath === 'inventory') {
+    renderInventoryModule(contentMount);
   } else {
     contentMount.innerHTML = `
       <div class="content-body">
