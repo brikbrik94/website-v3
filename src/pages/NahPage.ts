@@ -22,18 +22,49 @@ let stationMarkers: maplibregl.Marker[] = [];
 let targetMarker: maplibregl.Marker | null = null;
 let currentResults: any[] = [];
 let currentIncidentCoord: [number, number] | null = null;
-let schedulerInterval: any = null;
+let refreshTimeout: any = null;
 let connectionInterval: any = null;
+
+/**
+ * Manages the next automatic refresh based on server-provided timestamp.
+ */
+const scheduleNextRefresh = (map: maplibregl.Map, sidebarResults: HTMLElement, refreshAt: string) => {
+  if (refreshTimeout) clearTimeout(refreshTimeout);
+
+  const targetTime = Date.parse(refreshAt);
+  const now = Date.now();
+  
+  // Calculate delay: target + 10s buffer
+  let delay = targetTime - now + 10000;
+  
+  // Enforce minimum delay of 30s to prevent rapid loops if clocks are out of sync
+  if (delay < 30000) delay = 30000;
+
+  console.log(`[NahPage] Next reload scheduled in ${Math.round(delay/1000)}s (at ${new Date(now + delay).toLocaleTimeString()})`);
+
+  refreshTimeout = setTimeout(async () => {
+    console.log(`[NahPage] Dynamic reload triggered...`);
+    await refreshStations(map, sidebarResults);
+    
+    // If a calculation was active, re-trigger it automatically to update ETAs/Distances
+    if (currentIncidentCoord) {
+      performCalculation(map, sidebarResults, currentIncidentCoord[0], currentIncidentCoord[1]);
+    }
+  }, delay);
+};
 
 /**
  * Loads NAH station data and updates markers on the map.
  * Can be called independently for periodic reloads.
  */
-export const refreshStations = async (map: maplibregl.Map) => {
+export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLElement) => {
   try {
     const nahRes = await fetch('/api/nah');
     if (!nahRes.ok) throw new Error(`API Error: ${nahRes.status}`);
-    stations = await nahRes.json();
+    const data = await nahRes.json();
+    
+    stations = data.stations || [];
+    const refreshAt = data.refresh_at;
     
     // Clear existing markers
     stationMarkers.forEach(m => m.remove());
@@ -86,6 +117,11 @@ export const refreshStations = async (map: maplibregl.Map) => {
 
     if (stations.length > 0) {
       Toast.success(`${stations.length} NAH-Stützpunkte geladen.`);
+    }
+
+    // Schedule next refresh if timestamp provided
+    if (refreshAt) {
+      scheduleNextRefresh(map, sidebarResults, refreshAt);
     }
   } catch (err) {
     console.error('[NahPage] Refresh failed', err);
@@ -154,32 +190,6 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
   renderNahResults(sidebarResults, results);
 };
 
-/**
- * Initializes a scheduler that reloads station data every :00 and :30 minutes.
- * This ensures the operational status of helicopters (daylight vs. night) is updated.
- */
-const initScheduler = (map: maplibregl.Map, sidebarResults: HTMLElement) => {
-  if (schedulerInterval) clearInterval(schedulerInterval);
-
-  schedulerInterval = setInterval(async () => {
-    const now = new Date();
-    const min = now.getMinutes();
-    
-    // Trigger at :00 and :30
-    if (min === 0 || min === 30) {
-      console.log(`[NahPage] Periodic reload triggered at ${now.toLocaleTimeString()}`);
-      await refreshStations(map);
-      
-      // If a calculation was active, re-trigger it automatically
-      if (currentIncidentCoord) {
-        performCalculation(map, sidebarResults, currentIncidentCoord[0], currentIncidentCoord[1]);
-      }
-      
-      console.log('[NahPage] Stationen automatisch aktualisiert.');
-    }
-  }, 60000); // Check every minute
-};
-
 export const initNahPage = async (container: HTMLElement) => {
   // Clear all current state to prevent "ghost" markers or multiple schedulers
   stationMarkers.forEach(m => m.remove());
@@ -191,7 +201,7 @@ export const initNahPage = async (container: HTMLElement) => {
     targetMarker.remove();
     targetMarker = null;
   }
-  if (schedulerInterval) clearInterval(schedulerInterval);
+  if (refreshTimeout) clearTimeout(refreshTimeout);
   if (connectionInterval) clearInterval(connectionInterval);
 
   try {
@@ -251,7 +261,8 @@ export const initNahPage = async (container: HTMLElement) => {
     const sidebarResults = document.getElementById('nah-sidebar-results')!;
 
     // 5. NAH-Daten laden und Marker setzen (Initialer Load)
-    await refreshStations(map);
+    // Dies triggert nun auch den dynamischen Scheduler
+    await refreshStations(map, sidebarResults);
 
     // 6. Map-Click Logik für Luftlinie & Sidebar
     map.on('click', (e) => {
@@ -292,9 +303,6 @@ export const initNahPage = async (container: HTMLElement) => {
         item.classList.add('active');
       }
     });
-
-    // 7. Scheduler für periodische Aktualisierung
-    initScheduler(map, sidebarResults);
 
   } catch (err) {
     console.error('[NahPage]', err);
