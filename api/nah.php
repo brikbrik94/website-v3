@@ -38,11 +38,11 @@ foreach ($stations as $s) {
             $isActive = true;
         } elseif ($s['op_type'] === 'daylight') {
             $sunInfo = date_sun_info($now, (float)$s['lat'], (float)$s['lon']);
-            if (isset($sunInfo['sunrise']) && isset($sunInfo['sunset']) && 
-                $sunInfo['sunrise'] !== false && $sunInfo['sunset'] !== false) {
+            if (isset($sunInfo['civil_twilight_begin']) && isset($sunInfo['civil_twilight_end']) && 
+                $sunInfo['civil_twilight_begin'] !== false && $sunInfo['civil_twilight_end'] !== false) {
                 
-                $start = $sunInfo['sunrise'];
-                $end = $sunInfo['sunset'];
+                $start = $sunInfo['civil_twilight_begin'];
+                $end = $sunInfo['civil_twilight_end'];
 
                 // Frühestmögliche Startzeit prüfen
                 if (!empty($s['fixed_start'])) {
@@ -65,16 +65,16 @@ foreach ($stations as $s) {
                     if ($now < $start) {
                         $stationNextEvent = $start;
                     } else {
-                        // After end, next event is sunrise tomorrow
+                        // After end, next event is BCET tomorrow
                         $tomorrowSunInfo = date_sun_info($now + 86400, (float)$s['lat'], (float)$s['lon']);
-                        $stationNextEvent = $tomorrowSunInfo['sunrise'];
+                        $stationNextEvent = $tomorrowSunInfo['civil_twilight_begin'];
                         if (!empty($s['fixed_start'])) {
                             $fixedStartTsTom = strtotime(date('Y-m-d ', $now + 86400) . $s['fixed_start']);
                             $stationNextEvent = max($stationNextEvent, $fixedStartTsTom);
                         }
                     }
                 }
-            } elseif (isset($sunInfo['sunrise']) && $sunInfo['sunrise'] === true) {
+            } elseif (isset($sunInfo['civil_twilight_begin']) && $sunInfo['civil_twilight_begin'] === true) {
                  $isActive = true;
             }
         } elseif ($s['op_type'] === 'fixed' && !empty($s['fixed_start']) && !empty($s['fixed_end'])) {
