@@ -112,11 +112,11 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
         hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end}</td></tr>`;
       } else if (station.op_type === 'daylight') {
         if (station.fixed_start && station.fixed_end) {
-          hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end} (max. Daylight)</td></tr>`;
+          hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end} (max. ECET)</td></tr>`;
         } else if (station.fixed_start) {
-          hoursHtml = `<tr><td>Zeiten</td><td>Ab ${station.fixed_start} bis Sonnenuntergang</td></tr>`;
+          hoursHtml = `<tr><td>Zeiten</td><td>Ab ${station.fixed_start} bis ECET</td></tr>`;
         } else {
-          hoursHtml = `<tr><td>Zeiten</td><td>Sonnenauf- bis untergang</td></tr>`;
+          hoursHtml = `<tr><td>Zeiten</td><td>BCET bis ECET</td></tr>`;
         }
       } else if (station.op_type === '24/7') {
         hoursHtml = `<tr><td>Zeiten</td><td>24 Stunden / 7 Tage</td></tr>`;
