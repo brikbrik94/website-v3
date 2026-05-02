@@ -36,6 +36,11 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:8080',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/ping/, 'ping.php')
+        },
+        '/api/db': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/db/, 'db_status.php')
         }
       }
     },

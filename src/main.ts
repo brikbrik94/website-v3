@@ -2,6 +2,7 @@ import './app.css';
 import { initMapPage } from './pages/MapPage';
 import { initRoutingPage } from './pages/RoutingPage';
 import { initNahPage } from './pages/NahPage';
+import { initInfoPage } from './pages/InfoPage';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 
@@ -75,6 +76,9 @@ const router = () => {
     if (app) initRoutingPage(app);
   } else if (path === '/nah') {
     if (app) initNahPage(app);
+  } else if (path.startsWith('/info')) {
+    const subpath = path.split('/')[2] || 'nah';
+    if (app) initInfoPage(app, subpath);
   } else {
     renderLandingPage();
   }
