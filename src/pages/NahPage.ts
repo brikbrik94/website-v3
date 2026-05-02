@@ -4,6 +4,8 @@ import maplibregl from 'maplibre-gl';
 import { Toast } from '../lib/Toast';
 import { initNahSidebar, renderNahResults, updateNahServerStatus } from '../components/NahSidebar';
 import { calculateDistance, calculateFlightTime, formatDuration, formatETA } from '../lib/FlightMath';
+import { MAP_ROUTE_STYLES } from '../lib/MapStyles';
+import { MapLegend } from '../lib/MapLegend';
 
 export interface MapItem {
   name: string;
@@ -253,12 +255,23 @@ export const initNahPage = async (container: HTMLElement) => {
         <main id="map" style="flex: 1; height: 100%; position: relative; min-width: 0;">
           ${MapCore.getAttributionHtml()}
         </main>
+        <div class="map-legend" id="map-legend" style="display:none; position:fixed; bottom:16px; right:16px;">
+          <div class="map-legend-title"></div>
+          <div class="map-legend-entries"></div>
+        </div>
       </div>
     `;
 
     const topbarMount = document.getElementById('topbar-mount')!;
     const sidebarMount = document.getElementById('sidebar-mount')!;
     const mapContainer = document.getElementById('map')!;
+
+    const legend = new MapLegend('#map-legend');
+    legend.setTitle('Luftrettung');
+    legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Gewählte Station' });
+    legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Nächste Stationen' });
+    legend.addEntry({ type: 'dot',  color: '#10b981', label: 'Einsatzbereit' });
+    legend.addEntry({ type: 'dot',  color: '#6b7280', label: 'Nicht aktiv' });
 
     // 3. Karte initialisieren
     map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
@@ -278,9 +291,9 @@ export const initNahPage = async (container: HTMLElement) => {
           source: 'nah-lines',
           layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: {
-            'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#10b981', '#3b82f6'],
-            'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, 2],
-            'line-opacity': 0.8
+            'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.color, MAP_ROUTE_STYLES.background.color],
+            'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.weight, MAP_ROUTE_STYLES.background.weight],
+            'line-opacity': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.opacity, MAP_ROUTE_STYLES.background.opacity]
           }
         });
       }
@@ -290,7 +303,7 @@ export const initNahPage = async (container: HTMLElement) => {
     initTopbar(topbarMount, basemaps, (url) => {
       map?.setStyle(url);
       map?.once('style.load', () => MapCore.reapplyBaseLayers());
-    });
+    }, () => legend.toggle());
 
     initNahSidebar(sidebarMount);
     const sidebarResults = document.getElementById('nah-sidebar-results')!;
