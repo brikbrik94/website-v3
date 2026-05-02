@@ -5,6 +5,8 @@ import { RoutingService } from '../lib/RoutingService';
 import { MapCore } from '../lib/MapCore';
 import { ContextMenu } from '../components/ContextMenu';
 import { Toast } from '../lib/Toast';
+import { MAP_ROUTE_STYLES } from '../lib/MapStyles';
+import { MapLegend } from '../lib/MapLegend';
 
 export const initRoutingPage = async (container: HTMLElement) => {
   // 1. Setup Container & Map
@@ -19,6 +21,10 @@ export const initRoutingPage = async (container: HTMLElement) => {
       <main id="map" style="flex: 1; height: 100%; position: relative; min-width: 0;">
         ${MapCore.getAttributionHtml()}
       </main>
+      <div class="map-legend" id="map-legend" style="display:none; position:fixed; bottom:16px; right:16px;">
+        <div class="map-legend-title"></div>
+        <div class="map-legend-entries"></div>
+      </div>
     </div>
   `;
 
@@ -28,6 +34,12 @@ export const initRoutingPage = async (container: HTMLElement) => {
 
   const map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
   map.once('style.load', () => MapCore.reapplyBaseLayers());
+
+  // 1.1 Initialize Legend
+  const legend = new MapLegend('#map-legend');
+  legend.setTitle('Routing');
+  legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Primärroute' });
+  legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Vergleich / Alternativ' });
 
   // 2. State & Constants
   let startMarker: maplibregl.Marker | null = null;
@@ -40,8 +52,14 @@ export const initRoutingPage = async (container: HTMLElement) => {
   map.on('styleimagemissing', async () => { await MapCore.loadSprites(map, SPRITE_BASE); });
 
   // Paint Configs
-  const PAINT_HIGHLIGHT = { 'line-opacity': 1.0, 'line-width': 6 };
-  const PAINT_DEZENT    = { 'line-opacity': 0.3, 'line-width': 4 };
+  const PAINT_HIGHLIGHT = { 
+    'line-opacity': MAP_ROUTE_STYLES.active.opacity, 
+    'line-width': MAP_ROUTE_STYLES.active.weight + 1 
+  };
+  const PAINT_DEZENT = { 
+    'line-opacity': MAP_ROUTE_STYLES.background.opacity, 
+    'line-width': MAP_ROUTE_STYLES.background.weight 
+  };
   const PAINT_HIDDEN    = { 'line-opacity': 0.0, 'line-width': 0 };
 
   // 3. Layer Management
@@ -58,7 +76,11 @@ export const initRoutingPage = async (container: HTMLElement) => {
       map.addLayer({
         id: 'route-line', type: 'line', source: 'route',
         layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 'line-color': '#3b82f6', 'line-width': 5, 'line-opacity': 0.8 }
+        paint: { 
+          'line-color': MAP_ROUTE_STYLES.active.color, 
+          'line-width': MAP_ROUTE_STYLES.active.weight, 
+          'line-opacity': MAP_ROUTE_STYLES.active.opacity 
+        }
       }, 'station-icons');
     }
   };
@@ -79,8 +101,11 @@ export const initRoutingPage = async (container: HTMLElement) => {
     if (!map.getLayer(layerId)) return;
 
     let style = PAINT_HIDDEN;
+    let color = MAP_ROUTE_STYLES.background.color;
+
     if (id === currentHighlightedId) {
       style = PAINT_HIGHLIGHT;
+      color = MAP_ROUTE_STYLES.active.color;
     } else if (eyeActiveStates.has(id)) {
       // Wenn etwas anderes highlighted ist, die "Augen" noch dezent-er machen
       style = currentHighlightedId !== null ? { 'line-opacity': 0.1, 'line-width': 3 } : PAINT_DEZENT;
@@ -88,6 +113,7 @@ export const initRoutingPage = async (container: HTMLElement) => {
 
     map.setPaintProperty(layerId, 'line-opacity', style['line-opacity']);
     map.setPaintProperty(layerId, 'line-width', style['line-width']);
+    map.setPaintProperty(layerId, 'line-color', color);
   };
 
   const syncAllVisuals = () => {
@@ -111,7 +137,7 @@ export const initRoutingPage = async (container: HTMLElement) => {
       await MapCore.reapplyBaseLayers();
       ensureBaseLayers();
     });
-  });
+  }, () => legend.toggle());
 
   map.on('contextmenu', (e) => {
     const { lat, lng } = e.lngLat;
@@ -181,7 +207,7 @@ export const initRoutingPage = async (container: HTMLElement) => {
               map.addLayer({
                 id: layerId, type: 'line', source: layerId,
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#3b82f6', 'line-width': 0, 'line-opacity': 0 }
+                paint: { 'line-color': MAP_ROUTE_STYLES.background.color, 'line-width': 0, 'line-opacity': 0 }
               }, 'station-icons');
             }
           }
@@ -205,7 +231,7 @@ export const initRoutingPage = async (container: HTMLElement) => {
                 map.addLayer({
                   id: layerId, type: 'line', source: layerId,
                   layout: { 'line-join': 'round', 'line-cap': 'round' },
-                  paint: { 'line-color': '#3b82f6', 'line-width': 0, 'line-opacity': 0 }
+                  paint: { 'line-color': MAP_ROUTE_STYLES.background.color, 'line-width': 0, 'line-opacity': 0 }
                 }, 'station-icons');
               }
             }
