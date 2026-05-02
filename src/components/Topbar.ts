@@ -4,7 +4,8 @@ import { TerrainControls } from './TerrainControls';
 export const initTopbar = (
   container: HTMLElement,
   basemaps: MapItem[],
-  onBasemapChange: (url: string, name: string) => void
+  onBasemapChange: (url: string, name: string) => void,
+  onLegendToggle?: (isActive: boolean) => void
 ) => {
   const basemapOptions = basemaps.map((m, i) => `
     <div class="topbar-dropdown-item ${i === 0 ? 'active' : ''}" data-style="${m.style.url}" data-name="${m.name}">
@@ -44,6 +45,10 @@ export const initTopbar = (
           </div>
           ${terrainHtml}
         </div>
+
+        <button class="topbar-toggle" id="legend-toggle" title="Legende">
+          <i class="fa-solid fa-list-ul"></i>
+        </button>
         ` : ''}
       </div>
       <div class="topbar-right">
@@ -135,9 +140,26 @@ export const initTopbar = (
         <div style="display:flex; gap:8px;">
           ${terrainHtml}
         </div>
+        <div style="height:1px; background:var(--border); margin:12px 0;"></div>
+        <a id="m-legend-toggle" style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text); cursor:pointer;">
+          <i class="fa-solid fa-list-ul" style="width:16px; opacity:0.7"></i> Legende
+        </a>
       `;
     };
     buildOverlay();
+
+    const legendBtn = document.getElementById('legend-toggle');
+    const mLegendBtn = document.getElementById('m-legend-toggle');
+
+    const handleLegendToggle = () => {
+      const isNowActive = !legendBtn?.classList.contains('active');
+      legendBtn?.classList.toggle('active', isNowActive);
+      mLegendBtn?.style.setProperty('color', isNowActive ? 'var(--accent)' : 'var(--text)');
+      if (onLegendToggle) onLegendToggle(isNowActive);
+    };
+
+    legendBtn?.addEventListener('click', handleLegendToggle);
+    mLegendBtn?.addEventListener('click', handleLegendToggle);
   } else {
     // Hide mobile controls for non-map pages
     const overlay = document.getElementById('controls-overlay');
