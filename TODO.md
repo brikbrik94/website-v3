@@ -1,6 +1,6 @@
-- [ ] Task 1: Style Synchronization
+- [x] Task 1: Style Synchronization
 - [x] Task 2: Create MapStyles Library
 - [x] Task 3: Create MapLegend Library
 - [x] Task 4: Extend Topbar Component
 - [x] Task 5: Integrate Legend and Styles into NahPage
-- [ ] Task 6: Integrate Legend and Styles into RoutingPage
+- [x] Task 6: Integrate Legend and Styles into RoutingPage
