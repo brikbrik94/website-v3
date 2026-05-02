@@ -689,12 +689,7 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
           </a>
         </div>
         <div class="sidebar-footer">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-            <span class="sidebar-footer-version">v3.0.0</span>
-            <a href="/nah" class="nav-link" style="color: var(--accent); font-size: 0.72rem; text-decoration: none;">
-              <i class="fa-solid fa-arrow-left"></i> Zurück zur Karte
-            </a>
-          </div>
+          <span class="sidebar-footer-version">v3.0.0</span>
           <button class="sidebar-footer-copyright">©</button>
         </div>
       </aside>

@@ -34,5 +34,8 @@ Dieses Dokument enthält verbindliche Mandate für die KI-Assistenz in diesem Pr
     - **Automatisierung:** Automatischer Reload und Neuberechnung alle 30 Minuten (:00, :30).
 - **Geocoding:** Integriertes Forward- & Reverse-Geocoding (via PHP Proxy) mit automatischer Adress-Injektion in die Routing-Felder (Dataset-Speicherung der Koordinaten).
 - **Feedback-System:** Offizielles CI-Toast-System (`src/lib/Toast.ts`) integriert für Status- und Fehlermeldungen.
+- **Topbar:** Refactored für dynamische Inhalte; blendet Map-Controls (Tools, Basemap, Terrain) automatisch aus, wenn keine Karten-Daten vorhanden sind (ideal für Info/Landing Pages).
+- **Info-Seite:** Zentrale Anlaufstelle für Debug- und Systemdaten (/info); verfügt über ein Sidebar-Modulsystem.
+    - *Roadmap:* 1. NAH Statistik-Dashboard (Cards), 2. Service Health (API Pings), 3. Regions-Analyse, 4. Karten-Inventar Übersicht.
 - **Terrain & Hillshading:** Synchronisierte Steuerung über alle Karten-Instanzen hinweg via `TerrainManager.ts`.
 - **Komponenten:** Topbar mit dynamischen Active-Links und integriertem Mobile-Overlay für Tools.

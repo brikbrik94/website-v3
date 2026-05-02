@@ -26,6 +26,8 @@ $nextRefresh = null;
 foreach ($stations as $s) {
     $isActive = false;
     $stationNextEvent = null;
+    $start = null;
+    $end = null;
     
     // Parse months array (e.g. "{1,2,3,4,11,12}")
     $monthsStr = trim($s['months_active'], '{}');
@@ -68,26 +70,24 @@ foreach ($stations as $s) {
                         // After end, next event is BCET tomorrow
                         $tomorrowSunInfo = date_sun_info($now + 86400, (float)$s['lat'], (float)$s['lon']);
                         $stationNextEvent = $tomorrowSunInfo['civil_twilight_begin'];
-                        if (!empty($s['fixed_start'])) {
-                            $fixedStartTsTom = strtotime(date('Y-m-d ', $now + 86400) . $s['fixed_start']);
-                            $stationNextEvent = max($stationNextEvent, $fixedStartTsTom);
-                        }
+                        // For display, start/end of tomorrow might be useful too
+                        // but let's stick to today's start/end for the detail page.
                     }
                 }
             } elseif (isset($sunInfo['civil_twilight_begin']) && $sunInfo['civil_twilight_begin'] === true) {
                  $isActive = true;
             }
         } elseif ($s['op_type'] === 'fixed' && !empty($s['fixed_start']) && !empty($s['fixed_end'])) {
-            $startTs = strtotime(date('Y-m-d ') . $s['fixed_start']);
-            $endTs = strtotime(date('Y-m-d ') . $s['fixed_end']);
+            $start = strtotime(date('Y-m-d ') . $s['fixed_start']);
+            $end = strtotime(date('Y-m-d ') . $s['fixed_end']);
             
-            $isActive = ($now >= $startTs && $now <= $endTs);
+            $isActive = ($now >= $start && $now <= $end);
 
             // Refresh Logic
-            if ($now < $startTs) {
-                $stationNextEvent = $startTs;
-            } elseif ($now < $endTs) {
-                $stationNextEvent = $endTs;
+            if ($now < $start) {
+                $stationNextEvent = $start;
+            } elseif ($now < $end) {
+                $stationNextEvent = $end;
             } else {
                 // Tomorrow
                 $stationNextEvent = strtotime(date('Y-m-d ', $now + 86400) . $s['fixed_start']);
@@ -112,13 +112,13 @@ foreach ($stations as $s) {
         "fixed_end" => $s['fixed_end'] ? substr($s['fixed_end'], 0, 5) : null,
         "lat" => (float)$s['lat'],
         "lon" => (float)$s['lon'],
-        "is_active" => $isActive
+        "is_active" => $isActive,
+        "calculated_start" => $start ? date('c', $start) : null,
+        "calculated_end" => $end ? date('c', $end) : null
     ];
 }
 
-$response = [
+echo json_encode([
     "refresh_at" => $nextRefresh ? date('c', $nextRefresh) : null,
     "stations" => $results
-];
-
-echo json_encode($response);
+]);

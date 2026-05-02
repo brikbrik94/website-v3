@@ -18,11 +18,12 @@ export const initNahSidebar = (container: HTMLElement) => {
         </div>
       </div>
       <div class="sidebar-footer">
-        <span class="sidebar-footer-version">v44c4840</span>
+        <span class="sidebar-footer-version">v3.0.0</span>
         <div class="sidebar-footer-status" id="sidebar-status-container">
           <span class="footer-status-text">verbinden...</span>
           <span class="footer-dot"></span>
         </div>
+        <button class="sidebar-footer-copyright">©</button>
       </div>
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </aside>
