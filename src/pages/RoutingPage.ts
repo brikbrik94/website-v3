@@ -107,8 +107,8 @@ export const initRoutingPage = async (container: HTMLElement) => {
       style = PAINT_HIGHLIGHT;
       color = MAP_ROUTE_STYLES.active.color;
     } else if (eyeActiveStates.has(id)) {
-      // Wenn etwas anderes highlighted ist, die "Augen" noch dezent-er machen
-      style = currentHighlightedId !== null ? { 'line-opacity': 0.1, 'line-width': 3 } : PAINT_DEZENT;
+      style = PAINT_DEZENT;
+      color = MAP_ROUTE_STYLES.background.color;
     }
 
     map.setPaintProperty(layerId, 'line-opacity', style['line-opacity']);
