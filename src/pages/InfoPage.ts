@@ -188,25 +188,27 @@ const renderNahStatusModule = async (container: HTMLElement) => {
       <div class="card card-dashboard">
         <div class="card-status-dot ${statusClass}" title="${statusLabel}"></div>
         <h3>Bereitschaft</h3>
-        <p>${active} von ${total} Stationen</p>
+        <p class="t-body">${active} von ${total} Stationen</p>
       </div>
 
       <div class="card card-dashboard">
-        <div style="font-size: 2rem; font-weight: 700; color: var(--success); line-height: 1;">${active}</div>
+        <h1 class="t-h1" style="margin: 0; color: var(--success);">${active}</h1>
         <h3>Im Dienst</h3>
-        <p>Aktuell einsatzbereit</p>
+        <p class="t-body">Aktuell einsatzbereit</p>
       </div>
 
       <div class="card card-dashboard">
-        <i class="fa-solid fa-moon" style="position: absolute; top: 14px; right: 14px; color: var(--subtle);"></i>
+        <div class="card-status-dot online" style="background: none; box-shadow: none;">
+          <i class="fa-solid fa-moon" style="color: var(--subtle);"></i>
+        </div>
         <h3>Nacht-Bereit</h3>
-        <p>${night} Stationen (H24)</p>
+        <p class="t-body">${night} Stationen (H24)</p>
       </div>
 
       <div class="card card-dashboard">
-        <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 4px;">${nextEventCallsign || '-'}</div>
+        <h3 style="border: none; padding-bottom: 0;">${nextEventCallsign || '-'}</h3>
         <h3>Nächster Wechsel</h3>
-        <p>${nextEventTime ? formatTime((nextEventTime as Date).toISOString()) : '-'}</p>
+        <p class="t-body">${nextEventTime ? formatTime((nextEventTime as Date).toISOString()) : '-'}</p>
       </div>
     `;
   };
@@ -366,7 +368,7 @@ const renderInventoryModule = async (container: HTMLElement) => {
       if (maps.length === 0) return;
 
       html += `
-        <h2 class="section-title" style="margin-top: 0;">${typeLabels[type]}</h2>
+        <h2 class="t-h2" style="margin-top: 0;">${typeLabels[type]}</h2>
         <div class="card-grid" style="margin-bottom: 32px;">
           ${maps.map(map => `
             <div class="card">
@@ -374,11 +376,11 @@ const renderInventoryModule = async (container: HTMLElement) => {
                 <h3 title="${map.name}">${map.name}</h3>
                 <span class="card-badge">${type.charAt(0).toUpperCase() + type.slice(1)}</span>
               </div>
-              <p class="card-content">
+              <p class="t-body">
                 Projekt: <strong>${map.project}</strong><br>
                 Größe: ${map.file.stats.size_str}
               </p>
-              <span class="card-url" title="${map.file.url}">${map.file.url}</span>
+              <span class="t-url" title="${map.file.url}">${map.file.url}</span>
             </div>
           `).join('')}
         </div>
@@ -386,7 +388,7 @@ const renderInventoryModule = async (container: HTMLElement) => {
     });
 
     // Render Assets (Fonts & Sprites)
-    html += `<h2 class="section-title">Assets</h2>`;
+    html += `<h2 class="t-h2">Assets</h2>`;
     html += `<div class="card-grid">`;
 
     // Fonts Card
@@ -396,11 +398,11 @@ const renderInventoryModule = async (container: HTMLElement) => {
           <h3>Schriftarten</h3>
           <span class="card-badge">Fonts</span>
         </div>
-        <div style="font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin-bottom: 12px;">
+        <div class="t-small" style="margin-top: 12px;">
           ${data.fonts.map(f => `
             <div style="margin-bottom: 8px;">
               <div style="color: #fff; font-weight: 600;">${f.family}</div>
-              <div style="font-size: 0.75rem;">${f.variants.length} Varianten</div>
+              <div>${f.variants.length} Varianten</div>
             </div>
           `).join('')}
         </div>
@@ -414,10 +416,10 @@ const renderInventoryModule = async (container: HTMLElement) => {
           <h3>Icon Sprites</h3>
           <span class="card-badge">Sprites</span>
         </div>
-        <div style="font-size: 0.82rem; color: var(--muted); line-height: 1.5;">
+        <div class="t-small" style="margin-top: 12px;">
           ${data.sprites.map(s => `
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-              <img src="${s.preview}" style="width: 20px; height: 20px; background: #000; padding: 2px; border-radius: 2px;">
+              <img src="${s.preview}" style="width: 20px; height: 20px; background: var(--bg); padding: 2px; border-radius: var(--badge-radius);">
               <span>${s.name}</span>
             </div>
           `).join('')}
@@ -471,7 +473,7 @@ const renderHealthModule = async (container: HTMLElement) => {
                   <i class="${s.icon} status-row-icon"></i>
                   <div style="display: flex; flex-direction: column;">
                     <span class="status-row-name" title="${s.description}">${s.name}</span>
-                    <span style="font-size: 0.65rem; color: var(--subtle); font-family: var(--font-mono);">${s.url}</span>
+                    <span class="t-small mono" style="opacity: 0.5;">${s.url}</span>
                   </div>
                 </div>
                 <div class="status-row-right">
@@ -558,6 +560,13 @@ const renderHealthModule = async (container: HTMLElement) => {
   runAllChecks();
 };
 
+interface StatsResponse {
+  generated_at: string;
+  nah: Record<string, { total: number, active: number }>;
+  rd: Record<string, number>;
+  nef: Record<string, number>;
+}
+
 /**
  * Renders the Regions Analysis module.
  */
@@ -566,7 +575,7 @@ const renderRegionsModule = async (container: HTMLElement) => {
     <header class="page-header">
       <div class="page-header-left">
         <h1 class="page-title">Regions <span>Analyse</span></h1>
-        <p class="page-subtitle">Verfügbarkeit nach Organisation und Einsatzgebieten.</p>
+        <p class="page-subtitle">Verfügbarkeit nach Organisation und Einsatzgebieten (NAH, RD, NEF).</p>
       </div>
       <div class="page-header-right">
         <div class="page-meta" id="regions-meta">Lade Daten...</div>
@@ -576,42 +585,72 @@ const renderRegionsModule = async (container: HTMLElement) => {
       </div>
     </header>
 
-    <div class="content-body">
-      <div class="card-grid" id="regions-grid">
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
-           <i class="fa-solid fa-circle-notch fa-spin"></i> Berechne regionale Analyse...
-        </div>
+    <div class="content-body" id="regions-content">
+      <div style="text-align: center; padding: 4rem;">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Berechne regionale Analyse...
       </div>
     </div>
   `;
 
-  const grid = document.getElementById('regions-grid')!;
+  const content = document.getElementById('regions-content')!;
   const meta = document.getElementById('regions-meta')!;
   const refreshBtn = document.getElementById('regions-refresh-btn') as HTMLButtonElement;
   let refreshTimeout: any = null;
 
-  const renderCards = (groups: Record<string, { total: number, active: number }>) => {
-    const sortedRegions = Object.keys(groups).sort();
-    
-    grid.innerHTML = sortedRegions.map(region => {
-      const { total, active } = groups[region];
+  const renderData = (data: StatsResponse) => {
+    let html = '';
+
+    // 1. NAH Stats
+    const nahRegions = Object.keys(data.nah).sort();
+    html += `<h2 class="t-h2" style="margin-top: 0;">Luftrettung (NAH)</h2>`;
+    html += `<div class="card-grid" style="margin-bottom: 32px;">`;
+    nahRegions.forEach(region => {
+      const { total, active } = data.nah[region];
       const pct = Math.round((active / total) * 100);
-      
       let statusClass = 'unknown';
       if (pct === 100) statusClass = 'online';
-      if (pct === 0) statusClass = 'offline';
+      else if (pct === 0) statusClass = 'offline';
 
-      return `
+      html += `
         <div class="card card-dashboard">
           <div class="card-status-dot ${statusClass}" title="${pct}% bereit"></div>
           <h3 title="${region}">${region}</h3>
-          <p style="display: flex; align-items: center; gap: 8px;">
+          <p class="t-body" style="display: flex; align-items: center; gap: 8px;">
             <span style="font-weight: 600;">${active} / ${total}</span> 
-            <span class="badge badge-gray" style="font-size: 0.6rem;">${pct}%</span>
+            <span class="badge badge-gray">${pct}%</span>
           </p>
         </div>
       `;
-    }).join('');
+    });
+    html += `</div>`;
+
+    // 2. RD & NEF Stats grouped by State
+    const states = Array.from(new Set([...Object.keys(data.rd), ...Object.keys(data.nef)])).sort();
+    html += `<h2 class="t-h2">Boden-Rettungsmittel (RD & NEF)</h2>`;
+    html += `<div class="card-grid">`;
+    states.forEach(state => {
+      const rdCount = data.rd[state] || 0;
+      const nefCount = data.nef[state] || 0;
+
+      html += `
+        <div class="card card-dashboard">
+          <h3 title="${state}" style="border: none; padding-bottom: 0;">${state}</h3>
+          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="t-small">Rettungsdienst (RD)</span>
+              <span style="font-weight: 600;">${rdCount}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="t-small">Notarzt (NEF)</span>
+              <span style="font-weight: 600;">${nefCount}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+
+    content.innerHTML = html;
   };
 
   const fetchData = async () => {
@@ -620,24 +659,15 @@ const renderRegionsModule = async (container: HTMLElement) => {
     refreshBtn.disabled = true;
 
     try {
-      const response = await fetch('/api/nah');
-      const data: NahResponse = await response.json();
-      const stations = data.stations || [];
+      const response = await fetch('/api/stats');
+      const data: StatsResponse = await response.json();
 
-      // Group by region
-      const groups: Record<string, { total: number, active: number }> = {};
-      stations.forEach(s => {
-        if (!groups[s.region]) groups[s.region] = { total: 0, active: 0 };
-        groups[s.region].total++;
-        if (s.is_active) groups[s.region].active++;
-      });
-
-      renderCards(groups);
-      meta.innerHTML = `Stand: ${new Date().toLocaleTimeString()}`;
+      renderData(data);
+      meta.innerHTML = `Stand: ${new Date(data.generated_at).toLocaleTimeString()}`;
       
       scheduleNext();
     } catch (error) {
-      grid.innerHTML = `<div style="grid-column: 1 / -1; color: var(--danger); text-align: center; padding: 2rem;">
+      content.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 2rem;">
         <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Regionaldaten.
       </div>`;
       scheduleNext(60000);
@@ -659,6 +689,145 @@ const renderRegionsModule = async (container: HTMLElement) => {
   });
 
   fetchData();
+};
+
+/**
+ * Renders the API Debug technical playground.
+ */
+const renderDebugModule = async (container: HTMLElement) => {
+  const safeEndpoints = [
+    { name: 'NAH Stations', url: '/api/nah', params: '' },
+    { name: 'Regional Stats', url: '/api/stats', params: '' },
+    { name: 'Service Health', url: '/api/ping', params: '' },
+    { name: 'Database Status', url: '/api/db', params: '' },
+    { name: 'ORS Health', url: '/api/ors/health', params: '' }
+  ];
+
+  container.innerHTML = `
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">API <span>Debug</span></h1>
+        <p class="page-subtitle">Technischer Playground zur Inspektion von Rohdaten (Read-Only).</p>
+      </div>
+      <div class="page-header-right">
+        <div class="page-meta">Sandbox Mode</div>
+      </div>
+    </header>
+
+    <div class="content-body">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-sliders"></i> Abfrage-Parameter</div>
+        </div>
+        <div class="panel-body">
+          <div class="form-row">
+            <div class="form-field" style="flex: 1; min-width: 200px;">
+              <label class="form-label" for="debug-endpoint">Endpoint</label>
+              <select class="form-select" id="debug-endpoint">
+                ${safeEndpoints.map(e => `<option value="${e.url}">${e.name} (${e.url})</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-field" style="flex: 2; min-width: 200px;">
+              <label class="form-label" for="debug-params">Parameters (optional)</label>
+              <input type="text" class="form-input mono" id="debug-params" placeholder="?key=val&..." value="">
+            </div>
+            <button class="btn btn-primary" id="debug-send-btn">
+              <i class="fa-solid fa-play"></i> Senden
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="debug-response-container" style="display: none;">
+        <div class="panel panel-code">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-code"></i> API Response
+            </div>
+            <div class="panel-header-right">
+              <span id="debug-status" class="badge">---</span>
+              <span id="debug-latency" class="panel-meta">-- ms</span>
+              <button class="btn btn-sm btn-ghost" id="debug-copy-btn">
+                <i class="fa-solid fa-copy"></i> Kopieren
+              </button>
+            </div>
+          </div>
+          <pre id="debug-json-viewer" class="code-viewer-pre"></pre>
+        </div>
+      </div>
+
+      <div id="debug-empty-state">
+        <div class="card-info">
+          <i class="fa-solid fa-terminal" style="margin-right: 8px;"></i>
+          <strong>Hinweis:</strong> Wähle einen Endpunkt und klicke auf <code class="t-code">Senden</code>, um die API-Analyse zu starten.
+        </div>
+      </div>
+    </div>
+  `;
+
+  const endpointSelect = document.getElementById('debug-endpoint') as HTMLSelectElement;
+  const paramsInput = document.getElementById('debug-params') as HTMLInputElement;
+  const sendBtn = document.getElementById('debug-send-btn') as HTMLButtonElement;
+  const responseContainer = document.getElementById('debug-response-container')!;
+  const emptyState = document.getElementById('debug-empty-state')!;
+  const jsonViewer = document.getElementById('debug-json-viewer')!;
+  const statusBadge = document.getElementById('debug-status')!;
+  const latencyEl = document.getElementById('debug-latency')!;
+  const copyBtn = document.getElementById('debug-copy-btn')!;
+
+  let lastResponse: any = null;
+
+  const runRequest = async () => {
+    const url = endpointSelect.value + paramsInput.value;
+    
+    sendBtn.classList.add('loading');
+    sendBtn.disabled = true;
+    emptyState.style.display = 'none';
+    responseContainer.style.display = 'block';
+    jsonViewer.textContent = '// Requesting data...';
+    
+    const start = performance.now();
+    try {
+      const response = await fetch(url);
+      const latency = Math.round(performance.now() - start);
+      
+      statusBadge.textContent = `${response.status} ${response.statusText}`;
+      statusBadge.className = `badge ${response.ok ? 'badge-green' : 'badge-red'}`;
+      latencyEl.textContent = `${latency} ms`;
+      
+      const data = await response.json();
+      
+      // Basic sanitization: never show anything named "pass", "key", "token" or "secret"
+      // while our APIs don't return these, this is a safety layer.
+      const sanitized = JSON.parse(JSON.stringify(data, (key, value) => {
+        const k = key.toLowerCase();
+        if (k.includes('pass') || k.includes('key') || k.includes('token') || k.includes('secret')) {
+          return '******** [REDACTED]';
+        }
+        return value;
+      }));
+
+      lastResponse = sanitized;
+      jsonViewer.textContent = JSON.stringify(sanitized, null, 2);
+    } catch (error: any) {
+      statusBadge.textContent = 'ERROR';
+      statusBadge.className = 'badge badge-red';
+      latencyEl.textContent = '-- ms';
+      jsonViewer.textContent = `Error: ${error.message}`;
+    } finally {
+      sendBtn.classList.remove('loading');
+      sendBtn.disabled = false;
+    }
+  };
+
+  sendBtn.addEventListener('click', runRequest);
+
+  copyBtn.addEventListener('click', () => {
+    if (lastResponse) {
+      navigator.clipboard.writeText(JSON.stringify(lastResponse, null, 2));
+      Toast.success('JSON in die Zwischenablage kopiert');
+    }
+  });
 };
 
 /**
@@ -712,6 +881,8 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
     renderRegionsModule(contentMount);
   } else if (subpath === 'inventory') {
     renderInventoryModule(contentMount);
+  } else if (subpath === 'debug') {
+    renderDebugModule(contentMount);
   } else {
     contentMount.innerHTML = `
       <div class="content-body">

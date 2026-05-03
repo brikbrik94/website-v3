@@ -41,6 +41,11 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:8080',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/db/, 'db_status.php')
+        },
+        '/api/stats': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/stats/, 'stats.php')
         }
       }
     },

@@ -5,7 +5,7 @@ import { RoutingService } from '../lib/RoutingService';
 import { MapCore } from '../lib/MapCore';
 import { ContextMenu } from '../components/ContextMenu';
 import { Toast } from '../lib/Toast';
-import { MAP_ROUTE_STYLES } from '../lib/MapStyles';
+import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { MapLegend } from '../lib/MapLegend';
 
 export const initRoutingPage = async (container: HTMLElement) => {
@@ -123,10 +123,10 @@ export const initRoutingPage = async (container: HTMLElement) => {
   const updateMarker = (type: 'start' | 'target', lat: number, lng: number) => {
     if (type === 'start') {
       if (startMarker) startMarker.remove();
-      startMarker = new maplibregl.Marker({ color: '#22c55e' }).setLngLat([lng, lat]).addTo(map);
+      startMarker = new maplibregl.Marker({ color: MAP_COLORS.success }).setLngLat([lng, lat]).addTo(map);
     } else {
       if (targetMarker) targetMarker.remove();
-      targetMarker = new maplibregl.Marker({ color: '#ef4444' }).setLngLat([lng, lat]).addTo(map);
+      targetMarker = new maplibregl.Marker({ color: MAP_COLORS.danger }).setLngLat([lng, lat]).addTo(map);
     }
   };
 

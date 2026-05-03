@@ -28,6 +28,9 @@
 /* 4. Seitenstruktur */
 @import "page.css";
 
+/* 4a. Komponenten */
+@import "code-viewer.css";
+
 /* 5. Interaktion */
 @import "forms.css";
 @import "modal.css";

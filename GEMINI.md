@@ -4,38 +4,40 @@ Dieses Dokument enthält verbindliche Mandate für die KI-Assistenz in diesem Pr
 
 ## Mandate
 
-1. **KEINE EIGENSTÄNDIGE INTERPRETATION:** Der Agent führt Aufgaben exakt so aus, wie sie gestellt wurden. Es darf keine eigenmächtige Interpretation der Anforderungen erfolgen.
-2. **STRIKTE UMSETZUNG NACH AUFTRAG:** Erstellt wird ausschließlich das, was explizit beauftragt wurde.
-3. **KEINE EIGENKREATIONEN ODER ERWEITERUNGEN:** Es werden keine zusätzlichen Features, "Verbesserungsvorschläge" oder versteckte Elemente eingebaut. Erweiterungen dürfen NUR nach expliziter Rücksprache und Freigabe durch den Nutzer erfolgen.
-4. **KLÄRUNG BEI UNKLARHEIT:** Sollte ein Auftrag unklar sein, MUSS der Agent nachfragen, anstatt Annahmen zu treffen oder den Code basierend auf Vermutungen zu ändern.
-5. **CI-KONFORMITÄT:** Designentscheidungen und CSS müssen strikt dem verlinkten Corporate Identity (CI) Repository folgen. Eigenkreationen beim Design sind untersagt.
-6. **REGELN FÜR CODING-AGENTEN:** Der Agent MUSS die Regeln in `oe5ith-ci/docs/for-coding-agents.md` strikt befolgen. Diese Datei ist die primäre Anleitung für die Arbeit mit dem Design System und der CI.
+1. **KEINE EIGENSTÄNDIGE INTERPRETATION:** Der Agent führt Aufgaben exakt so aus, wie sie gestellt wurden.
+2. **STRIKTE CI-KONFORMITÄT (PFLICHT):** 
+    - Designentscheidungen und CSS müssen strikt dem `oe5ith-ci` Repository folgen.
+    - Der Agent MUSS die Regeln in `oe5ith-ci/docs/for-coding-agents.md` befolgen.
+    - **KEINE HARDCODED FARBEN:** Farben in JS/TS dürfen nicht als Hex-Werte (`#ffffff`) gesetzt werden. Stattdessen sind die dynamischen Getters aus `src/lib/MapStyles.ts` (MAP_COLORS, MAP_ROUTE_STYLES) zu verwenden.
+3. **DATENBANK-SICHERHEIT:**
+    - Für Web-Anwendungen (PHP/API) darf NUR der `web_api_user` (Read-Only) verwendet werden.
+    - Credentials müssen in `api/config.php` verwaltet werden; `.env` darf nicht committet werden.
+4. **KLÄRUNG BEI UNKLARHEIT:** Bei Unsicherheit MUSS nachgefragt werden.
 
-## Technischer Status (Stand: 29.04.2026)
+## Technischer Status (Stand: 02.05.2026)
 
-### Infrastruktur
-- **Build-Engine:** Vite mit TypeScript (Vanilla).
-- **Test-Server:** Fest konfiguriert auf `100.64.0.1:8000`.
-- **Abhängigkeiten:** `@fortawesome/fontawesome-free`, `@fontsource/jetbrains-mono`, `maplibre-gl`, `pmtiles`.
-- **Git Integration:** `oe5ith-ci` Repository als Git Submodule unter `/oe5ith-ci` eingebunden.
-- **Vite Config:** CI-Ordner vom Watcher ausgeschlossen; Proxy für `/api/ors` und `/api/geocoder` (jetzt mit Reverse-Support).
+### Infrastruktur & Sicherheit
+- **Stack:** Vite, TypeScript (Vanilla), PHP (Backend-Proxy).
+- **DB-Schema:** Umstieg auf spezialisierte Tabellen erfolgt: `emergency.rd_stations` (SEW) und `emergency.nef_stations` (Notarzt).
+- **Security:** Zugriff via `web_api_user`. `.env` wird via `.gitignore` geschützt.
+- **Git:** `oe5ith-ci` ist als Submodule unter `/oe5ith-ci` eingebunden.
 
-### Architektur
-- **CI-Integration:** Styles (`src/styles/`) werden direkt aus dem Submodule synchronisiert. Nutzt nun offizielle Z-Index Tokens und `100dvh` Mobile-Fixes. Ein manueller Sync erfolgt via `cp -v oe5ith-ci/css/*.css src/styles/`.
+### Architektur-Kernkomponenten
+- **MapStyles & Legend:** Zentrale Bibliotheken in `src/lib/` zur CI-konformen Kartensteuerung. Unterstützt dynamische CSS-Token Auflösung.
 - **Routing:** 
-    - Unterstützung für Profile (inkl. `driving-emergency`).
-    - Sonderlogik für Blaulicht-Routing (Top 7 Matrix -> Einzelberechnung der Top 5).
-    - Multi-Route Visualisierung (Eye-Toggle) und Fokus-Highlighting.
-    - Dynamisches Context-Menü je nach Routing-Modus.
-- **NAH (Luftrettung):**
-    - **Echtzeit-Verfügbarkeit:** Backend (`api/nah.php`) nutzt `Europe/Vienna` für präzise Statusberechnung.
-    - **Proximity-Logik:** Filtert nur aktive Stationen; berechnet Top 5; zeichnet Luftlinien (CI-Blue).
-    - **Interaktion:** Sidebar-Auswahl triggert `fitBounds` (Overview) und Highlighting (CI-Green via MapLibre feature-state).
-    - **Automatisierung:** Automatischer Reload und Neuberechnung alle 30 Minuten (:00, :30).
-- **Geocoding:** Integriertes Forward- & Reverse-Geocoding (via PHP Proxy) mit automatischer Adress-Injektion in die Routing-Felder (Dataset-Speicherung der Koordinaten).
-- **Feedback-System:** Offizielles CI-Toast-System (`src/lib/Toast.ts`) integriert für Status- und Fehlermeldungen.
-- **Topbar:** Refactored für dynamische Inhalte; blendet Map-Controls (Tools, Basemap, Terrain) automatisch aus, wenn keine Karten-Daten vorhanden sind (ideal für Info/Landing Pages).
-- **Info-Seite:** Zentrale Anlaufstelle für Debug- und Systemdaten (/info); verfügt über ein Sidebar-Modulsystem.
-    - *Roadmap:* 1. NAH Statistik-Dashboard (Cards), 2. Service Health (API Pings), 3. Regions-Analyse, 4. Karten-Inventar Übersicht.
-- **Terrain & Hillshading:** Synchronisierte Steuerung über alle Karten-Instanzen hinweg via `TerrainManager.ts`.
-- **Komponenten:** Topbar mit dynamischen Active-Links und integriertem Mobile-Overlay für Tools.
+    - Profile: `driving-car`, `driving-emergency` (Sonderlogik für Blaulicht).
+    - Multi-Route Visualisierung mit Fokus-Highlighting.
+- **Luftrettung (NAH):**
+    - Echtzeit-Statusberechnung (PHP) inkl. Sonnenstand (daylight) und saisonalen Filtern.
+    - Dynamische Reload-Logik (alle 30 Min oder nach Server-Vorgabe).
+- **Info & Debug Portal (`/info`):**
+    - Modulares System für Systemstatus.
+    - **NAH Status:** Tabellarische Übersicht der Betriebszeiten.
+    - **Service Health:** Live-Pings aller APIs (Backend, DB, ORS, Geocoder, Tiles).
+    - **Regions Analyse:** Aggregierte Statistiken (NAH, RD, NEF) nach Bundesland/Region.
+    - **Karten Inventar:** Automatisches Verzeichnis der verfügbaren Layer vom Tile-Server.
+
+### UI-Standards
+- **Z-Index:** Strikte Nutzung der CI-Tokens (`--z-topbar`, `--z-sidebar` etc.) aus `src/styles/common.css`.
+- **Layout:** Flex-Layout mit Z-Index Kaskade für Karten-Anwendungen (CI-Elemente > Map-Controls).
+- **Toasts:** Zentrales Feedback-System via `src/lib/Toast.ts`.

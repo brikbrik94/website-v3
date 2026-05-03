@@ -1,0 +1,58 @@
+/*
+ * OE5ITH CI — code-viewer.css
+ * Code-Viewer / API-Debugger Panel.
+ *
+ * Voraussetzung: css/common.css, css/page.css
+ *
+ * <link rel="stylesheet" href="css/common.css">
+ * <link rel="stylesheet" href="css/page.css">
+ * <link rel="stylesheet" href="css/code-viewer.css">
+ */
+
+/* ═══════════════════════════════════════
+   PANEL-CODE
+   Modifier auf .panel für Terminal-Charakter.
+   Hintergrund: schwarz, Border: stark.
+   ═══════════════════════════════════════ */
+.panel-code {
+  background: var(--code-bg);
+  border-color: var(--border-strong);
+}
+
+.panel-code .panel-header {
+  background: var(--panel-deep);
+  border-bottom-color: var(--border-strong);
+}
+
+/* ═══════════════════════════════════════
+   CODE-VIEWER-PRE
+   Scrollbarer Code-Block innerhalb von .panel-code.
+   Überschreibt pre-Basisstyles aus typography.css.
+   ═══════════════════════════════════════ */
+.code-viewer-pre {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--code-text);
+  background: var(--code-bg);
+  padding: 16px 20px;
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  max-height: 600px;
+  overflow: auto;
+  border: none;
+  border-radius: 0;
+}
+
+/* ═══════════════════════════════════════
+   FORM-ROW
+   Horizontales Flex-Layout für Control-Panel-Inputs.
+   Elemente ausgerichtet an der Unterkante (flex-end)
+   damit Buttons auf gleicher Höhe wie Inputs stehen.
+   ═══════════════════════════════════════ */
+.form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}

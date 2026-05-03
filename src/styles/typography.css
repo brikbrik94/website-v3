@@ -105,3 +105,19 @@ pre, .t-code-block {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ── Utilities ── */
+
+/* Monospace-Schrift auf beliebige Elemente */
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Label außerhalb von .form-field — identisches Aussehen wie .form-label */
+.ci-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--subtle);
+}

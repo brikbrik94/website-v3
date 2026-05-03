@@ -18,12 +18,13 @@ $lon = (float)$lon;
 
 // 1. DB Abfrage via Central Config
 $db = get_db_conn();
+$table = ($type === 'sew') ? 'emergency.rd_stations' : 'emergency.nef_stations';
 $filter_col = ($type === 'sew') ? 'has_transport' : 'has_doctor';
 
 $query = "
     SELECT id, name, short_name, organization as org, ST_Y(geom) as lat, ST_X(geom) as lon
-    FROM emergency.stations
-    WHERE $filter_col = 'yes'
+    FROM $table
+    WHERE $filter_col = true
     ORDER BY geom <-> ST_SetSRID(ST_Point($lon, $lat), 4326)
     LIMIT 20;
 ";

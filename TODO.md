@@ -4,3 +4,7 @@
 - [x] Task 4: Extend Topbar Component
 - [x] Task 5: Integrate Legend and Styles into NahPage
 - [x] Task 6: Integrate Legend and Styles into RoutingPage
+- [x] Task 7: Database Migration to New Schema (rd_stations, nef_stations)
+- [x] Task 8: Security Update: Switch to web_api_user
+- [x] Task 9: Expand Regions Analysis with RD & NEF stats
+- [x] Task 10: Implement secure API Debugger module

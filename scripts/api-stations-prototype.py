@@ -17,17 +17,17 @@ def get_nearest_stations(target_lat, target_lon, station_type='sew'):
     # 1. DB Abfrage: 20 nächstgelegene Stationen (Luftlinie)
     conn = psycopg2.connect(DB_URL)
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    
+
+    table = "emergency.rd_stations" if station_type == 'sew' else "emergency.nef_stations"
     filter_col = "has_transport" if station_type == 'sew' else "has_doctor"
-    
+
     query = f"""
         SELECT id, name, organization, ST_Y(geom) as lat, ST_X(geom) as lon
-        FROM emergency.stations
-        WHERE {filter_col} = 'yes'
+        FROM {table}
+        WHERE {filter_col} = true
         ORDER BY geom <-> ST_SetSRID(ST_Point(%s, %s), 4326)
         LIMIT 20;
     """
-    
     cur.execute(query, (target_lon, target_lat))
     stations = cur.fetchall()
     cur.close()

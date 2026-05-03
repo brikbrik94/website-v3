@@ -4,7 +4,7 @@ import maplibregl from 'maplibre-gl';
 import { Toast } from '../lib/Toast';
 import { initNahSidebar, renderNahResults, updateNahServerStatus } from '../components/NahSidebar';
 import { calculateDistance, calculateFlightTime, formatDuration, formatETA } from '../lib/FlightMath';
-import { MAP_ROUTE_STYLES } from '../lib/MapStyles';
+import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { MapLegend } from '../lib/MapLegend';
 
 export interface MapItem {
@@ -103,7 +103,7 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
     stationMarkers = [];
 
     stations.forEach((station) => {
-      const color = station.is_active ? '#10b981' : '#6b7280'; // CI Success vs CI Muted
+      const color = station.is_active ? MAP_COLORS.success : MAP_COLORS.muted;
       const statusText = station.is_active ? 'EINSATZBEREIT' : 'NICHT AKTIV';
       
       const el = document.createElement('div');
@@ -179,7 +179,7 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
 
   // Ziel-Marker setzen
   if (targetMarker) targetMarker.remove();
-  targetMarker = new maplibregl.Marker({ color: '#3b82f6' })
+  targetMarker = new maplibregl.Marker({ color: MAP_COLORS.accent })
     .setLngLat([lng, lat])
     .addTo(map);
 
@@ -270,8 +270,8 @@ export const initNahPage = async (container: HTMLElement) => {
     legend.setTitle('Luftrettung');
     legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Gewählte Station' });
     legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Nächste Stationen' });
-    legend.addEntry({ type: 'dot',  color: '#10b981', label: 'Einsatzbereit' });
-    legend.addEntry({ type: 'dot',  color: '#6b7280', label: 'Nicht aktiv' });
+    legend.addEntry({ type: 'dot',  color: MAP_COLORS.success, label: 'Einsatzbereit' });
+    legend.addEntry({ type: 'dot',  color: MAP_COLORS.muted, label: 'Nicht aktiv' });
 
     // 3. Karte initialisieren
     map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
