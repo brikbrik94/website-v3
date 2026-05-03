@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# OE5ITH API Overrides
+api/config.local.php
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

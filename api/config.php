@@ -3,19 +3,27 @@
  * OE5ITH Central API Configuration
  */
 
+// 1. Try to load local override configuration first
+$local_config_file = __DIR__ . '/config.local.php';
+if (file_exists($local_config_file)) {
+    require_once $local_config_file;
+}
+
+// 2. Define defaults (Production) ONLY IF not already defined by config.local.php
+
 // Datenbank (PostGIS)
-define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '5432');
-define('DB_NAME', 'emergency_db');
-define('DB_USER', 'web_api_user');
-define('DB_PASS', '9bYC%60I#wMsba');
+defined('DB_HOST') || define('DB_HOST', '127.0.0.1');
+defined('DB_PORT') || define('DB_PORT', '5432');
+defined('DB_NAME') || define('DB_NAME', 'emergency_db');
+defined('DB_USER') || define('DB_USER', 'web_api_user');
+defined('DB_PASS') || define('DB_PASS', '9bYC%60I#wMsba');
 
 // API Keys
-define('ORS_API_KEY', 'pmMmvsCrpjIi67TGzDbATzQ6kY50O4EN'); // <--- HIER KEY EINTRAGEN
+defined('ORS_API_KEY') || define('ORS_API_KEY', 'pmMmvsCrpjIi67TGzDbATzQ6kY50O4EN');
 
 // Endpunkte
-define('ORS_URL', 'https://ors.oe5ith.at');
-define('NOMINATIM_URL', 'https://geocoder.oe5ith.at');
+defined('ORS_URL') || define('ORS_URL', 'https://ors.oe5ith.at');
+defined('NOMINATIM_URL') || define('NOMINATIM_URL', 'https://geocoder.oe5ith.at');
 
 /**
  * Hilfsfunktion für die Datenbankverbindung

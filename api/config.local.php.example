@@ -1,0 +1,19 @@
+<?php
+/**
+ * Local Override Configuration for OE5ITH API
+ * Copy this file to config.local.php to override production settings.
+ */
+
+// Override Database Settings for Local Testing
+// define('DB_HOST', '127.0.0.1');
+// define('DB_PORT', '5432');
+// define('DB_NAME', 'emergency_db_dev');
+// define('DB_USER', 'dev_user');
+// define('DB_PASS', 'dev_password');
+
+// Override API Keys for Local Testing
+// define('ORS_API_KEY', 'your-local-key-here');
+
+// Override Endpoints
+// define('ORS_URL', 'http://localhost:8080/ors');
+// define('NOMINATIM_URL', 'http://localhost:8080/nominatim');
