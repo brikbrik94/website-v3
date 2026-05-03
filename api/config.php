@@ -7,8 +7,8 @@
 define('DB_HOST', '127.0.0.1');
 define('DB_PORT', '5432');
 define('DB_NAME', 'emergency_db');
-define('DB_USER', 'emergency_admin');
-define('DB_PASS', 'Lego1994!'); // <--- HIER PASSWORT EINTRAGEN
+define('DB_USER', 'web_api_user');
+define('DB_PASS', '9bYC%60I#wMsba');
 
 // API Keys
 define('ORS_API_KEY', 'pmMmvsCrpjIi67TGzDbATzQ6kY50O4EN'); // <--- HIER KEY EINTRAGEN
