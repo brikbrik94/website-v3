@@ -21,6 +21,8 @@ export const initSidebar = (
   onBulkToggle?: BulkToggleCallback,
   onGroupExpand?: (overlayId: string) => Promise<void>
 ) => {
+  const loadedLayers = new Map<string, any[]>();
+
   const renderOverlayGroup = (m: MapItem) => {
     const id = m.name.toLowerCase().replace(/\s+/g, '-');
     return `
@@ -66,6 +68,38 @@ export const initSidebar = (
   const sidebar = document.getElementById('sidebar')!;
   const sidebarTab = document.getElementById('sidebar-tab')!;
   const sidebarBackdrop = document.getElementById('sidebar-backdrop')!;
+
+  const discoverLayers = async (groupEl: HTMLElement) => {
+    const id = groupEl.getAttribute('data-id')!;
+    if (loadedLayers.has(id)) return;
+
+    const url = groupEl.getAttribute('data-url')!;
+    const listEl = groupEl.querySelector('.acc-item-list')!;
+
+    try {
+      const res = await fetch(url);
+      const style = await res.json();
+      const layers = style.layers.filter((l: any) => l.type !== 'background');
+      loadedLayers.set(id, layers);
+
+      listEl.innerHTML = layers.map((l: any) => `
+        <div class="acc-item" data-layer-id="${l.id}" data-layer-type="${l.type}">
+          <span class="acc-checkbox"></span>
+          <span class="acc-item-label">${l.id}</span>
+        </div>
+      `).join('');
+      
+      const body = groupEl.querySelector('.acc-body') as HTMLElement;
+      body.style.setProperty('--acc-body-height', body.scrollHeight + 'px');
+    } catch (err) {
+      console.error(`Error loading layers for ${id}:`, err);
+      listEl.innerHTML = `
+        <div class="acc-item" style="color: var(--danger); font-size: 0.8rem; padding-left: 24px;">
+          <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden
+        </div>
+      `;
+    }
+  };
 
   const updateGroupStatus = (groupEl: HTMLElement) => {
     const statusEl = groupEl.querySelector('.acc-status')!;
@@ -119,6 +153,7 @@ export const initSidebar = (
       header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       
       if (isOpen) {
+        await discoverLayers(group);
         const id = group.getAttribute('data-id')!;
         if (onGroupExpand) {
           await onGroupExpand(id);
@@ -184,4 +219,3 @@ export const initSidebar = (
     }
   });
 };
-
