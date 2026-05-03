@@ -41,72 +41,91 @@ export const initMapPage = async (container: HTMLElement) => {
   // Initiales Anwenden von Terrain/Hillshade (falls global aktiviert)
   map.once('style.load', () => MapCore.reapplyBaseLayers());
 
-  // Overlay Management
-  const activeOverlays = new Map<string, string>();
+  // Overlay Management State
+  // activeLayers: overlayId -> Set of active layerIds
+  const activeLayers = new Map<string, Set<string>>();
+  // cachedStyles: overlayId -> full style object
+  const cachedStyles = new Map<string, any>();
 
-  const addOverlay = async (id: string, styleUrl: string) => {
+  const toggleLayer = async (overlayId: string, overlayUrl: string, layerId: string, checked: boolean) => {
     if (!map.isStyleLoaded()) {
       await new Promise(resolve => map.once('style.load', resolve));
     }
 
-    try {
-      const res = await fetch(styleUrl);
-      const overlayStyle = await res.json();
+    let style = cachedStyles.get(overlayId);
+    if (!style) {
+      const res = await fetch(overlayUrl);
+      style = await res.json();
+      cachedStyles.set(overlayId, style);
+    }
 
-      // Sprites laden via Core
-      if (overlayStyle.sprite) {
-        await MapCore.loadSprites(map, overlayStyle.sprite, styleUrl);
-      }
+    const uniqueLayerId = `${overlayId}-${layerId}`;
 
-      // Quellen hinzufügen
-      if (overlayStyle.sources) {
-        for (const [sourceId, source] of Object.entries(overlayStyle.sources)) {
-          const uniqueSourceId = `${id}-${sourceId}`;
-          if (!map.getSource(uniqueSourceId)) {
-            map.addSource(uniqueSourceId, source as any);
+    if (checked) {
+      // Ensure source is added
+      if (style.sources) {
+        for (const [srcId, srcDef] of Object.entries(style.sources)) {
+          const uniqueSrcId = `${overlayId}-${srcId}`;
+          if (!map.getSource(uniqueSrcId)) {
+            map.addSource(uniqueSrcId, srcDef as any);
           }
         }
       }
 
-      // Layer hinzufügen
-      if (overlayStyle.layers) {
-        for (const layer of overlayStyle.layers) {
-          if (layer.type === 'background') continue;
-          const uniqueLayerId = `${id}-${layer.id}`;
-          if (!map.getLayer(uniqueLayerId)) {
-            const newLayer = { ...layer, id: uniqueLayerId };
-            if (newLayer.source) {
-              if (overlayStyle.sources && overlayStyle.sources[newLayer.source]) {
-                newLayer.source = `${id}-${newLayer.source}`;
+      // Load Sprites if any
+      if (style.sprite) {
+        await MapCore.loadSprites(map, style.sprite, overlayUrl);
+      }
+
+      // Add Layer
+      const layerDef = style.layers.find((l: any) => l.id === layerId);
+      if (layerDef && !map.getLayer(uniqueLayerId)) {
+        const newLayer = { ...layerDef, id: uniqueLayerId };
+        if (newLayer.source && style.sources[newLayer.source]) {
+          newLayer.source = `${overlayId}-${newLayer.source}`;
+        }
+        map.addLayer(newLayer);
+      }
+
+      // Update state
+      if (!activeLayers.has(overlayId)) activeLayers.set(overlayId, new Set());
+      activeLayers.get(overlayId)!.add(layerId);
+
+    } else {
+      // Remove Layer
+      if (map.getLayer(uniqueLayerId)) {
+        map.removeLayer(uniqueLayerId);
+      }
+
+      // Update state
+      const layers = activeLayers.get(overlayId);
+      if (layers) {
+        layers.delete(layerId);
+        // If no layers left, remove sources
+        if (layers.size === 0) {
+          activeLayers.delete(overlayId);
+          if (style.sources) {
+            for (const srcId in style.sources) {
+              const uniqueSrcId = `${overlayId}-${srcId}`;
+              if (map.getSource(uniqueSrcId)) {
+                map.removeSource(uniqueSrcId);
               }
             }
-            map.addLayer(newLayer);
           }
         }
       }
-    } catch (err) {
-      console.error(`Fehler beim Laden des Overlays ${id}:`, err);
-    }
-  };
-
-  const removeOverlay = (id: string) => {
-    const style = map.getStyle();
-    if (!style) return;
-    if (style.layers) {
-      style.layers.forEach(l => {
-        if (l.id.startsWith(`${id}-`)) map.removeLayer(l.id);
-      });
-    }
-    const sources = map.getStyle().sources;
-    for (const sourceId in sources) {
-      if (sourceId.startsWith(`${id}-`)) map.removeSource(sourceId);
     }
   };
 
   const reapplyAll = async () => {
     await MapCore.reapplyBaseLayers(async () => {
-      for (const [id, url] of activeOverlays.entries()) {
-        await addOverlay(id, url);
+      for (const [overlayId, layers] of activeLayers.entries()) {
+        const overlay = overlays.find(o => o.name.toLowerCase().replace(/\s+/g, '-') === overlayId);
+        if (overlay) {
+          for (const layerId of layers) {
+            await toggleLayer(overlayId, overlay.style.url, layerId, true);
+          }
+        }
       }
     });
   };
@@ -117,13 +136,13 @@ export const initMapPage = async (container: HTMLElement) => {
     map.once('style.load', () => reapplyAll());
   });
 
-  initSidebar(sidebarMount, overlays, (overlayId, overlayUrl, layerId, layerType, checked) => {
-    console.log(`Layer toggle: ${overlayId} -> ${layerId} (${layerType}) = ${checked}`);
-    // Task 3 will implement the actual map logic here
-  }, (overlayId, overlayUrl, checked) => {
-    console.log(`Bulk toggle: ${overlayId} = ${checked}`);
-  }, async (overlayId) => {
-    console.log(`Group expanded: ${overlayId}`);
-    // Task 2 will implement the lazy loading discovery
-  });
+  initSidebar(sidebarMount, overlays, 
+    async (overlayId, overlayUrl, layerId, layerType, checked) => {
+      await toggleLayer(overlayId, overlayUrl, layerId, checked);
+    }, 
+    (overlayId, overlayUrl, checked) => {
+      // Bulk toggle logic is handled by individual onLayerToggle calls in Sidebar.ts
+      // But we could optimize it here if needed.
+    }
+  );
 };
