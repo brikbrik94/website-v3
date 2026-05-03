@@ -117,13 +117,13 @@ export const initMapPage = async (container: HTMLElement) => {
     map.once('style.load', () => reapplyAll());
   });
 
-  initSidebar(sidebarMount, overlays, (id, url, checked) => {
-    if (checked) {
-      activeOverlays.set(id, url);
-      addOverlay(id, url);
-    } else {
-      activeOverlays.delete(id);
-      removeOverlay(id);
-    }
+  initSidebar(sidebarMount, overlays, (overlayId, overlayUrl, layerId, layerType, checked) => {
+    console.log(`Layer toggle: ${overlayId} -> ${layerId} (${layerType}) = ${checked}`);
+    // Task 3 will implement the actual map logic here
+  }, (overlayId, overlayUrl, checked) => {
+    console.log(`Bulk toggle: ${overlayId} = ${checked}`);
+  }, async (overlayId) => {
+    console.log(`Group expanded: ${overlayId}`);
+    // Task 2 will implement the lazy loading discovery
   });
 };
