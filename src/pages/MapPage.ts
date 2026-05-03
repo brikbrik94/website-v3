@@ -137,10 +137,10 @@ export const initMapPage = async (container: HTMLElement) => {
   });
 
   initSidebar(sidebarMount, overlays, 
-    async (overlayId, overlayUrl, layerId, layerType, checked) => {
+    async (overlayId, overlayUrl, layerId, _layerType, checked) => {
       await toggleLayer(overlayId, overlayUrl, layerId, checked);
     }, 
-    (overlayId, overlayUrl, checked) => {
+    (_overlayId, _overlayUrl, _checked) => {
       // Bulk toggle logic is handled by individual onLayerToggle calls in Sidebar.ts
       // But we could optimize it here if needed.
     }
