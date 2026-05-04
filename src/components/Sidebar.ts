@@ -4,7 +4,7 @@ import { APP_VERSION } from '../version';
 export type LayerToggleCallback = (
   overlayId: string, 
   overlayUrl: string, 
-  layerId: string, 
+  layerIds: string[], 
   layerType: string, 
   checked: boolean
 ) => void;
@@ -20,7 +20,8 @@ export const initSidebar = (
   overlays: MapItem[],
   onLayerToggle: LayerToggleCallback,
   onBulkToggle?: BulkToggleCallback,
-  onGroupExpand?: (overlayId: string) => Promise<void>
+  onGroupExpand?: (overlayId: string) => Promise<void>,
+  layersMeta: any[] = []
 ) => {
   const loadedLayers = new Map<string, any[]>();
 
@@ -77,29 +78,44 @@ export const initSidebar = (
     const url = groupEl.getAttribute('data-url')!;
     const listEl = groupEl.querySelector('.acc-item-list')!;
 
-    try {
-      const res = await fetch(url);
-      const style = await res.json();
-      const layers = style.layers.filter((l: any) => l.type !== 'background');
-      loadedLayers.set(id, layers);
+    // Check if we have structured metadata for this overlay
+    const meta = layersMeta.find(l => l.id === id);
 
-      listEl.innerHTML = layers.map((l: any) => `
-        <div class="acc-item" data-layer-id="${l.id}" data-layer-type="${l.type}">
+    if (meta) {
+      loadedLayers.set(id, meta.groups);
+      listEl.innerHTML = meta.groups.map((g: any) => `
+        <div class="acc-item" data-layer-ids='${JSON.stringify(g.style_layers)}' data-layer-type="${g.template}">
           <span class="acc-checkbox"></span>
-          <span class="acc-item-label">${l.id}</span>
+          <span class="acc-item-label">${g.name}</span>
         </div>
       `).join('');
-      
-      const body = groupEl.querySelector('.acc-body') as HTMLElement;
-      body.style.setProperty('--acc-body-height', body.scrollHeight + 'px');
-    } catch (err) {
-      console.error(`Error loading layers for ${id}:`, err);
-      listEl.innerHTML = `
-        <div class="acc-item" style="color: var(--danger); font-size: 0.8rem; padding-left: 24px;">
-          <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden
-        </div>
-      `;
+    } else {
+      // Fallback to style.json parsing
+      try {
+        const res = await fetch(url);
+        const style = await res.json();
+        const layers = style.layers.filter((l: any) => l.type !== 'background');
+        loadedLayers.set(id, layers);
+
+        listEl.innerHTML = layers.map((l: any) => `
+          <div class="acc-item" data-layer-ids='${JSON.stringify([l.id])}' data-layer-type="${l.type}">
+            <span class="acc-checkbox"></span>
+            <span class="acc-item-label">${l.id}</span>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(`Error loading layers for ${id}:`, err);
+        listEl.innerHTML = `
+          <div class="acc-item" style="color: var(--danger); font-size: 0.8rem; padding-left: 24px;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden
+          </div>
+        `;
+        return;
+      }
     }
+    
+    const body = groupEl.querySelector('.acc-body') as HTMLElement;
+    body.style.setProperty('--acc-body-height', body.scrollHeight + 'px');
   };
 
   const updateGroupStatus = (groupEl: HTMLElement) => {
@@ -172,10 +188,10 @@ export const initSidebar = (
       
       const overlayId = group.getAttribute('data-id')!;
       const overlayUrl = group.getAttribute('data-url')!;
-      const layerId = item.getAttribute('data-layer-id')!;
+      const layerIds = JSON.parse(item.getAttribute('data-layer-ids')!);
       const layerType = item.getAttribute('data-layer-type')!;
 
-      onLayerToggle(overlayId, overlayUrl, layerId, layerType, isChecked);
+      onLayerToggle(overlayId, overlayUrl, layerIds, layerType, isChecked);
       updateGroupStatus(group);
       return;
     }
@@ -190,9 +206,9 @@ export const initSidebar = (
       
       group.querySelectorAll('.acc-item:not(.checked):not(.loading-state)').forEach(el => {
         el.classList.add('checked');
-        const layerId = el.getAttribute('data-layer-id')!;
+        const layerIds = JSON.parse(el.getAttribute('data-layer-ids')!);
         const layerType = el.getAttribute('data-layer-type')!;
-        onLayerToggle(overlayId, overlayUrl, layerId, layerType, true);
+        onLayerToggle(overlayId, overlayUrl, layerIds, layerType, true);
       });
 
       if (onBulkToggle) onBulkToggle(overlayId, overlayUrl, true);
@@ -209,9 +225,9 @@ export const initSidebar = (
       
       group.querySelectorAll('.acc-item.checked').forEach(el => {
         el.classList.remove('checked');
-        const layerId = el.getAttribute('data-layer-id')!;
+        const layerIds = JSON.parse(el.getAttribute('data-layer-ids')!);
         const layerType = el.getAttribute('data-layer-type')!;
-        onLayerToggle(overlayId, overlayUrl, layerId, layerType, false);
+        onLayerToggle(overlayId, overlayUrl, layerIds, layerType, false);
       });
 
       if (onBulkToggle) onBulkToggle(overlayId, overlayUrl, false);
