@@ -8,9 +8,10 @@ import { APP_VERSION } from '../version';
 export const initNahSidebar = (container: HTMLElement) => {
   container.innerHTML = `
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-    <aside class="sidebar sidebar-left open" id="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-inner">
-        <div style="font-size:0.88rem; font-weight:600; color:#fff; margin-bottom:12px">Nächste Stützpunkte</div>
+        <div class="sidebar-section-label">Luftrettung</div>
+        <div style="font-size:0.85rem; font-weight:600; color:var(--text); margin-bottom:12px; padding: 0 6px;">Nächste Stützpunkte</div>
         <div id="nah-sidebar-results">
           <div class="result-empty">
             <i class="fa-solid fa-arrow-pointer"></i>
@@ -24,7 +25,7 @@ export const initNahSidebar = (container: HTMLElement) => {
           <span class="footer-status-text">verbinden...</span>
           <span class="footer-dot"></span>
         </div>
-        <button class="sidebar-footer-copyright">©</button>
+        <button class="sidebar-footer-copyright" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))" title="Copyright & Lizenzen">©</button>
       </div>
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </aside>

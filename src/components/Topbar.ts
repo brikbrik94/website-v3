@@ -43,7 +43,7 @@ export const initTopbar = (
       <div class="topbar-center">
         ${hasMap ? `
           <!-- Desktop View -->
-          <div class="controls-panel desktop-only" style="gap: 8px;">
+          <div class="controls-panel desktop-only">
             ${dropdownHtml()}
             ${terrainHtml}
             <button class="topbar-toggle btn-legend" title="Legende">
