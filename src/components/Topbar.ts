@@ -42,8 +42,8 @@ export const initTopbar = (
 
       <div class="topbar-center">
         ${hasMap ? `
-          <!-- Desktop View: Direct children get the 8px gap from .topbar-center -->
-          <div class="controls-panel desktop-only">
+          <!-- Desktop View -->
+          <div class="controls-panel desktop-only" style="gap: 8px;">
             ${dropdownHtml()}
             ${terrainHtml}
             <button class="topbar-toggle btn-legend" title="Legende">
