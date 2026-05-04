@@ -1,5 +1,6 @@
 import { NahStationResult } from '../pages/NahPage';
 import { APP_VERSION } from '../version';
+import { setupSidebarToggle } from '../lib/SidebarUtils';
 
 /**
  * OE5ITH NAH Sidebar Komponente
@@ -30,29 +31,11 @@ export const initNahSidebar = (container: HTMLElement) => {
     </aside>
   `;
 
-  const sidebar = document.getElementById('sidebar')!;
-  const sidebarTab = document.getElementById('sidebar-tab')!;
-  const sidebarBackdrop = document.getElementById('sidebar-backdrop')!;
-
-  const toggleSidebar = () => {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      const isOpen = sidebar.classList.toggle('mobile-open');
-      sidebarBackdrop.classList.toggle('visible', isOpen);
-      sidebarTab.textContent = isOpen ? '‹' : '›';
-    } else {
-      const isCollapsed = sidebar.classList.toggle('collapsed');
-      document.body.classList.toggle('sidebar-collapsed', isCollapsed);
-      sidebarTab.textContent = isCollapsed ? '›' : '‹';
-    }
-  };
-
-  sidebarTab.addEventListener('click', toggleSidebar);
-  sidebarBackdrop.addEventListener('click', () => {
-    sidebar.classList.remove('mobile-open');
-    sidebarBackdrop.classList.remove('visible');
-    sidebarTab.textContent = '›';
-  });
+  setupSidebarToggle(
+    document.getElementById('sidebar')!,
+    document.getElementById('sidebar-tab')!,
+    document.getElementById('sidebar-backdrop')!
+  );
 };
 
 export const updateNahServerStatus = (online: boolean) => {
