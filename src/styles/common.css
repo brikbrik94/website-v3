@@ -62,6 +62,8 @@
   --topbar-height:        60px;
   --topbar-height-mobile: 52px;
   --sidebar-width:        260px;
+  --sidebar-tab-width:    16px;
+  --sidebar-tab-height:   44px;
   --container-max:        1000px;
   --card-radius:          12px;
   --card-padding:         20px;
@@ -75,6 +77,7 @@
    * Leaflet/MapLibre Controls liegen bei 400–1000, Popups bei 700.
    * CI-Elemente beginnen bei 1000+ damit sie immer darüber liegen. */
   --z-content:        1;
+  --z-sidebar-base:   10;
   --z-sidebar-tab:    1010;
   --z-backdrop:       1040;
   --z-sidebar:        1050;
