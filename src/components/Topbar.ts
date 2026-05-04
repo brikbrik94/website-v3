@@ -7,93 +7,116 @@ export const initTopbar = (
   onBasemapChange: (url: string, name: string) => void,
   onLegendToggle?: (isActive: boolean) => void
 ) => {
+  const hasMap = basemaps.length > 0;
+  const currentPath = window.location.pathname;
+
   const basemapOptions = basemaps.map((m, i) => `
     <div class="topbar-dropdown-item ${i === 0 ? 'active' : ''}" data-style="${m.style.url}" data-name="${m.name}">
       ${m.name}
     </div>
   `).join('');
 
-  const terrainHtml = TerrainControls.getHtml();
-  const currentPath = window.location.pathname;
-  const hasMap = basemaps.length > 0;
+  const terrainHtml = hasMap ? TerrainControls.getHtml() : '';
+
+  const dropdownHtml = (isMobile = false) => `
+    <div class="topbar-dropdown basemap-dropdown" ${isMobile ? 'style="width:100%"' : ''}>
+      <button class="topbar-dropdown-toggle basemap-toggle" aria-haspopup="listbox" aria-expanded="false" style="${isMobile ? 'width:100%' : 'width: 180px;'}">
+        <span class="dropdown-label">${basemaps[0]?.name || 'Basemap'}</span>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="topbar-dropdown-menu basemap-menu" role="listbox" ${isMobile ? 'style="width:100%"' : ''}>
+        ${basemapOptions}
+      </div>
+    </div>
+  `;
 
   container.innerHTML = `
     <div class="controls-backdrop" id="controls-backdrop"></div>
     <header class="topbar">
       <div class="topbar-left">
-        <a href="/" class="brand nav-link">
+        <a href="/" class="brand" title="Zur Startseite">
           <img src="/logo.svg" alt="Logo" class="brand-logo" />
           <span class="brand-text">OE5ITH</span>
         </a>
       </div>
+
       <div class="topbar-center">
         ${hasMap ? `
-        <button class="controls-toggle" id="controls-toggle">
-          <div class="slider-icon"><span></span><span></span><span></span></div>
-          <span class="controls-toggle-text">Tools</span>
-        </button>
-
-        <div class="controls-panel" id="controls-panel">
-          <div class="topbar-dropdown" id="basemap-dropdown-wrap">
-            <button class="topbar-dropdown-toggle basemap-toggle" aria-haspopup="listbox" aria-expanded="false" style="width: 180px;">
-              <span class="dropdown-label">${basemaps[0]?.name || 'Basemap'}</span>
-              <span class="chevron">▾</span>
-            </button>
-            <div class="topbar-dropdown-menu basemap-menu" role="listbox">
-              ${basemapOptions}
+          <!-- Desktop View -->
+          <div class="controls-panel desktop-only">
+            ${dropdownHtml()}
+            <div class="controls-panel-terrain" style="display:flex; gap:8px;">
+              ${terrainHtml}
             </div>
+            <button class="topbar-toggle btn-legend" title="Legende">
+              <i class="fa-solid fa-list-ul"></i>
+            </button>
           </div>
-          ${terrainHtml}
-        </div>
 
-        <button class="topbar-toggle" id="legend-toggle" title="Legende">
-          <i class="fa-solid fa-list-ul"></i>
-        </button>
+          <!-- Tablet Toggle -->
+          <button class="controls-toggle tablet-only" id="controls-toggle-tablet">
+            <div class="slider-icon"><span></span><span></span><span></span></div>
+            <span class="controls-toggle-text">Tools</span>
+          </button>
         ` : ''}
       </div>
+
       <div class="topbar-right">
-        <a href="/karte" class="topbar-nav-link nav-link ${currentPath === '/karte' ? 'active' : ''}">Karte</a>
-        <a href="/routing" class="topbar-nav-link nav-link ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
-        <a href="/nah" class="topbar-nav-link nav-link ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
+        ${hasMap ? `
+          <!-- Mobile Toggle -->
+          <button class="controls-toggle mobile-only" id="controls-toggle-mobile">
+            <div class="slider-icon"><span></span><span></span><span></span></div>
+          </button>
+        ` : ''}
+        
+        <a href="/karte" class="topbar-nav-link ${currentPath === '/karte' ? 'active' : ''}">Karte</a>
+        <a href="/routing" class="topbar-nav-link ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
+        <a href="/nah" class="topbar-nav-link ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
       </div>
 
+      ${hasMap ? `
       <div class="controls-overlay" id="controls-overlay">
-        <!-- Wird für Mobile befüllt -->
+        <!-- 1. Dropdowns -->
+        <div class="form-field">
+          <label class="form-label" style="font-size:0.65rem; font-weight:700; color:var(--subtle); text-transform:uppercase; margin-bottom:8px; display:block;">Basemap</label>
+          ${dropdownHtml(true)}
+        </div>
+
+        <div class="controls-sep"></div>
+
+        <!-- 2. Terrain & Tools Grid -->
+        <div class="controls-btn-group">
+          ${terrainHtml}
+          <button class="topbar-toggle btn-legend">
+            <i class="fa-solid fa-list-ul"></i> Legende
+          </button>
+        </div>
       </div>
+      ` : ''}
     </header>
   `;
 
   if (hasMap) {
-    const controlsToggle = document.getElementById('controls-toggle')!;
     const controlsOverlay = document.getElementById('controls-overlay')!;
     const controlsBackdrop = document.getElementById('controls-backdrop')!;
-
+    
+    // Toggle Overlay
     const setControls = (open: boolean) => {
       controlsOverlay.classList.toggle('open', open);
-      controlsToggle.classList.toggle('active', open);
       controlsBackdrop.classList.toggle('visible', open);
+      document.querySelectorAll('.controls-toggle').forEach(t => t.classList.toggle('active', open));
     };
 
-    controlsToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setControls(!controlsOverlay.classList.contains('open'));
+    document.querySelectorAll('.controls-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setControls(!controlsOverlay.classList.contains('open'));
+      });
     });
-    
+
     controlsBackdrop.addEventListener('click', () => setControls(false));
 
-    TerrainControls.initListeners();
-
-    const updateBasemapUI = (name: string, styleUrl: string) => {
-      document.querySelectorAll('.basemap-toggle .dropdown-label').forEach(el => {
-        el.textContent = name;
-      });
-      document.querySelectorAll('.topbar-dropdown-item').forEach(item => {
-        item.classList.toggle('active', item.getAttribute('data-style') === styleUrl);
-      });
-      document.querySelectorAll('.basemap-menu').forEach(m => m.classList.remove('open'));
-      document.querySelectorAll('.basemap-toggle').forEach(t => t.classList.remove('open'));
-    };
-
+    // Listeners for Basemap Dropdowns (Multiple instances)
     container.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       
@@ -102,8 +125,11 @@ export const initTopbar = (
         e.stopPropagation();
         const menu = toggleBtn.nextElementSibling as HTMLElement;
         const isOpen = !menu.classList.contains('open');
+        
+        // Close all basemap menus first
         document.querySelectorAll('.basemap-menu').forEach(m => m.classList.remove('open'));
         document.querySelectorAll('.basemap-toggle').forEach(t => t.classList.remove('open'));
+        
         menu.classList.toggle('open', isOpen);
         toggleBtn.classList.toggle('open', isOpen);
         return;
@@ -113,56 +139,43 @@ export const initTopbar = (
       if (item) {
         const styleUrl = item.getAttribute('data-style')!;
         const name = item.getAttribute('data-name')!;
-        updateBasemapUI(name, styleUrl);
+        
+        // Update all UIs
+        document.querySelectorAll('.basemap-toggle .dropdown-label').forEach(el => {
+          el.textContent = name;
+        });
+        document.querySelectorAll('.topbar-dropdown-item').forEach(i => {
+          i.classList.toggle('active', i.getAttribute('data-style') === styleUrl);
+        });
+        
+        document.querySelectorAll('.basemap-menu').forEach(m => m.classList.remove('open'));
+        document.querySelectorAll('.basemap-toggle').forEach(t => t.classList.remove('open'));
+        
         onBasemapChange(styleUrl, name);
         return;
       }
 
+      // Close menus on click outside
       document.querySelectorAll('.basemap-menu').forEach(m => m.classList.remove('open'));
       document.querySelectorAll('.basemap-toggle').forEach(t => t.classList.remove('open'));
     });
 
-    // Mobile Overlay befüllen
-    const buildOverlay = () => {
-      controlsOverlay.innerHTML = `
-        <div style="font-size:0.65rem; font-weight:700; color:var(--subtle); text-transform:uppercase; margin-bottom:8px;">Basemap</div>
-        <div class="topbar-dropdown" style="width:100%">
-          <button class="topbar-dropdown-toggle basemap-toggle" style="width:100%">
-            <span class="dropdown-label">${basemaps[0]?.name || 'Basemap'}</span>
-            <span class="chevron">▾</span>
-          </button>
-          <div class="topbar-dropdown-menu basemap-menu" style="width:100%">
-            ${basemapOptions}
-          </div>
-        </div>
-        <div style="height:1px; background:var(--border); margin:12px 0;"></div>
-        <div style="font-size:0.65rem; font-weight:700; color:var(--subtle); text-transform:uppercase; margin-bottom:8px;">Gelände</div>
-        <div style="display:flex; gap:8px;">
-          ${terrainHtml}
-        </div>
-        <div style="height:1px; background:var(--border); margin:12px 0;"></div>
-        <a id="m-legend-toggle" style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text); cursor:pointer;">
-          <i class="fa-solid fa-list-ul" style="width:16px; opacity:0.7"></i> Legende
-        </a>
-      `;
-    };
-    buildOverlay();
-
-    const legendBtn = document.getElementById('legend-toggle');
-    const mLegendBtn = document.getElementById('m-legend-toggle');
-
+    // Legend Toggle with Sync
     const handleLegendToggle = () => {
-      const isNowActive = !legendBtn?.classList.contains('active');
-      legendBtn?.classList.toggle('active', isNowActive);
-      mLegendBtn?.style.setProperty('color', isNowActive ? 'var(--accent)' : 'var(--text)');
+      const legendBtns = document.querySelectorAll('.btn-legend');
+      const isNowActive = !legendBtns[0]?.classList.contains('active');
+      
+      legendBtns.forEach(btn => btn.classList.toggle('active', isNowActive));
       if (onLegendToggle) onLegendToggle(isNowActive);
     };
 
-    legendBtn?.addEventListener('click', handleLegendToggle);
-    mLegendBtn?.addEventListener('click', handleLegendToggle);
-  } else {
-    // Hide mobile controls for non-map pages
-    const overlay = document.getElementById('controls-overlay');
-    if (overlay) overlay.style.display = 'none';
+    container.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('.btn-legend')) {
+        handleLegendToggle();
+      }
+    });
+
+    // Initialize Terrain listeners
+    TerrainControls.initListeners();
   }
 };
