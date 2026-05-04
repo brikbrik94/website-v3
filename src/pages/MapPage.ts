@@ -15,8 +15,14 @@ interface Inventory {
 
 export const initMapPage = async (container: HTMLElement) => {
   // Inventar laden
-  const response = await fetch('https://tiles.oe5ith.at/inventory.json');
-  const inventory: Inventory = await response.json();
+  const [invRes, layersRes] = await Promise.all([
+    fetch('https://tiles.oe5ith.at/inventory.json'),
+    fetch('https://tiles.oe5ith.at/layers.json')
+  ]);
+  
+  const inventory: Inventory = await invRes.json();
+  const layersMeta = await layersRes.json();
+  
   const basemaps = inventory.maps.filter(m => m.type === 'basemap');
   const overlays = inventory.maps.filter(m => m.type === 'overlay');
 
@@ -47,7 +53,7 @@ export const initMapPage = async (container: HTMLElement) => {
   // cachedStyles: overlayId -> full style object
   const cachedStyles = new Map<string, any>();
 
-  const toggleLayer = async (overlayId: string, overlayUrl: string, layerId: string, checked: boolean) => {
+  const toggleLayer = async (overlayId: string, overlayUrl: string, layerIds: string[], checked: boolean) => {
     if (!map.isStyleLoaded()) {
       await new Promise(resolve => map.once('style.load', resolve));
     }
@@ -59,56 +65,58 @@ export const initMapPage = async (container: HTMLElement) => {
       cachedStyles.set(overlayId, style);
     }
 
-    const uniqueLayerId = `${overlayId}-${layerId}`;
+    for (const layerId of layerIds) {
+      const uniqueLayerId = `${overlayId}-${layerId}`;
 
-    if (checked) {
-      // Ensure source is added
-      if (style.sources) {
-        for (const [srcId, srcDef] of Object.entries(style.sources)) {
-          const uniqueSrcId = `${overlayId}-${srcId}`;
-          if (!map.getSource(uniqueSrcId)) {
-            map.addSource(uniqueSrcId, srcDef as any);
+      if (checked) {
+        // Ensure source is added
+        if (style.sources) {
+          for (const [srcId, srcDef] of Object.entries(style.sources)) {
+            const uniqueSrcId = `${overlayId}-${srcId}`;
+            if (!map.getSource(uniqueSrcId)) {
+              map.addSource(uniqueSrcId, srcDef as any);
+            }
           }
         }
-      }
 
-      // Load Sprites if any
-      if (style.sprite) {
-        await MapCore.loadSprites(map, style.sprite, overlayUrl);
-      }
-
-      // Add Layer
-      const layerDef = style.layers.find((l: any) => l.id === layerId);
-      if (layerDef && !map.getLayer(uniqueLayerId)) {
-        const newLayer = { ...layerDef, id: uniqueLayerId };
-        if (newLayer.source && style.sources[newLayer.source]) {
-          newLayer.source = `${overlayId}-${newLayer.source}`;
+        // Load Sprites if any
+        if (style.sprite) {
+          await MapCore.loadSprites(map, style.sprite, overlayUrl);
         }
-        map.addLayer(newLayer);
-      }
 
-      // Update state
-      if (!activeLayers.has(overlayId)) activeLayers.set(overlayId, new Set());
-      activeLayers.get(overlayId)!.add(layerId);
+        // Add Layer
+        const layerDef = style.layers.find((l: any) => l.id === layerId);
+        if (layerDef && !map.getLayer(uniqueLayerId)) {
+          const newLayer = { ...layerDef, id: uniqueLayerId };
+          if (newLayer.source && style.sources[newLayer.source]) {
+            newLayer.source = `${overlayId}-${newLayer.source}`;
+          }
+          map.addLayer(newLayer);
+        }
 
-    } else {
-      // Remove Layer
-      if (map.getLayer(uniqueLayerId)) {
-        map.removeLayer(uniqueLayerId);
-      }
+        // Update state
+        if (!activeLayers.has(overlayId)) activeLayers.set(overlayId, new Set());
+        activeLayers.get(overlayId)!.add(layerId);
 
-      // Update state
-      const layers = activeLayers.get(overlayId);
-      if (layers) {
-        layers.delete(layerId);
-        // If no layers left, remove sources
-        if (layers.size === 0) {
-          activeLayers.delete(overlayId);
-          if (style.sources) {
-            for (const srcId in style.sources) {
-              const uniqueSrcId = `${overlayId}-${srcId}`;
-              if (map.getSource(uniqueSrcId)) {
-                map.removeSource(uniqueSrcId);
+      } else {
+        // Remove Layer
+        if (map.getLayer(uniqueLayerId)) {
+          map.removeLayer(uniqueLayerId);
+        }
+
+        // Update state
+        const layers = activeLayers.get(overlayId);
+        if (layers) {
+          layers.delete(layerId);
+          // If no layers left, remove sources
+          if (layers.size === 0) {
+            activeLayers.delete(overlayId);
+            if (style.sources) {
+              for (const srcId in style.sources) {
+                const uniqueSrcId = `${overlayId}-${srcId}`;
+                if (map.getSource(uniqueSrcId)) {
+                  map.removeSource(uniqueSrcId);
+                }
               }
             }
           }
@@ -122,9 +130,7 @@ export const initMapPage = async (container: HTMLElement) => {
       for (const [overlayId, layers] of activeLayers.entries()) {
         const overlay = overlays.find(o => o.name.toLowerCase().replace(/\s+/g, '-') === overlayId);
         if (overlay) {
-          for (const layerId of layers) {
-            await toggleLayer(overlayId, overlay.style.url, layerId, true);
-          }
+          await toggleLayer(overlayId, overlay.style.url, Array.from(layers), true);
         }
       }
     });
@@ -137,12 +143,13 @@ export const initMapPage = async (container: HTMLElement) => {
   });
 
   initSidebar(sidebarMount, overlays, 
-    async (overlayId, overlayUrl, layerId, _layerType, checked) => {
-      await toggleLayer(overlayId, overlayUrl, layerId, checked);
+    async (overlayId, overlayUrl, layerIds, _layerType, checked) => {
+      await toggleLayer(overlayId, overlayUrl, layerIds, checked);
     }, 
     (_overlayId, _overlayUrl, _checked) => {
       // Bulk toggle logic is handled by individual onLayerToggle calls in Sidebar.ts
-      // But we could optimize it here if needed.
-    }
+    },
+    undefined,
+    layersMeta.layers // Pass the layers metadata
   );
 };
