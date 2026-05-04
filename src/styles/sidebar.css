@@ -8,6 +8,7 @@
   flex-shrink: 0;
   height: 100%;
   transition: width var(--transition-slow);
+  z-index: var(--z-sidebar-base);
 }
 .sidebar.collapsed { width: 0; border-right: none; overflow: visible; }
 
@@ -167,8 +168,8 @@
 
 /* ═══ SIDEBAR TAB ═══ */
 .sidebar-tab {
-  position: absolute; right: -13px; top: 50%; transform: translateY(-50%);
-  width: 16px; height: 44px;
+  position: absolute; right: calc(-1 * var(--sidebar-tab-width)); top: 50%; transform: translateY(-50%);
+  width: var(--sidebar-tab-width); height: var(--sidebar-tab-height);
   background: var(--sidebar-tab-bg); border: 1px solid var(--sidebar-tab-border);
   border-left: none; border-radius: 0 8px 8px 0;
   display: flex; align-items: center; justify-content: center;
