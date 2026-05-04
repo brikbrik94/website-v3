@@ -1,6 +1,7 @@
 import { RoutingService } from '../lib/RoutingService';
 import { GeocoderService, GeocodeResult } from '../lib/GeocoderService';
 import { APP_VERSION } from '../version';
+import { setupSidebarToggle } from '../lib/SidebarUtils';
 
 export interface RoutingParams {
   start?: [number, number];
@@ -128,6 +129,12 @@ export const initRoutingSidebar = async (
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </nav>
   `;
+
+  setupSidebarToggle(
+    document.getElementById('sidebar')!,
+    document.getElementById('sidebar-tab')!,
+    document.getElementById('sidebar-backdrop')!
+  );
 
   // Hilfs-Style
   const style = document.createElement('style');

@@ -1,6 +1,7 @@
 import { initTopbar } from '../components/Topbar';
 import { Toast } from '../lib/Toast';
 import { APP_VERSION } from '../version';
+import { setupSidebarToggle } from '../lib/SidebarUtils';
 
 interface NahStation {
   name: string;
@@ -839,7 +840,8 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
   container.innerHTML = `
     <div id="topbar-mount"></div>
     <div class="layout">
-      <aside class="sidebar">
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+      <aside class="sidebar" id="sidebar">
         <div class="sidebar-inner">
           <div class="sidebar-section-label">MODULE</div>
           <a href="/info/nah" class="sidebar-nav-item nav-link ${subpath === 'nah' ? 'active' : ''}" data-module="nah">
@@ -860,13 +862,20 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
         </div>
         <div class="sidebar-footer">
           <span class="sidebar-footer-version">${APP_VERSION}</span>
-          <button class="sidebar-footer-copyright">©</button>
+          <button class="sidebar-footer-copyright" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))" title="Copyright & Lizenzen">©</button>
         </div>
+        <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
       </aside>
       <main class="page-content" id="info-content-mount">
       </main>
     </div>
   `;
+
+  setupSidebarToggle(
+    document.getElementById('sidebar')!,
+    document.getElementById('sidebar-tab')!,
+    document.getElementById('sidebar-backdrop')!
+  );
 
   // Initialize Topbar (minimal version for landing/info)
   const topbarMount = document.getElementById('topbar-mount')!;
