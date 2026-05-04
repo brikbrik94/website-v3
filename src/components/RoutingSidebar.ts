@@ -1,5 +1,6 @@
 import { RoutingService } from '../lib/RoutingService';
 import { GeocoderService, GeocodeResult } from '../lib/GeocoderService';
+import { APP_VERSION } from '../version';
 
 export interface RoutingParams {
   start?: [number, number];
@@ -121,7 +122,8 @@ export const initRoutingSidebar = async (
       </div>
       
       <div class="sidebar-footer">
-        <span class="sidebar-footer-version">ORS v2.0</span>
+        <span class="sidebar-footer-version">${APP_VERSION}</span>
+        <button class="sidebar-footer-copyright" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))" title="Copyright & Lizenzen">©</button>
       </div>
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </nav>

@@ -91,7 +91,7 @@ const scheduleNextRefresh = (map: maplibregl.Map, sidebarResults: HTMLElement, r
  */
 export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLElement) => {
   try {
-    const nahRes = await fetch('/api/nah');
+    const nahRes = await fetch('/api/nah.php');
     if (!nahRes.ok) throw new Error(`API Error: ${nahRes.status}`);
     const data = await nahRes.json();
     
@@ -273,19 +273,14 @@ export const initNahPage = async (container: HTMLElement) => {
     legend.addEntry({ type: 'dot',  color: MAP_COLORS.success, label: 'Einsatzbereit' });
     legend.addEntry({ type: 'dot',  color: MAP_COLORS.muted, label: 'Nicht aktiv' });
 
-    // 3. Karte initialisieren
-    map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
-    map.jumpTo({ center: [13.5, 48.0], zoom: 7 });
-
-    map.on('load', () => {
-      if (!map) return;
-      if (!map.getSource('nah-lines')) {
-        map.addSource('nah-lines', {
+    const ensureNahLayers = (m: maplibregl.Map) => {
+      if (!m.getSource('nah-lines')) {
+        m.addSource('nah-lines', {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] }
         });
 
-        map.addLayer({
+        m.addLayer({
           id: 'nah-lines',
           type: 'line',
           source: 'nah-lines',
@@ -297,12 +292,29 @@ export const initNahPage = async (container: HTMLElement) => {
           }
         });
       }
+    };
+
+    // 3. Karte initialisieren
+    map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
+    map.jumpTo({ center: [13.5, 48.0], zoom: 7 });
+
+    // Globaler Listener für Stil-Wechsel (robusteste Methode)
+    map.on('styledata', () => {
+      if (map) ensureNahLayers(map);
     });
 
     // 4. Komponenten initialisieren
     initTopbar(topbarMount, basemaps, (url) => {
-      map?.setStyle(url);
-      map?.once('style.load', () => MapCore.reapplyBaseLayers());
+      if (!map) return;
+      map.setStyle(url);
+      // Nach dem Wechsel warten bis die Karte "idle" ist (alles geladen)
+      map.once('idle', async () => {
+        if (!map) return;
+        await MapCore.reapplyBaseLayers();
+        if (currentIncidentCoord) {
+          performCalculation(map, sidebarResults, currentIncidentCoord[0], currentIncidentCoord[1]);
+        }
+      });
     }, () => legend.toggle());
 
     initNahSidebar(sidebarMount);
@@ -367,7 +379,7 @@ export const initNahPage = async (container: HTMLElement) => {
       return;
     }
     try {
-      const res = await fetch('/api/ping');
+      const res = await fetch('/api/ping.php');
       updateNahServerStatus(res.ok);
     } catch (e) {
       updateNahServerStatus(false);

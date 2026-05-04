@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Hexagon-Rahmen -->
+  <polygon points="16,2 28,9 28,23 16,30 4,23 4,9"
+           stroke="#3b82f6" stroke-width="1.5" fill="none"/>
+  <!-- Leichte Hexagon-Füllung -->
+  <polygon points="16,2 28,9 28,23 16,30 4,23 4,9"
+           fill="#3b82f6" opacity="0.07"/>
+  <!-- ITH Text -->
+  <text x="16" y="20.5"
+        font-family="'Segoe UI', system-ui, sans-serif"
+        font-size="10.5"
+        font-weight="700"
+        fill="#3b82f6"
+        text-anchor="middle"
+        letter-spacing="0.5">ITH</text>
+</svg>

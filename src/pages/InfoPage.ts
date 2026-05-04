@@ -1,5 +1,6 @@
 import { initTopbar } from '../components/Topbar';
 import { Toast } from '../lib/Toast';
+import { APP_VERSION } from '../version';
 
 interface NahStation {
   name: string;
@@ -255,7 +256,7 @@ const renderNahStatusModule = async (container: HTMLElement) => {
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
     try {
-      const response = await fetch('/api/nah');
+      const response = await fetch('/api/nah.php');
       const data: NahResponse = await response.json();
       stations = data.stations || [];
 
@@ -441,11 +442,11 @@ const renderInventoryModule = async (container: HTMLElement) => {
  */
 const renderHealthModule = async (container: HTMLElement) => {
   const services = [
-    { id: 'backend', name: 'Backend Core', url: '/api/ping', icon: 'fa-brands fa-php', description: 'Basis API-Infrastruktur' },
-    { id: 'database', name: 'PostgreSQL Database', url: '/api/db', icon: 'fa-solid fa-database', description: 'PostGIS Datenbank Status' },
-    { id: 'nah', name: 'NAH Service', url: '/api/nah', icon: 'fa-solid fa-helicopter', description: 'Luftrettung Echtzeit-Daten' },
-    { id: 'ors', name: 'Routing API (ORS)', url: '/api/ors/status', icon: 'fa-solid fa-route', description: 'OpenRouteService Status' },
-    { id: 'geocoder', name: 'Geocoder (Nominatim)', url: '/api/geocoder', icon: 'fa-solid fa-location-dot', description: 'Adress-Suche & Reverse Geocoding' },
+    { id: 'backend', name: 'Backend Core', url: '/api/ping.php', icon: 'fa-brands fa-php', description: 'Basis API-Infrastruktur' },
+    { id: 'database', name: 'PostgreSQL Database', url: '/api/db.php', icon: 'fa-solid fa-database', description: 'PostGIS Datenbank Status' },
+    { id: 'nah', name: 'NAH Service', url: '/api/nah.php', icon: 'fa-solid fa-helicopter', description: 'Luftrettung Echtzeit-Daten' },
+    { id: 'ors', name: 'Routing API (ORS)', url: '/api/ors.php?path=status', icon: 'fa-solid fa-route', description: 'OpenRouteService Status' },
+    { id: 'geocoder', name: 'Geocoder (Nominatim)', url: '/api/geocoder.php', icon: 'fa-solid fa-location-dot', description: 'Adress-Suche & Reverse Geocoding' },
     { id: 'tiles', name: 'Tile Registry', url: 'https://tiles.oe5ith.at/inventory.json', icon: 'fa-solid fa-layer-group', description: 'Karten-Layer Verzeichnis' }
   ];
 
@@ -659,7 +660,7 @@ const renderRegionsModule = async (container: HTMLElement) => {
     refreshBtn.disabled = true;
 
     try {
-      const response = await fetch('/api/stats');
+      const response = await fetch('/api/stats.php');
       const data: StatsResponse = await response.json();
 
       renderData(data);
@@ -696,11 +697,11 @@ const renderRegionsModule = async (container: HTMLElement) => {
  */
 const renderDebugModule = async (container: HTMLElement) => {
   const safeEndpoints = [
-    { name: 'NAH Stations', url: '/api/nah', params: '' },
-    { name: 'Regional Stats', url: '/api/stats', params: '' },
-    { name: 'Service Health', url: '/api/ping', params: '' },
-    { name: 'Database Status', url: '/api/db', params: '' },
-    { name: 'ORS Health', url: '/api/ors/health', params: '' }
+    { name: 'NAH Stations', url: '/api/nah.php', params: '' },
+    { name: 'Regional Stats', url: '/api/stats.php', params: '' },
+    { name: 'Service Health', url: '/api/ping.php', params: '' },
+    { name: 'Database Status', url: '/api/db.php', params: '' },
+    { name: 'ORS Health', url: '/api/ors.php?path=health', params: '' }
   ];
 
   container.innerHTML = `
@@ -858,7 +859,7 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
           </a>
         </div>
         <div class="sidebar-footer">
-          <span class="sidebar-footer-version">v3.0.0</span>
+          <span class="sidebar-footer-version">${APP_VERSION}</span>
           <button class="sidebar-footer-copyright">©</button>
         </div>
       </aside>

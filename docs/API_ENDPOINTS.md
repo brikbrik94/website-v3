@@ -7,7 +7,7 @@ Dieses Dokument beschreibt alle technischen Endpunkte, die von der Website für 
 | Dienst | Frontend-URL | Backend-Proxy | Ziel-Adresse (Config) |
 |---|---|---|---|
 | **Backend Core** | `/api/ping` | `ping.php` | Lokal (PHP-Runtime) |
-| **PostgreSQL DB** | `/api/db` | `db_status.php` | `DB_HOST` (Verbindungstest) |
+| **PostgreSQL DB** | `/api/db` | `db.php` | `DB_HOST` (Verbindungstest) |
 | **NAH Service** | `/api/nah` | `nah.php` | `DB_HOST` (PostGIS Datenbank) |
 | **Routing API** | `/api/ors/status` | `ors.php` | `ORS_URL` (standard: https://ors.oe5ith.at) |
 | **Geocoder** | `/api/geocoder` | `geocoder.php` | `NOMINATIM_URL` (https://geocoder.oe5ith.at) |

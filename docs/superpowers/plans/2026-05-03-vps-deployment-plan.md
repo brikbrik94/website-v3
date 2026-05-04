@@ -49,26 +49,28 @@ server {
     listen [::]:80;
     server_name map.oe5ith.at;
 
-    root /var/www/map.oe5ith.at/dist;
-    index index.html index.php;
-
-    # Gzip Compression
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-    # SPA Routing: Fallback to index.html
+    # Frontend (Vite Build)
     location / {
+        root /var/www/map.oe5ith.at/dist;
+        index index.html;
         try_files $uri $uri/ /index.html;
     }
 
     # API Routing
-    location ^~ /api/ {
-        alias /var/www/map.oe5ith.at/api/;
-        location ~ \.php$ {
-            include snippets/fastcgi-php.conf;
-            fastcgi_pass unix:/run/php/php8.4-fpm.sock;
-            fastcgi_param SCRIPT_FILENAME $request_filename;
-        }
+    location /api/ {
+        root /var/www/map.oe5ith.at;
+        index index.php;
+
+        # Try the URI directly, then with .php extension
+        try_files $uri $uri.php =404;
+    }
+
+    # PHP-FPM Handler
+    location ~ \.php$ {
+        root /var/www/map.oe5ith.at;
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
 
     # Deny access to .htaccess files

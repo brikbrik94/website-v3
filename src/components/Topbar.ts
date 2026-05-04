@@ -22,7 +22,7 @@ export const initTopbar = (
     <header class="topbar">
       <div class="topbar-left">
         <a href="/" class="brand nav-link">
-          <img src="/src/assets/logo.svg" alt="Logo" class="brand-logo" />
+          <img src="/logo.svg" alt="Logo" class="brand-logo" />
           <span class="brand-text">OE5ITH</span>
         </a>
       </div>

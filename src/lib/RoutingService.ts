@@ -4,12 +4,12 @@ export interface RouteResult {
   metadata: any;
 }
 
-const ORS_BASE_URL = '/api/ors';
+const ORS_BASE_URL = '/api/ors.php';
 
 export const RoutingService = {
   async checkHealth(): Promise<boolean> {
     try {
-      const res = await fetch(`${ORS_BASE_URL}/health`, { cache: 'no-store' });
+      const res = await fetch(`${ORS_BASE_URL}?path=health`, { cache: 'no-store' });
       if (!res.ok) return false;
       const data = await res.json();
       return data.status === 'ready' || data.status === 'ok';
@@ -20,7 +20,7 @@ export const RoutingService = {
 
   async getProfiles(): Promise<string[]> {
     try {
-      const res = await fetch(`${ORS_BASE_URL}/status`, { cache: 'no-store' });
+      const res = await fetch(`${ORS_BASE_URL}?path=status`, { cache: 'no-store' });
       if (!res.ok) throw new Error();
       const data = await res.json();
       if (data.profiles && typeof data.profiles === 'object') {
@@ -37,7 +37,7 @@ export const RoutingService = {
     target: [number, number],
     profile: string = 'driving-car'
   ): Promise<RouteResult | null> {
-    const url = `${ORS_BASE_URL}/directions/${profile}/geojson`;
+    const url = `${ORS_BASE_URL}?path=directions/${profile}/geojson`;
     
     try {
       const res = await fetch(url, {
@@ -72,7 +72,7 @@ export const RoutingService = {
       // 2. Berechne für diese 7 die echte Route mit driving-emergency.
       // 3. Gib die 5 besten zurück.
       if (profile === 'driving-emergency') {
-        const top7Base = await fetch(`/api/stations?target=${target[0]},${target[1]}&type=${type}&profile=driving-car&limit=7`);
+        const top7Base = await fetch(`/api/stations.php?target=${target[0]},${target[1]}&type=${type}&profile=driving-car&limit=7`);
         const stations7 = await top7Base.json();
 
         const detailedResults = await Promise.all(stations7.map(async (s: any) => {
@@ -98,7 +98,7 @@ export const RoutingService = {
       }
 
       // Normalfall: Direkte Matrix-Abfrage mit dem gewählten Profil
-      const res = await fetch(`/api/stations?target=${target[0]},${target[1]}&type=${type}&profile=${profile}`);
+      const res = await fetch(`/api/stations.php?target=${target[0]},${target[1]}&type=${type}&profile=${profile}`);
       if (!res.ok) throw new Error('Stations-API nicht erreichbar');
       return await res.json();
     } catch (e) {
