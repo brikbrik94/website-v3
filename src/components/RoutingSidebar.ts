@@ -286,7 +286,7 @@ export const renderRoutingLoading = (message: string) => {
   status.style.display = 'block';
   status.innerHTML = `
     <div class="result-header">
-      <span class="badge badge-warning" style="background: var(--warning-subtle); color: var(--warning); border: 1px solid var(--warning-border);">
+      <span class="badge badge-yellow">
         <i class="fa-solid fa-spinner fa-spin"></i> ${message}
       </span>
     </div>
@@ -300,7 +300,7 @@ export const renderRoutingError = (message: string) => {
   status.style.display = 'block';
   status.innerHTML = `
     <div class="result-header">
-      <span class="badge badge-danger" style="background: var(--danger-subtle); color: var(--danger); border: 1px solid var(--danger-border);">
+      <span class="badge badge-red">
         <i class="fa-solid fa-triangle-exclamation"></i> ${message}
       </span>
     </div>
