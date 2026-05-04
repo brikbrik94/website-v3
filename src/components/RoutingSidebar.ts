@@ -48,7 +48,7 @@ export const initRoutingSidebar = async (
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-inner">
-        <div class="tool-panel-title">Routing</div>
+        <div class="sidebar-section-label">Routing</div>
 
         <!-- Status Anzeige -->
         <div class="form-field">
@@ -66,7 +66,7 @@ export const initRoutingSidebar = async (
           </div>
         </div>
 
-        <div class="tool-sep"></div>
+        <div class="sidebar-sep"></div>
 
         <!-- Profil Auswahl -->
         <div class="form-field">
@@ -89,7 +89,7 @@ export const initRoutingSidebar = async (
           </div>
         </div>
 
-        <div class="tool-sep"></div>
+        <div class="sidebar-sep"></div>
 
         <!-- Start -->
         <div class="form-field" id="field-start" style="position: relative;">

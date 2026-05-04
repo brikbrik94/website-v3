@@ -36,8 +36,8 @@ export const initSidebar = (
           <i class="fa-solid fa-chevron-down acc-chevron"></i>
         </div>
         <div class="acc-controls">
-          <button class="acc-ctrl-btn btn-all-on">Alle an</button>
-          <button class="acc-ctrl-btn btn-all-off">Alle aus</button>
+          <button class="acc-ctrl-btn btn-all-on" tabindex="0">Alle an</button>
+          <button class="acc-ctrl-btn btn-all-off" tabindex="0">Alle aus</button>
         </div>
         <div class="acc-body">
           <div class="acc-item-list">
@@ -61,7 +61,7 @@ export const initSidebar = (
       </div>
       <div class="sidebar-footer">
         <span class="sidebar-footer-version">${APP_VERSION}</span>
-        <button class="sidebar-footer-copyright" title="Copyright & Lizenzen">©</button>
+        <button class="sidebar-footer-copyright" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))" title="Copyright & Lizenzen">©</button>
       </div>
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </nav>
@@ -70,6 +70,13 @@ export const initSidebar = (
   const sidebar = document.getElementById('sidebar')!;
   const sidebarTab = document.getElementById('sidebar-tab')!;
   const sidebarBackdrop = document.getElementById('sidebar-backdrop')!;
+
+  const updateBodyHeight = (groupEl: HTMLElement) => {
+    const body = groupEl.querySelector('.acc-body') as HTMLElement;
+    if (groupEl.classList.contains('open')) {
+      body.style.setProperty('--acc-body-height', body.scrollHeight + 'px');
+    }
+  };
 
   const discoverLayers = async (groupEl: HTMLElement) => {
     const id = groupEl.getAttribute('data-id')!;
@@ -84,7 +91,7 @@ export const initSidebar = (
     if (meta) {
       loadedLayers.set(id, meta.groups);
       listEl.innerHTML = meta.groups.map((g: any) => `
-        <div class="acc-item" data-layer-ids='${JSON.stringify(g.style_layers)}' data-layer-type="${g.template}">
+        <div class="acc-item" tabindex="0" role="checkbox" aria-checked="false" data-layer-ids='${JSON.stringify(g.style_layers)}' data-layer-type="${g.template}">
           <span class="acc-checkbox"></span>
           <span class="acc-item-label">${g.name}</span>
         </div>
@@ -98,7 +105,7 @@ export const initSidebar = (
         loadedLayers.set(id, layers);
 
         listEl.innerHTML = layers.map((l: any) => `
-          <div class="acc-item" data-layer-ids='${JSON.stringify([l.id])}' data-layer-type="${l.type}">
+          <div class="acc-item" tabindex="0" role="checkbox" aria-checked="false" data-layer-ids='${JSON.stringify([l.id])}' data-layer-type="${l.type}">
             <span class="acc-checkbox"></span>
             <span class="acc-item-label">${l.id}</span>
           </div>
@@ -114,8 +121,7 @@ export const initSidebar = (
       }
     }
     
-    const body = groupEl.querySelector('.acc-body') as HTMLElement;
-    body.style.setProperty('--acc-body-height', body.scrollHeight + 'px');
+    updateBodyHeight(groupEl);
   };
 
   const updateGroupStatus = (groupEl: HTMLElement) => {
@@ -157,42 +163,73 @@ export const initSidebar = (
     sidebarTab.textContent = '›';
   });
 
+  // Common Action Handlers
+  const handleToggleGroup = async (groupEl: HTMLElement) => {
+    const header = groupEl.querySelector('.acc-header') as HTMLElement;
+    const isOpen = groupEl.classList.toggle('open');
+    header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    
+    if (isOpen) {
+      await discoverLayers(groupEl);
+      const id = groupEl.getAttribute('data-id')!;
+      if (onGroupExpand) {
+        await onGroupExpand(id);
+      }
+      updateBodyHeight(groupEl);
+    }
+  };
+
+  const handleToggleItem = (itemEl: HTMLElement) => {
+    if (itemEl.classList.contains('loading-state')) return;
+    
+    const group = itemEl.closest('.acc-group') as HTMLElement;
+    const isChecked = itemEl.classList.toggle('checked');
+    itemEl.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+    
+    const overlayId = group.getAttribute('data-id')!;
+    const overlayUrl = group.getAttribute('data-url')!;
+    const layerIds = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
+    const layerType = itemEl.getAttribute('data-layer-type')!;
+
+    onLayerToggle(overlayId, overlayUrl, layerIds, layerType, isChecked);
+    updateGroupStatus(group);
+  };
+
+  // Keyboard Event Listener
+  container.addEventListener('keydown', async (e) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      
+      const header = target.closest('.acc-header');
+      if (header) {
+        await handleToggleGroup(header.closest('.acc-group') as HTMLElement);
+        return;
+      }
+
+      const item = target.closest('.acc-item');
+      if (item) {
+        handleToggleItem(item as HTMLElement);
+        return;
+      }
+    }
+  });
+
   // Accordion Logic via Delegation
   container.addEventListener('click', async (e) => {
     const target = e.target as HTMLElement;
 
-    // Header Click (Toggle Accordion)
+    // Header Click
     const header = target.closest('.acc-header');
     if (header) {
-      const group = header.closest('.acc-group') as HTMLElement;
-      const body = group.querySelector('.acc-body') as HTMLElement;
-      const isOpen = group.classList.toggle('open');
-      header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-      
-      if (isOpen) {
-        await discoverLayers(group);
-        const id = group.getAttribute('data-id')!;
-        if (onGroupExpand) {
-          await onGroupExpand(id);
-        }
-        body.style.setProperty('--acc-body-height', body.scrollHeight + 'px');
-      }
+      await handleToggleGroup(header.closest('.acc-group') as HTMLElement);
       return;
     }
 
-    // Item Click (Toggle Layer)
+    // Item Click
     const item = target.closest('.acc-item');
-    if (item && !item.classList.contains('loading-state')) {
-      const group = item.closest('.acc-group') as HTMLElement;
-      const isChecked = item.classList.toggle('checked');
-      
-      const overlayId = group.getAttribute('data-id')!;
-      const overlayUrl = group.getAttribute('data-url')!;
-      const layerIds = JSON.parse(item.getAttribute('data-layer-ids')!);
-      const layerType = item.getAttribute('data-layer-type')!;
-
-      onLayerToggle(overlayId, overlayUrl, layerIds, layerType, isChecked);
-      updateGroupStatus(group);
+    if (item) {
+      handleToggleItem(item as HTMLElement);
       return;
     }
 
@@ -205,9 +242,11 @@ export const initSidebar = (
       const overlayUrl = group.getAttribute('data-url')!;
       
       group.querySelectorAll('.acc-item:not(.checked):not(.loading-state)').forEach(el => {
-        el.classList.add('checked');
-        const layerIds = JSON.parse(el.getAttribute('data-layer-ids')!);
-        const layerType = el.getAttribute('data-layer-type')!;
+        const itemEl = el as HTMLElement;
+        itemEl.classList.add('checked');
+        itemEl.setAttribute('aria-checked', 'true');
+        const layerIds = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
+        const layerType = itemEl.getAttribute('data-layer-type')!;
         onLayerToggle(overlayId, overlayUrl, layerIds, layerType, true);
       });
 
@@ -224,9 +263,11 @@ export const initSidebar = (
       const overlayUrl = group.getAttribute('data-url')!;
       
       group.querySelectorAll('.acc-item.checked').forEach(el => {
-        el.classList.remove('checked');
-        const layerIds = JSON.parse(el.getAttribute('data-layer-ids')!);
-        const layerType = el.getAttribute('data-layer-type')!;
+        const itemEl = el as HTMLElement;
+        itemEl.classList.remove('checked');
+        itemEl.setAttribute('aria-checked', 'false');
+        const layerIds = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
+        const layerType = itemEl.getAttribute('data-layer-type')!;
         onLayerToggle(overlayId, overlayUrl, layerIds, layerType, false);
       });
 

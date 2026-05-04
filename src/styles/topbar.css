@@ -363,7 +363,9 @@
 
 /* Desktop: Controls direkt inline — kein Toggle nötig */
 .controls-panel {
-  display: contents;  /* verhält sich nicht als eigener Container */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Toggle-Button — Desktop: unsichtbar */

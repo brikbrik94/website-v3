@@ -1,6 +1,7 @@
 import { initTopbar } from '../components/Topbar';
 import { initSidebar } from '../components/Sidebar';
 import { MapCore } from '../lib/MapCore';
+import { MapLegend } from '../lib/MapLegend';
 
 export interface MapItem {
   name: string;
@@ -34,6 +35,10 @@ export const initMapPage = async (container: HTMLElement) => {
       <main id="map" style="flex: 1; height: 100%; position: relative; min-width: 0;">
         ${MapCore.getAttributionHtml()}
       </main>
+      <div class="map-legend" id="map-legend" style="display:none; position:fixed; bottom:16px; right:16px;">
+        <div class="map-legend-title"></div>
+        <div class="map-legend-entries"></div>
+      </div>
     </div>
   `;
 
@@ -44,42 +49,63 @@ export const initMapPage = async (container: HTMLElement) => {
   // Map Initialization via Core
   const map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
 
+  // Legend Initialization
+  const legend = new MapLegend('#map-legend');
+  legend.setTitle('Karten-Layer');
+
   // Initiales Anwenden von Terrain/Hillshade (falls global aktiviert)
   map.once('style.load', () => MapCore.reapplyBaseLayers());
 
   // Overlay Management State
-  // activeLayers: overlayId -> Set of active layerIds
   const activeLayers = new Map<string, Set<string>>();
-  // cachedStyles: overlayId -> full style object
   const cachedStyles = new Map<string, any>();
+  const styleFetchPromises = new Map<string, Promise<any>>();
+
+  /**
+   * Safe Style Fetching with internal promise caching to prevent parallel redundant fetches.
+   */
+  const getStyle = async (overlayId: string, url: string): Promise<any> => {
+    if (cachedStyles.has(overlayId)) return cachedStyles.get(overlayId);
+    if (styleFetchPromises.has(overlayId)) return styleFetchPromises.get(overlayId);
+
+    const promise = fetch(url).then(r => r.json()).then(style => {
+      cachedStyles.set(overlayId, style);
+      styleFetchPromises.delete(overlayId);
+      return style;
+    });
+    styleFetchPromises.set(overlayId, promise);
+    return promise;
+  };
 
   const toggleLayer = async (overlayId: string, overlayUrl: string, layerIds: string[], checked: boolean) => {
     if (!map.isStyleLoaded()) {
       await new Promise(resolve => map.once('style.load', resolve));
     }
 
-    let style = cachedStyles.get(overlayId);
-    if (!style) {
-      const res = await fetch(overlayUrl);
-      style = await res.json();
-      cachedStyles.set(overlayId, style);
-    }
+    const style = await getStyle(overlayId, overlayUrl);
+    if (!style) return;
 
     for (const layerId of layerIds) {
-      const uniqueLayerId = `${overlayId}-${layerId}`;
+      // Logic: If the layerId already starts with overlayId, don't prefix again.
+      const uniqueLayerId = layerId.startsWith(overlayId) ? layerId : `${overlayId}-${layerId}`;
 
       if (checked) {
         // Ensure source is added
         if (style.sources) {
           for (const [srcId, srcDef] of Object.entries(style.sources)) {
-            const uniqueSrcId = `${overlayId}-${srcId}`;
+            const uniqueSrcId = srcId.startsWith(overlayId) ? srcId : `${overlayId}-${srcId}`;
             if (!map.getSource(uniqueSrcId)) {
-              map.addSource(uniqueSrcId, srcDef as any);
+              try {
+                map.addSource(uniqueSrcId, srcDef as any);
+              } catch (e) {
+                // If parallel call added it between check and add, ignore
+                if (!map.getSource(uniqueSrcId)) console.error(e);
+              }
             }
           }
         }
 
-        // Load Sprites if any
+        // Load Sprites if any (loadSprites is idempotent via map.hasImage)
         if (style.sprite) {
           await MapCore.loadSprites(map, style.sprite, overlayUrl);
         }
@@ -89,9 +115,13 @@ export const initMapPage = async (container: HTMLElement) => {
         if (layerDef && !map.getLayer(uniqueLayerId)) {
           const newLayer = { ...layerDef, id: uniqueLayerId };
           if (newLayer.source && style.sources[newLayer.source]) {
-            newLayer.source = `${overlayId}-${newLayer.source}`;
+            newLayer.source = newLayer.source.startsWith(overlayId) ? newLayer.source : `${overlayId}-${newLayer.source}`;
           }
-          map.addLayer(newLayer);
+          try {
+            map.addLayer(newLayer);
+          } catch (e) {
+            if (!map.getLayer(uniqueLayerId)) console.error(e);
+          }
         }
 
         // Update state
@@ -113,7 +143,7 @@ export const initMapPage = async (container: HTMLElement) => {
             activeLayers.delete(overlayId);
             if (style.sources) {
               for (const srcId in style.sources) {
-                const uniqueSrcId = `${overlayId}-${srcId}`;
+                const uniqueSrcId = srcId.startsWith(overlayId) ? srcId : `${overlayId}-${srcId}`;
                 if (map.getSource(uniqueSrcId)) {
                   map.removeSource(uniqueSrcId);
                 }
@@ -140,7 +170,7 @@ export const initMapPage = async (container: HTMLElement) => {
   initTopbar(topbarMount, basemaps, (url) => {
     map.setStyle(url);
     map.once('style.load', () => reapplyAll());
-  });
+  }, () => legend.toggle());
 
   initSidebar(sidebarMount, overlays, 
     async (overlayId, overlayUrl, layerIds, _layerType, checked) => {
