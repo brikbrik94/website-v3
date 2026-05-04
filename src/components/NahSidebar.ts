@@ -1,4 +1,5 @@
 import { NahStationResult } from '../pages/NahPage';
+import { APP_VERSION } from '../version';
 
 /**
  * OE5ITH NAH Sidebar Komponente
@@ -18,7 +19,7 @@ export const initNahSidebar = (container: HTMLElement) => {
         </div>
       </div>
       <div class="sidebar-footer">
-        <span class="sidebar-footer-version">v3.0.0</span>
+        <span class="sidebar-footer-version">${APP_VERSION}</span>
         <div class="sidebar-footer-status" id="sidebar-status-container">
           <span class="footer-status-text">verbinden...</span>
           <span class="footer-dot"></span>

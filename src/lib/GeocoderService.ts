@@ -6,7 +6,7 @@ export interface GeocodeResult {
   importance: number;
 }
 
-const GEOCODER_BASE_URL = '/api/geocoder';
+const GEOCODER_BASE_URL = '/api/geocoder.php';
 
 export const GeocoderService = {
   async search(query: string): Promise<GeocodeResult[]> {

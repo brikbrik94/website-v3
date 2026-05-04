@@ -13,6 +13,10 @@ Dieses Dokument enthält verbindliche Mandate für die KI-Assistenz in diesem Pr
     - Für Web-Anwendungen (PHP/API) darf NUR der `web_api_user` (Read-Only) verwendet werden.
     - Credentials müssen in `api/config.php` verwaltet werden; `.env` darf nicht committet werden.
 4. **KLÄRUNG BEI UNKLARHEIT:** Bei Unsicherheit MUSS nachgefragt werden.
+5. **VERSIONS-MANAGEMENT:**
+    - Die zentrale App-Version wird in `src/version.ts` definiert.
+    - Nach jeder signifikanten Änderung oder vor einem Deployment MUSS geprüft werden, ob ein Versionssprung (Patch, Minor, Major) angemessen ist.
+    - Änderungen an der Version müssen im `CHANGELOG.md` (falls vorhanden) oder in der Commit-Message dokumentiert werden.
 
 ## Technischer Status (Stand: 02.05.2026)
 

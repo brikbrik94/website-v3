@@ -12,40 +12,9 @@ export default defineConfig(({ mode }) => {
         ignored: ['**/oe5ith-ci/**']
       },
       proxy: {
-        '/api/ors': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/ors/, 'ors.php?path=')
-        },
-        '/api/geocoder': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/geocoder/, 'geocoder.php')
-        },
-        '/api/stations': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/stations/, 'stations.php')
-        },
-        '/api/nah': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/nah/, 'nah.php')
-        },
-        '/api/ping': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/ping/, 'ping.php')
-        },
-        '/api/db': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/db/, 'db_status.php')
-        },
-        '/api/stats': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/stats/, 'stats.php')
+        '/api/': {
+          target: 'http://localhost',
+          changeOrigin: true
         }
       }
     },

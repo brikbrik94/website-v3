@@ -1,4 +1,5 @@
 import { MapItem } from '../pages/MapPage';
+import { APP_VERSION } from '../version';
 
 export type LayerToggleCallback = (
   overlayId: string, 
@@ -58,7 +59,7 @@ export const initSidebar = (
         </div>
       </div>
       <div class="sidebar-footer">
-        <span class="sidebar-footer-version">v3.0.0</span>
+        <span class="sidebar-footer-version">${APP_VERSION}</span>
         <button class="sidebar-footer-copyright" title="Copyright & Lizenzen">©</button>
       </div>
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
