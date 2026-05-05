@@ -316,8 +316,24 @@
   color: var(--accent);
 }
 
-/* ═══════════════════════════════════════
-   TOOLS PANEL — Tablet & Mobile
+.basemap-toggle {
+  width: 180px;
+}
+
+@media (max-width: 1024px) {
+  .basemap-dropdown, .basemap-toggle, .basemap-menu {
+    width: 100% !important;
+  }
+}
+
+.overlay-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--subtle);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
    ═══════════════════════════════════════
    Desktop:  Controls inline in .topbar-center, immer sichtbar
    Tablet:   Controls ausgeblendet → Toggle-Button mit Icon + Text

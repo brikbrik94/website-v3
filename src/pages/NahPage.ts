@@ -107,7 +107,7 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
       const statusText = station.is_active ? 'EINSATZBEREIT' : 'NICHT AKTIV';
       
       const el = document.createElement('div');
-      el.innerHTML = `<i class="fa-solid fa-helicopter" style="color: ${color}; font-size: 24px; text-shadow: 0 0 3px rgba(0,0,0,0.5); cursor: pointer;"></i>`;
+      el.innerHTML = `<i class="fa-solid fa-helicopter map-marker-helicopter" style="color: ${color};"></i>`;
       
       let hoursHtml = '';
       if (station.op_type === 'fixed' && station.fixed_start && station.fixed_end) {
@@ -252,10 +252,10 @@ export const initNahPage = async (container: HTMLElement) => {
       <div id="topbar-mount"></div>
       <div class="layout">
         <div id="sidebar-mount"></div>
-        <main id="map" style="flex: 1; height: 100%; position: relative; min-width: 0;">
+        <main id="map" class="full-map">
           ${MapCore.getAttributionHtml()}
         </main>
-        <div class="map-legend" id="map-legend" style="display:none; position:fixed; bottom:16px; right:16px;">
+        <div class="map-legend" id="map-legend" style="display:none;">
           <div class="map-legend-title"></div>
           <div class="map-legend-entries"></div>
         </div>

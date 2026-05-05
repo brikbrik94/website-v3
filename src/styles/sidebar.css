@@ -30,6 +30,9 @@
   min-width: var(--sidebar-width);
   opacity: 1;
   transition: opacity var(--transition-fast);   /* animiert beim Collapse */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* Section Label */
@@ -240,6 +243,59 @@
   margin-top: 2px;
   opacity: 0.5;
   font-size: 0.85rem;
+}
+
+.result-action {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all var(--transition-fast);
+}
+.result-action:hover { border-color: var(--accent); color: var(--accent); }
+.result-action.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+/* Fix Sichtbarkeit wenn Karte aktiv ist */
+.result-item.active .result-action:not(.active) {
+  border-color: rgba(255,255,255,0.2);
+  color: var(--text);
+}
+.result-item.active .result-action:not(.active):hover {
+  border-color: white;
+}
+
+/* ═══ MAP LEGEND ═══ */
+.map-legend {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  padding: 12px;
+  z-index: var(--z-overlay);
+  box-shadow: var(--shadow-card);
+  min-width: 180px;
+}
+.map-legend-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--subtle);
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+.map-legend-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 /* ═══ MOBILE ═══ */

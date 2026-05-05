@@ -18,10 +18,10 @@ export const initRoutingPage = async (container: HTMLElement) => {
     <div id="topbar-mount"></div>
     <div class="layout">
       <div id="sidebar-mount"></div>
-      <main id="map" style="flex: 1; height: 100%; position: relative; min-width: 0;">
+      <main id="map" class="full-map">
         ${MapCore.getAttributionHtml()}
       </main>
-      <div class="map-legend" id="map-legend" style="display:none; position:fixed; bottom:16px; right:16px;">
+      <div class="map-legend" id="map-legend" style="display:none;">
         <div class="map-legend-title"></div>
         <div class="map-legend-entries"></div>
       </div>

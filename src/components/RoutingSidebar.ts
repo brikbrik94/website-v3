@@ -136,39 +136,6 @@ export const initRoutingSidebar = async (
     document.getElementById('sidebar-backdrop')!
   );
 
-  // Hilfs-Style
-  const style = document.createElement('style');
-  style.textContent = `
-    .sidebar-inner { display: flex; flex-direction: column; gap: 12px; }
-    .sidebar-inner .tool-sep { margin: 4px 0; }
-    .sidebar-inner .form-submit { margin-top: 8px; }
-    .result-action {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--muted);
-      transition: all var(--transition-fast);
-    }
-    .result-action:hover { border-color: var(--accent); color: var(--accent); }
-    .result-action.active { background: var(--accent); border-color: var(--accent); color: white; }
-    
-    /* Fix Sichtbarkeit wenn Karte aktiv ist */
-    .result-item.active .result-action:not(.active) {
-      border-color: rgba(255,255,255,0.2);
-      color: var(--text);
-    }
-    .result-item.active .result-action:not(.active):hover {
-      border-color: white;
-    }
-  `;
-  document.head.appendChild(style);
-
   const btnStart = document.getElementById('btn-start-routing')!;
   const routeMode = document.getElementById('route-mode')!;
   const fieldStart = document.getElementById('field-start')!;
