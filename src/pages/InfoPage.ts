@@ -89,7 +89,7 @@ const renderNahStatusModule = async (container: HTMLElement) => {
     </header>
 
     <div class="content-body">
-      <div class="card-grid" id="nah-stats-cards" style="margin-bottom: 24px;"></div>
+      <div class="card-grid" id="nah-stats-cards" style="margin-bottom: var(--card-gap);"></div>
       <div class="panel">
         <div class="panel-body panel-body-flush" style="overflow-x: auto;">
           <table class="ci-table">
@@ -105,7 +105,7 @@ const renderNahStatusModule = async (container: HTMLElement) => {
             </thead>
             <tbody id="nah-table-body">
               <tr>
-                <td colspan="6" style="text-align: center; padding: 2rem;">
+                <td colspan="6" style="text-align: center; padding: var(--card-gap);">
                   <i class="fa-solid fa-circle-notch fa-spin"></i> Lade Stationen...
                 </td>
               </tr>
@@ -208,7 +208,7 @@ const renderNahStatusModule = async (container: HTMLElement) => {
       </div>
 
       <div class="card card-dashboard">
-        <h3 style="border: none; padding-bottom: 0;">${nextEventCallsign || '-'}</h3>
+        <h3 style="padding-bottom: 0;">${nextEventCallsign || '-'}</h3>
         <h3>Nächster Wechsel</h3>
         <p class="t-body">${nextEventTime ? formatTime((nextEventTime as Date).toISOString()) : '-'}</p>
       </div>
@@ -320,7 +320,7 @@ const renderInventoryModule = async (container: HTMLElement) => {
     </header>
 
     <div class="content-body" id="inventory-content">
-      <div style="text-align: center; padding: 4rem;">
+      <div style="text-align: center; padding: calc(2 * var(--card-gap));">
         <i class="fa-solid fa-circle-notch fa-spin"></i> Lade Karten-Inventar...
       </div>
     </div>
@@ -371,7 +371,7 @@ const renderInventoryModule = async (container: HTMLElement) => {
 
       html += `
         <h2 class="t-h2" style="margin-top: 0;">${typeLabels[type]}</h2>
-        <div class="card-grid" style="margin-bottom: 32px;">
+        <div class="card-grid" style="margin-bottom: calc(1.5 * var(--card-gap));">
           ${maps.map(map => `
             <div class="card">
               <div class="card-content-header">
@@ -588,7 +588,7 @@ const renderRegionsModule = async (container: HTMLElement) => {
     </header>
 
     <div class="content-body" id="regions-content">
-      <div style="text-align: center; padding: 4rem;">
+      <div style="text-align: center; padding: calc(2 * var(--card-gap));">
         <i class="fa-solid fa-circle-notch fa-spin"></i> Berechne regionale Analyse...
       </div>
     </div>

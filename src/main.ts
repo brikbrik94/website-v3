@@ -36,7 +36,7 @@ const renderLandingPage = () => {
     <div class="layout">
       <main class="page-content landing-body">
         <h1 class="landing-title">Willkommen im <span>Cloud Portal</span></h1>
-        <p style="color: var(--muted); margin-bottom: 40px; max-width: 600px; text-align: center;">
+        <p class="landing-subtitle">
           Öffentliches Portal für Geodaten und Karten-Services.
         </p>
 

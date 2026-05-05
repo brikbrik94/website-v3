@@ -18,13 +18,13 @@ export const initTopbar = (
 
   const terrainHtml = hasMap ? TerrainControls.getHtml() : '';
 
-  const dropdownHtml = (isMobile = false) => `
-    <div class="topbar-dropdown basemap-dropdown" ${isMobile ? 'style="width:100%"' : ''}>
-      <button class="topbar-dropdown-toggle basemap-toggle" aria-haspopup="listbox" aria-expanded="false" style="${isMobile ? 'width:100%' : 'width: 180px;'}">
+  const dropdownHtml = (_isMobile = false) => `
+    <div class="topbar-dropdown basemap-dropdown">
+      <button class="topbar-dropdown-toggle basemap-toggle" aria-haspopup="listbox" aria-expanded="false">
         <span class="dropdown-label">${basemaps[0]?.name || 'Basemap'}</span>
         <span class="chevron">▾</span>
       </button>
-      <div class="topbar-dropdown-menu basemap-menu" role="listbox" ${isMobile ? 'style="width:100%"' : ''}>
+      <div class="topbar-dropdown-menu basemap-menu" role="listbox">
         ${basemapOptions}
       </div>
     </div>
@@ -76,7 +76,7 @@ export const initTopbar = (
       <div class="controls-overlay" id="controls-overlay">
         <!-- 1. Dropdowns -->
         <div class="form-field">
-          <label class="form-label" style="font-size:0.65rem; font-weight:700; color:var(--subtle); text-transform:uppercase; margin-bottom:8px; display:block;">Basemap</label>
+          <label class="overlay-section-label">Basemap</label>
           ${dropdownHtml(true)}
         </div>
 
