@@ -1,0 +1,35 @@
+/*
+ * OE5ITH CI — utils.css
+ * Zweckgebundene Utility-Klassen ohne Komponenten-Kontext.
+ *
+ * Abhängigkeit: css/common.css (Tokens)
+ * Einbinden: css/index.css (automatisch über @import)
+ */
+
+/* ═══════════════════════════════════════
+   MAP UTILITIES
+   ═══════════════════════════════════════ */
+
+/* Vollflächiger MapLibre/Leaflet-Container.
+   Verhindert Layout-Sprünge: min-height:0 ist nötig
+   damit Flex-Eltern die Höhe korrekt berechnen. */
+.full-map {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════
+   SPACING UTILITIES
+   ═══════════════════════════════════════ */
+
+.m-gap  { margin: var(--card-gap); }
+.mb-gap { margin-bottom: var(--card-gap); }
+
+/* ═══════════════════════════════════════
+   FLEX UTILITIES
+   ═══════════════════════════════════════ */
+
+.flex-col    { display: flex; flex-direction: column; }
+.flex-center { display: flex; align-items: center; justify-content: center; }

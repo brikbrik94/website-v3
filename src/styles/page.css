@@ -6,36 +6,6 @@
  */
 
 /* ═══════════════════════════════════════
-   UTILITY: FULL MAP
-   Verwendet für MapLibre Container
-   ═══════════════════════════════════════ */
-.full-map {
-  flex: 1;
-  height: 100%;
-  position: relative;
-  min-width: 0;
-  background: var(--bg);
-}
-
-.map-marker-helicopter {
-  font-size: 24px;
-  text-shadow: 0 0 3px rgba(0,0,0,0.5);
-  cursor: pointer;
-}
-
-.landing-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-.landing-subtitle {
-  color: var(--muted);
-  margin-bottom: calc(2 * var(--card-gap));
-  max-width: 600px;
-}
-/* ═══════════════════════════════════════
    PAGE HEADER
    Immer oben im .page-content, border-bottom
    trennt vom Inhalt. Gilt für alle Seitentypen

@@ -8,7 +8,6 @@
   flex-shrink: 0;
   height: 100%;
   transition: width var(--transition-slow);
-  z-index: var(--z-sidebar-base);
 }
 .sidebar.collapsed { width: 0; border-right: none; overflow: visible; }
 
@@ -30,9 +29,6 @@
   min-width: var(--sidebar-width);
   opacity: 1;
   transition: opacity var(--transition-fast);   /* animiert beim Collapse */
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 /* Section Label */
@@ -42,7 +38,18 @@
   padding: 0 6px; margin-bottom: 6px; margin-top: 12px;
 }
 .sidebar-section-label:first-child { margin-top: 0; }
+.overlay-section-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--subtle);
+  margin-bottom: 5px;
+  margin-top: 10px;
+}
+.overlay-section-label:first-child { margin-top: 0; }
 .sidebar-sep { height: 1px; background: var(--border); margin: 10px 0; }
+.tool-sep { height: 1px; background: var(--border); margin: 10px 0; }
 
 /* Nav Item */
 .sidebar-nav-item {
@@ -171,10 +178,10 @@
 
 /* ═══ SIDEBAR TAB ═══ */
 .sidebar-tab {
-  position: absolute; right: calc(-1 * var(--sidebar-tab-width)); top: 50%; transform: translateY(-50%);
+  position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
   width: var(--sidebar-tab-width); height: var(--sidebar-tab-height);
-  background: var(--sidebar-tab-bg); border: 1px solid var(--sidebar-tab-border);
-  border-left: none; border-radius: 0 8px 8px 0;
+  background: rgba(59,130,246,0.35); border: 1px solid rgba(59,130,246,0.60);
+  border-left: none; border-radius: 0 7px 7px 0;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: var(--accent); font-size: 12px; font-weight: 700;
   transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
@@ -245,59 +252,6 @@
   font-size: 0.85rem;
 }
 
-.result-action {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--muted);
-  transition: all var(--transition-fast);
-}
-.result-action:hover { border-color: var(--accent); color: var(--accent); }
-.result-action.active { background: var(--accent); border-color: var(--accent); color: white; }
-
-/* Fix Sichtbarkeit wenn Karte aktiv ist */
-.result-item.active .result-action:not(.active) {
-  border-color: rgba(255,255,255,0.2);
-  color: var(--text);
-}
-.result-item.active .result-action:not(.active):hover {
-  border-color: white;
-}
-
-/* ═══ MAP LEGEND ═══ */
-.map-legend {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--card-radius);
-  padding: 12px;
-  z-index: var(--z-overlay);
-  box-shadow: var(--shadow-card);
-  min-width: 180px;
-}
-.map-legend-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--subtle);
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 4px;
-}
-.map-legend-entries {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
 /* ═══ MOBILE ═══ */
 @media (max-width: 768px) {
   .sidebar {
@@ -308,5 +262,9 @@
   }
   .sidebar.mobile-open { transform: translateX(0); box-shadow: var(--shadow-sidebar); }
   .sidebar.collapsed { width: var(--sidebar-width); }
+
+  .sidebar-tab {
+    width: 32px; height: 52px; font-size: 14px;
+  }
 
 }
