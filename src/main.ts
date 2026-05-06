@@ -3,6 +3,11 @@ import { initMapPage } from './pages/MapPage';
 import { initRoutingPage } from './pages/RoutingPage';
 import { initNahPage } from './pages/NahPage';
 import { initInfoPage } from './pages/InfoPage';
+import { initCoordsPage } from './pages/CoordsPage';
+import { initGlobalModals } from './lib/GlobalModals';
+
+// Global Modals initialisieren
+initGlobalModals();
 
 const app = document.querySelector<HTMLDivElement>('#app');
 
@@ -61,6 +66,13 @@ const renderLandingPage = () => {
             <p>Übersicht der NAH-Stützpunkte und Live-Verfügbarkeit.</p>
             <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
           </a>
+
+          <a href="/coords" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-compass"></i></div>
+            <h3>Umrechner</h3>
+            <p>Koordinaten bidirektional zwischen WGS84, UTM, BMN, MGRS und Maidenhead umrechnen.</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
         </div>
       </main>
     </div>
@@ -76,6 +88,8 @@ const router = () => {
     if (app) initRoutingPage(app);
   } else if (path === '/nah') {
     if (app) initNahPage(app);
+  } else if (path === '/coords') {
+    if (app) initCoordsPage(app);
   } else if (path.startsWith('/info')) {
     const subpath = path.split('/')[2] || 'nah';
     if (app) initInfoPage(app, subpath);

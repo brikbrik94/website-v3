@@ -1,89 +1,42 @@
-# CI-Fixes: Diskrepanzen & Optimierungsbedarf
+# CI Fixes Report: Topbar Layout Conflict
 
-Dieses Dokument beschreibt die notwendigen Änderungen im `oe5ith-ci` Repository, um die Konsistenz gemäß der `for-coding-agents.md` (Regel #1: Keine Hardcoded-Werte) sicherzustellen und Layout-Fehler auf mobilen Geräten zu beheben.
+## Problembeschreibung: "Sticky Elements" in der Topbar
 
----
+Bei der Integration des neuesten `oe5ith-ci` (Stand 06.05.2026) tritt ein Layout-Fehler auf, bei dem alle Elemente im `.controls-panel` der Topbar ohne Abstand aneinanderkleben.
 
-## 1. Z-Index System (common.css)
-**Problem:** Viele Komponenten im CI-Repo nutzen hartcodierte Z-Indexe (100, 200, 1000). Dies verstößt gegen die Pflichtregel #1.
+### Ursache (Architektur-Konflikt)
 
-**Lösung:** Definition zentraler Z-Index Tokens in `css/common.css`.
+Der Fehler entsteht durch eine unglückliche Kombination von Komponenten-Styling und Utility-Klassen:
 
-```css
-/* In :root ergänzen */
---z-map:            1;
---z-sidebar:        100;
---z-topbar:         200;
---z-dropdown:       300;
---z-modal:          1000;
---z-tooltip:        1100;
---z-sidebar-tab:    105; /* Neu für Tabs auf der Sidebar */
+1.  **CI Topbar Logik:** Das CI setzt `.controls-panel { display: contents; }`. Damit "verschwindet" der Container für den Browser und die darin liegenden Buttons werden direkt in der Topbar (die ein `gap: 8px` hat) angeordnet. In diesem Zustand hat `.controls-panel` selbst **keinen** definierten `gap`.
+2.  **Utility Klassen Konflikt:** In der Implementierung nutzen wir `<div class="controls-panel desktop-only">`. Die Klasse `.desktop-only` (definiert in `topbar.css` oder `common.css`) setzt jedoch ein hartes `display: flex;`.
+3.  **Das Resultat:** Die Utility-Klasse überschreibt `display: contents`. Der Container existiert nun wieder als echtes Flex-Element, hat aber im CI keinen eigenen `gap` definiert. Die Elemente kleben zusammen.
+
+### Fehler-Reproduktion
+```html
+<!-- Dieser Container klebt zusammen, da .desktop-only das 'contents' überschreibt -->
+<div class="controls-panel desktop-only">
+  <button>A</button>
+  <button>B</button>
+</div>
 ```
 
 ---
 
-## 2. Mobile Layout Bugfix (common.css)
-**Problem:** Auf mobilen Browsern führt `100vh` oft zu Layout-Fehlern (Inhalt verschwindet hinter der Browser-UI). Zudem fehlt ein Token für die reduzierte Topbar-Höhe auf Mobilgeräten.
+### Empfohlener Fix für das `oe5ith-ci` Repo
 
-**Lösung:** Einführung von `--topbar-height-mobile` und einem korrekten Mobile-Reset für `.layout`.
+Um das System robust gegen Utility-Klassen zu machen, sollte `.controls-panel` in der `topbar.css` immer einen Fallback-Gap erhalten:
 
 ```css
-/* In :root ergänzen */
---topbar-height-mobile: 50px;
-
-/* Im Media-Query am Ende von common.css ergänzen */
-@media (max-width: 768px) {
-  .layout { 
-    height: calc(100vh - var(--topbar-height-mobile)); 
-    display: flex;
-    flex-direction: column;
-  }
+/* In oe5ith-ci/css/topbar.css */
+.controls-panel {
+  display: contents;
+  gap: 8px; /* WICHTIG: Fallback für den Fall, dass display: contents überschrieben wird */
 }
 ```
 
----
-
-## 3. Token-Implementierung in Komponenten
-
-Folgende Dateien sollten von hartcodierten Werten auf die neuen Tokens umgestellt werden:
-
-### topbar.css
-```css
-.topbar { z-index: var(--z-topbar); }
-.dropdown-menu { z-index: var(--z-dropdown); }
-.topbar-search-result { z-index: var(--z-dropdown); }
-.topbar-tab { z-index: var(--z-sidebar-tab); }
-```
-
-### sidebar.css
-```css
-.sidebar { z-index: var(--z-sidebar); }
-
-/* Mobile-Fix */
-@media (max-width: 768px) {
-  .sidebar {
-    top: var(--topbar-height-mobile);
-    height: calc(100vh - var(--topbar-height-mobile));
-  }
-}
-```
-
-### page.css & modal.css
-- Alle `z-index` Werte durch entsprechende Variablen ersetzen.
-- `rgba`-Farbwerte für Overlays möglichst durch Tokens wie `var(--accent-muted)` oder neue Transparenz-Tokens ersetzen.
+### Lokale Korrektur (Interim)
+Ich habe diesen Fix lokal in `src/styles/topbar.css` angewendet, damit die Website sofort wieder korrekt dargestellt wird. Dieser Fix wird bei jedem CI-Sync überschrieben, bis er im Haupt-Repo (`oe5ith-ci`) gemergt wurde.
 
 ---
-
-## 4. Karten-Attribution (page.css)
-**Problem:** In der neuen Karten-Attribution wird `z-index: 10` verwendet, was oft mit Map-Controls kollidiert.
-
-**Lösung:**
-```css
-.map-attribution {
-  z-index: var(--z-map); /* Oder ein spezifisches Token --z-attribution */
-}
-```
-
----
-
-*Erstellt durch Gemini CLI für OE5ITH Website V3.*
+*Erstellt von Gemini CLI - 06.05.2026*
