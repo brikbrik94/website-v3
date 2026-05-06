@@ -1,19 +1,39 @@
 import { MapItem } from '../pages/MapPage';
 import { TerrainControls } from './TerrainControls';
 
+export interface CustomAction {
+  id: string;
+  icon: string;
+  title: string;
+  onClick: (isActive: boolean) => void;
+}
+
 export const initTopbar = (
   container: HTMLElement,
   basemaps: MapItem[],
   onBasemapChange: (url: string, name: string) => void,
-  onLegendToggle?: (isActive: boolean) => void
+  onLegendToggle?: (isActive: boolean) => void,
+  customActions: CustomAction[] = []
 ) => {
   const hasMap = basemaps.length > 0;
   const currentPath = window.location.pathname;
+
+  const customActionsHtml = customActions.map(action => `
+    <button class="topbar-toggle btn-custom" id="btn-${action.id}" title="${action.title}">
+      <i class="${action.icon}"></i>
+    </button>
+  `).join('');
 
   const basemapOptions = basemaps.map((m, i) => `
     <div class="topbar-dropdown-item ${i === 0 ? 'active' : ''}" data-style="${m.style.url}" data-name="${m.name}">
       ${m.name}
     </div>
+  `).join('');
+
+  const customActionsMobileHtml = customActions.map(action => `
+    <button class="topbar-toggle btn-custom" id="btn-${action.id}-mobile">
+      <i class="${action.icon}"></i> ${action.title}
+    </button>
   `).join('');
 
   const terrainHtml = hasMap ? TerrainControls.getHtml() : '';
@@ -46,6 +66,7 @@ export const initTopbar = (
           <div class="controls-panel desktop-only">
             ${dropdownHtml()}
             ${terrainHtml}
+            ${customActionsHtml}
             <button class="topbar-toggle btn-legend" title="Legende">
               <i class="fa-solid fa-list-ul"></i>
             </button>
@@ -70,6 +91,7 @@ export const initTopbar = (
         <a href="/karte" class="topbar-nav-link ${currentPath === '/karte' ? 'active' : ''}">Karte</a>
         <a href="/routing" class="topbar-nav-link ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
         <a href="/nah" class="topbar-nav-link ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
+        <a href="/coords" class="topbar-nav-link ${currentPath === '/coords' ? 'active' : ''}">Umrechner</a>
       </div>
 
       ${hasMap ? `
@@ -85,6 +107,7 @@ export const initTopbar = (
         <!-- 2. Terrain & Tools Grid -->
         <div class="controls-btn-group">
           ${terrainHtml}
+          ${customActionsMobileHtml}
           <button class="topbar-toggle btn-legend">
             <i class="fa-solid fa-list-ul"></i> Legende
           </button>
@@ -171,6 +194,26 @@ export const initTopbar = (
       if ((e.target as HTMLElement).closest('.btn-legend')) {
         handleLegendToggle();
       }
+    });
+
+    // Custom Actions Listeners
+    customActions.forEach(action => {
+      const btns = [
+        document.getElementById(`btn-${action.id}`),
+        document.getElementById(`btn-${action.id}-mobile`)
+      ];
+
+      btns.forEach(btn => {
+        btn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isNowActive = !btn.classList.contains('active');
+          
+          // Sync all buttons for this action
+          btns.forEach(b => b?.classList.toggle('active', isNowActive));
+          
+          action.onClick(isNowActive);
+        });
+      });
     });
 
     // Initialize Terrain listeners
