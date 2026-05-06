@@ -48,7 +48,7 @@
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   margin-left: auto;
 }
 
@@ -316,24 +316,41 @@
   color: var(--accent);
 }
 
-.basemap-toggle {
-  width: 180px;
-}
+/* ═══════════════════════════════════════
+   SIDEBAR + TAB TOGGLE
+   ═══════════════════════════════════════ */
 
-@media (max-width: 1024px) {
-  .basemap-dropdown, .basemap-toggle, .basemap-menu {
-    width: 100% !important;
-  }
-}
 
-.overlay-section-label {
-  font-size: 0.65rem;
+/* Halbkreis Tab an der rechten Kante */
+.sidebar-tab {
+  position: absolute;
+  right: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 44px;
+  background: rgba(59,130,246,0.15);       /* 15% statt 7% — besser sichtbar */
+  border: 1px solid rgba(59,130,246,0.35); /* 35% statt 25% — besser sichtbar */
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 12px;
   font-weight: 700;
-  color: var(--subtle);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  display: block;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  z-index: var(--z-sidebar-tab);
+  user-select: none;
 }
+
+.sidebar-tab:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 /* ═══════════════════════════════════════
    TOOLS PANEL — Tablet & Mobile
    ═══════════════════════════════════════
@@ -346,9 +363,7 @@
 
 /* Desktop: Controls direkt inline — kein Toggle nötig */
 .controls-panel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: contents;  /* verhält sich nicht als eigener Container */
 }
 
 /* Toggle-Button — Desktop: unsichtbar */
