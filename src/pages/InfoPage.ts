@@ -1,7 +1,6 @@
 import { initTopbar } from '../components/Topbar';
 import { Toast } from '../lib/Toast';
-import { APP_VERSION } from '../version';
-import { setupSidebarToggle } from '../lib/SidebarUtils';
+import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 
 interface NahStation {
   name: string;
@@ -860,10 +859,7 @@ export const initInfoPage = async (container: HTMLElement, subpath: string = 'na
             <i class="fa-solid fa-terminal nav-icon"></i> API Debug
           </a>
         </div>
-        <div class="sidebar-footer">
-          <span class="sidebar-footer-version">${APP_VERSION}</span>
-          <button class="sidebar-footer-copyright" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))" title="Copyright & Lizenzen">©</button>
-        </div>
+        ${getSidebarFooterHtml()}
         <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
       </aside>
       <main class="page-content" id="info-content-mount">

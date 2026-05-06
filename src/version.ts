@@ -2,4 +2,4 @@
  * Central application version configuration.
  * Follows Semantic Versioning (SemVer).
  */
-export const APP_VERSION = '3.0.1';
+export const APP_VERSION = '3.1.0a1';

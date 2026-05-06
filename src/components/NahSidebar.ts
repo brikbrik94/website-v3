@@ -1,12 +1,18 @@
 import { NahStationResult } from '../pages/NahPage';
-import { APP_VERSION } from '../version';
-import { setupSidebarToggle } from '../lib/SidebarUtils';
+import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 
 /**
  * OE5ITH NAH Sidebar Komponente
  */
 
 export const initNahSidebar = (container: HTMLElement) => {
+  const extraFooter = `
+    <div class="sidebar-footer-status" id="sidebar-status-container" style="display: none;">
+      <span class="footer-dot"></span>
+      <span class="footer-status-text">verbinden...</span>
+    </div>
+  `;
+
   container.innerHTML = `
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <aside class="sidebar" id="sidebar">
@@ -19,14 +25,7 @@ export const initNahSidebar = (container: HTMLElement) => {
           </div>
         </div>
       </div>
-      <div class="sidebar-footer">
-        <span class="sidebar-footer-version">${APP_VERSION}</span>
-        <div class="sidebar-footer-status" id="sidebar-status-container" style="display: none;">
-          <span class="footer-dot"></span>
-          <span class="footer-status-text">verbinden...</span>
-        </div>
-        <button class="sidebar-footer-copyright" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))" title="Copyright & Lizenzen">©</button>
-      </div>
+      ${getSidebarFooterHtml(extraFooter)}
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </aside>
   `;

@@ -1,5 +1,5 @@
 import { MapItem } from '../pages/MapPage';
-import { APP_VERSION } from '../version';
+import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 
 export type LayerToggleCallback = (
   overlayId: string, 
@@ -59,10 +59,7 @@ export const initSidebar = (
           ${overlays.map(renderOverlayGroup).join('')}
         </div>
       </div>
-      <div class="sidebar-footer">
-        <span class="sidebar-footer-version">${APP_VERSION}</span>
-        <button class="sidebar-footer-copyright" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))" title="Copyright & Lizenzen">©</button>
-      </div>
+      ${getSidebarFooterHtml()}
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </nav>
   `;
