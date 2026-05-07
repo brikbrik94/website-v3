@@ -3,8 +3,8 @@ import { MapCore } from '../lib/MapCore';
 import { MapItem } from './MapPage';
 import { initTopbar } from '../components/Topbar';
 import { initTrackingSidebar, updateTrackingList, TrackingItem } from '../components/TrackingSidebar';
-import { AisInterpreter } from '../../api/AisInterpreter';
-import { AdsbInterpreter } from '../../api/AdsbInterpreter';
+import { AisInterpreter } from '../api/AisInterpreter';
+import { AdsbInterpreter } from '../api/AdsbInterpreter';
 import { MAP_COLORS } from '../lib/MapStyles';
 
 export const TrackingPage = {
@@ -29,6 +29,7 @@ export const TrackingPage = {
     // Layer state
     let aisVisible = true;
     let adsbVisible = true;
+    let selectedId: string | number | null = null;
 
     const ensureTrackingLayers = () => {
       // ADS-B Layers
@@ -40,23 +41,27 @@ export const TrackingPage = {
           id: 'adsb-tracks',
           type: 'line',
           source: 'adsb-tracks',
-          paint: { 'line-color': MAP_COLORS.accent, 'line-width': 2, 'line-opacity': 0.6 }
+          paint: { 
+            'line-color': MAP_COLORS.accent, 
+            'line-width': ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5],
+            'line-opacity': 0.6 
+          }
         });
         map.addLayer({
           id: 'adsb-points',
           type: 'symbol',
           source: 'adsb',
           layout: {
-            'icon-image': 'plane-15',
+            'icon-image': 'plane-a1',
             'icon-rotate': ['get', 'track'],
             'icon-allow-overlap': true,
             'text-field': ['get', 'flight'],
-            'text-size': 12,
+            'text-size': 11,
             'text-offset': [0, 1.5],
             'text-anchor': 'top',
             'visibility': adsbVisible ? 'visible' : 'none'
           },
-          paint: { 'text-color': MAP_COLORS.accent, 'text-halo-color': '#fff', 'text-halo-width': 1 }
+          paint: { 'text-color': '#fff', 'text-halo-color': '#000', 'text-halo-width': 1 }
         });
       }
 
@@ -69,30 +74,44 @@ export const TrackingPage = {
           id: 'ais-tracks',
           type: 'line',
           source: 'ais-tracks',
-          paint: { 'line-color': MAP_COLORS.success, 'line-width': 2, 'line-opacity': 0.6 }
+          paint: { 
+            'line-color': MAP_COLORS.success, 
+            'line-width': ['case', ['==', ['get', 'mmsi'], selectedId || 0], 4, 1.5],
+            'line-opacity': 0.6 
+          }
         });
         map.addLayer({
           id: 'ais-points',
           type: 'symbol',
           source: 'ais',
           layout: {
-            'icon-image': 'ship-15',
+            'icon-image': 'ship-unknown',
             'icon-rotate': ['get', 'cog'],
             'icon-allow-overlap': true,
+            'icon-size': 0.8,
             'text-field': ['get', 'name'],
             'text-size': 11,
             'text-offset': [0, 1.2],
             'text-anchor': 'top',
             'visibility': aisVisible ? 'visible' : 'none'
           },
-          paint: { 'text-color': MAP_COLORS.success, 'text-halo-color': '#fff', 'text-halo-width': 1 }
+          paint: { 'text-color': '#fff', 'text-halo-color': '#000', 'text-halo-width': 1 }
         });
       }
     };
 
     // Sidebar
     initTrackingSidebar(document.getElementById('sidebar-container')!, (item) => {
+      selectedId = item.id;
       map.flyTo({ center: [item.lon, item.lat], zoom: 14 });
+      
+      // Update highlight immediately
+      if (map.getLayer('adsb-tracks')) {
+        map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5]);
+      }
+      if (map.getLayer('ais-tracks')) {
+        map.setPaintProperty('ais-tracks', 'line-width', ['case', ['==', ['get', 'mmsi'], selectedId || 0], 4, 1.5]);
+      }
     });
 
     // Topbar
@@ -132,7 +151,10 @@ export const TrackingPage = {
       .forEach(btn => btn.classList.add('active'));
 
     map.on('load', async () => {
-      await MapCore.loadSprites(map, 'https://tiles.oe5ith.at/sprites/oe5ith-tracking');
+      await Promise.all([
+        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/adsb/sprite'),
+        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/ais/sprite')
+      ]);
       ensureTrackingLayers();
 
       const refresh = async () => {
