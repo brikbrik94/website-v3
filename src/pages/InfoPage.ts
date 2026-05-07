@@ -8,6 +8,7 @@ interface NahStation {
   region: string;
   op_type: string;
   is_active: boolean;
+  in_season: boolean;
   is_night_ready: boolean;
   calculated_start: string | null;
   calculated_end: string | null;
@@ -89,33 +90,58 @@ const renderNahStatusModule = async (container: HTMLElement) => {
 
     <div class="content-body">
       <div class="card-grid" id="nah-stats-cards" style="margin-bottom: var(--card-gap);"></div>
-      <div class="panel">
-        <div class="panel-body panel-body-flush" style="overflow-x: auto;">
-          <table class="ci-table">
-            <thead>
-              <tr>
-                <th class="sortable" data-sort="callsign">Station</th>
-                <th class="sortable" data-sort="region">Organisation</th>
-                <th class="sortable" data-sort="op_type">Typ</th>
-                <th class="sortable mono" data-sort="calculated_start">Start (BCET)</th>
-                <th class="sortable mono" data-sort="calculated_end">Ende (ECET)</th>
-                <th class="sortable" data-sort="is_active">Status</th>
-              </tr>
-            </thead>
-            <tbody id="nah-table-body">
-              <tr>
-                <td colspan="6" style="text-align: center; padding: var(--card-gap);">
-                  <i class="fa-solid fa-circle-notch fa-spin"></i> Lade Stationen...
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      
+      <div id="nah-tables-container" style="display: flex; flex-direction: column; gap: 24px;">
+        <!-- In Season Table -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title"><i class="fa-solid fa-helicopter"></i> Aktive Stützpunkte (Saison)</div>
+          </div>
+          <div class="panel-body panel-body-flush" style="overflow-x: auto;">
+            <table class="ci-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort="callsign">Station</th>
+                  <th class="sortable" data-sort="region">Organisation</th>
+                  <th class="sortable" data-sort="op_type">Typ</th>
+                  <th class="sortable mono" data-sort="calculated_start">Start (BCET)</th>
+                  <th class="sortable mono" data-sort="calculated_end">Ende (ECET)</th>
+                  <th class="sortable" data-sort="is_active">Status</th>
+                </tr>
+              </thead>
+              <tbody id="nah-table-body-season">
+                <tr><td colspan="6" style="text-align: center; padding: 20px;">Lade...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Off Season Table -->
+        <div class="panel" id="nah-panel-offseason" style="display: none;">
+          <div class="panel-header">
+            <div class="panel-title" style="color: var(--muted);"><i class="fa-solid fa-snowflake"></i> Aktuell keine Saison</div>
+          </div>
+          <div class="panel-body panel-body-flush" style="overflow-x: auto;">
+            <table class="ci-table">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Station</th>
+                  <th style="width: 25%;">Organisation</th>
+                  <th style="width: 25%;">Typ</th>
+                  <th style="width: 25%;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="nah-table-body-offseason"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   `;
 
-  const tableBody = document.getElementById('nah-table-body')!;
+  const tableBodySeason = document.getElementById('nah-table-body-season')!;
+  const tableBodyOffseason = document.getElementById('nah-table-body-offseason')!;
+  const panelOffseason = document.getElementById('nah-panel-offseason')!;
   const metaContainer = document.getElementById('nah-meta')!;
   const refreshBtn = document.getElementById('nah-refresh-btn') as HTMLButtonElement;
   const headers = container.querySelectorAll('th.sortable');
@@ -149,34 +175,22 @@ const renderNahStatusModule = async (container: HTMLElement) => {
     if (!statsContainer) return;
 
     const total = stations.length;
-    const active = stations.filter(s => s.is_active).length;
-    const night = stations.filter(s => s.is_night_ready).length;
-
-    let nextEventTime: Date | null = null;
-    let nextEventCallsign = '';
-    const now = new Date();
-
-    stations.forEach(s => {
-      [s.calculated_start, s.calculated_end].forEach(iso => {
-        if (iso) {
-          const d = new Date(iso);
-          if (d > now) {
-            if (!nextEventTime || d < nextEventTime) {
-              nextEventTime = d;
-              nextEventCallsign = s.callsign;
-            }
-          }
-        }
-      });
-    });
+    const inSeasonStations = stations.filter(s => s.in_season);
+    const activeStations = inSeasonStations.filter(s => s.is_active);
+    
+    const activeCount = activeStations.length;
+    const inSeasonCount = inSeasonStations.length;
+    const offSeasonCount = total - inSeasonCount;
+    
+    // Calculate night ready count (only for in-season stations)
+    const nightReadyCount = inSeasonStations.filter(s => s.is_night_ready).length;
 
     let statusClass = 'offline';
     let statusLabel = 'Keine Stationen aktiv';
-    const ratio = total > 0 ? active / total : 0;
+    const ratio = inSeasonCount > 0 ? activeCount / inSeasonCount : 0;
 
-    if (active === 0) {
+    if (activeCount === 0) {
       statusClass = 'offline';
-      statusLabel = 'Keine Stationen aktiv';
     } else if (ratio > 0.5) {
       statusClass = 'online';
       statusLabel = 'Einsatzbereit';
@@ -189,27 +203,27 @@ const renderNahStatusModule = async (container: HTMLElement) => {
       <div class="card card-dashboard">
         <div class="card-status-dot ${statusClass}" title="${statusLabel}"></div>
         <h3>Bereitschaft</h3>
-        <p class="t-body">${active} von ${total} Stationen</p>
+        <p class="t-body">${activeCount} von ${inSeasonCount} im Dienst</p>
       </div>
 
       <div class="card card-dashboard">
-        <h1 class="t-h1" style="margin: 0; color: var(--success);">${active}</h1>
-        <h3>Im Dienst</h3>
+        <h1 class="t-h1" style="margin: 0; color: var(--success);">${activeCount}</h1>
+        <h3>Verfügbar</h3>
         <p class="t-body">Aktuell einsatzbereit</p>
       </div>
 
+      <div class="card card-dashboard">
+        <h1 class="t-h1" style="margin: 0; color: var(--muted);">${offSeasonCount}</h1>
+        <h3>Saisonpause</h3>
+        <p class="t-body">Von gesamt ${total} Stationen</p>
+      </div>
+      
       <div class="card card-dashboard">
         <div class="card-status-dot online" style="background: none; box-shadow: none;">
           <i class="fa-solid fa-moon" style="color: var(--subtle);"></i>
         </div>
         <h3>Nacht-Bereit</h3>
-        <p class="t-body">${night} Stationen (H24)</p>
-      </div>
-
-      <div class="card card-dashboard">
-        <h3 style="padding-bottom: 0;">${nextEventCallsign || '-'}</h3>
-        <h3>Nächster Wechsel</h3>
-        <p class="t-body">${nextEventTime ? formatTime((nextEventTime as Date).toISOString()) : '-'}</p>
+        <p class="t-body">${nightReadyCount} Stationen (H24)</p>
       </div>
     `;
   };
@@ -233,7 +247,10 @@ const renderNahStatusModule = async (container: HTMLElement) => {
       }
     });
 
-    tableBody.innerHTML = sorted.map(station => `
+    const inSeason = sorted.filter(s => s.in_season);
+    const offSeason = sorted.filter(s => !s.in_season);
+
+    tableBodySeason.innerHTML = inSeason.map(station => `
       <tr>
         <td>
           <div style="font-weight: 500;">${station.callsign}</div>
@@ -250,6 +267,23 @@ const renderNahStatusModule = async (container: HTMLElement) => {
         </td>
       </tr>
     `).join('');
+
+    if (offSeason.length > 0) {
+      panelOffseason.style.display = 'block';
+      tableBodyOffseason.innerHTML = offSeason.map(station => `
+        <tr>
+          <td>
+            <div style="font-weight: 500;">${station.callsign}</div>
+            <div style="font-size: 0.8rem; color: var(--subtle);">${station.name}</div>
+          </td>
+          <td>${station.region}</td>
+          <td><span class="badge badge-gray">${station.op_type}</span></td>
+          <td><span class="badge badge-gray">SAISONPAUSE</span></td>
+        </tr>
+      `).join('');
+    } else {
+      panelOffseason.style.display = 'none';
+    }
   };
 
   const fetchData = async () => {
@@ -268,7 +302,7 @@ const renderNahStatusModule = async (container: HTMLElement) => {
         scheduleNextRefresh(data.refresh_at);
       }
     } catch (error) {
-      tableBody.innerHTML = `
+      tableBodySeason.innerHTML = `
         <tr>
           <td colspan="6" style="text-align: center; padding: 2rem; color: var(--danger);">
             <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Daten.
