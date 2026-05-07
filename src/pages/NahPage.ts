@@ -25,6 +25,8 @@ export interface NahStation {
   region: string;
   op_type: string;
   is_active: boolean;
+  in_season: boolean;
+  months_active: number[];
   is_night_ready: boolean;
   fixed_start: string | null;
   fixed_end: string | null;
@@ -103,8 +105,16 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
     stationMarkers = [];
 
     stations.forEach((station) => {
-      const color = station.is_active ? MAP_COLORS.success : MAP_COLORS.muted;
-      const statusText = station.is_active ? 'EINSATZBEREIT' : 'NICHT AKTIV';
+      let color = MAP_COLORS.success;
+      let statusText = 'EINSATZBEREIT';
+
+      if (!station.in_season) {
+        color = MAP_COLORS.muted;
+        statusText = 'AUSSER SAISON';
+      } else if (!station.is_active) {
+        color = MAP_COLORS.danger;
+        statusText = 'AUSSER DIENST (Betriebszeit)';
+      }
       
       const el = document.createElement('div');
       el.innerHTML = `<i class="fa-solid fa-helicopter map-marker-helicopter" style="color: ${color};"></i>`;
@@ -135,6 +145,7 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
             <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
             ${hoursHtml}
             <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>
+            ${!station.in_season ? `<tr><td>Saison</td><td>Monate: ${station.months_active.join(', ')}</td></tr>` : ''}
           </table>
         </div>
       `;
@@ -253,7 +264,6 @@ export const initNahPage = async (container: HTMLElement) => {
       <div class="layout">
         <div id="sidebar-mount"></div>
         <main id="map" class="full-map">
-          ${MapCore.getAttributionHtml()}
         </main>
         <div class="map-legend" id="map-legend" style="display:none;">
           <div class="map-legend-title"></div>
