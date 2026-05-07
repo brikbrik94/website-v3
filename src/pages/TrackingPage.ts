@@ -33,6 +33,7 @@ export const TrackingPage = {
     let selectedId: string | number | null = null;
 
     const ensureTrackingLayers = () => {
+      console.log('[Tracking] Ensuring layers exist...');
       // ADS-B Layers
       if (!map.getSource('adsb')) {
         map.addSource('adsb', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
@@ -54,7 +55,8 @@ export const TrackingPage = {
           source: 'adsb',
           layout: {
             'icon-image': 'plane-a1',
-            'icon-rotate': ['get', 'track'],
+            'icon-rotate': ['coalesce', ['get', 'track'], 0],
+            'icon-rotation-alignment': 'map',
             'icon-allow-overlap': true,
             'text-field': ['get', 'flight'],
             'text-size': 11,
@@ -87,7 +89,8 @@ export const TrackingPage = {
           source: 'ais',
           layout: {
             'icon-image': 'ship-unknown',
-            'icon-rotate': ['get', 'cog'],
+            'icon-rotate': ['coalesce', ['get', 'cog'], 0],
+            'icon-rotation-alignment': 'map',
             'icon-allow-overlap': true,
             'icon-size': 0.8,
             'text-field': ['get', 'name'],
@@ -99,6 +102,14 @@ export const TrackingPage = {
           paint: { 'text-color': '#fff', 'text-halo-color': '#000', 'text-halo-width': 1 }
         });
       }
+    };
+
+    const loadAllSprites = async () => {
+      console.log('[Tracking] Loading sprites...');
+      await Promise.all([
+        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/adsb/sprite'),
+        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/ais/sprite')
+      ]);
     };
 
     // Sidebar
@@ -118,8 +129,9 @@ export const TrackingPage = {
     // Topbar
     initTopbar(document.getElementById('topbar-container')!, basemaps, (url) => {
       map.setStyle(url);
-      map.once('idle', () => {
-        MapCore.reapplyBaseLayers();
+      map.once('idle', async () => {
+        await MapCore.reapplyBaseLayers();
+        await loadAllSprites();
         ensureTrackingLayers();
       });
     }, undefined, [
@@ -151,28 +163,25 @@ export const TrackingPage = {
     document.querySelectorAll('#btn-toggle-adsb, #btn-toggle-adsb-mobile, #btn-toggle-ais, #btn-toggle-ais-mobile')
       .forEach(btn => btn.classList.add('active'));
 
-    map.on('load', async () => {
-      await Promise.all([
-        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/adsb/sprite'),
-        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/ais/sprite')
-      ]);
+    const onMapLoaded = async () => {
+      console.log('[Tracking] Map fully loaded.');
+      await loadAllSprites();
       ensureTrackingLayers();
 
       const refresh = async () => {
         if (!map.getContainer().isConnected) {
+          console.log('[Tracking] Container disconnected, stopping loop.');
           clearInterval(interval);
           return;
         }
+
+        // 1. Fetch ADS-B
         try {
           const adsbData = await adsb.fetch();
+          console.log(`[Tracking] ADS-B Data received: ${adsbData.features.length} aircraft.`);
           if (map.getSource('adsb')) (map.getSource('adsb') as maplibregl.GeoJSONSource).setData(adsbData);
           if (map.getSource('adsb-tracks')) (map.getSource('adsb-tracks') as maplibregl.GeoJSONSource).setData(adsb.getTracksAsGeoJson());
 
-          const aisData = await ais.fetch();
-          if (map.getSource('ais')) (map.getSource('ais') as maplibregl.GeoJSONSource).setData(aisData);
-          if (map.getSource('ais-tracks')) (map.getSource('ais-tracks') as maplibregl.GeoJSONSource).setData(ais.getTracksAsGeoJson());
-
-          // Update Sidebar
           const adsbItems: TrackingItem[] = adsbData.features.map(f => ({
             id: f.properties?.hex || '',
             label: f.properties?.flight || 'Unknown',
@@ -182,6 +191,17 @@ export const TrackingPage = {
             lon: f.geometry.coordinates[0]
           }));
           updateTrackingList('adsb-list', adsbItems);
+        } catch (e) {
+          console.error('[Tracking] ADS-B Refresh failed', e);
+          updateTrackingList('adsb-list', []);
+        }
+
+        // 2. Fetch AIS
+        try {
+          const aisData = await ais.fetch();
+          console.log(`[Tracking] AIS Data received: ${aisData.features.length} ships.`);
+          if (map.getSource('ais')) (map.getSource('ais') as maplibregl.GeoJSONSource).setData(aisData);
+          if (map.getSource('ais-tracks')) (map.getSource('ais-tracks') as maplibregl.GeoJSONSource).setData(ais.getTracksAsGeoJson());
 
           const aisItems: TrackingItem[] = aisData.features.map(f => ({
             id: f.properties?.mmsi || '',
@@ -192,15 +212,18 @@ export const TrackingPage = {
             lon: f.geometry.coordinates[0]
           }));
           updateTrackingList('ais-list', aisItems);
-
         } catch (e) {
-          console.error('Tracking Refresh failed', e);
+          console.error('[Tracking] AIS Refresh failed', e);
+          updateTrackingList('ais-list', []);
         }
       };
 
       const interval = setInterval(refresh, 5000);
       refresh();
-    });
+    };
+
+    if (map.loaded()) onMapLoaded();
+    else map.on('load', onMapLoaded);
 
     // Handle Popups
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
