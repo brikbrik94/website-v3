@@ -4,7 +4,9 @@ import { initRoutingPage } from './pages/RoutingPage';
 import { initNahPage } from './pages/NahPage';
 import { initInfoPage } from './pages/InfoPage';
 import { initCoordsPage } from './pages/CoordsPage';
+import { TrackingPage } from './pages/TrackingPage';
 import { initGlobalModals } from './lib/GlobalModals';
+import { APP_VERSION } from './version';
 
 // Global Modals initialisieren
 initGlobalModals();
@@ -26,7 +28,7 @@ const renderLandingPage = () => {
     <header class="topbar">
       <div class="topbar-left">
         <a href="/" class="brand nav-link">
-          <img src="/src/assets/logo.svg" alt="OE5ITH Logo" class="brand-logo" />
+          <img src="/logo.svg" alt="OE5ITH Logo" class="brand-logo" />
           <span class="brand-text">OE5ITH</span>
         </a>
       </div>
@@ -38,44 +40,58 @@ const renderLandingPage = () => {
       </div>
     </header>
 
-    <div class="layout">
-      <main class="page-content landing-body">
-        <h1 class="landing-title">Willkommen im <span>Cloud Portal</span></h1>
-        <p class="landing-subtitle">
-          Öffentliches Portal für Geodaten und Karten-Services.
-        </p>
+    <main class="landing-body">
+      <h1 class="landing-title">Willkommen im <span>Cloud Portal</span></h1>
+      
+      <div class="card-grid" style="width: 100%; max-width: 860px;">
+        <a href="/karte" class="card card-nav nav-link">
+          <div class="card-nav-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+          <h3>Karte</h3>
+          <p>Interaktive Vektorkarte basierend auf dem neuen Geodata-Server.</p>
+          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+        </a>
 
-        <div class="card-grid">
-          <a href="/karte" class="card card-nav nav-link">
-            <div class="card-nav-icon"><i class="fa-solid fa-map-location-dot"></i></div>
-            <h3>Karte</h3>
-            <p>Interaktive Vektorkarte basierend auf dem neuen Geodata-Server.</p>
-            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-          </a>
+        <a href="/routing" class="card card-nav nav-link">
+          <div class="card-nav-icon"><i class="fa-solid fa-route"></i></div>
+          <h3>Routing</h3>
+          <p>Berechne die optimale Route zwischen zwei Punkten über den OE5ITH ORS Dienst.</p>
+          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+        </a>
 
-          <a href="/routing" class="card card-nav nav-link">
-            <div class="card-nav-icon"><i class="fa-solid fa-route"></i></div>
-            <h3>Routing</h3>
-            <p>Berechne die optimale Route zwischen zwei Punkten über den OE5ITH ORS Dienst.</p>
-            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-          </a>
+        <a href="/nah" class="card card-nav nav-link">
+          <div class="card-nav-icon"><i class="fa-solid fa-helicopter"></i></div>
+          <h3>Luftrettung</h3>
+          <p>Übersicht der NAH-Stützpunkte und Live-Verfügbarkeit.</p>
+          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+        </a>
 
-          <a href="/nah" class="card card-nav nav-link">
-            <div class="card-nav-icon"><i class="fa-solid fa-helicopter"></i></div>
-            <h3>Luftrettung</h3>
-            <p>Übersicht der NAH-Stützpunkte und Live-Verfügbarkeit.</p>
-            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-          </a>
+        <a href="/coords" class="card card-nav nav-link">
+          <div class="card-nav-icon"><i class="fa-solid fa-compass"></i></div>
+          <h3>Umrechner</h3>
+          <p>Koordinaten bidirektional zwischen WGS84, UTM, BMN, MGRS und Maidenhead umrechnen.</p>
+          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+        </a>
 
-          <a href="/coords" class="card card-nav nav-link">
-            <div class="card-nav-icon"><i class="fa-solid fa-compass"></i></div>
-            <h3>Umrechner</h3>
-            <p>Koordinaten bidirektional zwischen WGS84, UTM, BMN, MGRS und Maidenhead umrechnen.</p>
-            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-          </a>
+        <a href="/tracking" class="card card-nav nav-link">
+          <div class="card-nav-icon"><i class="fa-solid fa-satellite-dish"></i></div>
+          <h3>Live Tracking</h3>
+          <p>Echtzeit-Anzeige von Flugzeugen (ADS-B) und Schiffen (AIS) in der Region.</p>
+          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+        </a>
+      </div>
+
+      <footer class="page-footer" style="width: 100%; max-width: 860px;">
+        <span class="page-footer-version" 
+              onclick="window.dispatchEvent(new CustomEvent('open-changelog'))" 
+              style="cursor: pointer;" 
+              title="Changelog anzeigen">v${APP_VERSION}</span>
+        <span class="page-footer-copy">© 2026 OE5ITH</span>
+        <div class="page-footer-links">
+          <a href="#" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))">Lizenzen & Impressum</a>
+          <a href="https://github.com/brikbrik94/website-v3" target="_blank">GitHub</a>
         </div>
-      </main>
-    </div>
+      </footer>
+    </main>
   `;
 };
 
@@ -90,6 +106,8 @@ const router = () => {
     if (app) initNahPage(app);
   } else if (path === '/coords') {
     if (app) initCoordsPage(app);
+  } else if (path === '/tracking') {
+    if (app) TrackingPage.render(app);
   } else if (path.startsWith('/info')) {
     const subpath = path.split('/')[2] || 'nah';
     if (app) initInfoPage(app, subpath);
