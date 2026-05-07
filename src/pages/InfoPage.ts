@@ -92,10 +92,10 @@ const renderNahStatusModule = async (container: HTMLElement) => {
       <div class="card-grid" id="nah-stats-cards" style="margin-bottom: var(--card-gap);"></div>
       
       <div id="nah-tables-container" style="display: flex; flex-direction: column; gap: 24px;">
-        <!-- In Season Table -->
+        <!-- 1. Active Table -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title"><i class="fa-solid fa-helicopter"></i> Aktive Stützpunkte (Saison)</div>
+            <div class="panel-title" style="color: var(--success);"><i class="fa-solid fa-helicopter"></i> Aktuell im Dienst</div>
           </div>
           <div class="panel-body panel-body-flush" style="overflow-x: auto;">
             <table class="ci-table">
@@ -109,15 +109,35 @@ const renderNahStatusModule = async (container: HTMLElement) => {
                   <th class="sortable" data-sort="is_active">Status</th>
                 </tr>
               </thead>
-              <tbody id="nah-table-body-season">
+              <tbody id="nah-table-body-active">
                 <tr><td colspan="6" style="text-align: center; padding: 20px;">Lade...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Off Season Table -->
-        <div class="panel" id="nah-panel-offseason" style="display: none;">
+        <!-- 2. Standby Table -->
+        <div class="panel" id="nah-panel-standby">
+          <div class="panel-header">
+            <div class="panel-title" style="color: var(--danger);"><i class="fa-solid fa-clock"></i> Außer Dienst (Betriebszeit)</div>
+          </div>
+          <div class="panel-body panel-body-flush" style="overflow-x: auto;">
+            <table class="ci-table">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Station</th>
+                  <th style="width: 25%;">Organisation</th>
+                  <th style="width: 25%;">Typ</th>
+                  <th style="width: 25%;">Nächster Dienst</th>
+                </tr>
+              </thead>
+              <tbody id="nah-table-body-standby"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Off Season Table -->
+        <div class="panel" id="nah-panel-offseason">
           <div class="panel-header">
             <div class="panel-title" style="color: var(--muted);"><i class="fa-solid fa-snowflake"></i> Aktuell keine Saison</div>
           </div>
@@ -139,9 +159,9 @@ const renderNahStatusModule = async (container: HTMLElement) => {
     </div>
   `;
 
-  const tableBodySeason = document.getElementById('nah-table-body-season')!;
+  const tableBodyActive = document.getElementById('nah-table-body-active')!;
+  const tableBodyStandby = document.getElementById('nah-table-body-standby')!;
   const tableBodyOffseason = document.getElementById('nah-table-body-offseason')!;
-  const panelOffseason = document.getElementById('nah-panel-offseason')!;
   const metaContainer = document.getElementById('nah-meta')!;
   const refreshBtn = document.getElementById('nah-refresh-btn') as HTMLButtonElement;
   const headers = container.querySelectorAll('th.sortable');
@@ -247,43 +267,47 @@ const renderNahStatusModule = async (container: HTMLElement) => {
       }
     });
 
-    const inSeason = sorted.filter(s => s.in_season);
-    const offSeason = sorted.filter(s => !s.in_season);
+    const activeStations = sorted.filter(s => s.in_season && s.is_active);
+    const standbyStations = sorted.filter(s => s.in_season && !s.is_active);
+    const offSeasonStations = sorted.filter(s => !s.in_season);
 
-    tableBodySeason.innerHTML = inSeason.map(station => `
-      <tr>
-        <td>
-          <div style="font-weight: 500;">${station.callsign}</div>
-          <div style="font-size: 0.8rem; color: var(--subtle);">${station.name}</div>
-        </td>
-        <td>${station.region}</td>
-        <td><span class="badge badge-gray">${station.op_type}</span></td>
-        <td class="mono">${formatTime(station.calculated_start)}</td>
-        <td class="mono">${formatTime(station.calculated_end)}</td>
-        <td>
-          ${station.is_active 
-            ? '<span class="badge badge-green">EINSATZBEREIT</span>' 
-            : '<span class="badge badge-red">NICHT AKTIV</span>'}
-        </td>
-      </tr>
-    `).join('');
-
-    if (offSeason.length > 0) {
-      panelOffseason.style.display = 'block';
-      tableBodyOffseason.innerHTML = offSeason.map(station => `
+    // Helper to render row
+    const renderRow = (s: NahStation, simple = false) => {
+      if (simple) {
+        return `
+          <tr>
+            <td>
+              <div style="font-weight: 500;">${s.callsign}</div>
+              <div style="font-size: 0.8rem; color: var(--subtle);">${s.name}</div>
+            </td>
+            <td>${s.region}</td>
+            <td><span class="badge badge-gray">${s.op_type}</span></td>
+            <td>
+              ${!s.in_season 
+                ? '<span class="badge badge-gray">SAISONPAUSE</span>' 
+                : `<span class="badge badge-red">AB ${formatTime(s.calculated_start)}</span>`}
+            </td>
+          </tr>
+        `;
+      }
+      return `
         <tr>
           <td>
-            <div style="font-weight: 500;">${station.callsign}</div>
-            <div style="font-size: 0.8rem; color: var(--subtle);">${station.name}</div>
+            <div style="font-weight: 500;">${s.callsign}</div>
+            <div style="font-size: 0.8rem; color: var(--subtle);">${s.name}</div>
           </td>
-          <td>${station.region}</td>
-          <td><span class="badge badge-gray">${station.op_type}</span></td>
-          <td><span class="badge badge-gray">SAISONPAUSE</span></td>
+          <td>${s.region}</td>
+          <td><span class="badge badge-gray">${s.op_type}</span></td>
+          <td class="mono">${formatTime(s.calculated_start)}</td>
+          <td class="mono">${formatTime(s.calculated_end)}</td>
+          <td><span class="badge badge-green">EINSATZBEREIT</span></td>
         </tr>
-      `).join('');
-    } else {
-      panelOffseason.style.display = 'none';
-    }
+      `;
+    };
+
+    tableBodyActive.innerHTML = activeStations.map(s => renderRow(s)).join('') || '<tr><td colspan="6" style="text-align: center; padding: 12px;">Keine Stationen aktiv</td></tr>';
+    tableBodyStandby.innerHTML = standbyStations.map(s => renderRow(s, true)).join('') || '<tr><td colspan="4" style="text-align: center; padding: 12px;">Keine Stationen auf Standby</td></tr>';
+    tableBodyOffseason.innerHTML = offSeasonStations.map(s => renderRow(s, true)).join('') || '<tr><td colspan="4" style="text-align: center; padding: 12px;">Alle Stationen in Saison</td></tr>';
   };
 
   const fetchData = async () => {
@@ -302,7 +326,7 @@ const renderNahStatusModule = async (container: HTMLElement) => {
         scheduleNextRefresh(data.refresh_at);
       }
     } catch (error) {
-      tableBodySeason.innerHTML = `
+      tableBodyActive.innerHTML = `
         <tr>
           <td colspan="6" style="text-align: center; padding: 2rem; color: var(--danger);">
             <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Daten.
