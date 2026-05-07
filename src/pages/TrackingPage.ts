@@ -17,12 +17,13 @@ export const TrackingPage = {
       </div>
     `;
 
-    const basemaps: MapItem[] = [
-      { name: 'Outdoor', type: 'basemap', style: { url: 'https://tiles.oe5ith.at/styles/oe5ith-outdoor/style.json' }, file: { url: '' } },
-      { name: 'Dark', type: 'basemap', style: { url: 'https://tiles.oe5ith.at/styles/oe5ith-dark/style.json' }, file: { url: '' } }
-    ];
+    // 1. Inventar laden (CI-konform)
+    const invRes = await fetch('https://tiles.oe5ith.at/inventory.json');
+    if (!invRes.ok) throw new Error('Inventory load failed');
+    const inventory = await invRes.json();
+    const basemaps: MapItem[] = inventory.maps.filter((m: any) => m.type === 'basemap');
 
-    const map = MapCore.init(document.getElementById('map')!, basemaps[0].style.url);
+    const map = MapCore.init(document.getElementById('map')!, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
     const ais = new AisInterpreter('/api/ais.php');
     const adsb = new AdsbInterpreter('/api/adsb.php');
 
