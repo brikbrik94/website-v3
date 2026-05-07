@@ -2,6 +2,31 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.1.2a1] - 2026-05-07
+
+### Hinzugefügt
+- **NAH-Verfügbarkeit:** Komplette Überarbeitung der Status-Anzeige. Differentiellere Darstellung von Saisonpause vs. täglicher Betriebszeit.
+- **Info-Seite:** Neues Triple-Table Layout (Aktiv, Bereitschaft/Standby, Saisonpause) für bessere Übersicht.
+- **Statistik-Dashboard:** Die Quote der Einsatzbereitschaft klammert Stationen in der Saisonpause nun aus, um ein realistischeres Bild der aktiven Flotte zu geben.
+- **Kartendarstellung:** Neues Drei-Farben-System für NAH-Marker (Grün=Aktiv, Rot=Saison/Standby, Grau=Saisonpause) inkl. detaillierterer Popups.
+
+## [3.1.1a2] - 2026-05-07
+
+### Hinzugefügt
+- **UI-Interaktion:** Die Versionsnummer auf der Startseite öffnet nun ebenfalls das Changelog-Modal.
+- **Karten-Attribution:** Umstellung auf das kompakte "i"-Symbol (MapLibre compact mode) für ein saubereres Kartenbild.
+
+## [3.1.1a1] - 2026-05-07
+
+### Hinzugefügt
+- **CI v2.0 Integration:** Vollständige Umstellung auf den neuen CI-Standard inkl. Typ-5 Landing-Page und nativem Footer.
+- **Kartendarstellung:** Wechsel auf native MapLibre-Attribution zur besseren Einhaltung der Lizenzbedingungen.
+- **Styling:** Neue Marker-Definition für NAH-Hubschrauber (bessere Sichtbarkeit & Schatten).
+
+### Behoben
+- **Sidebar Mobil:** Fix für die Sidebar im Koordinaten-Umrechner, die sich auf Mobilgeräten nicht öffnen ließ.
+- **CI-Fixes:** Übernahme von Gap-Fallbacks und Scrollbar-Verbesserungen aus dem `oe5ith-ci` Repository.
+
 ## [3.1.0a1] - 2026-05-06
 
 ### Hinzugefügt
