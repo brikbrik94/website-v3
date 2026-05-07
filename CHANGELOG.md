@@ -2,6 +2,14 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.2.0a1] - 2026-05-07
+
+### Hinzugefügt
+- **Live Tracking:** Neue spezialisierte Seite für Schiffs- (AIS) und Flugverkehr (ADS-B).
+- **Echtzeit-Karten:** Nutzung von High-Performance Symbol-Layern mit dynamischen Sprites und rotierenden Icons.
+- **Track-Historie:** Permanente Anzeige der Flug- und Fahrwege mit Hervorhebung des ausgewählten Objekts.
+- **Interaktive Sidebar:** Separate Listen für Luft- und Wasserfahrzeuge zur schnellen Lokalisierung.
+
 ## [3.1.2a1] - 2026-05-07
 
 ### Hinzugefügt
