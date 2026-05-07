@@ -92,6 +92,7 @@ export const initTopbar = (
         <a href="/routing" class="topbar-nav-link ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
         <a href="/nah" class="topbar-nav-link ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
         <a href="/coords" class="topbar-nav-link ${currentPath === '/coords' ? 'active' : ''}">Umrechner</a>
+        <a href="/tracking" class="topbar-nav-link ${currentPath === '/tracking' ? 'active' : ''}">Tracking</a>
       </div>
 
       ${hasMap ? `
