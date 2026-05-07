@@ -281,7 +281,8 @@ export const initNahPage = async (container: HTMLElement) => {
     legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Gewählte Station' });
     legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Nächste Stationen' });
     legend.addEntry({ type: 'dot',  color: MAP_COLORS.success, label: 'Einsatzbereit' });
-    legend.addEntry({ type: 'dot',  color: MAP_COLORS.muted, label: 'Nicht aktiv' });
+    legend.addEntry({ type: 'dot',  color: MAP_COLORS.danger, label: 'Außer Dienst (Betriebszeit)' });
+    legend.addEntry({ type: 'dot',  color: MAP_COLORS.muted, label: 'Außer Saison' });
 
     const ensureNahLayers = (m: maplibregl.Map) => {
       if (!m.getSource('nah-lines')) {
