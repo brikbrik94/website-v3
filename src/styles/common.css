@@ -63,7 +63,7 @@
   /* ── SPACING & LAYOUT ── */
   --topbar-height:        60px;
   --topbar-height-mobile: 52px;
-  --sidebar-width:        260px;
+  --sidebar-width:        300px;
   --container-max:        1000px;
   --card-radius:          12px;
   --card-padding:         20px;
@@ -149,3 +149,14 @@ a {
   }
   .page-content { padding: 20px 16px; }
 }
+
+/* ── SCROLLBAR ── */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--subtle); }

@@ -364,7 +364,7 @@
 /* Desktop: Controls direkt inline — kein Toggle nötig */
 .controls-panel {
   display: contents;  /* verhält sich nicht als eigener Container */
-  gap: 8px;           /* Fallback, falls display: contents überschrieben wird */
+  gap: 8px;           /* Fallback: greift wenn display:contents durch Utility-Klasse überschrieben wird */
 }
 
 /* Toggle-Button — Desktop: unsichtbar */
