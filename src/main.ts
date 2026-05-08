@@ -42,8 +42,11 @@ const renderLandingPage = () => {
 
     <main class="landing-body">
       <h1 class="landing-title">Willkommen im <span>Cloud Portal</span></h1>
-      
-      <div class="card-grid" style="width: 100%; max-width: 860px;">
+      <p class="landing-subtitle">
+        Öffentliches Portal für Geodaten und Karten-Services.
+      </p>
+
+      <div class="card-grid">
         <a href="/karte" class="card card-nav nav-link">
           <div class="card-nav-icon"><i class="fa-solid fa-map-location-dot"></i></div>
           <h3>Karte</h3>
@@ -80,14 +83,11 @@ const renderLandingPage = () => {
         </a>
       </div>
 
-      <footer class="page-footer" style="width: 100%; max-width: 860px;">
-        <span class="page-footer-version" 
-              onclick="window.dispatchEvent(new CustomEvent('open-changelog'))" 
-              style="cursor: pointer;" 
-              title="Changelog anzeigen">v${APP_VERSION}</span>
+      <footer class="page-footer">
+        <span class="page-footer-version">v${APP_VERSION}</span>
         <span class="page-footer-copy">© 2026 OE5ITH</span>
         <div class="page-footer-links">
-          <a href="#" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))">Lizenzen & Impressum</a>
+          <a href="#">Lizenzen & Impressum</a>
           <a href="https://github.com/brikbrik94/website-v3" target="_blank">GitHub</a>
         </div>
       </footer>

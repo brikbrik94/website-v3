@@ -88,7 +88,10 @@ export const MapCore = {
             0, 0, pos.width, pos.height
           );
           const imageData = ctx.getImageData(0, 0, pos.width, pos.height);
-          map.addImage(id, imageData, { pixelRatio: pos.pixelRatio || 1 });
+          map.addImage(id, imageData, { 
+            pixelRatio: pos.pixelRatio || 1,
+            sdf: true 
+          });
         }
       }
     } catch (err) {

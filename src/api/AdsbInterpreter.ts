@@ -12,7 +12,7 @@ export interface Aircraft {
 export class AdsbInterpreter {
     private url: string;
     private maxTrackPoints: number;
-    private tracks: Map<string, [number, number, number][]>;
+    private tracks: Map<string, { lon: number, lat: number, alt: number }[]>;
 
     constructor(url: string, options: { maxTrackPoints?: number } = {}) {
         this.url = url;
@@ -30,9 +30,14 @@ export class AdsbInterpreter {
             activeHexes.add(a.hex);
             const track = this.tracks.get(a.hex) || [];
             const alt = typeof a.alt_baro === 'number' ? a.alt_baro : 0;
-            track.push([a.lon, a.lat, alt]);
-            if (track.length > this.maxTrackPoints) track.shift();
-            this.tracks.set(a.hex, track);
+            
+            // Nur hinzufügen wenn Position sich geändert hat
+            const last = track[track.length - 1];
+            if (!last || last.lon !== a.lon || last.lat !== a.lat) {
+                track.push({ lon: a.lon, lat: a.lat, alt });
+                if (track.length > this.maxTrackPoints) track.shift();
+                this.tracks.set(a.hex, track);
+            }
         });
 
         for (const hex of this.tracks.keys()) {
@@ -50,17 +55,25 @@ export class AdsbInterpreter {
     }
 
     getTracksAsGeoJson(): GeoJSON.FeatureCollection<GeoJSON.LineString> {
-        const features: GeoJSON.Feature[] = [];
+        const features: any[] = [];
         for (const [hex, points] of this.tracks.entries()) {
             if (points.length < 2) continue;
-            features.push({
-                type: 'Feature',
-                geometry: {
-                    type: 'LineString',
-                    coordinates: points.map(p => [p[0], p[1]])
-                },
-                properties: { hex }
-            });
+            
+            // In 2-Punkt-Segmente unterteilen für Farbgradient
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i+1];
+                const altMid = (p1.alt + p2.alt) / 2;
+                
+                features.push({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: [[p1.lon, p1.lat], [p2.lon, p2.lat]]
+                    },
+                    properties: { hex, alt_mid: altMid }
+                });
+            }
         }
         return { type: 'FeatureCollection', features } as any;
     }

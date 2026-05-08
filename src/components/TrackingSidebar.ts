@@ -64,10 +64,9 @@ export const updateTrackingList = (id: string, items: TrackingItem[]) => {
   }
 
   listEl.innerHTML = items.map(item => {
-    // Escape single quotes in JSON for HTML attribute
-    const itemData = JSON.stringify(item).replace(/'/g, "&apos;");
+    const itemData = JSON.stringify(item).replace(/"/g, '&quot;');
     return `
-      <div class="result-item-simple" data-item='${itemData}'>
+      <div class="result-item-simple" data-item="${itemData}">
         <div class="result-item-title">${item.label}</div>
         <div class="result-item-meta">${item.info}</div>
       </div>
