@@ -17,6 +17,7 @@ describe('AdsbInterpreter', () => {
         };
 
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
             json: () => Promise.resolve(mockData)
         }));
 
@@ -34,6 +35,7 @@ describe('AdsbInterpreter', () => {
 
         // First fetch
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
             json: () => Promise.resolve({
                 aircraft: [{ hex: 'A1B2C3', lat: 48.1, lon: 16.1, alt_baro: 10000 }]
             })
@@ -42,6 +44,7 @@ describe('AdsbInterpreter', () => {
 
         // Second fetch with moved aircraft
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
             json: () => Promise.resolve({
                 aircraft: [{ hex: 'A1B2C3', lat: 48.2, lon: 16.2, alt_baro: 12000 }]
             })
@@ -50,6 +53,7 @@ describe('AdsbInterpreter', () => {
 
         // Third fetch with moved aircraft again
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+            ok: true,
             json: () => Promise.resolve({
                 aircraft: [{ hex: 'A1B2C3', lat: 48.3, lon: 16.3, alt_baro: 14000 }]
             })
