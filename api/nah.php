@@ -18,7 +18,6 @@ pg_close($db);
 
 $currentMonth = (int)date('n');
 $now = time();
-$currentHM = date('H:i'); // z.B. "14:30"
 
 $results = [];
 $nextRefresh = null;
@@ -30,15 +29,11 @@ foreach ($stations as $s) {
     $end = null;
     
     // Parse months array (e.g. "{1,2,3,4,11,12}")
-    $months = [];
-    if (!empty($s['months_active'])) {
-        $monthsStr = trim($s['months_active'], '{}');
-        if ($monthsStr !== '') {
-            $months = explode(',', $monthsStr);
-        }
-    }
+    $monthsStr = trim($s['months_active'], '{}');
+    $months = $monthsStr === '' ? [] : explode(',', $monthsStr);
     
-    $inSeason = empty($months) || in_array((string)$currentMonth, $months);
+    // BACK TO ORIGINAL SIMPLE LOGIC
+    $inSeason = empty($months) || in_array($currentMonth, $months);
     
     if ($inSeason) {
         if ($s['op_type'] === '24/7') {
@@ -51,13 +46,11 @@ foreach ($stations as $s) {
                 $start = $sunInfo['civil_twilight_begin'];
                 $end = $sunInfo['civil_twilight_end'];
 
-                // Frühestmögliche Startzeit prüfen
                 if (!empty($s['fixed_start'])) {
                     $fixedStartTs = strtotime(date('Y-m-d ') . $s['fixed_start']);
                     $start = max($start, $fixedStartTs);
                 }
 
-                // Spätestmögliche Endzeit prüfen
                 if (!empty($s['fixed_end'])) {
                     $fixedEndTs = strtotime(date('Y-m-d ') . $s['fixed_end']);
                     $end = min($end, $fixedEndTs);
@@ -65,18 +58,14 @@ foreach ($stations as $s) {
 
                 $isActive = ($now >= $start && $now <= $end);
 
-                // Refresh Logic
                 if ($isActive) {
                     $stationNextEvent = $end;
                 } else {
                     if ($now < $start) {
                         $stationNextEvent = $start;
                     } else {
-                        // After end, next event is BCET tomorrow
                         $tomorrowSunInfo = date_sun_info($now + 86400, (float)$s['lat'], (float)$s['lon']);
                         $stationNextEvent = $tomorrowSunInfo['civil_twilight_begin'];
-                        // For display, start/end of tomorrow might be useful too
-                        // but let's stick to today's start/end for the detail page.
                     }
                 }
             } elseif (isset($sunInfo['civil_twilight_begin']) && $sunInfo['civil_twilight_begin'] === true) {
@@ -88,13 +77,11 @@ foreach ($stations as $s) {
             
             $isActive = ($now >= $start && $now <= $end);
 
-            // Refresh Logic
             if ($now < $start) {
                 $stationNextEvent = $start;
             } elseif ($now < $end) {
                 $stationNextEvent = $end;
             } else {
-                // Tomorrow
                 $stationNextEvent = strtotime(date('Y-m-d ', $now + 86400) . $s['fixed_start']);
             }
         }
@@ -117,9 +104,9 @@ foreach ($stations as $s) {
         "fixed_end" => $s['fixed_end'] ? substr($s['fixed_end'], 0, 5) : null,
         "lat" => (float)$s['lat'],
         "lon" => (float)$s['lon'],
-        "is_active" => $isActive,
-        "in_season" => $inSeason,
-        "months_active" => $months,
+        "is_active" => (bool)$isActive,
+        "in_season" => (bool)$inSeason,
+        "months_active" => array_map('intval', $months),
         "calculated_start" => $start ? date('c', $start) : null,
         "calculated_end" => $end ? date('c', $end) : null
     ];
