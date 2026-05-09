@@ -278,6 +278,9 @@ export const initTrackingPage = async (container: HTMLElement) => {
     if (isRefreshing) return;
     isRefreshing = true;
 
+    let adsbOk = false;
+    let aisOk = false;
+
     // 1. Fetch ADS-B
     try {
       const adsbData = await adsb.fetch();
@@ -298,6 +301,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
         lon: f.geometry.coordinates[0]
       }));
       updateTrackingList('adsb-list', adsbItems);
+      adsbOk = true;
     } catch (e) {
       console.warn('[Tracking] ADS-B Update failed', e);
     }
@@ -322,9 +326,13 @@ export const initTrackingPage = async (container: HTMLElement) => {
         lon: (f.geometry as any).coordinates[0]
       }));
       updateTrackingList('ais-list', aisItems);
+      aisOk = true;
     } catch (e) {
       console.warn('[Tracking] AIS Update failed', e);
     }
+
+    // Update Server Status in Footer
+    updateTrackingServerStatus(adsbOk, aisOk);
 
     isRefreshing = false;
     refreshTimeout = setTimeout(refresh, 5000);

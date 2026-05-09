@@ -2,6 +2,21 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.2.4] - 2026-05-09
+
+### Hinzugefügt
+- **Tracking Status:** Status-Indikator im Footer der Tracking-Seite für ADS-B und AIS Erreichbarkeit.
+
+## [3.2.3] - 2026-05-09
+
+### Behoben
+- **NAH Seite:** Wiederherstellung der bewährten Saison-Logik und Stabilisierung der MapStyles zur Vermeidung grauer Marker.
+
+## [3.2.2] - 2026-05-09
+
+### Behoben
+- **Saison-Logik:** Fix für fehlerhafte Monats-Berechnung in `api/nah.php`.
+
 ## [3.2.1] - 2026-05-09
 
 ### Behoben
