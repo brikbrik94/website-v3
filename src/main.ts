@@ -40,58 +40,57 @@ const renderLandingPage = () => {
       </div>
     </header>
 
-    <main class="landing-body">
-      <h1 class="landing-title">Willkommen im <span>Cloud Portal</span></h1>
-      <p class="landing-subtitle">
-        Öffentliches Portal für Geodaten und Karten-Services.
-      </p>
+    <div class="layout">
+      <main class="page-content landing-body">
+        <h1 class="landing-title">Willkommen im <span>Cloud Portal</span></h1>
+        
+        <div class="card-grid">
+          <a href="/karte" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <h3>Karte</h3>
+            <p>Interaktive Vektorkarte basierend auf dem neuen Geodata-Server.</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
 
-      <div class="card-grid">
-        <a href="/karte" class="card card-nav nav-link">
-          <div class="card-nav-icon"><i class="fa-solid fa-map-location-dot"></i></div>
-          <h3>Karte</h3>
-          <p>Interaktive Vektorkarte basierend auf dem neuen Geodata-Server.</p>
-          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-        </a>
+          <a href="/routing" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-route"></i></div>
+            <h3>Routing</h3>
+            <p>Berechne die optimale Route zwischen zwei Punkten über den OE5ITH ORS Dienst.</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
 
-        <a href="/routing" class="card card-nav nav-link">
-          <div class="card-nav-icon"><i class="fa-solid fa-route"></i></div>
-          <h3>Routing</h3>
-          <p>Berechne die optimale Route zwischen zwei Punkten über den OE5ITH ORS Dienst.</p>
-          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-        </a>
+          <a href="/nah" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-helicopter"></i></div>
+            <h3>Luftrettung</h3>
+            <p>Übersicht der NAH-Stützpunkte und Live-Verfügbarkeit.</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
 
-        <a href="/nah" class="card card-nav nav-link">
-          <div class="card-nav-icon"><i class="fa-solid fa-helicopter"></i></div>
-          <h3>Luftrettung</h3>
-          <p>Übersicht der NAH-Stützpunkte und Live-Verfügbarkeit.</p>
-          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-        </a>
+          <a href="/coords" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-compass"></i></div>
+            <h3>Umrechner</h3>
+            <p>Koordinaten bidirektional zwischen WGS84, UTM, BMN, MGRS und Maidenhead umrechnen.</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
 
-        <a href="/coords" class="card card-nav nav-link">
-          <div class="card-nav-icon"><i class="fa-solid fa-compass"></i></div>
-          <h3>Umrechner</h3>
-          <p>Koordinaten bidirektional zwischen WGS84, UTM, BMN, MGRS und Maidenhead umrechnen.</p>
-          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-        </a>
-
-        <a href="/tracking" class="card card-nav nav-link">
-          <div class="card-nav-icon"><i class="fa-solid fa-satellite-dish"></i></div>
-          <h3>Live Tracking</h3>
-          <p>Echtzeit-Anzeige von Flugzeugen (ADS-B) und Schiffen (AIS) in der Region.</p>
-          <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
-        </a>
-      </div>
-
-      <footer class="page-footer">
-        <span class="page-footer-version">v${APP_VERSION}</span>
-        <span class="page-footer-copy">© 2026 OE5ITH</span>
-        <div class="page-footer-links">
-          <a href="#">Lizenzen & Impressum</a>
-          <a href="https://github.com/brikbrik94/website-v3" target="_blank">GitHub</a>
+          <a href="/tracking" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-satellite-dish"></i></div>
+            <h3>Live Tracking</h3>
+            <p>Echtzeit-Anzeige von Flugzeugen (ADS-B) und Schiffen (AIS) in der Region.</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
         </div>
-      </footer>
-    </main>
+
+        <footer class="page-footer">
+          <span class="page-footer-version">v${APP_VERSION}</span>
+          <span class="page-footer-copy">© 2026 OE5ITH</span>
+          <div class="page-footer-links">
+            <a href="#">Lizenzen & Impressum</a>
+            <a href="https://github.com/brikbrik94/website-v3" target="_blank">GitHub</a>
+          </div>
+        </footer>
+      </main>
+    </div>
   `;
 };
 

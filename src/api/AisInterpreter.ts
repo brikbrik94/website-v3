@@ -5,6 +5,7 @@ export interface Ship {
     lon: number;
     cog?: number;
     sog?: number;
+    heading?: number;
     shipclass?: number;
 }
 

@@ -23,6 +23,16 @@
 :root {
   /* Verwende die installierte Monospace Schrift */
   --font-mono: "JetBrains Mono", monospace;
+
+  /* ADS-B Altitude Gradient Tokens */
+  --alt-0:    #22c55e;
+  --alt-5k:   #38bdf8;
+  --alt-15k:  #818cf8;
+  --alt-35k:  #e879f9;
+
+  /* Utility Colors */
+  --white:    #ffffff;
+  --black:    #000000;
 }
 
 html, body {
