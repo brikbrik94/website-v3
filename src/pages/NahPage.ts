@@ -98,6 +98,7 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
     const data = await nahRes.json();
     
     stations = data.stations || [];
+    // console.log('[NahPage] Loaded stations:', stations.length, stations[0]);
     const refreshAt = data.refresh_at;
     
     // Clear existing markers

@@ -30,10 +30,15 @@ foreach ($stations as $s) {
     $end = null;
     
     // Parse months array (e.g. "{1,2,3,4,11,12}")
-    $monthsStr = trim($s['months_active'], '{}');
-    $months = $monthsStr === '' ? [] : explode(',', $monthsStr);
+    $months = [];
+    if (!empty($s['months_active'])) {
+        $monthsStr = trim($s['months_active'], '{}');
+        if ($monthsStr !== '') {
+            $months = explode(',', $monthsStr);
+        }
+    }
     
-    $inSeason = empty($months) || in_array($currentMonth, $months);
+    $inSeason = empty($months) || in_array((string)$currentMonth, $months);
     
     if ($inSeason) {
         if ($s['op_type'] === '24/7') {
