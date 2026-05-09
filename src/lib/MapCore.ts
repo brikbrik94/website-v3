@@ -93,14 +93,20 @@ export const MapCore = {
             0, 0, pos.width, pos.height
           );
           
-          const pixelRatio = pos.pixelRatio || window.devicePixelRatio || 1;
+          const pixelRatio = pos.pixelRatio || 1;
+          const isSdf = Boolean(pos.sdf);
           
           try {
             const imageData = ctx.getImageData(0, 0, pos.width, pos.height);
-            map.addImage(id, imageData, { 
+            map.addImage(id, { 
+              width: pos.width, 
+              height: pos.height, 
+              data: imageData.data 
+            }, { 
               pixelRatio: pixelRatio,
-              sdf: true 
+              sdf: isSdf
             });
+            // console.debug(`[MapCore] Added image ${id} (SDF: ${isSdf}, PR: ${pixelRatio})`);
           } catch (e) {
             console.error(`[MapCore] Failed to add image ${id} to map:`, e);
           }

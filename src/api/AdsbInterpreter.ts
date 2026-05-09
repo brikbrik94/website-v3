@@ -4,8 +4,13 @@ export interface Aircraft {
     lat: number;
     lon: number;
     alt_baro?: number;
+    alt_geom?: number;
     gs?: number;
     track?: number;
+    category?: string;
+    vert_rate?: number;
+    squawk?: string;
+    seen?: number;
 }
 
 export class AdsbInterpreter {
