@@ -222,8 +222,10 @@
 .sidebar-footer-status { display: flex; align-items: center; gap: 5px; font-size: 0.65rem; }
 .footer-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .footer-dot.green { background: var(--success); box-shadow: 0 0 4px var(--success); }
+.footer-dot.yellow { background: var(--warning); box-shadow: 0 0 4px var(--warning); }
 .footer-dot.red   { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.5); }
 .footer-status-text.green { color: #4a7c59; }
+.footer-status-text.yellow { color: #7c7c4a; }
 .footer-status-text.red   { color: #7c4a4a; }
 
 /* ═══ BACKDROP ═══ */

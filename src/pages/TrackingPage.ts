@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { MapCore } from '../lib/MapCore';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { initTopbar } from '../components/Topbar';
-import { initTrackingSidebar, updateTrackingList, TrackingItem } from '../components/TrackingSidebar';
+import { initTrackingSidebar, updateTrackingList, updateTrackingServerStatus, TrackingItem } from '../components/TrackingSidebar';
 import { AisInterpreter } from '../api/AisInterpreter';
 import { AdsbInterpreter } from '../api/AdsbInterpreter';
 import { PopupManager } from '../lib/PopupManager';
