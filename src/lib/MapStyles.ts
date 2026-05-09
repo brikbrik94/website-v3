@@ -11,6 +11,7 @@ export type RouteStyleKey = 'active' | 'background';
  */
 const getCssVar = (name: string, fallback: string): string => {
   if (typeof document === 'undefined') return fallback;
+  // Wir prüfen :root, da dort die CI-Tokens definiert sind.
   const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return val || fallback;
 };
