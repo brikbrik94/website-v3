@@ -2,14 +2,17 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.2.0a3] - 2026-05-08
+## [3.2.0] - 2026-05-08
 
 ### Hinzugefügt
-- **Improved Popup System:** Einführung des `PopupManager` für CI-konforme Datenanzeige (ADS-B/AIS).
-- **Höhenabhängige Tracks:** ADS-B Flugpfade werden nun segmentiert und farblich nach Höhe kodiert dargestellt.
+- **Tracking Refinement:** Vollständige Überarbeitung der ADS-B und AIS Visualisierung.
+- **Improved Popup System:** Einführung des `PopupManager` für CI-konforme, tabellarische Datenanzeige.
+- **Höhenabhängige Tracks:** ADS-B Flugpfade werden segmentiert und farblich nach Höhe kodiert.
 
 ### Geändert
-- **Tracking Optimierung:** Refactoring der ADS-B und AIS Interpreten für bessere Dateneffizienz und strikte Typisierung.
+- **AIS Logik:** Dynamisches Umspringen von Punkten auf Schiffssymbole ab Zoom 11 (nur für Fahrzeuge in Fahrt).
+- **Daten-Effizienz:** Optimiertes Tracking-Handling zur Vermeidung redundanter Datenpunkte.
+- **Schriften:** Umstellung auf `Open-Sans-Regular` zur Gewährleistung der Server-Kompatibilität.
 
 ## [3.2.0a2] - 2026-05-08
 

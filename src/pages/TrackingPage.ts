@@ -46,10 +46,15 @@ export const initTrackingPage = async (container: HTMLElement) => {
 
   const loadAllSprites = async () => {
     console.log('[Tracking] Loading sprites...');
-    await Promise.all([
-      MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/adsb/sprite'),
-      MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/ais/sprite')
-    ]);
+    try {
+      await Promise.all([
+        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/adsb/sprite'),
+        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/ais/sprite')
+      ]);
+      console.log('[Tracking] All sprites loaded. Available images:', (map as any).listImages());
+    } catch (err) {
+      console.error('[Tracking] Sprite loading failed', err);
+    }
   };
 
   const ensureTrackingLayers = () => {
@@ -91,13 +96,21 @@ export const initTrackingPage = async (container: HTMLElement) => {
         layout: {
           'icon-image': [
             'match', ["get", "category"],
-            "A1", "plane-a1", "C1", "plane-a1",
-            "A2", "plane-a2", "C2", "plane-a2",
-            "A3", "plane-a3", "B3", "plane-a3", "C3", "plane-a3",
-            "A4", "plane-a4", "B4", "plane-a4",
+            "A1", "plane-a1",
+            "A2", "plane-a2",
+            "A3", "plane-a3",
+            "A4", "plane-a4",
             "A5", "plane-a5",
             "A6", "plane-a6",
-            "A7", "plane-a7", "B6", "plane-a7",
+            "A7", "plane-a7",
+            "B1", "plane-b1",
+            "B2", "plane-b2",
+            "B3", "plane-b3",
+            "B4", "plane-b4",
+            "B6", "plane-b6",
+            "C1", "plane-c1",
+            "C2", "plane-c2",
+            "C3", "plane-c3",
             "plane-unknown"
           ],
           'icon-size': 0.6,
@@ -105,6 +118,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'icon-rotation-alignment': 'map',
           'icon-allow-overlap': true,
           'text-field': ['coalesce', ['get', 'flight'], ['get', 'hex']],
+          'text-font': ['Open-Sans-Regular'],
           'text-size': 10,
           'text-offset': [0, 1.5],
           'text-anchor': 'top',
@@ -123,8 +137,8 @@ export const initTrackingPage = async (container: HTMLElement) => {
           ],
           'icon-halo-color': MAP_COLORS.black,
           'icon-halo-width': 1,
-          'text-color': MAP_COLORS.black, 
-          'text-halo-color': MAP_COLORS.white, 
+          'text-color': MAP_COLORS.white, 
+          'text-halo-color': MAP_COLORS.black, 
           'text-halo-width': 2 
         }
       });
@@ -147,7 +161,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
         },
         paint: { 
           'line-color': MAP_COLORS.accent, 
-          'line-width': ['case', ['==', ['get', 'mmsi'], selectedId || 0], 4, 2],
+          'line-width': ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId) || -1], 4, 2],
           'line-opacity': 0.8 
         }
       });
@@ -158,15 +172,14 @@ export const initTrackingPage = async (container: HTMLElement) => {
         id: 'ais-dots-moving',
         type: 'circle',
         source: 'ais',
-        maxzoom: 12,
+        maxzoom: 11,
         filter: [
           'all',
-          ['>', ['coalesce', ['get', 'speed'], 0], 0.2],
-          ['!=', ['get', 'cog'], null]
+          ['>', ['coalesce', ['get', 'speed'], 0], 0.2]
         ] as any,
         layout: { 'visibility': aisVisible ? 'visible' : 'none' },
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 2, 12, 4],
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 2, 11, 4],
           'circle-color': shipColorMatch,
           'circle-stroke-color': MAP_COLORS.black,
           'circle-stroke-width': 0.5
@@ -178,9 +191,8 @@ export const initTrackingPage = async (container: HTMLElement) => {
         type: 'circle',
         source: 'ais',
         filter: [
-          'any',
-          ['<=', ['coalesce', ['get', 'speed'], 0], 0.2],
-          ['==', ['get', 'cog'], null]
+          'all',
+          ['<=', ['coalesce', ['get', 'speed'], 0], 0.2]
         ] as any,
         layout: { 'visibility': aisVisible ? 'visible' : 'none' },
         paint: {
@@ -198,8 +210,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
         minzoom: 11,
         filter: [
           'all',
-          ['>', ['coalesce', ['get', 'speed'], 0], 0.2],
-          ['!=', ['get', 'cog'], null]
+          ['>', ['coalesce', ['get', 'speed'], 0], 0.2]
         ] as any,
         layout: {
           'icon-image': [
@@ -217,6 +228,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'icon-allow-overlap': true,
           'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 14, 0.7],
           'text-field': ['coalesce', ['get', 'shipname'], ['get', 'callsign'], ""],
+          'text-font': ['Open-Sans-Regular'],
           'text-size': 10,
           'text-offset': [0, 1.5],
           'text-anchor': 'top',
@@ -228,22 +240,27 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'icon-color': shipColorMatch,
           'icon-halo-color': MAP_COLORS.black,
           'icon-halo-width': 1,
-          'text-color': MAP_COLORS.black, 
-          'text-halo-color': MAP_COLORS.white, 
+          'text-color': MAP_COLORS.white, 
+          'text-halo-color': MAP_COLORS.black, 
           'text-halo-width': 2 
         }
       });
 
-      // Setup Popups
+      // Setup Popups (prevent duplicate listeners)
       const setupPopup = (layerId: string) => {
-        map.on('click', layerId, (e) => {
+        const onClick = (e: any) => {
           const feat = e.features?.[0];
           if (!feat) return;
           const html = PopupManager.buildHtml(layerId, feat.properties || {});
           popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
-        });
-        map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
+        };
+        const onEnter = () => map.getCanvas().style.cursor = 'pointer';
+        const onLeave = () => map.getCanvas().style.cursor = '';
+
+        map.off('click', layerId, onClick); // Try to remove previous if exists
+        map.on('click', layerId, onClick);
+        map.on('mouseenter', layerId, onEnter);
+        map.on('mouseleave', layerId, onLeave);
       };
       setupPopup('adsb-icons');
       setupPopup('ais-icons');
@@ -299,7 +316,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
       const aisItems: TrackingItem[] = (aisData.features || []).map(f => ({
         id: f.properties?.mmsi || '',
         label: f.properties?.name || `MMSI: ${f.properties?.mmsi}`,
-        info: `${f.properties?.sog || 0}kt | Class: ${f.properties?.shipclass || '-'}`,
+        info: `${f.properties?.speed || 0}kt | Class: ${f.properties?.shipclass || '-'}`,
         type: 'ais',
         lat: (f.geometry as any).coordinates[1],
         lon: (f.geometry as any).coordinates[0]
@@ -358,7 +375,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
       map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5]);
     }
     if (map.getLayer('ais-track-lines')) {
-      map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], selectedId || 0], 4, 2]);
+      map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], Number(selectedId)], 4, 2]);
     }
   });
 

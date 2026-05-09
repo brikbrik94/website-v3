@@ -4,7 +4,7 @@ export interface Ship {
     lat: number;
     lon: number;
     cog?: number;
-    sog?: number;
+    speed?: number;
     heading?: number;
     shipclass?: number;
 }
@@ -27,7 +27,10 @@ export class AisInterpreter {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            const ships: Ship[] = (data.ships || []).filter((s: Ship) => s.lat != null && s.lon != null);
+            const ships: Ship[] = (data.ships || []).map((s: any) => ({
+                ...s,
+                speed: s.speed ?? s.sog ?? 0 // Map sog to speed for consistency
+            })).filter((s: Ship) => s.lat != null && s.lon != null);
 
             const activeIds = new Set<number>();
             ships.forEach(s => {
