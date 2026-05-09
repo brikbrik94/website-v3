@@ -503,6 +503,8 @@ const renderHealthModule = async (container: HTMLElement) => {
     { id: 'backend', name: 'Backend Core', url: '/api/ping.php', icon: 'fa-brands fa-php', description: 'Basis API-Infrastruktur' },
     { id: 'database', name: 'PostgreSQL Database', url: '/api/db.php', icon: 'fa-solid fa-database', description: 'PostGIS Datenbank Status' },
     { id: 'nah', name: 'NAH Service', url: '/api/nah.php', icon: 'fa-solid fa-helicopter', description: 'Luftrettung Echtzeit-Daten' },
+    { id: 'adsb', name: 'ADS-B Traffic', url: '/api/adsb.php', icon: 'fa-solid fa-plane', description: 'Live Flugverkehrsdaten' },
+    { id: 'ais', name: 'AIS Vessels', url: '/api/ais.php', icon: 'fa-solid fa-ship', description: 'Live Schiffspositionsdaten' },
     { id: 'ors', name: 'Routing API (ORS)', url: '/api/ors.php?path=status', icon: 'fa-solid fa-route', description: 'OpenRouteService Status' },
     { id: 'geocoder', name: 'Geocoder (Nominatim)', url: '/api/geocoder.php', icon: 'fa-solid fa-location-dot', description: 'Adress-Suche & Reverse Geocoding' },
     { id: 'tiles', name: 'Tile Registry', url: 'https://tiles.oe5ith.at/inventory.json', icon: 'fa-solid fa-layer-group', description: 'Karten-Layer Verzeichnis' }
@@ -756,6 +758,8 @@ const renderRegionsModule = async (container: HTMLElement) => {
 const renderDebugModule = async (container: HTMLElement) => {
   const safeEndpoints = [
     { name: 'NAH Stations', url: '/api/nah.php', params: '' },
+    { name: 'ADS-B Data', url: '/api/adsb.php', params: '' },
+    { name: 'AIS Data', url: '/api/ais.php', params: '' },
     { name: 'Regional Stats', url: '/api/stats.php', params: '' },
     { name: 'Service Health', url: '/api/ping.php', params: '' },
     { name: 'Database Status', url: '/api/db.php', params: '' },
