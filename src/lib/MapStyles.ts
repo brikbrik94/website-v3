@@ -42,6 +42,7 @@ export const MAP_COLORS = {
   get accent() { return getCssVar('--accent', '#3b82f6'); },
   get muted() { return getCssVar('--muted', '#888888'); },
   get success() { return getCssVar('--success', '#22c55e'); },
+  get warning() { return getCssVar('--warning', '#eab308'); },
   get danger() { return getCssVar('--danger', '#ef4444'); },
   // Altitude Gradient
   get alt0() { return getCssVar('--alt-0', '#22c55e'); },

@@ -5,6 +5,9 @@
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $file = __DIR__ . $uri;
 
+// Log for debugging
+file_put_contents(__DIR__ . '/router.log', "[" . date('Y-m-d H:i:s') . "] URI: $uri | File: $file\n", FILE_APPEND);
+
 // 1. Wenn die Datei existiert (z.B. nah.php), serviere sie direkt
 if (file_exists($file) && !is_dir($file)) {
     return false; // PHP-Server übernimmt das Rendering
