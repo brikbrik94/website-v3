@@ -67,4 +67,23 @@ describe('AisInterpreter', () => {
         expect(tracks.features.length).toBe(1);
         expect(tracks.features[0].geometry.coordinates.length).toBe(2);
     });
+
+    it('should correctly include the heading property in GeoJSON features', async () => {
+        const interpreter = new AisInterpreter(mockUrl);
+        
+        (fetch as any).mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                ships: [{ 
+                    mmsi: 123, 
+                    lat: 48.1234, 
+                    lon: 16.1234,
+                    heading: 180
+                }]
+            })
+        });
+        
+        const geojson = await interpreter.fetch();
+        expect(geojson.features[0].properties.heading).toBe(180);
+    });
 });

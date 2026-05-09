@@ -2,6 +2,23 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.2.0a3] - 2026-05-08
+
+### Hinzugefügt
+- **Improved Popup System:** Einführung des `PopupManager` für CI-konforme Datenanzeige (ADS-B/AIS).
+- **Höhenabhängige Tracks:** ADS-B Flugpfade werden nun segmentiert und farblich nach Höhe kodiert dargestellt.
+
+### Geändert
+- **Tracking Optimierung:** Refactoring der ADS-B und AIS Interpreten für bessere Dateneffizienz und strikte Typisierung.
+
+## [3.2.0a2] - 2026-05-08
+
+### Behoben
+- **TrackingPage Stabilisierung:** Umstellung auf einen rekursiven `setTimeout` Loop zur Vermeidung von Request-Überlappungen bei langsamen Verbindungen.
+- **Symbol-Rendering:** Fix für verschwindende Icons durch verbesserte Sprite-Initialisierung und pixelRatio-Handhabung in `MapCore`.
+- **Backend Proxies:** Robustere Fehlerbehandlung in `api/ais.php` und `api/adsb.php` (liefern nun immer validen JSON-Fallback).
+- **Infrastruktur:** Bereinigung von Modul-Konflikten zwischen root-API und Vite-Proxy.
+
 ## [3.2.0a1] - 2026-05-07
 
 ### Hinzugefügt

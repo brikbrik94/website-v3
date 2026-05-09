@@ -62,9 +62,14 @@ export const MapCore = {
       ? spritePath 
       : new URL(spritePath, styleUrl).href;
 
+    console.log(`[MapCore] Loading sprites from ${absoluteSpriteUrl}`);
+
     try {
       const [jsonRes, imageRes] = await Promise.all([
-        fetch(`${absoluteSpriteUrl}.json`).then(r => r.json()),
+        fetch(`${absoluteSpriteUrl}.json`).then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status} for ${absoluteSpriteUrl}.json`);
+          return r.json();
+        }),
         new Promise<HTMLImageElement>((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = 'Anonymous';
@@ -87,15 +92,23 @@ export const MapCore = {
             pos.x, pos.y, pos.width, pos.height,
             0, 0, pos.width, pos.height
           );
-          const imageData = ctx.getImageData(0, 0, pos.width, pos.height);
-          map.addImage(id, imageData, { 
-            pixelRatio: pos.pixelRatio || 1,
-            sdf: true 
-          });
+          
+          const pixelRatio = pos.pixelRatio || window.devicePixelRatio || 1;
+          
+          try {
+            const imageData = ctx.getImageData(0, 0, pos.width, pos.height);
+            map.addImage(id, imageData, { 
+              pixelRatio: pixelRatio,
+              sdf: true 
+            });
+          } catch (e) {
+            console.error(`[MapCore] Failed to add image ${id} to map:`, e);
+          }
         }
       }
+      console.log(`[MapCore] Sprites loaded successfully from ${absoluteSpriteUrl}`);
     } catch (err) {
-      console.warn('Sprites konnten nicht geladen werden:', err);
+      console.warn('[MapCore] Sprites konnten nicht geladen werden:', err);
     }
   }
 };

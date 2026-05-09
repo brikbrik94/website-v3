@@ -21,5 +21,9 @@ if ($http_code === 200) {
 } else {
     // If external source fails (e.g. 502), return an empty structure so the frontend doesn't crash
     http_response_code($http_code ?: 502);
-    echo json_encode(['error' => 'Failed to fetch AIS data', 'ships' => []]);
+    echo json_encode([
+        'error' => 'Failed to fetch AIS data', 
+        'code' => $http_code,
+        'ships' => []
+    ]);
 }

@@ -11,3 +11,8 @@
 - [x] Task 8: Security Update: Switch to web_api_user
 - [x] Task 9: Expand Regions Analysis with RD & NEF stats
 - [x] Task 10: Implement secure API Debugger module
+- [x] Task 11: TrackingPage Debugging & Stabilisierung (v3.2.0a2)
+    - Ursachen für Rendering-Fehler behoben (Sprite Loading Resilience).
+    - Proxy-Robustheit für ADS-B/AIS verbessert.
+    - Refresh-Loop auf rekursives setTimeout umgestellt.
+    - CI-Konformität für Farben und Layer-Management sichergestellt.

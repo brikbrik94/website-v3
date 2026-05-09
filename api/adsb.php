@@ -20,5 +20,9 @@ if ($http_code === 200) {
     echo $response;
 } else {
     http_response_code($http_code ?: 502);
-    echo json_encode(['error' => 'Failed to fetch ADS-B data', 'code' => $http_code]);
+    echo json_encode([
+        'error' => 'Failed to fetch ADS-B data', 
+        'code' => $http_code,
+        'aircraft' => []
+    ]);
 }
