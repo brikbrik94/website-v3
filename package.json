@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev:vite": "vite",
-    "dev:api": "cd api && php -S 127.0.0.1:8080 router.php",
+    "dev:api": "cd api && php -S 127.0.0.1:8081 router.php",
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:api\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
