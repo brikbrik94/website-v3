@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.2.1] - 2026-05-09
+
+### Behoben
+- **NAH Seite:** Fix für `TypeError` (Cannot read properties of undefined (reading 'join')) durch Wiederherstellung fehlender API-Felder in `nah.php`.
+- **ADS-B Symbole:** Wiederherstellung der Sichtbarkeit durch Korrektur der `addImage` Logik im `MapCore`.
+- **Typisierung:** Robusterer Umgang mit optionalen Feldern in den Map-Popups.
+
 ## [3.2.0] - 2026-05-08
 
 ### Hinzugefügt

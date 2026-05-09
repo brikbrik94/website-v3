@@ -113,6 +113,8 @@ foreach ($stations as $s) {
         "lat" => (float)$s['lat'],
         "lon" => (float)$s['lon'],
         "is_active" => $isActive,
+        "in_season" => $inSeason,
+        "months_active" => $months,
         "calculated_start" => $start ? date('c', $start) : null,
         "calculated_end" => $end ? date('c', $end) : null
     ];

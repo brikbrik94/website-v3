@@ -145,7 +145,7 @@ export const refreshStations = async (map: maplibregl.Map, sidebarResults: HTMLE
             <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
             ${hoursHtml}
             <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>
-            ${!station.in_season ? `<tr><td>Saison</td><td>Monate: ${station.months_active.join(', ')}</td></tr>` : ''}
+            ${!station.in_season ? `<tr><td>Saison</td><td>Monate: ${station.months_active?.join(', ') || '-'}</td></tr>` : ''}
           </table>
         </div>
       `;
