@@ -234,4 +234,33 @@ export const initTopbar = (
     // Initialize Terrain listeners
     TerrainControls.initListeners();
   }
+
+  // Navigation Dropdown Logic (Always active)
+  const navToggle = document.getElementById('nav-dropdown-toggle');
+  const navMenu = document.getElementById('nav-dropdown-menu');
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = navToggle.classList.toggle('open');
+      navMenu.classList.toggle('open', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen.toString());
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!navToggle.contains(e.target as Node) && !navMenu.contains(e.target as Node)) {
+        navToggle.classList.remove('open');
+        navMenu.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        navToggle.classList.remove('open');
+        navMenu.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
 };
