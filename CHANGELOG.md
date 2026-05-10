@@ -2,6 +2,14 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.2.5] - 2026-05-10
+
+### Geändert
+- **TerrainControls:** Umstellung auf den CI v2.1.0 Standard mit Icon-Only Toggles, Tooltips und versteckten Labels für eine kompaktere Topbar.
+
+### Behoben
+- **Karten-Attribution:** Wiederherstellung des "i"-Symbols (MapLibre compact mode) durch Umstellung auf native Attribution. Entfernung veralteter manueller Attribution-Injection zur Einhaltung der CI-v2 Standards.
+
 ## [3.2.4] - 2026-05-09
 
 ### Hinzugefügt

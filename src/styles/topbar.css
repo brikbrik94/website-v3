@@ -218,6 +218,42 @@
 }
 
 /* ═══════════════════════════════════════
+   TOGGLE — ICON-ONLY MODIFIER
+   ═══════════════════════════════════════ */
+
+/* Desktop: Label verbergen */
+.controls-panel .topbar-toggle--icon-only .topbar-toggle-label {
+  display: none;
+}
+
+/* Desktop: Tooltip via CSS */
+.controls-panel .topbar-toggle--icon-only[data-tooltip] {
+  position: relative;
+}
+
+.controls-panel .topbar-toggle--icon-only[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: var(--text);
+  white-space: nowrap;
+  z-index: var(--z-tooltip);
+  pointer-events: none;
+}
+
+/* Overlay: Label immer sichtbar */
+.controls-overlay .topbar-toggle--icon-only .topbar-toggle-label {
+  display: revert;
+}
+
+/* ═══════════════════════════════════════
    CENTER — SEARCHBAR
    ═══════════════════════════════════════ */
 .topbar-search {
