@@ -7,7 +7,7 @@ import { Toast } from '../lib/Toast';
 import maplibregl from 'maplibre-gl';
 
 import { MAP_COLORS } from '../lib/MapStyles';
-import { getSidebarFooterHtml } from '../lib/SidebarUtils';
+import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { GeocoderService } from '../lib/GeocoderService';
 
 /**
@@ -31,13 +31,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
       </header>
     </div>
     <div class="layout">
-      <div id="sidebar-mount">
-        <nav class="sidebar">
-          <div class="sidebar-inner">
-            <div class="acc-loader" style="padding: 20px; color: var(--subtle);">Initialisiere Umrechner...</div>
-          </div>
-        </nav>
-      </div>
+      <div id="sidebar-mount" style="z-index: var(--z-sidebar-tab);"></div>
       <main id="map" class="full-map">
       </main>
     </div>
@@ -196,9 +190,10 @@ export const initCoordsPage = async (container: HTMLElement) => {
 
   // Sidebar Struktur einmalig aufbauen
   const initSidebarStructure = () => {
+    const isMobile = window.innerWidth <= 768;
     sidebarMount.innerHTML = `
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-      <nav class="sidebar" id="sidebar">
+      <aside class="sidebar" id="sidebar">
         <div class="sidebar-inner">
           
           <!-- Adresse / Geocoder -->
@@ -345,8 +340,8 @@ export const initCoordsPage = async (container: HTMLElement) => {
 
         </div>
         ${getSidebarFooterHtml()}
-        <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
-      </nav>
+        <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">${isMobile ? '›' : '‹'}</div>
+      </aside>
     `;
 
     attachSidebarEvents();
@@ -424,21 +419,18 @@ export const initCoordsPage = async (container: HTMLElement) => {
   };
 
   function attachSidebarEvents() {
-    const sidebar = document.getElementById('sidebar')!;
-    const sidebarTab = document.getElementById('sidebar-tab')!;
-    const sidebarBackdrop = document.getElementById('sidebar-backdrop')!;
+    const sidebar = document.getElementById('sidebar');
+    const sidebarTab = document.getElementById('sidebar-tab');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 
-    // Sidebar Toggle (Standard)
-    sidebarTab.addEventListener('click', () => {
-      const isCollapsed = sidebar.classList.toggle('collapsed');
-      document.body.classList.toggle('sidebar-collapsed', isCollapsed);
-      sidebarTab.textContent = isCollapsed ? '›' : '‹';
-    });
+    if (!sidebar || !sidebarTab || !sidebarBackdrop) {
+      console.warn('[CoordsPage] Sidebar elements not found, retrying...');
+      setTimeout(attachSidebarEvents, 100);
+      return;
+    }
 
-    sidebarBackdrop.addEventListener('click', () => {
-      sidebar.classList.remove('mobile-open');
-      sidebarBackdrop.classList.remove('visible');
-    });
+    // Sidebar Toggle (Standard & Mobile)
+    setupSidebarToggle(sidebar, sidebarTab, sidebarBackdrop);
 
     // Klick außerhalb versteckt Geocoder-Ergebnisse
     document.addEventListener('click', (e) => {
