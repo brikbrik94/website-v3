@@ -93,8 +93,8 @@ export const initTopbar = (
           </button>
         ` : ''}
         
-        <a href="/routing" class="topbar-nav-link ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
-        <a href="/nah" class="topbar-nav-link ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
+        <a href="/routing" class="topbar-nav-link topbar-nav-link--mobile ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
+        <a href="/nah" class="topbar-nav-link topbar-nav-link--mobile ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
 
         <div class="topbar-nav-dropdown">
           <button class="topbar-nav-dropdown-toggle" id="nav-dropdown-toggle" aria-haspopup="menu" aria-expanded="false">
@@ -235,32 +235,42 @@ export const initTopbar = (
     TerrainControls.initListeners();
   }
 
-  // Navigation Dropdown Logic (Always active)
+  // --- Navigation Dropdown Logic (Site-wide) ---
   const navToggle = document.getElementById('nav-dropdown-toggle');
   const navMenu = document.getElementById('nav-dropdown-menu');
 
+  console.log(`[Topbar] Navigation elements found: toggle=${!!navToggle}, menu=${!!navMenu}`);
+
   if (navToggle && navMenu) {
-    navToggle.addEventListener('click', (e) => {
+    // Cleanup old listeners if this is a re-init (basic way for SPA)
+    const newToggle = navToggle.cloneNode(true);
+    navToggle.parentNode?.replaceChild(newToggle, navToggle);
+    
+    newToggle.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = navToggle.classList.toggle('open');
+      const isOpen = (newToggle as HTMLElement).classList.toggle('open');
       navMenu.classList.toggle('open', isOpen);
-      navToggle.setAttribute('aria-expanded', isOpen.toString());
+      (newToggle as HTMLElement).setAttribute('aria-expanded', isOpen.toString());
+      console.log(`[Topbar] Nav dropdown toggled: ${isOpen}`);
     });
 
-    document.addEventListener('click', (e) => {
-      if (!navToggle.contains(e.target as Node) && !navMenu.contains(e.target as Node)) {
-        navToggle.classList.remove('open');
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (!newToggle.contains(e.target as Node) && !navMenu.contains(e.target as Node)) {
+        (newToggle as HTMLElement).classList.remove('open');
         navMenu.classList.remove('open');
-        navToggle.setAttribute('aria-expanded', 'false');
+        (newToggle as HTMLElement).setAttribute('aria-expanded', 'false');
       }
-    });
+    };
 
-    document.addEventListener('keydown', (e) => {
+    const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        navToggle.classList.remove('open');
+        (newToggle as HTMLElement).classList.remove('open');
         navMenu.classList.remove('open');
-        navToggle.setAttribute('aria-expanded', 'false');
+        (newToggle as HTMLElement).setAttribute('aria-expanded', 'false');
       }
-    });
+    };
+
+    document.addEventListener('click', handleOutsideClick);
+    document.addEventListener('keydown', handleEsc);
   }
 };

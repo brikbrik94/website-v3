@@ -24,19 +24,31 @@ export const navigate = (path: string) => {
 const renderLandingPage = () => {
   if (!app) return;
   
+  const currentPath = window.location.pathname;
+
   app.innerHTML = `
     <header class="topbar">
       <div class="topbar-left">
-        <a href="/" class="brand nav-link">
+        <a href="/" class="brand nav-link" title="Zur Startseite">
           <img src="/logo.svg" alt="OE5ITH Logo" class="brand-logo" />
           <span class="brand-text">OE5ITH</span>
         </a>
       </div>
       <div class="topbar-center"></div>
       <div class="topbar-right">
-        <span class="badge badge-purple">
-          <i class="fa-solid fa-rocket"></i> V3 Early Access
-        </span>
+        <a href="/routing" class="topbar-nav-link topbar-nav-link--mobile ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
+        <a href="/nah" class="topbar-nav-link topbar-nav-link--mobile ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
+
+        <div class="topbar-nav-dropdown">
+          <button class="topbar-nav-dropdown-toggle" id="nav-dropdown-toggle" aria-haspopup="menu" aria-expanded="false">
+            Mehr <span class="chevron">▾</span>
+          </button>
+          <div class="topbar-nav-dropdown-menu" id="nav-dropdown-menu" role="menu">
+            <a href="/karte" class="topbar-nav-dropdown-item ${currentPath === '/karte' ? 'active' : ''}" role="menuitem">Karte</a>
+            <a href="/coords" class="topbar-nav-dropdown-item ${currentPath === '/coords' ? 'active' : ''}" role="menuitem">Umrechner</a>
+            <a href="/tracking" class="topbar-nav-dropdown-item ${currentPath === '/tracking' ? 'active' : ''}" role="menuitem">Tracking</a>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -92,6 +104,24 @@ const renderLandingPage = () => {
       </main>
     </div>
   `;
+
+  // Attach dropdown logic for landing page
+  const navToggle = document.getElementById('nav-dropdown-toggle');
+  const navMenu = document.getElementById('nav-dropdown-menu');
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = navToggle.classList.toggle('open');
+      navMenu.classList.toggle('open', isOpen);
+      navToggle.setAttribute('aria-expanded', isOpen.toString());
+    });
+    document.addEventListener('click', (e) => {
+      if (!navToggle.contains(e.target as Node) && !navMenu.contains(e.target as Node)) {
+        navToggle.classList.remove('open');
+        navMenu.classList.remove('open');
+      }
+    });
+  }
 };
 
 // Einfacher Path-Router

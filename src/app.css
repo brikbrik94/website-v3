@@ -71,6 +71,18 @@ html, body {
    FULL-MAP
    Verwendet für MapLibre Container
    ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   TOPBAR MOBILE OVERRIDES
+   Erlaubt spezifische Navigations-Links auf Mobile
+   ═══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .topbar-nav-link--mobile {
+    display: flex !important;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+}
+
 .full-map {
   flex: 1;
   height: 100%;
