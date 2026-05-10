@@ -19,8 +19,11 @@ export const initTopbar = (
   const currentPath = window.location.pathname;
 
   const customActionsHtml = customActions.map(action => `
-    <button class="topbar-toggle btn-custom" id="btn-${action.id}" title="${action.title}">
+    <button class="topbar-toggle topbar-toggle--icon-only btn-custom" 
+            id="btn-${action.id}" 
+            data-tooltip="${action.title}">
       <i class="${action.icon}"></i>
+      <span class="topbar-toggle-label">${action.title}</span>
     </button>
   `).join('');
 
@@ -32,7 +35,8 @@ export const initTopbar = (
 
   const customActionsMobileHtml = customActions.map(action => `
     <button class="topbar-toggle btn-custom" id="btn-${action.id}-mobile">
-      <i class="${action.icon}"></i> ${action.title}
+      <i class="${action.icon}"></i> 
+      <span class="topbar-toggle-label">${action.title}</span>
     </button>
   `).join('');
 
@@ -67,8 +71,9 @@ export const initTopbar = (
             ${dropdownHtml()}
             ${terrainHtml}
             ${customActionsHtml}
-            <button class="topbar-toggle btn-legend" title="Legende">
+            <button class="topbar-toggle topbar-toggle--icon-only btn-legend" data-tooltip="Legende">
               <i class="fa-solid fa-list-ul"></i>
+              <span class="topbar-toggle-label">Legende</span>
             </button>
           </div>
 
@@ -88,11 +93,19 @@ export const initTopbar = (
           </button>
         ` : ''}
         
-        <a href="/karte" class="topbar-nav-link ${currentPath === '/karte' ? 'active' : ''}">Karte</a>
         <a href="/routing" class="topbar-nav-link ${currentPath === '/routing' ? 'active' : ''}">Routing</a>
         <a href="/nah" class="topbar-nav-link ${currentPath === '/nah' ? 'active' : ''}">Luftrettung</a>
-        <a href="/coords" class="topbar-nav-link ${currentPath === '/coords' ? 'active' : ''}">Umrechner</a>
-        <a href="/tracking" class="topbar-nav-link ${currentPath === '/tracking' ? 'active' : ''}">Tracking</a>
+
+        <div class="topbar-nav-dropdown">
+          <button class="topbar-nav-dropdown-toggle" id="nav-dropdown-toggle" aria-haspopup="menu" aria-expanded="false">
+            Mehr <span class="chevron">▾</span>
+          </button>
+          <div class="topbar-nav-dropdown-menu" id="nav-dropdown-menu" role="menu">
+            <a href="/karte" class="topbar-nav-dropdown-item ${currentPath === '/karte' ? 'active' : ''}" role="menuitem">Karte</a>
+            <a href="/coords" class="topbar-nav-dropdown-item ${currentPath === '/coords' ? 'active' : ''}" role="menuitem">Umrechner</a>
+            <a href="/tracking" class="topbar-nav-dropdown-item ${currentPath === '/tracking' ? 'active' : ''}" role="menuitem">Tracking</a>
+          </div>
+        </div>
       </div>
 
       ${hasMap ? `
