@@ -123,7 +123,8 @@ export const initTopbar = (
           ${terrainHtml}
           ${customActionsMobileHtml}
           <button class="topbar-toggle btn-legend">
-            <i class="fa-solid fa-list-ul"></i> Legende
+            <i class="fa-solid fa-list-ul"></i> 
+            <span class="topbar-toggle-label">Legende</span>
           </button>
         </div>
       </div>
