@@ -3,13 +3,17 @@ import { toggleTerrain, toggleHillshade, terrainEnabled, hillshadeEnabled } from
 export const TerrainControls = {
   getHtml(): string {
     return `
-      <button class="topbar-toggle btn-terrain ${terrainEnabled ? 'active' : ''}" aria-pressed="${terrainEnabled}">
-        <span class="topbar-toggle-indicator"></span>
-        3D
+      <button class="topbar-toggle topbar-toggle--icon-only btn-terrain ${terrainEnabled ? 'active' : ''}" 
+              data-tooltip="Gelände (3D)" 
+              aria-pressed="${terrainEnabled}">
+        <i class="fa-solid fa-cube"></i>
+        <span class="topbar-toggle-label">Gelände (3D)</span>
       </button>
-      <button class="topbar-toggle btn-hillshade ${hillshadeEnabled ? 'active' : ''}" aria-pressed="${hillshadeEnabled}">
-        <span class="topbar-toggle-indicator"></span>
-        Hillshade
+      <button class="topbar-toggle topbar-toggle--icon-only btn-hillshade ${hillshadeEnabled ? 'active' : ''}" 
+              data-tooltip="Höhenschatten" 
+              aria-pressed="${hillshadeEnabled}">
+        <i class="fa-solid fa-mountain"></i>
+        <span class="topbar-toggle-label">Höhenschatten</span>
       </button>
     `;
   },
