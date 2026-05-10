@@ -76,21 +76,39 @@ export const initCoordsPage = async (container: HTMLElement) => {
   const map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
   
   let contoursActive = false;
-  const CONTOURS_ID = 'basemap-at-contours';
-  const CONTOURS_URL = 'https://tiles.oe5ith.at/overlays/styles/basemap-at-contours/style.json';
+  let hikingActive = false;
+  
+  const OVERLAYS = {
+    contours: {
+      id: 'basemap-at-contours',
+      url: 'https://tiles.oe5ith.at/overlays/styles/basemap-at-contours/style.json'
+    },
+    hiking: {
+      id: 'hiking',
+      url: 'https://tiles.oe5ith.at/overlays/styles/hiking/style.json'
+    }
+  };
 
-  const toggleContours = async (active: boolean) => {
-    contoursActive = active;
+  const toggleOverlay = async (type: keyof typeof OVERLAYS, active: boolean) => {
+    if (type === 'contours') contoursActive = active;
+    if (type === 'hiking') hikingActive = active;
+    
+    const { id, url } = OVERLAYS[type];
     
     if (active) {
-      if (!map.getSource(CONTOURS_ID)) {
+      if (!map.getSource(id)) {
         try {
-          const res = await fetch(CONTOURS_URL);
+          const res = await fetch(url);
           const style = await res.json();
           
+          // Load sprites if defined
+          if (style.sprite) {
+            await MapCore.loadSprites(map, style.sprite, url);
+          }
+
           // Inject Sources
-          for (const [id, def] of Object.entries(style.sources)) {
-            if (!map.getSource(id)) map.addSource(id, def as any);
+          for (const [sId, def] of Object.entries(style.sources)) {
+            if (!map.getSource(sId)) map.addSource(sId, def as any);
           }
           
           // Inject Layers
@@ -98,15 +116,15 @@ export const initCoordsPage = async (container: HTMLElement) => {
             if (!map.getLayer(l.id)) map.addLayer(l);
           });
         } catch (err) {
-          console.error('Failed to load contours', err);
-          Toast.error('Fehler beim Laden der Höhenlinien');
+          console.error(`Failed to load overlay: ${id}`, err);
+          Toast.error(`Fehler beim Laden von: ${id}`);
           return;
         }
       } else {
         // Toggle visibility if already exists
         const style = map.getStyle();
         style.layers.forEach((l: any) => {
-          if (l.source === CONTOURS_ID || l.id.includes('contour') || l.id.includes('height')) {
+          if (l.source === id) {
              map.setLayoutProperty(l.id, 'visibility', 'visible');
           }
         });
@@ -115,7 +133,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
       // Hide layers
       const style = map.getStyle();
       style.layers.forEach((l: any) => {
-        if (l.source === CONTOURS_ID || l.id.includes('contour') || l.id.includes('height')) {
+        if (l.source === id) {
            map.setLayoutProperty(l.id, 'visibility', 'none');
         }
       });
@@ -127,19 +145,22 @@ export const initCoordsPage = async (container: HTMLElement) => {
     map.setStyle(url);
     map.once('idle', async () => {
       await MapCore.reapplyBaseLayers();
-      // Ensure contours remain if they were active
-      if (contoursActive) {
-        // Source/Layers are likely gone after setStyle, need to re-inject
-        // Simplified: force re-run of toggle logic
-        map.getSource(CONTOURS_ID) ? null : await toggleContours(true);
-      }
+      // Ensure overlays remain if they were active
+      if (contoursActive) map.getSource(OVERLAYS.contours.id) ? null : await toggleOverlay('contours', true);
+      if (hikingActive) map.getSource(OVERLAYS.hiking.id) ? null : await toggleOverlay('hiking', true);
     });
   }, undefined, [
     {
       id: 'contours',
       icon: 'fa-solid fa-mountain',
       title: 'Höhenlinien',
-      onClick: (active) => toggleContours(active)
+      onClick: (active) => toggleOverlay('contours', active)
+    },
+    {
+      id: 'hiking',
+      icon: 'fa-solid fa-map-signs',
+      title: 'Wanderwege',
+      onClick: (active) => toggleOverlay('hiking', active)
     }
   ]);
 
