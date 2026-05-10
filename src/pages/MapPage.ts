@@ -33,7 +33,6 @@ export const initMapPage = async (container: HTMLElement) => {
     <div class="layout">
       <div id="sidebar-mount"></div>
       <main id="map" class="full-map">
-        ${MapCore.getAttributionHtml()}
       </main>
       <div class="map-legend" id="map-legend" style="display:none;">
         <div class="map-legend-title"></div>

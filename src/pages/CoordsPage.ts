@@ -39,7 +39,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
         </nav>
       </div>
       <main id="map" class="full-map">
-        <div class="map-attribution">Lade Karte...</div>
       </main>
     </div>
   `;
@@ -143,10 +142,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
       onClick: (active) => toggleContours(active)
     }
   ]);
-
-  // Attributierung aktualisieren
-  mapContainer.querySelector('.map-attribution')!.remove();
-  mapContainer.insertAdjacentHTML('beforeend', MapCore.getAttributionHtml());
 
   // Marker für die aktuelle Position
   const marker = new maplibregl.Marker({ color: MAP_COLORS.accent })

@@ -20,7 +20,7 @@ export const MapCore = {
       style: styleUrl,
       center: [14.2858, 48.3064],
       zoom: 12,
-      attributionControl: false,
+      attributionControl: { compact: true },
       maxPitch: 85
     });
 
@@ -30,19 +30,6 @@ export const MapCore = {
     initTerrainManager(map, 'pmtiles://https://tiles.oe5ith.at/elevation/pmtiles/at-elevation.pmtiles');
 
     return map;
-  },
-
-  /**
-   * Fügt die CI-konforme Attribution zur Karte hinzu.
-   */
-  getAttributionHtml(): string {
-    return `
-      <div class="map-attribution">
-        © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>
-        | © <a href="https://maplibre.org" target="_blank">MapLibre</a>
-        | © <a href="https://basemap.at" target="_blank">basemap.at</a>
-      </div>
-    `;
   },
 
   /**
