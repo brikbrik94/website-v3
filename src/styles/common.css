@@ -19,6 +19,7 @@
   --subtle:           #555555;
   --border:           #333333;
   --border-strong:    #444444;
+  --surface-hover:    rgba(255,255,255,0.05); /* Subtle hover on dark backgrounds */
 
   /* ── FARBEN: Akzent ── */
   --accent:           #3b82f6;
