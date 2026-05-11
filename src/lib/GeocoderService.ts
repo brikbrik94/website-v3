@@ -2,7 +2,8 @@ export interface GeocodeResult {
   display_name: string;
   lat: string;
   lon: string;
-  type: string;
+  class: string; // Neu: Nominatim Klasse
+  type: string;  // Nominatim Typ
   importance: number;
 }
 
