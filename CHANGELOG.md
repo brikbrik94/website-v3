@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.2.6] - 2026-05-11
+
+### Hinzugefügt
+- **CoordsPage:** Einführung eines verbesserten Geocoder-Dropdowns mit kontextbezogenen Icons (Krankenhäuser, Berge, Städte etc.) und optimierter Adress-Formatierung.
+
 ## [3.2.5] - 2026-05-10
 
 ### Geändert

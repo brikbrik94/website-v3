@@ -9,6 +9,7 @@ import maplibregl from 'maplibre-gl';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { GeocoderService } from '../lib/GeocoderService';
+import { renderGeocodeItemHtml } from '../lib/UIUtils';
 
 /**
  * CoordsPage - Bidirektionaler Koordinaten-Umrechner (Typ 7 Sidebar)
@@ -491,12 +492,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
           geocodeTimeout = setTimeout(async () => {
             const results = await GeocoderService.search(query);
             if (results.length > 0) {
-              resultsContainer.innerHTML = results.map(r => `
-                <div class="geocoder-item" data-lat="${r.lat}" data-lon="${r.lon}" data-name="${r.display_name}">
-                  <strong>${r.display_name.split(',')[0]}</strong>
-                  <span>${r.display_name.split(',').slice(1).join(',')}</span>
-                </div>
-              `).join('');
+              resultsContainer.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
               resultsContainer.style.display = 'block';
 
               resultsContainer.querySelectorAll('.geocoder-item').forEach(item => {
