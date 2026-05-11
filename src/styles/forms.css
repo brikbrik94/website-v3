@@ -24,6 +24,11 @@
   gap: 5px;
 }
 
+/* Erlaubt absolute Positionierung von Child-Elementen (z.B. Geocoder-Ergebnisse) */
+.form-field-relative {
+  position: relative;
+}
+
 /* Field-Label (über dem Control) */
 .form-label {
   font-size: 0.65rem;

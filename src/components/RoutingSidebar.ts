@@ -93,7 +93,7 @@ export const initRoutingSidebar = async (
         <div class="sidebar-sep"></div>
 
         <!-- Start -->
-        <div class="form-field" id="field-start" style="position: relative;">
+        <div class="form-field form-field-relative" id="field-start">
           <label class="form-label" for="input-start">Start</label>
           <div class="form-input-wrap">
             <i class="fa-solid fa-location-dot form-input-icon"></i>
@@ -103,7 +103,7 @@ export const initRoutingSidebar = async (
         </div>
 
         <!-- Ziel -->
-        <div class="form-field" style="position: relative;">
+        <div class="form-field form-field-relative">
           <label class="form-label" for="input-target" id="label-target">Ziel</label>
           <div class="form-input-wrap">
             <i class="fa-solid fa-flag-checkered form-input-icon"></i>
@@ -117,9 +117,9 @@ export const initRoutingSidebar = async (
         </button>
 
         <!-- Getrennte Container für Status, Details und Liste -->
-        <div id="routing-status" class="result-container" style="display: none; margin-top: 12px;"></div>
-        <div id="routing-details" class="result-container" style="display: none; margin-top: 12px;"></div>
-        <div id="routing-results" class="result-container" style="display: none; margin-top: 12px;"></div>
+        <div id="routing-status" class="result-container" style="display: none;"></div>
+        <div id="routing-details" class="result-container" style="display: none;"></div>
+        <div id="routing-results" class="result-container" style="display: none;"></div>
       </div>
       
       ${getSidebarFooterHtml()}
@@ -284,7 +284,7 @@ export const updateRoutingSummary = (distance: number, duration: number, title: 
       <span class="result-label">${title}</span>
     </div>
     <div class="result-list">
-      <div class="result-item active" style="cursor: default;">
+      <div class="result-item active no-click">
         <div class="result-kv">
           <div class="result-kv-item"><span class="result-kv-label">Distanz</span><span class="result-kv-value">${distKm} km</span></div>
           <div class="result-kv-item"><span class="result-kv-label">Dauer</span><span class="result-kv-value">${durMin} min</span></div>
