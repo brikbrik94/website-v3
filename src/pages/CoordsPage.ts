@@ -208,7 +208,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
             </div>
             <div class="coord-row" style="position: relative;">
               <input class="coord-input-full" type="text" data-field="address" placeholder="Adresse suchen..." autocomplete="off">
-              <div id="geocoder-results" class="geocoder-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 10;"></div>
+              <div id="geocoder-results" class="geocoder-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-dropdown);"></div>
             </div>
           </div>
 
@@ -554,7 +554,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
           const hw = parseFloat(block.querySelector<HTMLInputElement>('[data-field="hw"]')!.value);
           let epsg = m === 'M28' ? 'EPSG:31254' : (m === 'M34' ? 'EPSG:31256' : 'EPSG:31255');
           if (!isNaN(rw) && !isNaN(hw)) {
-            const res = proj4(epsg, 'EPSG:4326').inverse([rw, hw]);
+            const res = proj4(epsg, 'EPSG:4326').forward([rw, hw]);
             newWgs = [res[0], res[1]];
           }
         }
