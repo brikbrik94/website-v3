@@ -1,6 +1,7 @@
 import { RoutingService } from '../lib/RoutingService';
 import { GeocoderService, GeocodeResult } from '../lib/GeocoderService';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
+import { renderGeocodeItemHtml } from '../lib/UIUtils';
 
 export interface RoutingParams {
   start?: [number, number];
@@ -207,12 +208,7 @@ export const initRoutingSidebar = async (
       container.style.display = 'none';
       return;
     }
-    container.innerHTML = results.map(r => `
-      <div class="geocoder-item" data-lat="${r.lat}" data-lon="${r.lon}" data-name="${r.display_name}">
-        <strong>${r.display_name.split(',')[0]}</strong>
-        <span>${r.display_name.split(',').slice(1).join(',')}</span>
-      </div>
-    `).join('');
+    container.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
     container.style.display = 'block';
     container.querySelectorAll('.geocoder-item').forEach(item => {
       item.addEventListener('click', () => {
