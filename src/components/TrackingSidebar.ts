@@ -7,37 +7,65 @@ export interface TrackingItem {
   type: 'adsb' | 'ais';
   lat: number;
   lon: number;
+  details?: {
+    [key: string]: string | number;
+  };
 }
 
 export const initTrackingSidebar = (
   container: HTMLElement,
   onItemClick: (item: TrackingItem) => void
 ) => {
-  const extraFooter = `
-    <div class="sidebar-footer-status" id="sidebar-status-container" style="display: none;">
-      <span class="footer-dot"></span>
-      <span class="footer-status-text">verbinden...</span>
-    </div>
-  `;
-
   container.innerHTML = `
-    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-inner">
-        <div class="sidebar-section-label">LUFTFAHRT (ADS-B)</div>
-        <div id="adsb-list" class="result-list" style="max-height: 40vh; overflow-y: auto;">
-          <div class="t-small" style="padding: 10px; color: var(--subtle);">Lade Flugdaten...</div>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <!-- TYP 6: Status-Panel (Zähler) -->
+      <div class="status-panel" id="status-panel-counters">
+        <div class="status-row">
+          <div class="status-row-left">
+            <i class="fa-solid fa-plane status-row-icon"></i>
+            <span class="status-row-name">ADS-B Flugzeuge</span>
+          </div>
+          <div class="status-row-right">
+            <span class="status-row-value" id="status-adsb-count">0</span>
+            <span class="status-dot off" id="status-adsb-dot"></span>
+          </div>
         </div>
-
-        <div class="sidebar-section-label" style="margin-top: 20px;">SCHIFFFAHRT (AIS)</div>
-        <div id="ais-list" class="result-list" style="max-height: 40vh; overflow-y: auto;">
-          <div class="t-small" style="padding: 10px; color: var(--subtle);">Lade Schiffsdaten...</div>
+        <div class="status-row">
+          <div class="status-row-left">
+            <i class="fa-solid fa-ship status-row-icon"></i>
+            <span class="status-row-name">AIS Schiffe</span>
+          </div>
+          <div class="status-row-right">
+            <span class="status-row-value" id="status-ais-count">0</span>
+            <span class="status-dot off" id="status-ais-dot"></span>
+          </div>
         </div>
       </div>
-      ${getSidebarFooterHtml(extraFooter)}
-      <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
-    </aside>
-  `;
+
+      <div class="tool-sep"></div>
+
+      <!-- Mode-Switch (Filter) -->
+      <div class="segmented" id="tracking-filter">
+        <button class="segmented-btn active" data-filter="all">Alle</button>
+        <button class="segmented-btn" data-filter="adsb">ADS-B</button>
+        <button class="segmented-btn" data-filter="ais">AIS</button>
+      </div>
+
+      <!-- TYP 8: Tracking-Liste -->
+      <div class="tracking-list" id="tracking-list">
+        <div class="result-empty">
+          <i class="fa-solid fa-satellite-dish"></i>
+          Warte auf Empfang…
+        </div>
+      </div>
+
+    </div>
+    ${getSidebarFooterHtml()}
+    <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
+  </aside>
+`;
 
   setupSidebarToggle(
     document.getElementById('sidebar')!,
@@ -62,45 +90,69 @@ export const initTrackingSidebar = (
 };
 
 export const updateTrackingServerStatus = (adsbOk: boolean, aisOk: boolean) => {
-  const container = document.getElementById('sidebar-status-container');
-  if (!container) return;
-  
-  container.style.display = 'flex';
-  const textEl = container.querySelector('.footer-status-text') as HTMLElement;
-  const dotEl = container.querySelector('.footer-dot') as HTMLElement;
+  const adsbVal = document.getElementById('status-adsb-count');
+  const adsbDot = document.getElementById('status-adsb-dot');
+  const aisVal = document.getElementById('status-ais-count');
+  const aisDot = document.getElementById('status-ais-dot');
 
-  if (!textEl || !dotEl) return;
-
-  if (adsbOk && aisOk) {
-    textEl.textContent = 'online';
-    textEl.className = 'footer-status-text green';
-    dotEl.className = 'footer-dot green';
-  } else if (adsbOk || aisOk) {
-    textEl.textContent = adsbOk ? 'ADS-B only' : 'AIS only';
-    textEl.className = 'footer-status-text yellow';
-    dotEl.className = 'footer-dot yellow';
-  } else {
-    textEl.textContent = 'offline';
-    textEl.className = 'footer-status-text red';
-    dotEl.className = 'footer-dot red';
+  if (adsbVal && adsbDot) {
+    adsbVal.textContent = adsbOk ? 'online' : 'offline';
+    adsbDot.className = `status-dot ${adsbOk ? 'on' : 'off'}`;
+  }
+  if (aisVal && aisDot) {
+    aisVal.textContent = aisOk ? 'online' : 'offline';
+    aisDot.className = `status-dot ${aisOk ? 'on' : 'off'}`;
   }
 };
 
-export const updateTrackingList = (id: string, items: TrackingItem[]) => {
-  const listEl = document.getElementById(id);
+export const updateTrackingList = (items: TrackingItem[], currentFilter: string) => {
+  const listEl = document.getElementById('tracking-list');
   if (!listEl) return;
 
-  if (items.length === 0) {
-    listEl.innerHTML = '<div class="t-small" style="padding: 10px; color: var(--subtle);">Keine Objekte gefunden</div>';
+  const filteredItems = currentFilter === 'all' 
+    ? items 
+    : items.filter(i => i.type === currentFilter);
+
+  if (filteredItems.length === 0) {
+    listEl.innerHTML = `
+      <div class="result-empty">
+        <i class="fa-solid fa-satellite-dish"></i>
+        ${items.length === 0 ? 'Warte auf Empfang...' : 'Keine Objekte für diesen Filter.'}
+      </div>
+    `;
     return;
   }
 
-  listEl.innerHTML = items.map(item => {
-    const itemData = JSON.stringify(item).replace(/"/g, '&quot;');
+  listEl.innerHTML = filteredItems.map(item => {
+    const icon = item.type === 'adsb' ? 'fa-plane' : 'fa-ship';
+    const badgeClass = item.type === 'adsb' ? 'badge-blue' : 'badge-gray';
+    const badgeLabel = item.type === 'adsb' ? 'ADS-B' : 'AIS';
+    
+    let kvHtml = '';
+    if (item.details) {
+      kvHtml = '<div class="result-kv">';
+      for (const [key, value] of Object.entries(item.details)) {
+        kvHtml += `
+          <div class="result-kv-item">
+            <span class="result-kv-label">${key}</span>
+            <span class="result-kv-value">${value}</span>
+          </div>
+        `;
+      }
+      kvHtml += '</div>';
+    }
+
     return `
-      <div class="result-item-simple" data-item="${itemData}">
-        <div class="result-item-title">${item.label}</div>
-        <div class="result-item-meta">${item.info}</div>
+      <div class="tracking-item" data-type="${item.type}" data-id="${item.id}">
+        <div class="tracking-item-header">
+          <i class="fa-solid ${icon} tracking-item-icon"></i>
+          <span class="tracking-item-name">${item.label}</span>
+          <span class="badge ${badgeClass}">${badgeLabel}</span>
+          <i class="fa-solid fa-chevron-down tracking-item-chevron"></i>
+        </div>
+        <div class="tracking-item-body">
+          ${kvHtml}
+        </div>
       </div>
     `;
   }).join('');
