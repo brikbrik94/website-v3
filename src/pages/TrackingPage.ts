@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { MapCore } from '../lib/MapCore';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { initTopbar } from '../components/Topbar';
-import { initTrackingSidebar, updateTrackingList, updateTrackingServerStatus, TrackingItem } from '../components/TrackingSidebar';
+import { initTrackingSidebar, updateTrackingList, updateTrackingServerStatus, setActiveTrackingItem, TrackingItem } from '../components/TrackingSidebar';
 import { AisInterpreter } from '../api/AisInterpreter';
 import { AdsbInterpreter } from '../api/AdsbInterpreter';
 import { PopupManager } from '../lib/PopupManager';
@@ -40,6 +40,9 @@ export const initTrackingPage = async (container: HTMLElement) => {
   let selectedId: string | number | null = null;
   let refreshTimeout: any = null;
   let isRefreshing = false;
+  let currentFilter = 'all';
+  let currentAdsbItems: TrackingItem[] = [];
+  let currentAisItems: TrackingItem[] = [];
 
   // Handle Popups
   const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
@@ -246,28 +249,55 @@ export const initTrackingPage = async (container: HTMLElement) => {
         }
       });
 
-      // Setup Popups (prevent duplicate listeners)
-      const setupPopup = (layerId: string) => {
+      // Setup Interactions (Sidebar + Popups)
+      const setupInteractions = (layerId: string) => {
         const onClick = (e: any) => {
           const feat = e.features?.[0];
           if (!feat) return;
-          const html = PopupManager.buildHtml(layerId, feat.properties || {});
+          
+          const props = feat.properties || {};
+          const isAdsb = layerId.includes('adsb');
+          
+          // 1. Sidebar Update (Typ 8)
+          selectedId = isAdsb ? props.hex : props.mmsi;
+          setActiveTrackingItem(selectedId!);
+
+          // Highlight logic
+          if (map.getLayer('adsb-tracks')) {
+            map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5]);
+          }
+          if (map.getLayer('ais-track-lines')) {
+            map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId)], 4, 2]);
+          }
+
+          // 2. Map Popup
+          const html = PopupManager.buildHtml(layerId, props);
           popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
         };
         const onEnter = () => map.getCanvas().style.cursor = 'pointer';
         const onLeave = () => map.getCanvas().style.cursor = '';
 
-        map.off('click', layerId, onClick); // Try to remove previous if exists
+        map.off('click', layerId, onClick);
         map.on('click', layerId, onClick);
         map.on('mouseenter', layerId, onEnter);
         map.on('mouseleave', layerId, onLeave);
       };
-      setupPopup('adsb-icons');
-      setupPopup('ais-icons');
-      setupPopup('ais-dots-moving');
-      setupPopup('ais-dots-static');
+      setupInteractions('adsb-icons');
+      setupInteractions('ais-icons');
+      setupInteractions('ais-dots-moving');
+      setupInteractions('ais-dots-static');
     }
   };
+
+  // Click on empty map -> Reset selection
+  map.on('click', (e) => {
+    if (e.defaultPrevented) return;
+    setActiveTrackingItem('');
+    selectedId = null;
+    popup.remove();
+    if (map.getLayer('adsb-tracks')) map.setPaintProperty('adsb-tracks', 'line-width', 1.5);
+    if (map.getLayer('ais-track-lines')) map.setPaintProperty('ais-track-lines', 'line-width', 2);
+  });
 
   const refresh = async () => {
     if (!map.getContainer().isConnected) {
@@ -292,15 +322,20 @@ export const initTrackingPage = async (container: HTMLElement) => {
         (map.getSource('adsb-tracks') as maplibregl.GeoJSONSource).setData(adsbTracks);
       }
 
-      const adsbItems: TrackingItem[] = (adsbData.features || []).map(f => ({
+      currentAdsbItems = (adsbData.features || []).map(f => ({
         id: f.properties?.hex || '',
         label: f.properties?.flight?.trim() || f.properties?.hex || 'Unknown',
         info: `${Math.round(f.properties?.alt_baro || 0)}ft | ${Math.round(f.properties?.gs || 0)}kt`,
         type: 'adsb',
         lat: f.geometry.coordinates[1],
-        lon: f.geometry.coordinates[0]
+        lon: f.geometry.coordinates[0],
+        details: {
+          'Höhe': `${Math.round(f.properties?.alt_baro || 0)} ft`,
+          'Speed': `${Math.round(f.properties?.gs || 0)} kt`,
+          'Kurs': `${Math.round(f.properties?.track || 0)}°`,
+          'RSSI': `${f.properties?.rssi || '?' } dBm`
+        }
       }));
-      updateTrackingList('adsb-list', adsbItems);
       adsbOk = true;
     } catch (e) {
       console.warn('[Tracking] ADS-B Update failed', e);
@@ -317,19 +352,28 @@ export const initTrackingPage = async (container: HTMLElement) => {
         (map.getSource('ais-tracks') as maplibregl.GeoJSONSource).setData(aisTracks);
       }
 
-      const aisItems: TrackingItem[] = (aisData.features || []).map(f => ({
+      currentAisItems = (aisData.features || []).map(f => ({
         id: f.properties?.mmsi || '',
-        label: f.properties?.name || `MMSI: ${f.properties?.mmsi}`,
+        label: f.properties?.shipname || f.properties?.callsign || `MMSI: ${f.properties?.mmsi}`,
         info: `${f.properties?.speed || 0}kt | Class: ${f.properties?.shipclass || '-'}`,
         type: 'ais',
         lat: (f.geometry as any).coordinates[1],
-        lon: (f.geometry as any).coordinates[0]
+        lon: (f.geometry as any).coordinates[0],
+        details: {
+          'MMSI': f.properties?.mmsi,
+          'SOG': `${f.properties?.speed || 0} kt`,
+          'COG': `${f.properties?.cog || 0}°`,
+          'RSSI': `${f.properties?.rssi || '?' } dBm`
+        }
       }));
-      updateTrackingList('ais-list', aisItems);
       aisOk = true;
     } catch (e) {
       console.warn('[Tracking] AIS Update failed', e);
     }
+
+    // Combined Update (Typ 8 Sidebar)
+    updateTrackingList([...currentAdsbItems, ...currentAisItems], currentFilter);
+    if (selectedId) setActiveTrackingItem(selectedId);
 
     // Update Server Status in Footer
     updateTrackingServerStatus(adsbOk, aisOk);
@@ -374,7 +418,8 @@ export const initTrackingPage = async (container: HTMLElement) => {
   ]);
 
   // Sidebar
-  initTrackingSidebar(document.getElementById('sidebar-container')!, (item) => {
+  const sidebarContainer = document.getElementById('sidebar-container')!;
+  initTrackingSidebar(sidebarContainer, (item) => {
     selectedId = item.id;
     map.flyTo({ center: [item.lon, item.lat], zoom: 14 });
 
@@ -383,8 +428,14 @@ export const initTrackingPage = async (container: HTMLElement) => {
       map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5]);
     }
     if (map.getLayer('ais-track-lines')) {
-      map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], Number(selectedId)], 4, 2]);
+      map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId)], 4, 2]);
     }
+  });
+
+  sidebarContainer.addEventListener('tracking-filter-change', (e: any) => {
+    currentFilter = e.detail;
+    updateTrackingList([...currentAdsbItems, ...currentAisItems], currentFilter);
+    if (selectedId) setActiveTrackingItem(selectedId);
   });
 
   // Map Loaded Handler
