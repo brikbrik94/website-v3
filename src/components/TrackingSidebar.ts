@@ -12,6 +12,9 @@ export interface TrackingItem {
   };
 }
 
+// Internal state to support interaction logic
+let lastItems: TrackingItem[] = [];
+
 export const initTrackingSidebar = (
   container: HTMLElement,
   onItemClick: (item: TrackingItem) => void
@@ -73,20 +76,67 @@ export const initTrackingSidebar = (
     document.getElementById('sidebar-backdrop')!
   );
 
-  container.addEventListener('click', (e) => {
-    const itemEl = (e.target as HTMLElement).closest('.result-item-simple');
-    if (itemEl) {
-      const dataStr = itemEl.getAttribute('data-item');
-      if (dataStr) {
-        const data = JSON.parse(dataStr);
-        onItemClick(data);
-        
-        // Visual feedback
-        document.querySelectorAll('.result-item-simple').forEach(el => el.classList.remove('active'));
+  // Filter-Logik
+  const filterContainer = document.getElementById('tracking-filter')!;
+  filterContainer.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.segmented-btn');
+    if (btn) {
+      filterContainer.querySelectorAll('.segmented-btn').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.getAttribute('data-filter') || 'all';
+      container.dispatchEvent(new CustomEvent('tracking-filter-change', { detail: filter }));
+    }
+  });
+
+  // Accordion-Logik für Tracking-Liste
+  const listEl = document.getElementById('tracking-list')!;
+  listEl.addEventListener('click', (e) => {
+    const header = (e.target as HTMLElement).closest('.tracking-item-header');
+    if (header) {
+      const itemEl = header.parentElement!;
+      const wasActive = itemEl.classList.contains('active');
+      
+      // Close others
+      listEl.querySelectorAll('.tracking-item').forEach(el => el.classList.remove('active'));
+      
+      if (!wasActive) {
         itemEl.classList.add('active');
+        const id = itemEl.getAttribute('data-id')!;
+        const type = itemEl.getAttribute('data-type');
+        
+        const item = lastItems.find(i => String(i.id) === id && i.type === type);
+        if (item) {
+          onItemClick(item);
+        }
       }
     }
   });
+};
+
+/**
+ * Erlaubt das Setzen des aktiven Tracking-Items von außen (z.B. Map-Click).
+ * Klappt das Item auf und scrollt es in den Sichtbereich.
+ */
+export const setActiveTrackingItem = (id: string | number) => {
+  const listEl = document.getElementById('tracking-list');
+  if (!listEl) return;
+
+  const items = listEl.querySelectorAll('.tracking-item');
+  items.forEach(el => {
+    if (el.getAttribute('data-id') === String(id)) {
+      el.classList.add('active');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      el.classList.remove('active');
+    }
+  });
+};
+
+/**
+ * Provisorischer Export für TrackingPage.ts (wird in Task 4 entfernt).
+ */
+export const updateObjectDetail = (_item: TrackingItem | null) => {
+  // Funktionalität ist jetzt in der Liste integriert (Accordion)
 };
 
 export const updateTrackingServerStatus = (adsbOk: boolean, aisOk: boolean) => {
@@ -106,6 +156,7 @@ export const updateTrackingServerStatus = (adsbOk: boolean, aisOk: boolean) => {
 };
 
 export const updateTrackingList = (items: TrackingItem[], currentFilter: string) => {
+  lastItems = items;
   const listEl = document.getElementById('tracking-list');
   if (!listEl) return;
 
