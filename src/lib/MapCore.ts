@@ -17,7 +17,8 @@ export const MapCore = {
       (maplibregl as any)._pmtilesProtocolAdded = true;
     }
 
-    const effectiveStyle = styleUrl || BasemapStore.get();
+    // Prioritize persistence. If styleUrl is provided, it acts as a secondary fallback.
+    const effectiveStyle = BasemapStore.get() || styleUrl;
 
     const map = new maplibregl.Map({
       container,

@@ -28,8 +28,11 @@ export const initTopbar = (
     </button>
   `).join('');
 
-  const basemapOptions = basemaps.map((m, i) => `
-    <div class="topbar-dropdown-item ${i === 0 ? 'active' : ''}" data-style="${m.style.url}" data-name="${m.name}">
+  const currentBasemapUrl = BasemapStore.get();
+  const activeBasemap = basemaps.find(m => m.style.url === currentBasemapUrl) || basemaps[0];
+
+  const basemapOptions = basemaps.map((m) => `
+    <div class="topbar-dropdown-item ${m.style.url === currentBasemapUrl ? 'active' : ''}" data-style="${m.style.url}" data-name="${m.name}">
       ${m.name}
     </div>
   `).join('');
@@ -46,7 +49,7 @@ export const initTopbar = (
   const dropdownHtml = (_isMobile = false) => `
     <div class="topbar-dropdown basemap-dropdown">
       <button class="topbar-dropdown-toggle basemap-toggle" aria-haspopup="listbox" aria-expanded="false">
-        <span class="dropdown-label">${basemaps[0]?.name || 'Basemap'}</span>
+        <span class="dropdown-label">${activeBasemap?.name || 'Basemap'}</span>
         <span class="chevron">▾</span>
       </button>
       <div class="topbar-dropdown-menu basemap-menu" role="listbox">
