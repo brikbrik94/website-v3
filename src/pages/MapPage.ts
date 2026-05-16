@@ -8,8 +8,6 @@ import maplibregl from 'maplibre-gl';
 import { MapRegistry } from '../lib/MapRegistry';
 
 export const initMapPage = async (container: HTMLElement) => {
-  MapRegistry.clear();
-
   // 1. Daten laden
   const invService = InventoryService.getInstance();
   const [basemaps, layersRes] = await Promise.all([
@@ -57,7 +55,20 @@ export const initMapPage = async (container: HTMLElement) => {
       if (style.sources) {
         for (const [srcId, srcDef] of Object.entries(style.sources)) {
           const uniqueSrcId = srcId.startsWith(overlayId) ? srcId : `${overlayId}-${srcId}`;
-          MapRegistry.registerSource(uniqueSrcId, srcDef);
+          const finalDef = { ...srcDef as any };
+
+          // URL-Fix für relative Pfade (z.B. pmtiles://at.pmtiles)
+          // Wir lösen diese gegen die overlayUrl (style.json) auf.
+          if (finalDef.url && !finalDef.url.startsWith('http')) {
+            try {
+              finalDef.url = new URL(finalDef.url, overlayUrl).href;
+              console.log(`[MapPage] Resolved relative source URL: ${(srcDef as any).url} -> ${finalDef.url}`);
+            } catch (e) {
+              console.warn(`[MapPage] Failed to resolve relative URL: ${finalDef.url}`, e);
+            }
+          }
+          
+          MapRegistry.registerSource(uniqueSrcId, finalDef);
         }
       }
 

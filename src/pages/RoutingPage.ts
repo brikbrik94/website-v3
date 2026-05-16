@@ -15,9 +15,6 @@ export const initRoutingPage = async (container: HTMLElement) => {
   const invService = InventoryService.getInstance();
   const basemaps = await invService.getBasemaps();
 
-  // Clear Registry on Page Init
-  MapRegistry.clear();
-
   // 2. Basis-Layout
   const mounts = LayoutHelper.renderBaseLayout(container, { 
     withLegend: true, 
@@ -32,6 +29,7 @@ export const initRoutingPage = async (container: HTMLElement) => {
   let currentHighlightedId: number | null = null;
 
   const SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
+  MapRegistry.registerImage('routing-markers', SPRITE_BASE);
 
   const ensureBaseLayers = (m: maplibregl.Map) => {
     // 1. Stations Source & Layer
@@ -120,7 +118,6 @@ export const initRoutingPage = async (container: HTMLElement) => {
     mounts.map, 
     basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
     async (m) => {
-      await MapCore.loadSprites(m, SPRITE_BASE);
       ensureBaseLayers(m);
       refreshMapRoutes(); // Re-apply current routes on style change
     }
