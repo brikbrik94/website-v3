@@ -1,11 +1,4 @@
-export interface ContextMenuItem {
-  label: string;
-  icon?: string;
-  value?: string;
-  danger?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-}
+import { ContextMenuItem } from '../types/common';
 
 export const ContextMenu = {
   privateMenu: null as HTMLDivElement | null,

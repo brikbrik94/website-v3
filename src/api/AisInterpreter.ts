@@ -1,23 +1,20 @@
-export interface Ship {
-    mmsi: number;
-    name?: string;
-    lat: number;
-    lon: number;
-    cog?: number;
-    speed?: number;
-    heading?: number;
-    shipclass?: number;
-}
+import { Ship } from '../types/tracking';
 
 export class AisInterpreter {
     private url: string;
     private maxTrackPoints: number;
     private tracks: Map<number, [number, number][]>;
 
+    private lastResult: GeoJSON.FeatureCollection<GeoJSON.Point, Ship> | null = null;
+
     constructor(url: string, options: { maxTrackPoints?: number } = {}) {
         this.url = url;
         this.maxTrackPoints = options.maxTrackPoints || 60;
         this.tracks = new Map();
+    }
+
+    getLastResult() {
+        return this.lastResult;
     }
 
     async fetch(): Promise<GeoJSON.FeatureCollection<GeoJSON.Point, Ship>> {
@@ -54,7 +51,7 @@ export class AisInterpreter {
                 if (!activeIds.has(mmsi)) this.tracks.delete(mmsi);
             }
 
-            return {
+            this.lastResult = {
                 type: 'FeatureCollection',
                 features: ships.map(s => ({
                     type: 'Feature',
@@ -62,6 +59,7 @@ export class AisInterpreter {
                     properties: s
                 }))
             };
+            return this.lastResult;
         } catch (error) {
             console.error('Failed to fetch or parse AIS data:', error);
             return { type: 'FeatureCollection', features: [] };

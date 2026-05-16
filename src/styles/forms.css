@@ -24,11 +24,6 @@
   gap: 5px;
 }
 
-/* Erlaubt absolute Positionierung von Child-Elementen (z.B. Geocoder-Ergebnisse) */
-.form-field-relative {
-  position: relative;
-}
-
 /* Field-Label (über dem Control) */
 .form-label {
   font-size: 0.65rem;
@@ -253,29 +248,6 @@
 }
 
 /* ═══════════════════════════════════════
-   ═══════════════════════════════════════ */
-
-
-/* Einzelne Demos */
-
-
-@media (max-width: 768px) {
-  
-  
-}
-
-/* Submit-Button (hier lokal, gehört zu buttons.html) */
-.form-submit {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  height: 36px; padding: 0 16px; border-radius: 6px;
-  font-size: 0.85rem; font-weight: 600; font-family: inherit;
-  cursor: pointer; border: none; width: 100%;
-  background: var(--accent); color: #fff;
-  transition: background var(--transition-fast);
-}
-.form-submit:hover { background: var(--accent-hover); }
-
-/* ═══════════════════════════════════════
    GEOCODER DROPDOWN
    Für Suchergebnisse (Nominatim)
    ═══════════════════════════════════════ */
@@ -304,7 +276,7 @@
   border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 .geocoder-item:last-child { border-bottom: none; }
-.geocoder-item:hover { background: rgba(255,255,255,0.05); }
+.geocoder-item:hover { background: var(--surface-hover); }
 
 .geocoder-icon {
   width: 16px;
@@ -339,3 +311,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ═══════════════════════════════════════
+   ═══════════════════════════════════════ */
+
+
+/* Einzelne Demos */
+
+
+@media (max-width: 768px) {
+  
+  
+}
+
+/* Submit-Button (hier lokal, gehört zu buttons.html) */
+.form-submit {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  height: 36px; padding: 0 16px; border-radius: 6px;
+  font-size: 0.85rem; font-weight: 600; font-family: inherit;
+  cursor: pointer; border: none; width: 100%;
+  background: var(--accent); color: #fff;
+  transition: background var(--transition-fast);
+}
+.form-submit:hover { background: var(--accent-hover); }

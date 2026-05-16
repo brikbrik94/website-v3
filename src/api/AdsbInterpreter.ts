@@ -1,27 +1,20 @@
-export interface Aircraft {
-    hex: string;
-    flight?: string;
-    lat: number;
-    lon: number;
-    alt_baro?: number;
-    alt_geom?: number;
-    gs?: number;
-    track?: number;
-    category?: string;
-    vert_rate?: number;
-    squawk?: string;
-    seen?: number;
-}
+import { Aircraft } from '../types/tracking';
 
 export class AdsbInterpreter {
     private url: string;
     private maxTrackPoints: number;
     private tracks: Map<string, { lon: number, lat: number, alt: number }[]>;
 
+    private lastResult: GeoJSON.FeatureCollection<GeoJSON.Point, Aircraft> | null = null;
+
     constructor(url: string, options: { maxTrackPoints?: number } = {}) {
         this.url = url;
         this.maxTrackPoints = options.maxTrackPoints || 60;
         this.tracks = new Map();
+    }
+
+    getLastResult() {
+        return this.lastResult;
     }
 
     async fetch(): Promise<GeoJSON.FeatureCollection<GeoJSON.Point, Aircraft>> {
@@ -52,7 +45,7 @@ export class AdsbInterpreter {
                 if (!activeHexes.has(hex)) this.tracks.delete(hex);
             }
 
-            return {
+            this.lastResult = {
                 type: 'FeatureCollection',
                 features: aircraft.map(a => ({
                     type: 'Feature',
@@ -60,6 +53,7 @@ export class AdsbInterpreter {
                     properties: a
                 }))
             };
+            return this.lastResult;
         } catch (error) {
             console.error('Failed to fetch or parse ADS-B data:', error);
             return { type: 'FeatureCollection', features: [] };

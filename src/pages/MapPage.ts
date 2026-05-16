@@ -2,58 +2,27 @@ import { initTopbar } from '../components/Topbar';
 import { initSidebar } from '../components/Sidebar';
 import { MapCore } from '../lib/MapCore';
 import { MapLegend } from '../lib/MapLegend';
-
-export interface MapItem {
-  name: string;
-  type: string;
-  style: { url: string };
-  file: { url: string };
-}
-
-interface Inventory {
-  maps: MapItem[];
-}
+import { InventoryService } from '../services/InventoryService';
+import { LayoutHelper } from '../lib/LayoutHelper';
+import maplibregl from 'maplibre-gl';
+import { MapRegistry } from '../lib/MapRegistry';
 
 export const initMapPage = async (container: HTMLElement) => {
-  // Inventar laden
-  const [invRes, layersRes] = await Promise.all([
-    fetch('https://tiles.oe5ith.at/inventory.json'),
+  MapRegistry.clear();
+
+  // 1. Daten laden
+  const invService = InventoryService.getInstance();
+  const [basemaps, layersRes] = await Promise.all([
+    invService.getBasemaps(),
     fetch('https://tiles.oe5ith.at/layers.json')
   ]);
-  
-  const inventory: Inventory = await invRes.json();
   const layersMeta = await layersRes.json();
-  
-  const basemaps = inventory.maps.filter(m => m.type === 'basemap');
-  const overlays = inventory.maps.filter(m => m.type === 'overlay');
 
-  // Basis-Layout
-  container.innerHTML = `
-    <div id="topbar-mount"></div>
-    <div class="layout">
-      <div id="sidebar-mount"></div>
-      <main id="map" class="full-map">
-      </main>
-      <div class="map-legend" id="map-legend" style="display:none;">
-        <div class="map-legend-title"></div>
-        <div class="map-legend-entries"></div>
-      </div>
-    </div>
-  `;
-
-  const mapContainer = document.getElementById('map')!;
-  const topbarMount = document.getElementById('topbar-mount')!;
-  const sidebarMount = document.getElementById('sidebar-mount')!;
-
-  // Map Initialization via Core
-  const map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
-
-  // Legend Initialization
-  const legend = new MapLegend('#map-legend');
-  legend.setTitle('Karten-Layer');
-
-  // Initiales Anwenden von Terrain/Hillshade (falls global aktiviert)
-  map.once('style.load', () => MapCore.reapplyBaseLayers());
+  // 2. Basis-Layout
+  const mounts = LayoutHelper.renderBaseLayout(container, { 
+    withLegend: true, 
+    legendTitle: 'Karten-Layer' 
+  });
 
   // Overlay Management State
   const activeLayers = new Map<string, Set<string>>();
@@ -76,109 +45,90 @@ export const initMapPage = async (container: HTMLElement) => {
     return promise;
   };
 
-  const toggleLayer = async (overlayId: string, overlayUrl: string, layerIds: string[], checked: boolean) => {
-    if (!map.isStyleLoaded()) {
-      await new Promise(resolve => map.once('style.load', resolve));
+  const toggleLayer = async (overlayId: string, overlayUrl: string, layerIds: string[], checked: boolean, m: maplibregl.Map) => {
+    if (!m.isStyleLoaded()) {
+      await new Promise(resolve => m.once('style.load', resolve));
     }
 
     const style = await getStyle(overlayId, overlayUrl);
     if (!style) return;
 
-    for (const layerId of layerIds) {
-      // Logic: If the layerId already starts with overlayId, don't prefix again.
-      const uniqueLayerId = layerId.startsWith(overlayId) ? layerId : `${overlayId}-${layerId}`;
-
-      if (checked) {
-        // Ensure source is added
-        if (style.sources) {
-          for (const [srcId, srcDef] of Object.entries(style.sources)) {
-            const uniqueSrcId = srcId.startsWith(overlayId) ? srcId : `${overlayId}-${srcId}`;
-            if (!map.getSource(uniqueSrcId)) {
-              try {
-                map.addSource(uniqueSrcId, srcDef as any);
-              } catch (e) {
-                // If parallel call added it between check and add, ignore
-                if (!map.getSource(uniqueSrcId)) console.error(e);
-              }
-            }
-          }
+    if (checked) {
+      if (style.sources) {
+        for (const [srcId, srcDef] of Object.entries(style.sources)) {
+          const uniqueSrcId = srcId.startsWith(overlayId) ? srcId : `${overlayId}-${srcId}`;
+          MapRegistry.registerSource(uniqueSrcId, srcDef);
         }
+      }
 
-        // Load Sprites if any (loadSprites is idempotent via map.hasImage)
-        if (style.sprite) {
-          await MapCore.loadSprites(map, style.sprite, overlayUrl);
-        }
+      if (style.sprite) {
+        MapRegistry.registerImage(overlayId, style.sprite, overlayUrl);
+      }
 
-        // Add Layer
+      for (const layerId of layerIds) {
+        const uniqueLayerId = layerId.startsWith(overlayId) ? layerId : `${overlayId}-${layerId}`;
         const layerDef = style.layers.find((l: any) => l.id === layerId);
-        if (layerDef && !map.getLayer(uniqueLayerId)) {
+        if (layerDef) {
           const newLayer = { ...layerDef, id: uniqueLayerId };
           if (newLayer.source && style.sources[newLayer.source]) {
             newLayer.source = newLayer.source.startsWith(overlayId) ? newLayer.source : `${overlayId}-${newLayer.source}`;
           }
-          try {
-            map.addLayer(newLayer);
-          } catch (e) {
-            if (!map.getLayer(uniqueLayerId)) console.error(e);
-          }
+          MapRegistry.registerLayer(uniqueLayerId, newLayer);
+          
+          if (!activeLayers.has(overlayId)) activeLayers.set(overlayId, new Set());
+          activeLayers.get(overlayId)!.add(layerId);
         }
+      }
+    } else {
+      for (const layerId of layerIds) {
+        const uniqueLayerId = layerId.startsWith(overlayId) ? layerId : `${overlayId}-${layerId}`;
+        
+        if (m.getLayer(uniqueLayerId)) m.removeLayer(uniqueLayerId);
+        MapRegistry.unregisterLayer(uniqueLayerId);
 
-        // Update state
-        if (!activeLayers.has(overlayId)) activeLayers.set(overlayId, new Set());
-        activeLayers.get(overlayId)!.add(layerId);
-
-      } else {
-        // Remove Layer
-        if (map.getLayer(uniqueLayerId)) {
-          map.removeLayer(uniqueLayerId);
-        }
-
-        // Update state
         const layers = activeLayers.get(overlayId);
         if (layers) {
           layers.delete(layerId);
-          // If no layers left, remove sources
           if (layers.size === 0) {
             activeLayers.delete(overlayId);
             if (style.sources) {
               for (const srcId in style.sources) {
                 const uniqueSrcId = srcId.startsWith(overlayId) ? srcId : `${overlayId}-${srcId}`;
-                if (map.getSource(uniqueSrcId)) {
-                  map.removeSource(uniqueSrcId);
-                }
+                if (m.getSource(uniqueSrcId)) m.removeSource(uniqueSrcId);
+                MapRegistry.unregisterSource(uniqueSrcId);
               }
             }
+            MapRegistry.unregisterImage(overlayId);
           }
         }
       }
     }
+
+    await MapRegistry.restore(m, MapCore.loadSprites);
   };
 
-  const reapplyAll = async () => {
-    await MapCore.reapplyBaseLayers(async () => {
-      for (const [overlayId, layers] of activeLayers.entries()) {
-        const overlay = overlays.find(o => o.name.toLowerCase().replace(/\s+/g, '-') === overlayId);
-        if (overlay) {
-          await toggleLayer(overlayId, overlay.style.url, Array.from(layers), true);
-        }
-      }
-    });
-  };
+  // Map Initialization via Core
+  const map = MapCore.init(
+    mounts.map, 
+    basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json'
+  );
+
+  // Legend Initialization
+  const legend = new MapLegend(mounts.legend!);
+
+  const overlays = await invService.getOverlays();
 
   // Initialize Components
-  initTopbar(topbarMount, basemaps, (url) => {
+  initTopbar(mounts.topbar, basemaps, (url) => {
     map.setStyle(url);
-    map.once('style.load', () => reapplyAll());
   }, () => legend.toggle());
 
-  initSidebar(sidebarMount, overlays, 
+  initSidebar(mounts.sidebar, overlays, 
     async (overlayId, overlayUrl, layerIds, _layerType, checked) => {
-      await toggleLayer(overlayId, overlayUrl, layerIds, checked);
+      await toggleLayer(overlayId, overlayUrl, layerIds, checked, map);
     }, 
-    (_overlayId, _overlayUrl, _checked) => {
-      // Bulk toggle logic is handled by individual onLayerToggle calls in Sidebar.ts
-    },
+    (_overlayId, _overlayUrl, _checked) => {},
     undefined,
-    layersMeta.layers // Pass the layers metadata
+    layersMeta.layers
   );
 };

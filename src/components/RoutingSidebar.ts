@@ -1,5 +1,6 @@
 import { RoutingService } from '../lib/RoutingService';
-import { GeocoderService, GeocodeResult } from '../lib/GeocoderService';
+import { GeocoderService } from '../lib/GeocoderService';
+import { GeocodeResult } from '../types/common';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { renderGeocodeItemHtml } from '../lib/UIUtils';
 

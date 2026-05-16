@@ -1,9 +1,4 @@
-export type ToastType = 'success' | 'warning' | 'danger' | 'info';
-
-interface ToastOptions {
-  body?: string;
-  duration?: number;
-}
+import { ToastType, ToastOptions } from '../types/common';
 
 class ToastManager {
   private container: HTMLDivElement | null = null;
