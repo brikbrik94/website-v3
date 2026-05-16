@@ -1,5 +1,6 @@
-import { MapItem } from '../pages/MapPage';
+import { MapItem } from '../types/inventory';
 import { TerrainControls } from './TerrainControls';
+import { BasemapStore } from '../lib/BasemapStore';
 
 export interface CustomAction {
   id: string;
@@ -187,6 +188,7 @@ export const initTopbar = (
         document.querySelectorAll('.basemap-menu').forEach(m => m.classList.remove('open'));
         document.querySelectorAll('.basemap-toggle').forEach(t => t.classList.remove('open'));
         
+        BasemapStore.set(styleUrl);
         onBasemapChange(styleUrl, name);
         return;
       }
