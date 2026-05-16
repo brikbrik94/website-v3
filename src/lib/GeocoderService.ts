@@ -1,11 +1,4 @@
-export interface GeocodeResult {
-  display_name: string;
-  lat: string;
-  lon: string;
-  class: string; // Neu: Nominatim Klasse
-  type: string;  // Nominatim Typ
-  importance: number;
-}
+import { GeocodeResult } from '../types/common';
 
 const GEOCODER_BASE_URL = '/api/geocoder.php';
 

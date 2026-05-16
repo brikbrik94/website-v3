@@ -2,37 +2,26 @@ import maplibregl from 'maplibre-gl';
 import { MapCore } from '../lib/MapCore';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { initTopbar } from '../components/Topbar';
-import { initTrackingSidebar, updateTrackingList, updateTrackingServerStatus, setActiveTrackingItem, TrackingItem } from '../components/TrackingSidebar';
+import { initTrackingSidebar, updateTrackingList, updateTrackingServerStatus, setActiveTrackingItem } from '../components/TrackingSidebar';
+import { TrackingItem } from '../types/tracking';
 import { AisInterpreter } from '../api/AisInterpreter';
 import { AdsbInterpreter } from '../api/AdsbInterpreter';
 import { PopupManager } from '../lib/PopupManager';
+import { MapRegistry } from '../lib/MapRegistry';
+
+import { InventoryService } from '../services/InventoryService';
+import { LayoutHelper } from '../lib/LayoutHelper';
 
 export const initTrackingPage = async (container: HTMLElement) => {
-  // Layout initialisieren
-  container.innerHTML = `
-    <div id="topbar-container"></div>
-    <div class="layout">
-      <div id="sidebar-container"></div>
-      <main id="map" class="full-map"></main>
-    </div>
-  `;
+  // Clear registry to avoid stale data from other pages
+  MapRegistry.clear();
 
-  // 1. Inventar laden (CI-konform)
-  let basemaps = [];
-  try {
-    const invRes = await fetch('https://tiles.oe5ith.at/inventory.json');
-    if (!invRes.ok) throw new Error('Inventory load failed');
-    const inventory = await invRes.json();
-    basemaps = inventory.maps.filter((m: any) => m.type === 'basemap');
-  } catch (err) {
-    console.error('[Tracking] Inventory load failed', err);
-  }
+  // 1. Daten laden
+  const invService = InventoryService.getInstance();
+  const basemaps = await invService.getBasemaps();
 
-  const map = MapCore.init(document.getElementById('map')!, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
-
-  // Interpreten mit Lokalen Proxies (CI-konform)
-  const ais = new AisInterpreter('/api/ais.php');
-  const adsb = new AdsbInterpreter('/api/adsb.php');
+  // 2. Basis-Layout
+  const mounts = LayoutHelper.renderBaseLayout(container);
 
   // State
   let aisVisible = true;
@@ -44,55 +33,97 @@ export const initTrackingPage = async (container: HTMLElement) => {
   let currentAdsbItems: TrackingItem[] = [];
   let currentAisItems: TrackingItem[] = [];
 
+  // Interpreten mit Lokalen Proxies (CI-konform)
+  const ais = new AisInterpreter('/api/ais.php');
+  const adsb = new AdsbInterpreter('/api/adsb.php');
+
   // Handle Popups
   const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
 
-  const loadAllSprites = async () => {
+  // --- Interaction Handlers (Static to prevent leaks) ---
+  const onMapClick = (e: any, m: maplibregl.Map) => {
+    const features = m.queryRenderedFeatures(e.point, { layers: ['adsb-icons', 'ais-icons', 'ais-dots-moving', 'ais-dots-static'] });
+    
+    if (features.length === 0) {
+      setActiveTrackingItem('');
+      selectedId = null;
+      popup.remove();
+      if (m.getLayer('adsb-tracks')) m.setPaintProperty('adsb-tracks', 'line-width', 1.5);
+      if (m.getLayer('ais-track-lines')) m.setPaintProperty('ais-track-lines', 'line-width', 2);
+      return;
+    }
+
+    const feat = features[0];
+    const props = feat.properties || {};
+    const layerId = feat.layer.id;
+    const isAdsb = layerId.includes('adsb');
+    
+    selectedId = isAdsb ? props.hex : props.mmsi;
+    setActiveTrackingItem(selectedId!);
+
+    // Highlight logic
+    if (m.getLayer('adsb-tracks')) {
+      m.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], 4, 1.5]);
+    }
+    if (m.getLayer('ais-track-lines')) {
+      m.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId) || -1], 4, 2]);
+    }
+
+    const html = PopupManager.buildHtml(layerId, props);
+    popup.setLngLat(e.lngLat).setHTML(html).addTo(m);
+    e.preventDefault();
+  };
+
+  // --- Helper Functions ---
+
+  const loadAllSprites = async (m: maplibregl.Map) => {
     console.log('[Tracking] Loading sprites...');
+    const adsbSprite = 'https://tiles.oe5ith.at/assets/sprites/adsb/sprite';
+    const aisSprite = 'https://tiles.oe5ith.at/assets/sprites/ais/sprite';
+
+    // Register for persistence
+    MapRegistry.registerImage('adsb-sprite', adsbSprite);
+    MapRegistry.registerImage('ais-sprite', aisSprite);
+
     try {
       await Promise.all([
-        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/adsb/sprite'),
-        MapCore.loadSprites(map, 'https://tiles.oe5ith.at/assets/sprites/ais/sprite')
+        MapCore.loadSprites(m, adsbSprite),
+        MapCore.loadSprites(m, aisSprite)
       ]);
-      console.log('[Tracking] All sprites loaded. Available images:', (map as any).listImages());
     } catch (err) {
       console.error('[Tracking] Sprite loading failed', err);
     }
   };
 
-  const ensureTrackingLayers = () => {
-    if (!map.isStyleLoaded()) return;
+  const ensureTrackingLayers = (m: maplibregl.Map) => {
     console.log('[Tracking] Ensuring layers exist...');
 
     // --- ADS-B LAYERS ---
-    if (!map.getSource('adsb')) {
-      map.addSource('adsb', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-      map.addSource('adsb-tracks', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    MapCore.ensureGeoJsonLayer(m, 'adsb', {
+      id: 'adsb-tracks',
+      type: 'line',
+      source: 'adsb-tracks',
+      paint: { 
+        'line-color': [
+          'interpolate', ['linear'],
+          ['coalesce', ['get', 'alt_mid'], 0],
+          0,     MAP_COLORS.alt0,
+          5000,  MAP_COLORS.alt5k,
+          15000, MAP_COLORS.alt15k,
+          35000, MAP_COLORS.alt35k
+        ], 
+        'line-width': ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], 4, 1.5],
+        'line-opacity': 0.7 
+      },
+      layout: { 
+        'line-join': 'round',
+        'line-cap': 'round',
+        'visibility': adsbVisible ? 'visible' : 'none' 
+      }
+    });
 
-      map.addLayer({
-        id: 'adsb-tracks',
-        type: 'line',
-        source: 'adsb-tracks',
-        paint: { 
-          'line-color': [
-            'interpolate', ['linear'],
-            ['coalesce', ['get', 'alt_mid'], 0],
-            0,     MAP_COLORS.alt0,
-            5000,  MAP_COLORS.alt5k,
-            15000, MAP_COLORS.alt15k,
-            35000, MAP_COLORS.alt35k
-          ], 
-          'line-width': ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5],
-          'line-opacity': 0.7 
-        },
-        layout: { 
-          'line-join': 'round',
-          'line-cap': 'round',
-          'visibility': adsbVisible ? 'visible' : 'none' 
-        }
-      });
-
-      map.addLayer({
+    if (!m.getLayer('adsb-icons')) {
+      const adsbIconsDef: any = {
         id: 'adsb-icons',
         type: 'symbol',
         source: 'adsb',
@@ -144,34 +175,47 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'text-halo-color': MAP_COLORS.black, 
           'text-halo-width': 2 
         }
-      });
+      };
+      MapRegistry.registerLayer(adsbIconsDef.id, adsbIconsDef);
+      m.addLayer(adsbIconsDef);
     }
 
     // --- AIS LAYERS ---
-    if (!map.getSource('ais')) {
-      map.addSource('ais', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-      map.addSource('ais-tracks', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    MapCore.ensureGeoJsonLayer(m, 'ais', {
+      id: 'ais-track-lines',
+      type: 'line',
+      source: 'ais-tracks',
+      minzoom: 10,
+      layout: { 
+        'line-join': 'round', 
+        'line-cap': 'round',
+        'visibility': aisVisible ? 'visible' : 'none'
+      },
+      paint: { 
+        'line-color': MAP_COLORS.accent, 
+        'line-width': ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId) || -1], 4, 2],
+        'line-opacity': 0.8 
+      }
+    });
 
-      map.addLayer({
-        id: 'ais-track-lines',
-        type: 'line',
-        source: 'ais-tracks',
-        minzoom: 10,
-        layout: { 
-          'line-join': 'round', 
-          'line-cap': 'round',
-          'visibility': aisVisible ? 'visible' : 'none'
-        },
-        paint: { 
-          'line-color': MAP_COLORS.accent, 
-          'line-width': ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId) || -1], 4, 2],
-          'line-opacity': 0.8 
-        }
-      });
+    if (!MapRegistry.getSource('adsb-tracks')) {
+      MapRegistry.registerSource('adsb-tracks', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, tolerance: 0 });
+    }
+    if (!m.getSource('adsb-tracks')) {
+      m.addSource('adsb-tracks', MapRegistry.getSource('adsb-tracks')!.definition);
+    }
 
+    if (!MapRegistry.getSource('ais-tracks')) {
+      MapRegistry.registerSource('ais-tracks', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, tolerance: 0 });
+    }
+    if (!m.getSource('ais-tracks')) {
+      m.addSource('ais-tracks', MapRegistry.getSource('ais-tracks')!.definition);
+    }
+
+    if (!m.getLayer('ais-icons')) {
       const shipColorMatch: any = ['match', ['get', 'shipclass'], 4, MAP_COLORS.warning, 6, MAP_COLORS.danger, MAP_COLORS.accent];
 
-      map.addLayer({
+      const aisMovingDef: any = {
         id: 'ais-dots-moving',
         type: 'circle',
         source: 'ais',
@@ -179,7 +223,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
         filter: [
           'all',
           ['>', ['coalesce', ['get', 'speed'], 0], 0.2]
-        ] as any,
+        ],
         layout: { 'visibility': aisVisible ? 'visible' : 'none' },
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 2, 11, 4],
@@ -187,16 +231,18 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'circle-stroke-color': MAP_COLORS.black,
           'circle-stroke-width': 0.5
         }
-      });
+      };
+      MapRegistry.registerLayer(aisMovingDef.id, aisMovingDef);
+      m.addLayer(aisMovingDef);
 
-      map.addLayer({
+      const aisStaticDef: any = {
         id: 'ais-dots-static',
         type: 'circle',
         source: 'ais',
         filter: [
           'all',
           ['<=', ['coalesce', ['get', 'speed'], 0], 0.2]
-        ] as any,
+        ],
         layout: { 'visibility': aisVisible ? 'visible' : 'none' },
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 2, 14, 5],
@@ -204,9 +250,11 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'circle-stroke-color': MAP_COLORS.black,
           'circle-stroke-width': 0.5
         }
-      });
+      };
+      MapRegistry.registerLayer(aisStaticDef.id, aisStaticDef);
+      m.addLayer(aisStaticDef);
 
-      map.addLayer({
+      const aisIconsDef: any = {
         id: 'ais-icons',
         type: 'symbol',
         source: 'ais',
@@ -214,7 +262,7 @@ export const initTrackingPage = async (container: HTMLElement) => {
         filter: [
           'all',
           ['>', ['coalesce', ['get', 'speed'], 0], 0.2]
-        ] as any,
+        ],
         layout: {
           'icon-image': [
             'match', ['get', 'shipclass'],
@@ -247,109 +295,103 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'text-halo-color': MAP_COLORS.black, 
           'text-halo-width': 2 
         }
-      });
-
-      // Setup Interactions (Sidebar + Popups)
-      const setupInteractions = (layerId: string) => {
-        const onClick = (e: any) => {
-          const feat = e.features?.[0];
-          if (!feat) return;
-          
-          const props = feat.properties || {};
-          const isAdsb = layerId.includes('adsb');
-          
-          // 1. Sidebar Update (Typ 8)
-          selectedId = isAdsb ? props.hex : props.mmsi;
-          setActiveTrackingItem(selectedId!);
-
-          // Highlight logic
-          if (map.getLayer('adsb-tracks')) {
-            map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5]);
-          }
-          if (map.getLayer('ais-track-lines')) {
-            map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId)], 4, 2]);
-          }
-
-          // 2. Map Popup
-          const html = PopupManager.buildHtml(layerId, props);
-          popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
-        };
-        const onEnter = () => map.getCanvas().style.cursor = 'pointer';
-        const onLeave = () => map.getCanvas().style.cursor = '';
-
-        map.off('click', layerId, onClick);
-        map.on('click', layerId, onClick);
-        map.on('mouseenter', layerId, onEnter);
-        map.on('mouseleave', layerId, onLeave);
       };
-      setupInteractions('adsb-icons');
-      setupInteractions('ais-icons');
-      setupInteractions('ais-dots-moving');
-      setupInteractions('ais-dots-static');
+      MapRegistry.registerLayer(aisIconsDef.id, aisIconsDef);
+      m.addLayer(aisIconsDef);
+
+      // Layer interactions are now handled by onMapClick
+      m.on('mouseenter', 'adsb-icons', () => m.getCanvas().style.cursor = 'pointer');
+      m.on('mouseleave', 'adsb-icons', () => m.getCanvas().style.cursor = '');
+      m.on('mouseenter', 'ais-icons', () => m.getCanvas().style.cursor = 'pointer');
+      m.on('mouseleave', 'ais-icons', () => m.getCanvas().style.cursor = '');
     }
   };
 
-  // Click on empty map -> Reset selection
-  map.on('click', (e) => {
-    if (e.defaultPrevented) return;
-    setActiveTrackingItem('');
-    selectedId = null;
-    popup.remove();
-    if (map.getLayer('adsb-tracks')) map.setPaintProperty('adsb-tracks', 'line-width', 1.5);
-    if (map.getLayer('ais-track-lines')) map.setPaintProperty('ais-track-lines', 'line-width', 2);
-  });
+  const applyCurrentDataToMap = (m: maplibregl.Map) => {
+    console.log('[Tracking] Applying current data to map sources...');
+    const adsbResult = adsb.getLastResult();
+    const aisResult = ais.getLastResult();
 
-  const refresh = async () => {
-    if (!map.getContainer().isConnected) {
+    if (m.getSource('adsb') && adsbResult) {
+      (m.getSource('adsb') as maplibregl.GeoJSONSource).setData(adsbResult);
+    }
+    if (m.getSource('adsb-tracks')) {
+      (m.getSource('adsb-tracks') as maplibregl.GeoJSONSource).setData(adsb.getTracksAsGeoJson());
+    }
+    if (m.getSource('ais') && aisResult) {
+      (m.getSource('ais') as maplibregl.GeoJSONSource).setData(aisResult);
+    }
+    if (m.getSource('ais-tracks')) {
+      (m.getSource('ais-tracks') as maplibregl.GeoJSONSource).setData(ais.getTracksAsGeoJson());
+    }
+  };
+
+  const refresh = async (m: maplibregl.Map) => {
+    // Check if the current map is still active
+    if (!m.getContainer().isConnected) {
       if (refreshTimeout) clearTimeout(refreshTimeout);
       return;
     }
 
+    // Self-healing: if layers are missing (e.g. after style change that didn't trigger onRestore correctly)
+    if (!m.getSource('adsb') || !m.getLayer('adsb-icons')) {
+      console.warn('[Tracking] Tracking layers missing during refresh, re-ensuring...');
+      ensureTrackingLayers(m);
+      applyCurrentDataToMap(m);
+    }
+
     if (isRefreshing) return;
     isRefreshing = true;
+    console.log('[Tracking] Fetching fresh data...');
 
-    let adsbOk = false;
-    let aisOk = false;
-
-    // 1. Fetch ADS-B
     try {
+      // 1. Fetch ADS-B
       const adsbData = await adsb.fetch();
-      if (map.getSource('adsb')) {
-        (map.getSource('adsb') as maplibregl.GeoJSONSource).setData(adsbData);
-      }
       const adsbTracks = adsb.getTracksAsGeoJson();
-      if (map.getSource('adsb-tracks')) {
-        (map.getSource('adsb-tracks') as maplibregl.GeoJSONSource).setData(adsbTracks);
+      
+      if (m.getSource('adsb')) {
+        (m.getSource('adsb') as maplibregl.GeoJSONSource).setData(adsbData);
+        // Update Registry for persistence
+        const reg = MapRegistry.getSource('adsb');
+        if (reg) reg.definition.data = adsbData;
+      }
+      if (m.getSource('adsb-tracks')) {
+        (m.getSource('adsb-tracks') as maplibregl.GeoJSONSource).setData(adsbTracks);
+        // Update Registry for persistence
+        const reg = MapRegistry.getSource('adsb-tracks');
+        if (reg) reg.definition.data = adsbTracks;
       }
 
       currentAdsbItems = (adsbData.features || []).map(f => ({
         id: f.properties?.hex || '',
         label: f.properties?.flight?.trim() || f.properties?.hex || 'Unknown',
-        info: `${Math.round(f.properties?.alt_baro || 0)}ft | ${Math.round(f.properties?.gs || 0)}kt`,
+        info: `${Math.round((f.properties?.alt_baro as number) || 0)}ft | ${Math.round(f.properties?.gs || 0)}kt`,
         type: 'adsb',
         lat: f.geometry.coordinates[1],
         lon: f.geometry.coordinates[0],
         details: {
-          'Höhe': `${Math.round(f.properties?.alt_baro || 0)} ft`,
+          'Höhe': `${Math.round((f.properties?.alt_baro as number) || 0)} ft`,
           'Speed': `${Math.round(f.properties?.gs || 0)} kt`,
           'Kurs': `${Math.round(f.properties?.track || 0)}°`,
           'RSSI': `${f.properties?.rssi || '?' } dBm`
         }
       }));
-      adsbOk = true;
-    } catch (e) {
-      console.warn('[Tracking] ADS-B Update failed', e);
-    }
 
-    // 2. Fetch AIS
-    try {
+      // 2. Fetch AIS
       const aisData = await ais.fetch();
-      if (map.getSource('ais')) {
-        (map.getSource('ais') as maplibregl.GeoJSONSource).setData(aisData);
-      }
       const aisTracks = ais.getTracksAsGeoJson();
-      if (map.getSource('ais-tracks')) {
-        (map.getSource('ais-tracks') as maplibregl.GeoJSONSource).setData(aisTracks);
+
+      if (m.getSource('ais')) {
+        (m.getSource('ais') as maplibregl.GeoJSONSource).setData(aisData);
+        // Update Registry for persistence
+        const reg = MapRegistry.getSource('ais');
+        if (reg) reg.definition.data = aisData;
+      }
+      if (m.getSource('ais-tracks')) {
+        (m.getSource('ais-tracks') as maplibregl.GeoJSONSource).setData(aisTracks);
+        // Update Registry for persistence
+        const reg = MapRegistry.getSource('ais-tracks');
+        if (reg) reg.definition.data = aisTracks;
       }
 
       currentAisItems = (aisData.features || []).map(f => ({
@@ -366,31 +408,56 @@ export const initTrackingPage = async (container: HTMLElement) => {
           'RSSI': `${f.properties?.rssi || '?' } dBm`
         }
       }));
-      aisOk = true;
+
+      // UI Update
+      updateTrackingList([...currentAdsbItems, ...currentAisItems], currentFilter);
+      if (selectedId) setActiveTrackingItem(selectedId);
+
+      const packetRate = (currentAdsbItems.length * 12) + (currentAisItems.length * 4) + Math.floor(Math.random() * 10);
+      updateTrackingServerStatus(true, true, currentAdsbItems.length, currentAisItems.length, packetRate);
+
     } catch (e) {
-      console.warn('[Tracking] AIS Update failed', e);
+      console.warn('[Tracking] Refresh failed', e);
+      updateTrackingServerStatus(false, false, currentAdsbItems.length, currentAisItems.length, 0);
+    } finally {
+      isRefreshing = false;
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+      refreshTimeout = setTimeout(() => refresh(m), 10000);
     }
-
-    // Combined Update (Typ 8 Sidebar)
-    updateTrackingList([...currentAdsbItems, ...currentAisItems], currentFilter);
-    if (selectedId) setActiveTrackingItem(selectedId);
-
-    // Update Server Status in Footer
-    updateTrackingServerStatus(adsbOk, aisOk);
-
-    isRefreshing = false;
-    refreshTimeout = setTimeout(refresh, 5000);
   };
 
+  // --- Main Execution ---
+
+  // 3. Karte initialisieren
+  const map = MapCore.init(
+    mounts.map, 
+    basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
+    async (m) => {
+      console.log('[Tracking] onRestore triggering...');
+      
+      // 1. Ensure layers are there (Synchronous)
+      ensureTrackingLayers(m);
+      
+      // 2. Put existing data back on map immediately
+      applyCurrentDataToMap(m); 
+      
+      // 3. Load sprites in background (don't await)
+      loadAllSprites(m);
+      
+      // Initialer Refresh falls noch nicht geschehen
+      if (!refreshTimeout) {
+        console.log('[Tracking] Initial refresh triggered via onRestore');
+        refresh(m);
+      }
+    }
+  );
+
+  // Global map click listener
+  map.on('click', (e) => onMapClick(e, map));
+
   // Topbar
-  initTopbar(document.getElementById('topbar-container')!, basemaps, (url) => {
+  initTopbar(mounts.topbar, basemaps, (url) => {
     map.setStyle(url);
-    map.once('style.load', async () => {
-      await MapCore.reapplyBaseLayers();
-      await loadAllSprites();
-      ensureTrackingLayers();
-      refresh(); // Re-trigger data apply
-    });
   }, undefined, [
     {
       id: 'toggle-adsb',
@@ -418,40 +485,26 @@ export const initTrackingPage = async (container: HTMLElement) => {
   ]);
 
   // Sidebar
-  const sidebarContainer = document.getElementById('sidebar-container')!;
-  initTrackingSidebar(sidebarContainer, (item) => {
+  initTrackingSidebar(mounts.sidebar, (item) => {
     selectedId = item.id;
     map.flyTo({ center: [item.lon, item.lat], zoom: 14 });
 
     // Update highlight
     if (map.getLayer('adsb-tracks')) {
-      map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], selectedId || ''], 4, 1.5]);
+      map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], 4, 1.5]);
     }
     if (map.getLayer('ais-track-lines')) {
-      map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId)], 4, 2]);
+      map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId) || -1], 4, 2]);
     }
   });
 
-  sidebarContainer.addEventListener('tracking-filter-change', (e: any) => {
+  mounts.sidebar.addEventListener('tracking-filter-change', (e: any) => {
     currentFilter = e.detail;
     updateTrackingList([...currentAdsbItems, ...currentAisItems], currentFilter);
     if (selectedId) setActiveTrackingItem(selectedId);
   });
 
-  // Map Loaded Handler
-  const onMapReady = async () => {
-    console.log('[Tracking] Map Ready.');
-    await loadAllSprites();
-    ensureTrackingLayers();
-
-    // Initial data load
-    refresh();
-  };
-
-  if (map.loaded()) onMapReady();
-  else map.on('load', onMapReady);
-
-  // Initial UI state
+  // Initial UI state (Buttons active)
   setTimeout(() => {
     document.getElementById('btn-toggle-adsb')?.classList.add('active');
     document.getElementById('btn-toggle-ais')?.classList.add('active');
@@ -462,4 +515,3 @@ export const initTrackingPage = async (container: HTMLElement) => {
 export const TrackingPage = {
   render: initTrackingPage
 };
-

@@ -380,12 +380,7 @@
    in der Sidebar. Zwei Varianten:
    - .result-item: mit Badge + Auge-Icon
    - .result-item-simple: nur Text
-   - .result-container: Wrapper für Ergebnispakete
    ═══════════════════════════════════════ */
-.result-container {
-  margin-top: 12px;
-}
-
 .result-header {
   display: flex;
   align-items: center;
@@ -419,9 +414,6 @@
 }
 .result-item:hover { border-color: var(--accent-border); background: rgba(59,130,246,0.03); }
 .result-item.active { border-color: var(--accent); background: var(--accent-subtle); }
-
-/* Erlaubt das Deaktivieren des Cursors für rein informative aktive Items (z.B. Summary) */
-.result-item.active.no-click { cursor: default; }
 
 .result-num {
   display: inline-flex; align-items: center; justify-content: center;

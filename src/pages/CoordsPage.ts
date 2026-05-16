@@ -10,37 +10,19 @@ import { MAP_COLORS } from '../lib/MapStyles';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { GeocoderService } from '../lib/GeocoderService';
 import { renderGeocodeItemHtml } from '../lib/UIUtils';
+import { InventoryService } from '../services/InventoryService';
+import { LayoutHelper } from '../lib/LayoutHelper';
 
 /**
  * CoordsPage - Bidirektionaler Koordinaten-Umrechner (Typ 7 Sidebar)
  */
 export const initCoordsPage = async (container: HTMLElement) => {
-  // 1. Sofortiges Layout-Gerüst (CI-konform)
-  container.innerHTML = `
-    <div id="topbar-mount">
-      <header class="topbar">
-        <div class="topbar-left">
-          <a href="/" class="brand" title="Zur Startseite">
-            <img src="/logo.svg" alt="Logo" class="brand-logo" />
-            <span class="brand-text">OE5ITH</span>
-          </a>
-        </div>
-        <div class="topbar-center">
-          <span class="topbar-title" style="color: var(--muted); font-size: 0.82rem; font-weight: 600;">Lade Konfiguration...</span>
-        </div>
-        <div class="topbar-right"></div>
-      </header>
-    </div>
-    <div class="layout">
-      <div id="sidebar-mount" style="z-index: var(--z-sidebar-tab);"></div>
-      <main id="map" class="full-map">
-      </main>
-    </div>
-  `;
+  // 1. Daten laden
+  const invService = InventoryService.getInstance();
+  const basemaps = await invService.getBasemaps();
 
-  const topbarMount = document.getElementById('topbar-mount')!;
-  const sidebarMount = document.getElementById('sidebar-mount')!;
-  const mapContainer = document.getElementById('map')!;
+  // 2. Basis-Layout
+  const mounts = LayoutHelper.renderBaseLayout(container);
 
   // Proj4 Definitionen für Österreich (BMN / Lambert)
   proj4.defs([
@@ -55,24 +37,9 @@ export const initCoordsPage = async (container: HTMLElement) => {
     lon: 14.2858
   };
 
-  // 2. Inventar laden für Topbar Basemaps
-  let basemaps: any[] = [];
-  try {
-    const invRes = await fetch('https://tiles.oe5ith.at/inventory.json');
-    if (invRes.ok) {
-      const inventory = await invRes.json();
-      basemaps = inventory.maps.filter((m: any) => m.type === 'basemap');
-    }
-  } catch (err) {
-    console.warn('Inventory load failed, using fallback basemap');
-  }
-
-  // 3. Karte initialisieren
-  const map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
-  
   let contoursActive = false;
   let hikingActive = false;
-  
+
   const OVERLAYS = {
     contours: {
       id: 'basemap-at-contours',
@@ -84,31 +51,28 @@ export const initCoordsPage = async (container: HTMLElement) => {
     }
   };
 
-  const toggleOverlay = async (type: keyof typeof OVERLAYS, active: boolean) => {
+  const toggleOverlay = async (type: keyof typeof OVERLAYS, active: boolean, m: maplibregl.Map) => {
     if (type === 'contours') contoursActive = active;
     if (type === 'hiking') hikingActive = active;
     
     const { id, url } = OVERLAYS[type];
     
     if (active) {
-      if (!map.getSource(id)) {
+      if (!m.getSource(id)) {
         try {
           const res = await fetch(url);
           const style = await res.json();
           
-          // Load sprites if defined
           if (style.sprite) {
-            await MapCore.loadSprites(map, style.sprite, url);
+            await MapCore.loadSprites(m, style.sprite, url);
           }
 
-          // Inject Sources
           for (const [sId, def] of Object.entries(style.sources)) {
-            if (!map.getSource(sId)) map.addSource(sId, def as any);
+            if (!m.getSource(sId)) m.addSource(sId, def as any);
           }
           
-          // Inject Layers
           style.layers.forEach((l: any) => {
-            if (!map.getLayer(l.id)) map.addLayer(l);
+            if (!m.getLayer(l.id)) m.addLayer(l);
           });
         } catch (err) {
           console.error(`Failed to load overlay: ${id}`, err);
@@ -116,61 +80,60 @@ export const initCoordsPage = async (container: HTMLElement) => {
           return;
         }
       } else {
-        // Toggle visibility if already exists
-        const style = map.getStyle();
+        const style = m.getStyle();
         style.layers.forEach((l: any) => {
           if (l.source === id) {
-             map.setLayoutProperty(l.id, 'visibility', 'visible');
+             m.setLayoutProperty(l.id, 'visibility', 'visible');
           }
         });
       }
     } else {
-      // Hide layers
-      const style = map.getStyle();
+      const style = m.getStyle();
       style.layers.forEach((l: any) => {
         if (l.source === id) {
-           map.setLayoutProperty(l.id, 'visibility', 'none');
+           m.setLayoutProperty(l.id, 'visibility', 'none');
         }
       });
     }
   };
 
-  // 4. Topbar initialisieren (überschreibt Platzhalter)
-  initTopbar(topbarMount, basemaps, (url) => {
+  // 3. Karte initialisieren
+  const map = MapCore.init(
+    mounts.map, 
+    basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
+    async (m) => {
+      if (contoursActive) m.getSource(OVERLAYS.contours.id) ? null : await toggleOverlay('contours', true, m);
+      if (hikingActive) m.getSource(OVERLAYS.hiking.id) ? null : await toggleOverlay('hiking', true, m);
+    }
+  );
+
+  // 4. Topbar initialisieren
+  initTopbar(mounts.topbar, basemaps, (url) => {
     map.setStyle(url);
-    map.once('idle', async () => {
-      await MapCore.reapplyBaseLayers();
-      // Ensure overlays remain if they were active
-      if (contoursActive) map.getSource(OVERLAYS.contours.id) ? null : await toggleOverlay('contours', true);
-      if (hikingActive) map.getSource(OVERLAYS.hiking.id) ? null : await toggleOverlay('hiking', true);
-    });
   }, undefined, [
     {
       id: 'contours',
       icon: 'fa-solid fa-mountain',
       title: 'Höhenlinien',
-      onClick: (active) => toggleOverlay('contours', active)
+      onClick: (active) => toggleOverlay('contours', active, map)
     },
     {
       id: 'hiking',
       icon: 'fa-solid fa-map-signs',
       title: 'Wanderwege',
-      onClick: (active) => toggleOverlay('hiking', active)
+      onClick: (active) => toggleOverlay('hiking', active, map)
     }
   ]);
 
-  // Marker für die aktuelle Position
   const marker = new maplibregl.Marker({ color: MAP_COLORS.accent })
     .setLngLat([state.lon, state.lat])
     .addTo(map);
 
-  // Hilfsfunktion: Update Feld wenn nicht im aktiven Eingabe-Block
   const updateField = (system: string, field: string, value: string, source?: string) => {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     const activeBlock = sidebar.querySelector('.coord-block.active') as HTMLElement;
     const activeSystem = activeBlock?.getAttribute('data-system');
-
     if (source === 'input' && activeSystem === system) return;
     
     const el = sidebar.querySelector(`[data-system="${system}"] [data-field="${field}"]`);
@@ -181,7 +144,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
     }
   };
 
-  // Hilfsfunktionen für Berechnungen & Rendering
   const toDms = (val: number) => {
     const d = Math.floor(Math.abs(val));
     const m = Math.floor((Math.abs(val) - d) * 60);
@@ -189,15 +151,12 @@ export const initCoordsPage = async (container: HTMLElement) => {
     return { d, m, s };
   };
 
-  // Sidebar Struktur einmalig aufbauen
   const initSidebarStructure = () => {
     const isMobile = window.innerWidth <= 768;
-    sidebarMount.innerHTML = `
+    mounts.sidebar.innerHTML = `
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-inner">
-          
-          <!-- Adresse / Geocoder -->
           <div class="coord-block active" data-system="address">
             <div class="coord-block-header">
               <span class="coord-block-title">Adresse</span>
@@ -211,10 +170,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
               <div id="geocoder-results" class="geocoder-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-dropdown);"></div>
             </div>
           </div>
-
           <div class="tool-sep"></div>
-
-          <!-- WGS84 Dezimalgrad -->
           <div class="coord-block" data-system="wgs84">
             <div class="coord-block-header">
               <span class="coord-block-title">WGS84 Dezimalgrad</span>
@@ -229,10 +185,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
               <input class="coord-input" type="text" inputmode="decimal" data-field="lon" readonly>
             </div>
           </div>
-
           <div class="tool-sep"></div>
-
-          <!-- WGS84 DMS -->
           <div class="coord-block" data-system="dms">
             <div class="coord-block-header">
               <span class="coord-block-title">WGS84 DMS</span>
@@ -253,10 +206,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
               <span class="coord-suffix" data-field="lon-suffix">E</span>
             </div>
           </div>
-
           <div class="tool-sep"></div>
-
-          <!-- UTM -->
           <div class="coord-block" data-system="utm">
             <div class="coord-block-header">
               <span class="coord-block-title">UTM</span>
@@ -275,10 +225,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
               <input class="coord-input" type="text" data-field="n" readonly>
             </div>
           </div>
-
           <div class="tool-sep"></div>
-
-          <!-- BMN -->
           <div class="coord-block" data-system="bmn">
             <div class="coord-block-header">
               <span class="coord-block-title">BMN (Österreich)</span>
@@ -301,10 +248,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
               <input class="coord-input" type="text" data-field="hw" readonly>
             </div>
           </div>
-
           <div class="tool-sep"></div>
-
-          <!-- MGRS -->
           <div class="coord-block" data-system="mgrs">
             <div class="coord-block-header">
               <span class="coord-block-title">MGRS</span>
@@ -325,10 +269,7 @@ export const initCoordsPage = async (container: HTMLElement) => {
               <input class="coord-input" type="text" data-field="n" readonly>
             </div>
           </div>
-
           <div class="tool-sep"></div>
-
-          <!-- Maidenhead -->
           <div class="coord-block" data-system="maidenhead">
             <div class="coord-block-header">
               <span class="coord-block-title">Maidenhead</span>
@@ -338,13 +279,11 @@ export const initCoordsPage = async (container: HTMLElement) => {
               <input class="coord-input-full" type="text" data-field="locator" readonly>
             </div>
           </div>
-
         </div>
         ${getSidebarFooterHtml()}
         <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">${isMobile ? '›' : '‹'}</div>
       </aside>
     `;
-
     attachSidebarEvents();
   };
 
@@ -352,8 +291,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
     const sidebar = document.getElementById('sidebar')!;
     const activeBlock = sidebar.querySelector('.coord-block.active') as HTMLElement;
     const activeSystem = activeBlock?.getAttribute('data-system');
-    
-    // 0. Adresse (Reverse Geocoding)
     const addrStatus = sidebar.querySelector('#address-status')!;
     if (source === 'map' || (source === 'input' && activeSystem !== 'address')) {
       addrStatus.textContent = 'Suche...';
@@ -366,12 +303,8 @@ export const initCoordsPage = async (container: HTMLElement) => {
         }
       });
     }
-
-    // 1. WGS84 Decimal
     updateField('wgs84', 'lat', state.lat.toFixed(6), source);
     updateField('wgs84', 'lon', state.lon.toFixed(6), source);
-
-    // 2. DMS
     const latDms = toDms(state.lat);
     const lonDms = toDms(state.lon);
     updateField('dms', 'lat-d', latDms.d.toString(), source);
@@ -382,15 +315,11 @@ export const initCoordsPage = async (container: HTMLElement) => {
     updateField('dms', 'lon-m', lonDms.m.toString(), source);
     updateField('dms', 'lon-s', lonDms.s, source);
     updateField('dms', 'lon-suffix', state.lon >= 0 ? 'E' : 'W', source);
-
-    // 3. UTM
     const utmZoneNum = Math.floor((state.lon + 180) / 6) + 1;
     const utm = proj4('EPSG:4326', `+proj=utm +zone=${utmZoneNum} +ellps=WGS84 +datum=WGS84 +units=m +no_defs`).forward([state.lon, state.lat]);
     updateField('utm', 'zone', utmZoneNum + (state.lat >= 0 ? 'N' : 'S'), source);
     updateField('utm', 'e', Math.round(utm[0]).toString(), source);
     updateField('utm', 'n', Math.round(utm[1]).toString(), source);
-
-    // 4. BMN
     let epsg = "EPSG:31255";
     let m = "M31";
     if (state.lon < 12) { epsg = "EPSG:31254"; m = "M28"; }
@@ -399,15 +328,11 @@ export const initCoordsPage = async (container: HTMLElement) => {
     updateField('bmn', 'm', m, source);
     updateField('bmn', 'rw', Math.round(bmn[0]).toString(), source);
     updateField('bmn', 'hw', Math.round(bmn[1]).toString(), source);
-
-    // 5. MGRS
     const mgrsStr = mgrs.forward([state.lon, state.lat]);
     updateField('mgrs', 'gzd', mgrsStr.substring(0, 3), source);
     updateField('mgrs', 'sq', mgrsStr.substring(3, 5), source);
     updateField('mgrs', 'e', mgrsStr.substring(5, 10), source);
     updateField('mgrs', 'n', mgrsStr.substring(10, 15), source);
-
-    // 6. Maidenhead
     const mlon = state.lon + 180;
     const mlat = state.lat + 90;
     const f1 = String.fromCharCode(65 + Math.floor(mlon / 20));
@@ -423,25 +348,17 @@ export const initCoordsPage = async (container: HTMLElement) => {
     const sidebar = document.getElementById('sidebar');
     const sidebarTab = document.getElementById('sidebar-tab');
     const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-
     if (!sidebar || !sidebarTab || !sidebarBackdrop) {
-      console.warn('[CoordsPage] Sidebar elements not found, retrying...');
       setTimeout(attachSidebarEvents, 100);
       return;
     }
-
-    // Sidebar Toggle (Standard & Mobile)
     setupSidebarToggle(sidebar, sidebarTab, sidebarBackdrop);
-
-    // Klick außerhalb versteckt Geocoder-Ergebnisse
     document.addEventListener('click', (e) => {
       const results = document.getElementById('geocoder-results');
       if (results && !results.contains(e.target as Node)) {
         results.style.display = 'none';
       }
     });
-
-    // Block Aktivierung & Input
     const blocks = sidebar.querySelectorAll('.coord-block');
     blocks.forEach(block => {
       block.addEventListener('click', (e) => {
@@ -450,61 +367,44 @@ export const initCoordsPage = async (container: HTMLElement) => {
           handleCopy(block as HTMLElement);
           return;
         }
-
         if (block.classList.contains('active')) return;
-
-        // Alten aktiven Block deaktivieren
         sidebar.querySelectorAll('.coord-block.active').forEach(b => {
           b.classList.remove('active');
           b.querySelectorAll('input').forEach(i => i.setAttribute('readonly', 'true'));
           if (b.querySelector('select')) b.querySelector('select')!.setAttribute('disabled', 'true');
         });
-
-        // Neuen Block aktivieren
         block.classList.add('active');
         block.querySelectorAll('input').forEach(i => i.removeAttribute('readonly'));
         if (block.querySelector('select')) block.querySelector('select')!.removeAttribute('disabled');
       });
     });
-
-    // Input Handling (Live-Update)
     let geocodeTimeout: any;
-
     sidebar.addEventListener('input', (e) => {
       const target = e.target as HTMLInputElement;
       const block = target.closest('.coord-block') as HTMLElement;
       if (!block || !block.classList.contains('active')) return;
-
       const system = block.getAttribute('data-system');
       let newWgs: [number, number] | null = null;
-
       try {
         if (system === 'address') {
           const query = target.value.trim();
           const resultsContainer = document.getElementById('geocoder-results')!;
-          
           clearTimeout(geocodeTimeout);
           if (query.length < 3) {
             resultsContainer.style.display = 'none';
             return;
           }
-
           geocodeTimeout = setTimeout(async () => {
             const results = await GeocoderService.search(query);
             if (results.length > 0) {
               resultsContainer.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
               resultsContainer.style.display = 'block';
-
               resultsContainer.querySelectorAll('.geocoder-item').forEach(item => {
                 item.addEventListener('click', (ev) => {
                   ev.stopPropagation();
-                  const lat = parseFloat(item.getAttribute('data-lat')!);
-                  const lon = parseFloat(item.getAttribute('data-lon')!);
-                  const name = item.getAttribute('data-name')!;
-                  
-                  state.lat = lat;
-                  state.lon = lon;
-                  updateField('address', 'address', name);
+                  state.lat = parseFloat(item.getAttribute('data-lat')!);
+                  state.lon = parseFloat(item.getAttribute('data-lon')!);
+                  updateField('address', 'address', item.getAttribute('data-name')!);
                   resultsContainer.style.display = 'none';
                   updateAll();
                 });
@@ -529,7 +429,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
           const lonM = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lon-m"]')!.value);
           const lonS = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lon-s"]')!.value);
           const lonSuf = block.querySelector<HTMLElement>('[data-field="lon-suffix"]')!.textContent;
-
           if (!isNaN(latD) && !isNaN(latM) && !isNaN(latS) && !isNaN(lonD) && !isNaN(lonM) && !isNaN(lonS)) {
             let lat = latD + latM / 60 + latS / 3600;
             if (latSuf === 'S') lat *= -1;
@@ -580,7 +479,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
       } catch (err) {
         console.warn('Manual input conversion failed', err);
       }
-
       if (newWgs && !isNaN(newWgs[0]) && !isNaN(newWgs[1]) && newWgs[1] >= -90 && newWgs[1] <= 90 && newWgs[0] >= -180 && newWgs[0] <= 180) {
         state.lat = newWgs[1];
         state.lon = newWgs[0];
@@ -606,11 +504,9 @@ export const initCoordsPage = async (container: HTMLElement) => {
     updateSidebarValues('map');
   }
 
-  // Initial Render
   initSidebarStructure();
   updateSidebarValues('map');
   
-  // Map Click Listener
   map.on('click', (e) => {
     state.lat = e.lngLat.lat;
     state.lon = e.lngLat.lng;

@@ -2,6 +2,28 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.2.9] - 2026-05-15
+
+### Behoben
+- **Routing Seite:** Korrektur der Highlight-Logik in der Ergebnisliste. Stationen können nun durch erneutes Anklicken der Karte wieder abgewählt werden.
+- **CI-Konformität:** Strikte Anwendung der `MAP_ROUTE_STYLES` für alle Routen-Visualisierungen (Farbe, Breite, Opazität).
+
+## [3.2.8] - 2026-05-15
+
+### Behoben
+- **Routing Seite:** Wiederherstellung der korrekten Sprite-basierten Stations-Icons aus dem `oe5ith-markers` Set. Entfernung der fehlerhaften Fallback-Marker.
+- **UI-Konsistenz:** Bereinigung von redundantem CSS für Routing-Marker.
+
+## [3.2.7] - 2026-05-15
+
+### Behoben
+- **Tracking Seite:** Kritischer Fix für verschwindende Flugzeuge/Schiffe beim Wechsel der Basemap. Einführung einer robusten Layer-Restaurierung und eines Self-Healing Mechanismus im Refresh-Loop.
+- **Routing Seite:** Fix für die Anzeige der 5 nächsten Standorte. Ergebnisse werden nun sofort nach der Suche auf der Karte visualisiert. Routen bleiben auch nach Basemap-Wechsel erhalten.
+- **MapCore:** Umstellung auf ein robusteres Event-Handling bei Style-Wechseln zur Vermeidung von Race-Conditions.
+
+### Geändert
+- **Zentralisierung:** Einführung von `MapCore.ensureGeoJsonLayer` zur Vereinheitlichung der Overlay-Verwaltung über alle Seiten hinweg.
+
 ## [3.2.6] - 2026-05-11
 
 ### Hinzugefügt

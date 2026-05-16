@@ -1,4 +1,4 @@
-import { MapItem } from '../pages/MapPage';
+import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 
 export type LayerToggleCallback = (

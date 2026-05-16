@@ -17,24 +17,42 @@ export const initGlobalModals = () => {
           <span class="modal-title">Changelog</span>
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.2.9] - 2026-05-15</h2>
+          <ul>
+            <li><strong>Routing Seite:</strong> Fix der Highlight-Logik. Ergebnisse können nun durch erneuten Klick abgewählt werden. Strikte Einhaltung der CI-Farben für Routen.</li>
+          </ul>
+
+          <h2>[3.2.8] - 2026-05-15</h2>
+          <ul>
+            <li><strong>Routing Seite:</strong> Wiederherstellung der korrekten Sprite-basierten Stations-Icons aus dem 'oe5ith-markers' Set.</li>
+          </ul>
+
+          <h2>[3.2.7] - 2026-05-15</h2>
+          <ul>
+            <li><strong>Tracking Seite:</strong> Kritischer Fix für verschwindende Flugzeuge/Schiffe beim Wechsel der Basemap. Einführung einer robusten Layer-Restaurierung und eines Self-Healing Mechanismus.</li>
+            <li><strong>Routing Seite:</strong> Fix für die Anzeige der 5 nächsten Standorte. Ergebnisse werden nun sofort visualisiert und bleiben nach Basemap-Wechsel erhalten.</li>
+            <li><strong>Zentralisierung:</strong> Vereinheitlichung der Overlay-Verwaltung via MapCore über alle Seiten hinweg.</li>
+          </ul>
+
+          <h2>[3.2.6] - 2026-05-11</h2>
+          <ul>
+            <li><strong>CoordsPage:</strong> Einführung eines verbesserten Geocoder-Dropdowns mit kontextbezogenen Icons und optimierter Adress-Formatierung.</li>
+          </ul>
+
+          <h2>[3.2.0] - 2026-05-08</h2>
+          <ul>
+            <li><strong>Tracking Refinement:</strong> Vollständige Überarbeitung der ADS-B und AIS Visualisierung.</li>
+            <li><strong>Improved Popup System:</strong> Einführung des PopupManagers für CI-konforme Datenanzeige.</li>
+            <li><strong>Höhenabhängige Tracks:</strong> ADS-B Flugpfade werden farblich nach Höhe kodiert.</li>
+          </ul>
+
           <h2>[3.1.0a1] - 2026-05-06</h2>
           <ul>
             <li><strong>Koordinaten-Konverter:</strong> Volle Unterstützung für manuelle Eingabe aller Systeme (WGS84, DMS, UTM, BMN, MGRS, Maidenhead).</li>
-            <li><strong>Adress-Suche & Anzeige:</strong> Neues Feld "Adresse" ganz oben. Unterstützt Forward-Geocoding (Suche), Reverse-Geocoding (Anzeige) und Kopieren.</li>
-            <li><strong>Höhenlinien (Contours):</strong> Neuer Button in der Topbar des Umrechners zum Ein-/Ausblenden von topografischen Höhenlinien.</li>
-            <li><strong>Globales UI-Styling:</strong> CI-konforme Definition für Scrollbalken eingeführt.</li>
-            <li><strong>Globales Changelog-Modal:</strong> Versionsnummer im Footer ist nun auf allen Seiten klickbar.</li>
-            <li><strong>Globales Copyright-Modal:</strong> Copyright-Button (©) im Footer zeigt nun eine Übersicht aller Lizenzen und Quellen.</li>
+            <li><strong>Adress-Suche & Anzeige:</strong> Neues Feld "Adresse" unterstützt Forward- und Reverse-Geocoding.</li>
+            <li><strong>Höhenlinien (Contours):</strong> Neuer Button zum Ein-/Ausblenden von topografischen Höhenlinien.</li>
           </ul>
-          <h2>Behoben</h2>
-          <ul>
-            <li><strong>Eingabe-Fokus:</strong> Fix für Fokusverlust bei manueller Koordinateneingabe in der Sidebar.</li>
-            <li><strong>Versionierung:</strong> Zentralisierung der App-Version über alle Komponenten.</li>
-            <li><strong>UI-Konsistenz:</strong> Vereinheitlichung des Sidebar-Footers über alle Seiten.</li>
-          </ul>
-          <h2>[3.0.1] - 2026-05-02</h2>
-          <p>Initialer Release von website-v3 mit MapLibre Integration (NAH Status, Routing).</p>
         </div>
       </div>
     </div>

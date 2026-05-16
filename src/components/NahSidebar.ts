@@ -1,4 +1,4 @@
-import { NahStationResult } from '../pages/NahPage';
+import { NahStationResult } from '../types/nah';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 
 /**

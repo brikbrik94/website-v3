@@ -1,8 +1,4 @@
-export interface LegendEntry {
-  type: 'dot' | 'line' | 'area';
-  color: string;
-  label: string;
-}
+import { LegendEntry } from '../types/common';
 
 export class MapLegend {
   private _el: HTMLElement;

@@ -1,16 +1,5 @@
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
-
-export interface TrackingItem {
-  id: string | number;
-  label: string;
-  info: string;
-  type: 'adsb' | 'ais';
-  lat: number;
-  lon: number;
-  details?: {
-    [key: string]: string | number;
-  };
-}
+import { TrackingItem } from '../types/tracking';
 
 // Internal state to support interaction logic
 let lastItems: TrackingItem[] = [];
@@ -43,6 +32,25 @@ export const initTrackingSidebar = (
           <div class="status-row-right">
             <span class="status-row-value" id="status-ais-count">0</span>
             <span class="status-dot off" id="status-ais-dot"></span>
+          </div>
+        </div>
+        <div class="status-row">
+          <div class="status-row-left">
+            <i class="fa-solid fa-tower-broadcast status-row-icon"></i>
+            <span class="status-row-name">Receiver</span>
+          </div>
+          <div class="status-row-right">
+            <span class="status-row-value" id="status-receiver-val">offline</span>
+            <span class="status-dot off" id="status-receiver-dot"></span>
+          </div>
+        </div>
+        <div class="status-row">
+          <div class="status-row-left">
+            <i class="fa-solid fa-arrow-right-arrow-left status-row-icon"></i>
+            <span class="status-row-name">Pakete/min</span>
+          </div>
+          <div class="status-row-right">
+            <span class="status-row-value" id="status-packets-val">0</span>
           </div>
         </div>
       </div>
@@ -139,19 +147,36 @@ export const updateObjectDetail = (_item: TrackingItem | null) => {
   // Funktionalität ist jetzt in der Liste integriert (Accordion)
 };
 
-export const updateTrackingServerStatus = (adsbOk: boolean, aisOk: boolean) => {
+export const updateTrackingServerStatus = (
+  adsbOk: boolean, 
+  aisOk: boolean, 
+  adsbCount: number = 0, 
+  aisCount: number = 0,
+  packetsPerMin: number = 0
+) => {
   const adsbVal = document.getElementById('status-adsb-count');
   const adsbDot = document.getElementById('status-adsb-dot');
   const aisVal = document.getElementById('status-ais-count');
   const aisDot = document.getElementById('status-ais-dot');
+  const receiverVal = document.getElementById('status-receiver-val');
+  const receiverDot = document.getElementById('status-receiver-dot');
+  const packetsVal = document.getElementById('status-packets-val');
 
   if (adsbVal && adsbDot) {
-    adsbVal.textContent = adsbOk ? 'online' : 'offline';
+    adsbVal.textContent = String(adsbCount);
     adsbDot.className = `status-dot ${adsbOk ? 'on' : 'off'}`;
   }
   if (aisVal && aisDot) {
-    aisVal.textContent = aisOk ? 'online' : 'offline';
+    aisVal.textContent = String(aisCount);
     aisDot.className = `status-dot ${aisOk ? 'on' : 'off'}`;
+  }
+  if (receiverVal && receiverDot) {
+    const isOk = adsbOk || aisOk;
+    receiverVal.textContent = isOk ? 'online' : 'offline';
+    receiverDot.className = `status-dot ${isOk ? 'on' : 'off'}`;
+  }
+  if (packetsVal) {
+    packetsVal.textContent = String(packetsPerMin);
   }
 };
 

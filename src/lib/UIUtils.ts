@@ -1,4 +1,4 @@
-import { GeocodeResult } from './GeocoderService';
+import { GeocodeResult } from '../types/common';
 
 /**
  * Maps Nominatim class/type to FontAwesome icons
@@ -52,4 +52,16 @@ export const renderGeocodeItemHtml = (res: GeocodeResult): string => {
       </div>
     </div>
   `;
+};
+
+/**
+ * Formats an ISO string or Date to HH:mm
+ */
+export const formatTime = (iso: string | null): string => {
+    if (!iso) return '-';
+    try {
+        return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+        return '-';
+    }
 };

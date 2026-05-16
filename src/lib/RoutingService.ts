@@ -1,8 +1,4 @@
-export interface RouteResult {
-  type: 'FeatureCollection';
-  features: any[];
-  metadata: any;
-}
+import { RouteResult } from '../types/common';
 
 const ORS_BASE_URL = '/api/ors.php';
 
@@ -82,7 +78,8 @@ export const RoutingService = {
             return {
               ...s,
               duration: summary.duration,
-              distance: summary.distance
+              distance: summary.distance,
+              route: route.features[0]
             };
           }
           return null;

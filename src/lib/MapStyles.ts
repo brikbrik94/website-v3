@@ -1,12 +1,7 @@
-export interface RouteStyle {
-  color: string;
-  weight: number;
-  opacity: number;
-}
-
-export type RouteStyleKey = 'active' | 'background';
+import { RouteStyle, RouteStyleKey } from '../types/common';
 
 /**
+
  * Resolves a CSS variable from :root, with a safe fallback.
  */
 const getCssVar = (name: string, fallback: string): string => {
