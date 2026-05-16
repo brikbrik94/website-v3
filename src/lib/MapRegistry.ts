@@ -34,8 +34,28 @@ export const MapRegistry = {
     images.set(id, { id, url, styleUrl });
   },
 
+  unregisterSource(id: string) {
+    sources.delete(id);
+  },
+
   unregisterLayer(id: string) {
     layers.delete(id);
+  },
+
+  unregisterImage(id: string) {
+    images.delete(id);
+  },
+
+  getSource(id: string) {
+    return sources.get(id);
+  },
+
+  getLayer(id: string) {
+    return layers.get(id);
+  },
+
+  getImage(id: string) {
+    return images.get(id);
   },
 
   clear() {
@@ -47,10 +67,10 @@ export const MapRegistry = {
   async restore(map: maplibregl.Map, loadSpritesFn: (map: maplibregl.Map, path: string, style?: string) => Promise<void>) {
     console.log(`[MapRegistry] Restoring ${sources.size} sources, ${images.size} image sets, and ${layers.size} layers`);
 
-    // 1. Load Images (Sprites)
-    for (const img of images.values()) {
-      await loadSpritesFn(map, img.url, img.styleUrl);
-    }
+    // 1. Load Images (Sprites) - Parallelized for efficiency
+    await Promise.all(
+      Array.from(images.values()).map(img => loadSpritesFn(map, img.url, img.styleUrl))
+    );
 
     // 2. Add Sources
     for (const src of sources.values()) {

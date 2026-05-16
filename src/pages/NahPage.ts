@@ -6,40 +6,10 @@ import { initNahSidebar, renderNahResults, updateNahServerStatus } from '../comp
 import { calculateDistance, calculateFlightTime, formatDuration, formatETA } from '../lib/FlightMath';
 import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { MapLegend } from '../lib/MapLegend';
-
-export interface MapItem {
-  name: string;
-  type: string;
-  style: { url: string };
-  file: { url: string };
-}
-
-interface Inventory {
-  maps: MapItem[];
-}
-
-export interface NahStation {
-  osm_id: string;
-  name: string;
-  callsign: string;
-  region: string;
-  op_type: string;
-  is_active: boolean;
-  in_season: boolean;
-  months_active: number[];
-  is_night_ready: boolean;
-  fixed_start: string | null;
-  fixed_end: string | null;
-  lat: number;
-  lon: number;
-}
-
-export interface NahStationResult extends NahStation {
-  distance: number;
-  duration: number;
-  durationStr: string;
-  eta: string;
-}
+import { NahStation, NahStationResult } from '../types/nah';
+import { InventoryService } from '../services/InventoryService';
+import { LayoutHelper } from '../lib/LayoutHelper';
+import { MapRegistry } from '../lib/MapRegistry';
 
 // Module-level state to persist across reloads
 let stations: NahStation[] = [];
@@ -225,19 +195,30 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
     properties: { osm_id: s.osm_id }
   }));
 
+  const data = {
+    type: 'FeatureCollection',
+    features: lineFeatures as any
+  };
+
   const source = map.getSource('nah-lines') as maplibregl.GeoJSONSource;
   if (source) {
-    source.setData({
-      type: 'FeatureCollection',
-      features: lineFeatures as any
-    });
+    source.setData(data as any);
   }
+
+  // Register updated source in Registry to persist across basemap changes
+  MapRegistry.registerSource('nah-lines', {
+    type: 'geojson',
+    data: data
+  });
 
   renderNahResults(sidebarResults, results);
 };
 
 export const initNahPage = async (container: HTMLElement) => {
   let map: maplibregl.Map | null = null;
+
+  // Clear Registry on Page Init
+  MapRegistry.clear();
 
   // Clear all current state to prevent "ghost" markers or multiple schedulers
   stationMarkers.forEach(m => m.remove());
@@ -253,32 +234,17 @@ export const initNahPage = async (container: HTMLElement) => {
   if (connectionInterval) clearInterval(connectionInterval);
 
   try {
-    // 1. Inventar laden (CI-konform)
-    const invRes = await fetch('https://tiles.oe5ith.at/inventory.json');
-    if (!invRes.ok) throw new Error('Inventory load failed');
-    const inventory: Inventory = await invRes.json();
-    const basemaps = inventory.maps.filter(m => m.type === 'basemap');
+    // 1. Daten laden
+    const invService = InventoryService.getInstance();
+    const basemaps = await invService.getBasemaps();
 
-    // 2. Layout aufbauen (mit Sidebar Mount)
-    container.innerHTML = `
-      <div id="topbar-mount"></div>
-      <div class="layout">
-        <div id="sidebar-mount"></div>
-        <main id="map" class="full-map">
-        </main>
-        <div class="map-legend" id="map-legend" style="display:none;">
-          <div class="map-legend-title"></div>
-          <div class="map-legend-entries"></div>
-        </div>
-      </div>
-    `;
+    // 2. Basis-Layout
+    const mounts = LayoutHelper.renderBaseLayout(container, { 
+      withLegend: true, 
+      legendTitle: 'Luftrettung' 
+    });
 
-    const topbarMount = document.getElementById('topbar-mount')!;
-    const sidebarMount = document.getElementById('sidebar-mount')!;
-    const mapContainer = document.getElementById('map')!;
-
-    const legend = new MapLegend('#map-legend');
-    legend.setTitle('Luftrettung');
+    const legend = new MapLegend(mounts.legend!);
     legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Gewählte Station' });
     legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Nächste Stationen' });
     legend.addEntry({ type: 'dot',  color: MAP_COLORS.success, label: 'Einsatzbereit' });
@@ -286,51 +252,48 @@ export const initNahPage = async (container: HTMLElement) => {
     legend.addEntry({ type: 'dot',  color: MAP_COLORS.muted, label: 'Außer Saison' });
 
     const ensureNahLayers = (m: maplibregl.Map) => {
-      if (!m.getSource('nah-lines')) {
-        m.addSource('nah-lines', {
-          type: 'geojson',
-          data: { type: 'FeatureCollection', features: [] }
-        });
+      const sourceId = 'nah-lines';
+      const layerId = 'nah-lines';
 
-        m.addLayer({
-          id: 'nah-lines',
-          type: 'line',
-          source: 'nah-lines',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: {
-            'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.color, MAP_ROUTE_STYLES.background.color],
-            'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.weight, MAP_ROUTE_STYLES.background.weight],
-            'line-opacity': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.opacity, MAP_ROUTE_STYLES.background.opacity]
-          }
-        });
-      }
+      const layerDef = {
+        id: layerId,
+        type: 'line',
+        source: sourceId,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.color, MAP_ROUTE_STYLES.background.color],
+          'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.weight, MAP_ROUTE_STYLES.background.weight],
+          'line-opacity': ['case', ['boolean', ['feature-state', 'selected'], false], MAP_ROUTE_STYLES.active.opacity, MAP_ROUTE_STYLES.background.opacity]
+        }
+      };
+
+      // MapCore.ensureGeoJsonLayer handles registration and only adds if missing from map instance.
+      // We don't manually register sourceDef here because it would overwrite actual results in Registry
+      // if this is called during style-restore.
+      MapCore.ensureGeoJsonLayer(m, sourceId, layerDef as any);
     };
 
+    initNahSidebar(mounts.sidebar);
+    const sidebarResults = document.getElementById('nah-sidebar-results')!;
+
     // 3. Karte initialisieren
-    map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
+    map = MapCore.init(
+      mounts.map, 
+      basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
+      async (m) => {
+        ensureNahLayers(m);
+        if (currentIncidentCoord) {
+          performCalculation(m, sidebarResults, currentIncidentCoord[0], currentIncidentCoord[1]);
+        }
+      }
+    );
     map.jumpTo({ center: [13.5, 48.0], zoom: 7 });
 
-    // Globaler Listener für Stil-Wechsel (robusteste Methode)
-    map.on('styledata', () => {
-      if (map) ensureNahLayers(map);
-    });
-
     // 4. Komponenten initialisieren
-    initTopbar(topbarMount, basemaps, (url) => {
+    initTopbar(mounts.topbar, basemaps, (url) => {
       if (!map) return;
       map.setStyle(url);
-      // Nach dem Wechsel warten bis die Karte "idle" ist (alles geladen)
-      map.once('idle', async () => {
-        if (!map) return;
-        await MapCore.reapplyBaseLayers();
-        if (currentIncidentCoord) {
-          performCalculation(map, sidebarResults, currentIncidentCoord[0], currentIncidentCoord[1]);
-        }
-      });
     }, () => legend.toggle());
-
-    initNahSidebar(sidebarMount);
-    const sidebarResults = document.getElementById('nah-sidebar-results')!;
 
     // 5. NAH-Daten laden und Marker setzen (Initialer Load)
     // Dies triggert nun auch den dynamischen Scheduler

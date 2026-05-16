@@ -4,41 +4,25 @@ import { initRoutingSidebar, updateRoutingSummary, renderStationResults, setRout
 import { RoutingService } from '../lib/RoutingService';
 import { MapCore } from '../lib/MapCore';
 import { ContextMenu } from '../components/ContextMenu';
-import { Toast } from '../lib/Toast';
 import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { MapLegend } from '../lib/MapLegend';
+import { InventoryService } from '../services/InventoryService';
+import { LayoutHelper } from '../lib/LayoutHelper';
+import { MapRegistry } from '../lib/MapRegistry';
 
 export const initRoutingPage = async (container: HTMLElement) => {
-  // 1. Setup Container & Map
-  const invRes = await fetch('https://tiles.oe5ith.at/inventory.json');
-  const inventory = await invRes.json();
-  const basemaps = inventory.maps.filter((m: any) => m.type === 'basemap');
+  // 1. Daten laden
+  const invService = InventoryService.getInstance();
+  const basemaps = await invService.getBasemaps();
 
-  container.innerHTML = `
-    <div id="topbar-mount"></div>
-    <div class="layout">
-      <div id="sidebar-mount"></div>
-      <main id="map" class="full-map">
-      </main>
-      <div class="map-legend" id="map-legend" style="display:none;">
-        <div class="map-legend-title"></div>
-        <div class="map-legend-entries"></div>
-      </div>
-    </div>
-  `;
+  // Clear Registry on Page Init
+  MapRegistry.clear();
 
-  const mapContainer = document.getElementById('map')!;
-  const topbarMount = document.getElementById('topbar-mount')!;
-  const sidebarMount = document.getElementById('sidebar-mount')!;
-
-  const map = MapCore.init(mapContainer, basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json');
-  map.once('style.load', () => MapCore.reapplyBaseLayers());
-
-  // 1.1 Initialize Legend
-  const legend = new MapLegend('#map-legend');
-  legend.setTitle('Routing');
-  legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Primärroute' });
-  legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Vergleich / Alternativ' });
+  // 2. Basis-Layout
+  const mounts = LayoutHelper.renderBaseLayout(container, { 
+    withLegend: true, 
+    legendTitle: 'Routing' 
+  });
 
   // 2. State & Constants
   let startMarker: maplibregl.Marker | null = null;
@@ -48,75 +32,123 @@ export const initRoutingPage = async (container: HTMLElement) => {
   let currentHighlightedId: number | null = null;
 
   const SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
-  map.on('styleimagemissing', async () => { await MapCore.loadSprites(map, SPRITE_BASE); });
 
-  // Paint Configs
-  const PAINT_HIGHLIGHT = { 
-    'line-opacity': MAP_ROUTE_STYLES.active.opacity, 
-    'line-width': MAP_ROUTE_STYLES.active.weight + 1 
-  };
-  const PAINT_DEZENT = { 
-    'line-opacity': MAP_ROUTE_STYLES.background.opacity, 
-    'line-width': MAP_ROUTE_STYLES.background.weight 
-  };
-  const PAINT_HIDDEN    = { 'line-opacity': 0.0, 'line-width': 0 };
+  const ensureBaseLayers = (m: maplibregl.Map) => {
+    // 1. Stations Source & Layer
+    const stationsLayerDef = {
+      id: 'station-icons',
+      type: 'symbol',
+      source: 'stations',
+      layout: { 
+        'icon-image': ['get', 'icon'], 
+        'icon-size': 0.7, 
+        'icon-allow-overlap': true, 
+        'icon-ignore-placement': true 
+      }
+    };
 
-  // 3. Layer Management
-  const ensureBaseLayers = () => {
-    if (!map.getSource('stations')) {
-      map.addSource('stations', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
-      map.addLayer({
-        id: 'station-icons', type: 'symbol', source: 'stations',
-        layout: { 'icon-image': ['get', 'icon'], 'icon-size': 0.7, 'icon-allow-overlap': true, 'icon-ignore-placement': true }
-      });
-    }
-    if (!map.getSource('route')) {
-      map.addSource('route', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
-      map.addLayer({
-        id: 'route-line', type: 'line', source: 'route',
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: { 
-          'line-color': MAP_ROUTE_STYLES.active.color, 
-          'line-width': MAP_ROUTE_STYLES.active.weight, 
-          'line-opacity': MAP_ROUTE_STYLES.active.opacity 
-        }
-      }, 'station-icons');
+    MapCore.ensureGeoJsonLayer(m, 'stations', stationsLayerDef as any);
+
+    // 2. Routing Path Layer (unter den Icons)
+    const routingLayerDef = {
+      id: 'routing-path',
+      type: 'line',
+      source: 'routing-path',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['get', 'width'],
+        'line-opacity': ['get', 'opacity']
+      }
+    };
+
+    MapCore.ensureGeoJsonLayer(m, 'routing-path', routingLayerDef as any);
+
+    if (m.getLayer('station-icons') && m.getLayer('routing-path')) {
+      m.moveLayer('routing-path', 'station-icons');
     }
   };
-  map.on('load', ensureBaseLayers);
+
+  const refreshMapRoutes = () => {
+    // Self-healing check
+    if (!map.getSource('routing-path')) {
+      ensureBaseLayers(map);
+    }
+
+    const features: any[] = [];
+    
+    stationRoutes.forEach((route, id) => {
+      if (!route || !route.geometry) return;
+
+      const isHighlighted = id === currentHighlightedId;
+      const isEyeActive = eyeActiveStates.has(id);
+
+      if (isHighlighted) {
+        features.push({
+          type: 'Feature',
+          geometry: route.geometry,
+          properties: { 
+            color: MAP_ROUTE_STYLES.active.color,
+            width: MAP_ROUTE_STYLES.active.weight,
+            opacity: MAP_ROUTE_STYLES.active.opacity
+          }
+        });
+      } else if (isEyeActive) {
+        features.push({
+          type: 'Feature',
+          geometry: route.geometry,
+          properties: { 
+            color: MAP_ROUTE_STYLES.background.color,
+            width: MAP_ROUTE_STYLES.background.weight,
+            opacity: MAP_ROUTE_STYLES.background.opacity
+          }
+        });
+      }
+    });
+
+    const data = { type: 'FeatureCollection', features };
+    const source = map.getSource('routing-path') as maplibregl.GeoJSONSource;
+    if (source) source.setData(data as any);
+
+    MapRegistry.registerSource('routing-path', {
+      type: 'geojson',
+      data: data
+    });
+  };
+
+  const map = MapCore.init(
+    mounts.map, 
+    basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
+    async (m) => {
+      await MapCore.loadSprites(m, SPRITE_BASE);
+      ensureBaseLayers(m);
+      refreshMapRoutes(); // Re-apply current routes on style change
+    }
+  );
+
+  // 1.1 Initialize Legend
+  const legend = new MapLegend(mounts.legend!);
+  legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Primärroute' });
+  legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Vergleich / Alternativ' });
 
   const clearResults = () => {
-    stationRoutes.forEach((_, id) => {
-      if (map.getLayer(`route-${id}`)) map.removeLayer(`route-${id}`);
-      if (map.getSource(`route-${id}`)) map.removeSource(`route-${id}`);
-    });
     stationRoutes.clear();
     eyeActiveStates.clear();
     currentHighlightedId = null;
-  };
 
-  const updateRouteVisuals = (id: number, _params: any) => {
-    const layerId = `route-${id}`;
-    if (!map.getLayer(layerId)) return;
+    const emptyData = { type: 'FeatureCollection', features: [] };
 
-    let style = PAINT_HIDDEN;
-    let color = MAP_ROUTE_STYLES.background.color;
+    const routeSource = map.getSource('routing-path') as maplibregl.GeoJSONSource;
+    if (routeSource) routeSource.setData(emptyData as any);
+    MapRegistry.registerSource('routing-path', { type: 'geojson', data: emptyData });
 
-    if (id === currentHighlightedId) {
-      style = PAINT_HIGHLIGHT;
-      color = MAP_ROUTE_STYLES.active.color;
-    } else if (eyeActiveStates.has(id)) {
-      style = PAINT_DEZENT;
-      color = MAP_ROUTE_STYLES.background.color;
-    }
+    const stationSource = map.getSource('stations') as maplibregl.GeoJSONSource;
+    if (stationSource) stationSource.setData(emptyData as any);
+    MapRegistry.registerSource('stations', { type: 'geojson', data: emptyData });
 
-    map.setPaintProperty(layerId, 'line-opacity', style['line-opacity']);
-    map.setPaintProperty(layerId, 'line-width', style['line-width']);
-    map.setPaintProperty(layerId, 'line-color', color);
-  };
-
-  const syncAllVisuals = () => {
-    stationRoutes.forEach((_, id) => updateRouteVisuals(id, null));
+    renderStationResults([], () => {}, () => {});
+    const details = document.getElementById('routing-details');
+    if (details) details.style.display = 'none';
   };
 
   const updateMarker = (type: 'start' | 'target', lat: number, lng: number) => {
@@ -130,13 +162,24 @@ export const initRoutingPage = async (container: HTMLElement) => {
   };
 
   // 4. Component Init
-  initTopbar(topbarMount, basemaps, (url) => {
+  initTopbar(mounts.topbar, basemaps, (url) => {
     map.setStyle(url);
-    map.once('style.load', async () => {
-      await MapCore.reapplyBaseLayers();
-      ensureBaseLayers();
-    });
   }, () => legend.toggle());
+
+  // Popup for stations
+  const stationPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 25 });
+
+  map.on('click', 'station-icons', (e) => {
+    const feat = e.features?.[0];
+    if (!feat) return;
+    const props = feat.properties || {};
+    stationPopup.setLngLat(e.lngLat)
+      .setHTML(`<b>${props.name}</b><br>${props.org || ''}`)
+      .addTo(map);
+  });
+
+  map.on('mouseenter', 'station-icons', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'station-icons', () => map.getCanvas().style.cursor = '');
 
   map.on('contextmenu', (e) => {
     const { lat, lng } = e.lngLat;
@@ -144,100 +187,133 @@ export const initRoutingPage = async (container: HTMLElement) => {
     const menuItems: any[] = [{ label: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, type: 'label' }, 'sep'];
     if (mode === 'ab') {
       menuItems.push({ label: 'Als Startpunkt setzen', icon: 'fa-solid fa-location-dot', onClick: () => { updateMarker('start', lat, lng); setRoutingCoord('start', lat, lng); }});
-      menuItems.push({ label: 'Als Zielort setzen', icon: 'fa-solid fa-flag-checkered', onClick: () => { updateMarker('target', lat, lng); setRoutingCoord('target', lat, lng); }});
+      menuItems.push({ label: 'Als Zielpunkt setzen', icon: 'fa-solid fa-flag-checkered', onClick: () => { updateMarker('target', lat, lng); setRoutingCoord('target', lat, lng); }});
     } else {
       menuItems.push({ label: 'Als Einsatzort setzen', icon: 'fa-solid fa-truck-medical', onClick: () => { updateMarker('target', lat, lng); setRoutingCoord('target', lat, lng); }});
     }
     ContextMenu.show(e.originalEvent.clientX, e.originalEvent.clientY, menuItems);
   });
 
-  initRoutingSidebar(sidebarMount, async (params) => {
+  initRoutingSidebar(mounts.sidebar, async (params) => {
     const btn = document.getElementById('btn-start-routing') as HTMLButtonElement;
     if (btn) btn.classList.add('loading');
     clearResults();
     updateMarker('target', params.target[0], params.target[1]);
     
-    if (params.mode === 'ab') {
-      if (startMarker) startMarker.remove();
-      updateMarker('start', params.start![0], params.start![1]);
-      const result = await RoutingService.calculateRoute(params.start!, params.target, params.profile);
-      if (btn) btn.classList.remove('loading');
-      if (result && result.features?.length > 0) {
-        (map.getSource('route') as maplibregl.GeoJSONSource).setData(result);
-        const bounds = new maplibregl.LngLatBounds();
-        result.features[0].geometry.coordinates.forEach((c: any) => bounds.extend(c as [number, number]));
-        map.fitBounds(bounds, { padding: 80, duration: 1000 });
-        updateRoutingSummary(result.features[0].properties.summary.distance, result.features[0].properties.summary.duration);
-      }
-    } else {
-      Toast.show(params.profile === 'driving-emergency' ? 'Starte Blaulicht-Routing Vergleich...' : 'Suche nächste Standorte...', 'info');
-      const stations = await RoutingService.findNearestStations(params.target, params.mode as 'sew' | 'nef', params.profile);
-      if (btn) btn.classList.remove('loading');
-
-      if (!stations || stations.length === 0) {
-        renderRoutingError('Keine Standorte gefunden.');
-        return;
-      }
-
-      (map.getSource('stations') as maplibregl.GeoJSONSource).setData({
-        type: 'FeatureCollection',
-        features: stations.map(s => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [s.lon, s.lat] }, properties: { name: s.name, icon: s.icon }}))
-      });
-
-      const bounds = new maplibregl.LngLatBounds();
-      bounds.extend([params.target[1], params.target[0]]);
-      stations.forEach(s => bounds.extend([s.lon, s.lat]));
-      map.fitBounds(bounds, { padding: 80, duration: 1000 });
-
-      renderStationResults(stations, 
-        // TOGGLE (Auge)
-        async (s, active) => {
-          if (active) eyeActiveStates.add(s.id); else eyeActiveStates.delete(s.id);
-          const layerId = `route-${s.id}`;
+    try {
+      if (params.mode === 'ab' && params.start) {
+        updateMarker('start', params.start[0], params.start[1]);
+        const route = await RoutingService.calculateRoute(params.start, params.target, params.profile);
+        if (route && route.features && route.features.length > 0) {
+          const summary = route.features[0].properties.summary;
+          updateRoutingSummary(summary.distance, summary.duration);
           
-          if (!map.getSource(layerId)) {
-            let route = stationRoutes.get(s.id);
-            if (!route) {
-              route = await RoutingService.calculateRoute([s.lat, s.lon], params.target, params.profile);
-              if (route) stationRoutes.set(s.id, route);
-            }
-            if (route) {
-              map.addSource(layerId, { type: 'geojson', data: route });
-              map.addLayer({
-                id: layerId, type: 'line', source: layerId,
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': MAP_ROUTE_STYLES.background.color, 'line-width': 0, 'line-opacity': 0 }
-              }, 'station-icons');
+          if (!map.getSource('routing-path')) ensureBaseLayers(map);
+          const data = {
+            type: 'FeatureCollection',
+            features: [{
+              type: 'Feature',
+              geometry: route.features[0].geometry,
+              properties: { ...MAP_ROUTE_STYLES.active, width: MAP_ROUTE_STYLES.active.weight, opacity: MAP_ROUTE_STYLES.active.opacity }
+            }]
+          };
+          const source = map.getSource('routing-path') as maplibregl.GeoJSONSource;
+          source.setData(data as any);
+
+          MapRegistry.registerSource('routing-path', {
+            type: 'geojson',
+            data: data
+          });
+
+          const bounds = new maplibregl.LngLatBounds();
+          route.features[0].geometry.coordinates.forEach((c: any) => bounds.extend(c));
+          map.fitBounds(bounds, { padding: 50 });
+        }
+      } else {
+        const results = await RoutingService.findNearestStations(params.target, params.mode as any, params.profile);
+        console.log(`[Routing] Found ${results.length} nearest stations.`);
+
+        if (results.length === 0) {
+          renderRoutingError('Keine Standorte in der Nähe gefunden.');
+          return;
+        }
+
+        // Populate stations source
+        const stationData = {
+          type: 'FeatureCollection',
+          features: results.map(s => ({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
+            properties: { ...s }
+          }))
+        };
+        const stationSource = map.getSource('stations') as maplibregl.GeoJSONSource;
+        if (stationSource) {
+          stationSource.setData(stationData as any);
+        }
+        MapRegistry.registerSource('stations', {
+          type: 'geojson',
+          data: stationData
+        });
+        
+        results.forEach((r: any) => {
+           stationRoutes.set(r.id, r.route);
+        });
+
+        const fetchRouteIfNeeded = async (station: any) => {
+          if (!stationRoutes.get(station.id)) {
+            console.log(`[Routing] Fetching missing route for station ${station.id}`);
+            const route = await RoutingService.calculateRoute([station.lat, station.lon], params.target, params.profile);
+            if (route && route.features && route.features.length > 0) {
+              stationRoutes.set(station.id, route.features[0]);
             }
           }
-          syncAllVisuals();
-        },
-        // HIGHLIGHT (Klick auf Feld)
-        async (s) => {
-          if (currentHighlightedId === s.id) {
+        };
+
+        renderStationResults(results, async (station, active) => {
+          if (active) {
+            await fetchRouteIfNeeded(station);
+            eyeActiveStates.add(station.id);
+          } else {
+            eyeActiveStates.delete(station.id);
+          }
+          refreshMapRoutes();
+        }, async (station) => {
+          // Toggle highlight: if same station clicked again, deselect it
+          if (currentHighlightedId === station.id) {
             currentHighlightedId = null;
           } else {
-            currentHighlightedId = s.id;
-            const layerId = `route-${s.id}`;
-            if (!map.getSource(layerId)) {
-              let route = stationRoutes.get(s.id);
-              if (!route) {
-                route = await RoutingService.calculateRoute([s.lat, s.lon], params.target, params.profile);
-                if (route) stationRoutes.set(s.id, route);
-              }
-              if (route) {
-                map.addSource(layerId, { type: 'geojson', data: route });
-                map.addLayer({
-                  id: layerId, type: 'line', source: layerId,
-                  layout: { 'line-join': 'round', 'line-cap': 'round' },
-                  paint: { 'line-color': MAP_ROUTE_STYLES.background.color, 'line-width': 0, 'line-opacity': 0 }
-                }, 'station-icons');
-              }
+            currentHighlightedId = station.id;
+            await fetchRouteIfNeeded(station);
+          }
+          
+          refreshMapRoutes();
+          
+          if (currentHighlightedId !== null) {
+            const route = stationRoutes.get(station.id);
+            if (route && route.geometry) {
+              const bounds = new maplibregl.LngLatBounds();
+              route.geometry.coordinates.forEach((c: any) => bounds.extend(c));
+              map.fitBounds(bounds, { padding: 50 });
             }
           }
-          syncAllVisuals();
-        }
-      );
+        });
+
+        // Initial route refresh to show results on map
+        refreshMapRoutes();
+        
+        const bounds = new maplibregl.LngLatBounds();
+        bounds.extend([params.target[1], params.target[0]]);
+        results.forEach((r: any) => {
+           bounds.extend([r.lon, r.lat]);
+        });
+        map.fitBounds(bounds, { padding: 80 });
+      }
+    } catch (err) {
+      console.error('[Routing] Calculation failed:', err);
+      renderRoutingError('Route konnte nicht berechnet werden.');
+    } finally {
+      if (btn) btn.classList.remove('loading');
     }
   });
 };
