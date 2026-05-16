@@ -1,13 +1,15 @@
 import maplibregl from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { initTerrainManager, applyTerrainAndHillshade } from './TerrainManager';
+import { BasemapStore } from './BasemapStore';
+import { MapRegistry } from './MapRegistry';
 
 /**
  * Zentraler Orchestrator für MapLibre Instanzen im Projekt.
  * Verhindert Code-Duplizierung und stellt CI-Konformität sicher.
  */
 export const MapCore = {
-  init(container: HTMLElement, styleUrl: string) {
+  init(container: HTMLElement, styleUrl?: string, onRestore?: (map: maplibregl.Map) => Promise<void> | void) {
     // Protokoll nur einmal global registrieren
     if (!(maplibregl as any)._pmtilesProtocolAdded) {
       const protocol = new Protocol();
@@ -15,29 +17,100 @@ export const MapCore = {
       (maplibregl as any)._pmtilesProtocolAdded = true;
     }
 
+    const effectiveStyle = styleUrl || BasemapStore.get();
+
     const map = new maplibregl.Map({
       container,
-      style: styleUrl,
+      style: effectiveStyle,
       center: [14.2858, 48.3064],
       zoom: 12,
       attributionControl: { compact: true },
       maxPitch: 85
     });
 
+    const restore = async () => {
+      console.log('[MapCore] Style loaded, starting restoration sequence...');
+      try {
+        // 1. Terrain & Hillshade (Base Infrastructure)
+        await applyTerrainAndHillshade();
+
+        // 2. Registry Restore (Persistierte Layer/Sources/Images)
+        await MapRegistry.restore(map, MapCore.loadSprites);
+        
+        // 3. Custom Restore Callback
+        if (onRestore) {
+          await onRestore(map);
+          console.log('[MapCore] Custom restore sequence completed.');
+        }
+      } catch (err) {
+        console.error('[MapCore] Restoration failed:', err);
+      }
+    };
+
+    // Style.load is the primary event for setStyle()
+    map.on('style.load', () => {
+      console.log('[MapCore] style.load event detected');
+      restore();
+    });
+
+    map.on('error', (e) => console.error('[MapCore] Map error:', e));
+
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
     // Terrain Manager für diese Karte initialisieren
     initTerrainManager(map, 'pmtiles://https://tiles.oe5ith.at/elevation/pmtiles/at-elevation.pmtiles');
 
+    // Falls der Style bereits geladen ist (z.B. Cache), triggere restore manuell
+    if (map.isStyleLoaded()) {
+      console.log('[MapCore] Style already loaded at init, triggering manual restore');
+      setTimeout(restore, 0);
+    }
+
     return map;
   },
 
   /**
-   * Hilfsfunktion um nach einem Style-Wechsel alles wiederherzustellen.
+   * Hilfsfunktion um nach einem manuellen Style-Wechsel oder bei Bedarf alles wiederherzustellen.
+   * Wird durch den automatischen Listener in init() weitestgehend obsolet, bleibt aber für 
+   * Spezialfälle (z.B. diff: true) bestehen.
    */
   async reapplyBaseLayers(callback?: () => Promise<void>) {
     await applyTerrainAndHillshade();
     if (callback) await callback();
+  },
+
+  /**
+   * Safe helper to add a GeoJSON source and layer if they don't exist.
+   * Useful for persistent overlays across style changes.
+   * 
+   * NOTE: This function now also registers the source/layer in the MapRegistry
+   * to ensure they are restored automatically on style changes.
+   */
+  ensureGeoJsonLayer(map: maplibregl.Map, sourceId: string, layerDef: any) {
+    // 1. Register for persistence (ONLY if not already registered to avoid overwriting actual data)
+    if (!MapRegistry.getSource(sourceId)) {
+      const sourceDef = {
+        type: 'geojson' as const,
+        data: { type: 'FeatureCollection' as const, features: [] },
+        tolerance: 0
+      };
+      MapRegistry.registerSource(sourceId, sourceDef);
+    }
+    
+    if (!MapRegistry.getLayer(layerDef.id)) {
+      MapRegistry.registerLayer(layerDef.id, layerDef);
+    }
+
+    // 2. Add to current map instance if missing
+    if (!map.getSource(sourceId)) {
+      const regSource = MapRegistry.getSource(sourceId);
+      if (regSource) {
+        map.addSource(sourceId, regSource.definition);
+      }
+    }
+    if (!map.getLayer(layerDef.id)) {
+      map.addLayer(layerDef);
+    }
   },
 
   /**
