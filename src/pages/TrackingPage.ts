@@ -13,9 +13,6 @@ import { InventoryService } from '../services/InventoryService';
 import { LayoutHelper } from '../lib/LayoutHelper';
 
 export const initTrackingPage = async (container: HTMLElement) => {
-  // Clear registry to avoid stale data from other pages
-  MapRegistry.clear();
-
   // 1. Daten laden
   const invService = InventoryService.getInstance();
   const basemaps = await invService.getBasemaps();

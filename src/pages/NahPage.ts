@@ -217,9 +217,6 @@ export const performCalculation = (map: maplibregl.Map, sidebarResults: HTMLElem
 export const initNahPage = async (container: HTMLElement) => {
   let map: maplibregl.Map | null = null;
 
-  // Clear Registry on Page Init
-  MapRegistry.clear();
-
   // Clear all current state to prevent "ghost" markers or multiple schedulers
   stationMarkers.forEach(m => m.remove());
   stationMarkers = [];

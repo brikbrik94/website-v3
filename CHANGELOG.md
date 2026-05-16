@@ -1,9 +1,28 @@
 # Changelog
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
+## [3.3.0-dev] - 2026-05-16 09:05
 
+### Behoben
+- **Registry Lifecycle:** Entfernung der redundanten `MapRegistry.clear()` Aufrufe in den Seiten-Initialisierungen. Diese haben den Zustand der Registry fälschlicherweise gelöscht, noch bevor die Karte die Ressourcen wiederherstellen konnte.
+- **Basemap Persistence:** Priorisierung des `BasemapStore` in `MapCore.init` korrigiert, damit Standardwerte gespeicherte Präferenzen nicht überschreiben.
+- **Topbar Sync:** Initialisierung der Topbar-UI (Label und aktiver Status) mit dem gespeicherten Zustand aus dem `BasemapStore`.
+- **Relative URLs:** Fix für verschwindende Overlays durch Auflösung relativer Pfade gegen die `overlayUrl` vor der Registrierung im `MapRegistry`.
+- **Sprite Lifecycle:** Alle kartenbasierten Seiten registrieren ihre benötigten Sprites nun explizit im `MapRegistry`, um deren Wiederherstellung vor den Symbol-Layer zu garantieren.
+- **Registry Debugging:** Einführung von detaillierten `console.debug` Logs in `MapRegistry.ts` zur Überwachung der Ressourcen-Lebenszyklen.
+
+### Hinzugefügt
+...
+- **Map Resource Registry:** Zentrale Architektur zur Verwaltung und automatischen Wiederherstellung von Kartenquellen und Layern nach einem Basemap-Wechsel.
+- **Basemap Persistence Store:** Persistenzschicht für die gewählte Grundkarte im `localStorage`.
+
+### Geändert
+- **MapCore Architektur:** Umstellung auf ein automatisiertes Restaurierungs-System basierend auf der neuen Registry.
+- **Seiten-Integration:** Migration von `MapPage`, `NahPage`, `RoutingPage` und `TrackingPage` auf das Registry-System.
+
+...
 ## [3.2.9] - 2026-05-15
-
+...
 ### Behoben
 - **Routing Seite:** Korrektur der Highlight-Logik in der Ergebnisliste. Stationen können nun durch erneutes Anklicken der Karte wieder abgewählt werden.
 - **CI-Konformität:** Strikte Anwendung der `MAP_ROUTE_STYLES` für alle Routen-Visualisierungen (Farbe, Breite, Opazität).
