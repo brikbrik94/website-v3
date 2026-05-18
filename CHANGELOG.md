@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 14:00
+
+### Geändert
+- **Tracking:** Refactoring des `TrackingPageController` zur Nutzung von `BasePageController`. Dies ermöglicht ein systematisches Ressourcen-Management über `AbortSignal`.
+
 ## [3.3.0-dev] - 2026-05-18 13:45
 
 ### Geändert
