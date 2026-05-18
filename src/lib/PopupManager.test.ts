@@ -27,7 +27,7 @@ describe('PopupManager', () => {
         const props = {
             shipname: 'VIENNA EXPRESS',
             mmsi: '123456789',
-            shipclass: 6,
+            ui_class: 'Tanker',
             speed: 12.5,
             cog: 180,
             destination: 'HAMBURG'
@@ -37,6 +37,7 @@ describe('PopupManager', () => {
         expect(html).toContain('VIENNA EXPRESS');
         expect(html).toContain('fa-ship');
         expect(html).toContain('123456789');
+        expect(html).toContain('Klasse');
         expect(html).toContain('Tanker');
         expect(html).toContain('12.5 kn');
         expect(html).toContain('180°');
