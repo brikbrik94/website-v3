@@ -1,4 +1,5 @@
-import { NahStation, NahResponse } from '../../types/nah';
+import { NahStation, NahResponse, NahStationResult } from '../../types/nah';
+import { calculateDistance, calculateFlightTime, formatDuration, formatETA } from '../../lib/FlightMath';
 
 export type NahDataCallback = (stations: NahStation[]) => void;
 export type NahStatusCallback = (online: boolean) => void;
@@ -59,6 +60,27 @@ export class NahDataService {
    */
   public getStations(): NahStation[] {
     return this.stations;
+  }
+
+  /**
+   * Calculates the nearest active stations for a given coordinate.
+   */
+  public getNearestActiveStations(lng: number, lat: number, limit: number = 5): NahStationResult[] {
+    return this.stations
+      .filter((s) => s.is_active)
+      .map((s) => {
+        const dist = calculateDistance(lat, lng, s.lat, s.lon);
+        const duration = calculateFlightTime(dist);
+        return {
+          ...s,
+          distance: dist,
+          duration,
+          durationStr: formatDuration(duration),
+          eta: formatETA(duration)
+        };
+      })
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, limit);
   }
 
   /**
