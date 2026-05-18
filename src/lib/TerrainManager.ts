@@ -119,7 +119,7 @@ export async function applyTerrainInfrastructure() {
             // Wir entfernen sie auch direkt von der Karte, falls vorhanden.
             const style = _map.getStyle();
             if (style && style.layers) {
-                style.layers.forEach(l => {
+                style.layers.forEach((l: any) => {
                     if (l.source === CONTOURS_OVERLAY.id) {
                         MapRegistry.unregisterLayer(l.id);
                         if (_map?.getLayer(l.id)) _map.removeLayer(l.id);
