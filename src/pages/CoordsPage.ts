@@ -42,17 +42,15 @@ export class CoordsPageController extends BasePageController {
         this.map = MapCore.init(
             mounts.map,
             basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
-            async (m) => {
-                initTerrainManager(m, basemaps[0]?.elevation_url || '');
+            async () => {
                 if (this.hikingActive) await this.toggleHikingOverlay(true);
             }
         );
 
         // 5. Topbar initialisieren
-        initTopbar(mounts.topbar, basemaps, (url, elevationUrl) => {
+        initTopbar(mounts.topbar, basemaps, (url) => {
             if (this.map) {
                 this.map.setStyle(url);
-                if (elevationUrl) initTerrainManager(this.map, elevationUrl);
             }
         }, undefined, [
             {
@@ -124,7 +122,7 @@ export class CoordsPageController extends BasePageController {
                 // Alle Layer dieser Source aus Registry und Karte entfernen
                 const style = this.map.getStyle();
                 if (style && style.layers) {
-                    style.layers.forEach(l => {
+                    style.layers.forEach((l: any) => {
                         if (l.source === id) {
                             MapRegistry.unregisterLayer(l.id);
                             if (this.map?.getLayer(l.id)) this.map.removeLayer(l.id);
