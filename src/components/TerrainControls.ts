@@ -1,4 +1,4 @@
-import { toggleTerrain, toggleHillshade, terrainEnabled, hillshadeEnabled } from '../lib/TerrainManager';
+import { toggleTerrain, toggleHillshade, toggleContours, terrainEnabled, hillshadeEnabled, contoursEnabled } from '../lib/TerrainManager';
 
 export const TerrainControls = {
   getHtml(): string {
@@ -14,6 +14,12 @@ export const TerrainControls = {
               aria-pressed="${hillshadeEnabled}">
         <i class="fa-solid fa-mountain"></i>
         <span class="topbar-toggle-label">Höhenschatten</span>
+      </button>
+      <button class="topbar-toggle topbar-toggle--icon-only btn-contours ${contoursEnabled ? 'active' : ''}" 
+              data-tooltip="Höhenlinien" 
+              aria-pressed="${contoursEnabled}">
+        <i class="fa-solid fa-lines-leaning"></i>
+        <span class="topbar-toggle-label">Höhenlinien</span>
       </button>
     `;
   },
@@ -37,6 +43,13 @@ export const TerrainControls = {
       if (btnHillshade) {
         const active = toggleHillshade();
         this.syncButtons('btn-hillshade', active);
+        return;
+      }
+
+      const btnContours = target.closest('.btn-contours');
+      if (btnContours) {
+        const active = toggleContours();
+        this.syncButtons('btn-contours', active);
         return;
       }
     });

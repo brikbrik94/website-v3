@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
-import { initTerrainManager, applyTerrainAndHillshade } from './TerrainManager';
+import { initTerrainManager, applyTerrainInfrastructure } from './TerrainManager';
 import { BasemapStore } from './BasemapStore';
 import { MapRegistry } from './MapRegistry';
 
@@ -31,21 +31,33 @@ export const MapCore = {
 
     const restore = async () => {
       console.log('[MapCore] Style loaded, starting restoration sequence...');
-      try {
-        // 1. Terrain & Hillshade (Base Infrastructure)
-        await applyTerrainAndHillshade();
+      
+      // We wait two frames to ensure MapLibre has processed the style change
+      // and is ready for new sources/layers.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(async () => {
+          console.log('[MapCore] Starting registry restoration...');
+          try {
+            // 1. Terrain & Hillshade
+            await applyTerrainInfrastructure();
 
-        // 2. Registry Restore (Persistierte Layer/Sources/Images)
-        await MapRegistry.restore(map, MapCore.loadSprites);
-        
-        // 3. Custom Restore Callback
-        if (onRestore) {
-          await onRestore(map);
-          console.log('[MapCore] Custom restore sequence completed.');
-        }
-      } catch (err) {
-        console.error('[MapCore] Restoration failed:', err);
-      }
+            // 2. Registry Restore (Persistierte Layer/Sources/Images)
+            await MapRegistry.restore(map, MapCore.loadSprites);
+            
+            // 3. Custom Restore Callback
+            if (onRestore) {
+              console.log('[MapCore] Calling custom onRestore callback...');
+              await onRestore(map);
+            }
+
+            // Force a repaint to ensure everything is visible
+            map.triggerRepaint();
+            console.log('[MapCore] Restoration sequence completed.');
+          } catch (err) {
+            console.error('[MapCore] Restoration failed:', err);
+          }
+        });
+      });
     };
 
     // Style.load is the primary event for setStyle()
@@ -76,7 +88,7 @@ export const MapCore = {
    * Spezialfälle (z.B. diff: true) bestehen.
    */
   async reapplyBaseLayers(callback?: () => Promise<void>) {
-    await applyTerrainAndHillshade();
+    await applyTerrainInfrastructure();
     if (callback) await callback();
   },
 
