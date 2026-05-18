@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 16:00
+
+### Geändert
+- **CoordsPage:** Vollständige Modularisierung der Seite. Umstellung auf `CoordsPageController` (BasePageController) für systematisches Ressourcen-Management via `AbortSignal`.
+- **CoordsPage:** Auslagerung der Koordinaten-Logik in den `CoordsDataService` und der UI-Logik in die `CoordsSidebar` mit modularen System-Blöcken.
+- **CoordsPage:** Integration des Wanderwege-Overlays in das neue `MapRegistry` System zur Persistenz über Basemap-Wechsel hinweg.
+
 ## [3.3.0-dev] - 2026-05-18 15:30
 
 ### Geändert
