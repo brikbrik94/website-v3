@@ -96,7 +96,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
       const response = await fetch('/api/stats.php', { signal });
       const data: StatsResponse = await response.json();
 
-      if (signal?.aborted) return;
+      if (signal?.aborted || !container.isConnected) return;
 
       renderData(data);
       meta.innerHTML = `Stand: ${new Date(data.generated_at).toLocaleTimeString()}`;
@@ -119,7 +119,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
 
   const scheduleNext = (delay = 30000) => {
     if (refreshTimeout) clearTimeout(refreshTimeout);
-    if (!container.isConnected) return;
+    if (signal?.aborted || !container.isConnected) return;
     refreshTimeout = setTimeout(fetchData, delay);
   };
 
@@ -127,6 +127,12 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
     if (refreshTimeout) clearTimeout(refreshTimeout);
     fetchData();
   });
+
+  if (signal) {
+    signal.addEventListener('abort', () => {
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+    });
+  }
 
   fetchData();
 };

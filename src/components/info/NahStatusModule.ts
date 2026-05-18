@@ -246,14 +246,14 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
   };
 
   const fetchData = async () => {
-    if (signal?.aborted) return;
+    if (signal?.aborted || !container.isConnected) return;
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
     try {
       const response = await fetch('/api/nah.php', { signal });
       const data: NahResponse = await response.json();
       
-      if (signal?.aborted) return;
+      if (signal?.aborted || !container.isConnected) return;
 
       stations = data.stations || [];
 
@@ -298,5 +298,12 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
   });
 
   refreshBtn.addEventListener('click', fetchData);
+  
+  if (signal) {
+    signal.addEventListener('abort', () => {
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+    });
+  }
+
   fetchData();
 };
