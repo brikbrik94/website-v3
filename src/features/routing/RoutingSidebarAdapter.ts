@@ -1,97 +1,136 @@
-
-import { Map } from 'maplibre-gl';
-import { RoutingSidebar, RoutingFormParameters } from '../../components/RoutingSidebar';
+import maplibregl from 'maplibre-gl';
 import { RoutingDataService } from './RoutingDataService';
 import { RoutingMapLayers } from './RoutingMapLayers';
 import { RoutingService } from '../../lib/RoutingService';
-import { nearestPOISearch } from './searches';
-import { RouteResult } from '../../lib/RoutingService';
+import { 
+  initRoutingSidebar, 
+  updateRoutingSummary, 
+  renderStationResults, 
+  renderRoutingError,
+  setRoutingCoord
+} from '../../components/RoutingSidebar';
+import { RouteResult, RoutingStation } from '../../types/common';
 
 export class RoutingSidebarAdapter {
-    private sidebar: RoutingSidebar;
+  constructor(
+    private dataService: RoutingDataService,
+    private map: maplibregl.Map,
+    private abortSignal: AbortSignal
+  ) {}
 
-    constructor(
-        private container: HTMLElement,
-        private map: Map,
-        private dataService: RoutingDataService,
-        private mapLayers: RoutingMapLayers,
-        private routingService: RoutingService,
-        private abortController: AbortController
-    ) {
-        this.sidebar = new RoutingSidebar(this.container);
-    }
+  public init(container: HTMLElement) {
+    initRoutingSidebar(container, async (params) => {
+      const btn = document.getElementById('btn-start-routing') as HTMLButtonElement;
+      if (btn) btn.classList.add('loading');
+      
+      this.clearAll();
+      this.dataService.setCoords('target', params.target);
+      RoutingMapLayers.updateMarkersLayer(this.map, this.dataService);
+      
+      try {
+        if (params.mode === 'ab' && params.start) {
+          this.dataService.setCoords('start', params.start);
+          RoutingMapLayers.updateMarkersLayer(this.map, this.dataService);
+          
+          const route = await RoutingService.calculateRoute(params.start, params.target, params.profile);
+          if (this.abortSignal.aborted) return;
+          
+          if (route && route.features && route.features.length > 0) {
+            const summary = route.features[0].properties.summary;
+            updateRoutingSummary(summary.distance, summary.duration);
+            RoutingMapLayers.updateSingleRoute(this.map, route.features[0]);
 
-    public init(): void {
-        this.sidebar.setCallback(this.handleFormSubmit.bind(this));
-        this.sidebar.setNearestCallback(this.handleNearestSubmit.bind(this));
-    }
+            const bounds = new maplibregl.LngLatBounds();
+            route.features[0].geometry.coordinates.forEach((c: any) => bounds.extend(c));
+            this.map.fitBounds(bounds, { padding: 50 });
+          }
+        } else {
+          const results: RoutingStation[] = await RoutingService.findNearestStations(params.target, params.mode as any, params.profile);
+          if (this.abortSignal.aborted) return;
+          
+          if (results.length === 0) {
+            renderRoutingError('Keine Standorte in der Nähe gefunden.');
+            return;
+          }
 
-    private async handleFormSubmit(params: RoutingFormParameters): Promise<void> {
-        this.sidebar.setLoading(true);
-        this.dataService.clearAll();
-        this.mapLayers.clearAllLayers();
+          this.dataService.setNearestStations(results);
+          RoutingMapLayers.updateStationsLayer(this.map, this.dataService);
+          
+          results.forEach((r: RoutingStation) => {
+             if(r.route) this.dataService.setStationRoute(r.id, r.route);
+          });
 
-        try {
-            const route = await this.routingService.calculateRoute({
-                profile: params.profile,
-                waypoints: [params.start, params.end],
-                lang: 'de',
-                signal: this.abortController.signal
-            });
+          const fetchRouteIfNeeded = async (station: RoutingStation) => {
+            if (!this.dataService.getStationRoutes().get(station.id)) {
+              const route = await RoutingService.calculateRoute([station.lat, station.lon], params.target, params.profile);
+              if (this.abortSignal.aborted) return;
+              if (route && route.features && route.features.length > 0) {
+                this.dataService.setStationRoute(station.id, route);
+              }
+            }
+          };
 
-            if (route && route.features.length > 0) {
-                this.dataService.updateSingleRoute(route);
-                this.mapLayers.updateSingleRoute(route.features[0]);
-                this.mapLayers.fitToBounds(route.bbox);
-                this.sidebar.showResult(route.features[0]);
+          renderStationResults(results, async (station, active) => {
+            if (active) {
+              await fetchRouteIfNeeded(station);
+              this.dataService.setEyeActiveState(station.id, true);
             } else {
-                this.sidebar.showError('Keine Route gefunden.');
+              this.dataService.setEyeActiveState(station.id, false);
             }
-        } catch (error) {
-            if ((error as Error).name !== 'AbortError') {
-                console.error('Routing Error:', error);
-                this.sidebar.showError('Fehler bei der Routenberechnung.');
-            }
-        } finally {
-            this.sidebar.setLoading(false);
-        }
-    }
-
-    private async handleNearestSubmit(params: RoutingFormParameters): Promise<void> {
-        this.sidebar.setLoading(true);
-        this.dataService.clearAll();
-        this.mapLayers.clearAllLayers();
-
-        try {
-            const results = await nearestPOISearch(
-                params.start,
-                params.profile,
-                this.routingService,
-                this.abortController.signal,
-            );
-
-            if (results.length > 0) {
-                this.dataService.updateNearestRoutes(results);
-                this.mapLayers.updateNearestRoutes(results);
-
-                const focusedRoute = results.find(r => r.focused);
-                if (focusedRoute) {
-                    this.mapLayers.fitToRoute(focusedRoute.route.features[0]);
-                } else if(results[0]) {
-                     this.mapLayers.fitToRoute(results[0].route.features[0]);
-                }
-                
-                this.sidebar.showNearestResults(results);
+            if (this.abortSignal.aborted) return;
+            RoutingMapLayers.updateRoutesLayer(this.map, this.dataService);
+          }, async (station) => {
+            if (this.dataService.getCurrentHighlightedId() === station.id) {
+              this.dataService.setCurrentHighlightedId(null);
             } else {
-                this.sidebar.showError('Keine Ergebnisse für die nächste Suche gefunden.');
+              this.dataService.setCurrentHighlightedId(station.id);
+              await fetchRouteIfNeeded(station);
             }
-        } catch (error) {
-            if ((error as Error).name !== 'AbortError') {
-                console.error('Nearest search error:', error);
-                this.sidebar.showError('Fehler bei der Suche nach dem Nächsten.');
+            if (this.abortSignal.aborted) return;
+            RoutingMapLayers.updateRoutesLayer(this.map, this.dataService);
+            
+            const currentHighlightedId = this.dataService.getCurrentHighlightedId();
+            if (currentHighlightedId !== null) {
+              const route = this.dataService.getStationRoutes().get(station.id);
+              if (route && route.features[0].geometry) {
+                const bounds = new maplibregl.LngLatBounds();
+                route.features[0].geometry.coordinates.forEach((c: any) => bounds.extend(c));
+                this.map.fitBounds(bounds, { padding: 50 });
+              }
             }
-        } finally {
-            this.sidebar.setLoading(false);
+          });
+
+          RoutingMapLayers.updateRoutesLayer(this.map, this.dataService);
+          
+          const bounds = new maplibregl.LngLatBounds();
+          bounds.extend([params.target[1], params.target[0]]);
+          results.forEach((r: any) => {
+             bounds.extend([r.lon, r.lat]);
+          });
+          this.map.fitBounds(bounds, { padding: 80 });
         }
-    }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') {
+          console.debug('Routing request aborted.');
+        } else {
+          console.error('[Routing] Calculation failed:', err);
+          renderRoutingError('Route konnte nicht berechnet werden.');
+        }
+      } finally {
+        if (btn) btn.classList.remove('loading');
+      }
+    });
+  }
+
+  private clearAll() {
+    this.dataService.clearResults();
+    this.dataService.clearCoords();
+    RoutingMapLayers.updateRoutesLayer(this.map, this.dataService);
+    RoutingMapLayers.updateStationsLayer(this.map, this.dataService);
+    RoutingMapLayers.updateMarkersLayer(this.map, this.dataService);
+    renderStationResults([], () => {}, () => {});
+    updateRoutingSummary(0, 0);
+    const details = document.getElementById('routing-details');
+    if (details) details.style.display = 'none';
+  }
 }
