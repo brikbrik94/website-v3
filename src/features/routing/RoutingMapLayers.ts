@@ -1,171 +1,193 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
+import { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { MapCore } from '../../lib/MapCore';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { RoutingDataService } from './RoutingDataService';
-import { MAP_ROUTE_STYLES, MAP_COLORS } from '../../lib/MapStyles';
+import { MAP_ROUTE_STYLES } from '../../lib/MapStyles';
+
+// --- Constants for Source and Layer IDs ---
+const ROUTING_PATH_SOURCE_ID = 'routing-path';
+const ROUTING_PATH_LAYER_ID = 'routing-path';
+
+const STATIONS_SOURCE_ID = 'stations';
+const STATIONS_LAYER_ID = 'station-icons';
+
+const ROUTING_MARKERS_SOURCE_ID = 'routing-markers';
+const ROUTING_MARKERS_LAYER_ID = 'routing-markers';
 
 export class RoutingMapLayers {
   private static SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
 
   public static registerResources() {
-    MapRegistry.registerImage('routing-markers', this.SPRITE_BASE);
+    MapRegistry.registerImage(ROUTING_MARKERS_LAYER_ID, this.SPRITE_BASE);
   }
 
   public static ensureBaseLayers(map: maplibregl.Map) {
-    // 1. Routing Path Layer (unterste Ebene)
-    const routingLayerDef = {
-      id: 'routing-path',
+    // 1. Routing Path Layer (bottom)
+    const routingLayerDef: LayerSpecification = {
+      id: ROUTING_PATH_LAYER_ID,
       type: 'line',
-      source: 'routing-path',
+      source: ROUTING_PATH_SOURCE_ID,
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-color': ['get', 'color'],
         'line-width': ['get', 'width'],
-        'line-opacity': ['get', 'opacity']
-      }
+        'line-opacity': ['get', 'opacity'],
+      },
     };
-    MapCore.ensureGeoJsonLayer(map, 'routing-path', routingLayerDef as any);
+    MapCore.ensureGeoJsonLayer(map, ROUTING_PATH_SOURCE_ID, routingLayerDef);
+    MapRegistry.registerSource(ROUTING_PATH_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 
     // 2. Stations Layer
-    const stationsLayerDef = {
-      id: 'station-icons',
+    const stationsLayerDef: LayerSpecification = {
+      id: STATIONS_LAYER_ID,
       type: 'symbol',
-      source: 'stations',
-      layout: { 
-        'icon-image': ['get', 'icon'], 
-        'icon-size': 0.7, 
-        'icon-allow-overlap': true, 
-        'icon-ignore-placement': true 
-      }
+      source: STATIONS_SOURCE_ID,
+      layout: {
+        'icon-image': ['get', 'icon'],
+        'icon-size': 0.7,
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
     };
-    MapCore.ensureGeoJsonLayer(map, 'stations', stationsLayerDef as any);
-
-    // 3. Start/Target Markers Layer (oberste Ebene)
-    const markersLayerDef = {
-      id: 'routing-markers',
+    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE_ID, stationsLayerDef);
+    MapRegistry.registerSource(STATIONS_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    
+    // 3. Start/Target Markers Layer (top)
+    const markersLayerDef: LayerSpecification = {
+      id: ROUTING_MARKERS_LAYER_ID,
       type: 'symbol',
-      source: 'routing-markers',
+      source: ROUTING_MARKERS_SOURCE_ID,
       layout: {
         'icon-image': ['match', ['get', 'type'], 'start', 'marker-green', 'target', 'marker-red', 'marker-blue'],
         'icon-size': 1.0,
         'icon-anchor': 'bottom',
         'icon-allow-overlap': true,
-        'icon-ignore-placement': true
-      }
+        'icon-ignore-placement': true,
+      },
     };
-    MapCore.ensureGeoJsonLayer(map, 'routing-markers', markersLayerDef as any);
+    MapCore.ensureGeoJsonLayer(map, ROUTING_MARKERS_SOURCE_ID, markersLayerDef);
+    MapRegistry.registerSource(ROUTING_MARKERS_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 
-    // Sortierung
-    if (map.getLayer('station-icons') && map.getLayer('routing-path')) {
-      map.moveLayer('routing-path', 'station-icons');
+    // Enforce layer order
+    if (map.getLayer(STATIONS_LAYER_ID) && map.getLayer(ROUTING_PATH_LAYER_ID)) {
+      map.moveLayer(ROUTING_PATH_LAYER_ID, STATIONS_LAYER_ID);
     }
-    if (map.getLayer('routing-markers') && map.getLayer('station-icons')) {
-      map.moveLayer('station-icons', 'routing-markers');
+    if (map.getLayer(ROUTING_MARKERS_LAYER_ID) && map.getLayer(STATIONS_LAYER_ID)) {
+      map.moveLayer(STATIONS_LAYER_ID, ROUTING_MARKERS_LAYER_ID);
     }
   }
 
   public static updateRoutesLayer(map: maplibregl.Map, dataService: RoutingDataService) {
-    if (!map.getSource('routing-path')) {
+    const source = map.getSource(ROUTING_PATH_SOURCE_ID) as GeoJSONSource;
+    if (!source) {
       this.ensureBaseLayers(map);
     }
 
-    const features: any[] = [];
+    const features: Feature<LineString>[] = [];
     dataService.getStationRoutes().forEach((route, id) => {
-      if (!route || !route.features || route.features.length === 0) return;
-      const routeFeature = route.features[0];
-      if (!routeFeature.geometry) return;
-
+      if (!route?.features?.[0]?.geometry) return;
+      
+      const routeFeature = route.features[0] as Feature<LineString>;
       const isHighlighted = id === dataService.getCurrentHighlightedId();
       const isEyeActive = dataService.isEyeActive(id);
 
-      if (isHighlighted) {
-        features.push({
-          type: 'Feature',
-          geometry: routeFeature.geometry,
-          properties: { 
-            color: MAP_ROUTE_STYLES.active.color,
-            width: MAP_ROUTE_STYLES.active.weight,
-            opacity: MAP_ROUTE_STYLES.active.opacity
-          }
-        });
-      } else if (isEyeActive) {
-        features.push({
-          type: 'Feature',
-          geometry: routeFeature.geometry,
-          properties: { 
-            color: MAP_ROUTE_STYLES.background.color,
-            width: MAP_ROUTE_STYLES.background.weight,
-            opacity: MAP_ROUTE_STYLES.background.opacity
-          }
-        });
-      }
+      let style;
+      if (isHighlighted) style = MAP_ROUTE_STYLES.active;
+      else if (isEyeActive) style = MAP_ROUTE_STYLES.background;
+      else return;
+
+      features.push({
+        type: 'Feature',
+        geometry: routeFeature.geometry,
+        properties: {
+          color: style.color,
+          width: style.weight, // Mapped to 'line-width' in layer paint properties
+          opacity: style.opacity,
+        },
+      });
     });
 
-    const data = { type: 'FeatureCollection', features };
-    const source = map.getSource('routing-path') as maplibregl.GeoJSONSource;
-    if (source) source.setData(data as any);
-    MapRegistry.registerSource('routing-path', { type: 'geojson', data });
+    const data: FeatureCollection<LineString> = { type: 'FeatureCollection', features };
+    if (source) source.setData(data);
   }
 
   public static updateStationsLayer(map: maplibregl.Map, dataService: RoutingDataService) {
-    if (!map.getSource('stations')) {
+    const source = map.getSource(STATIONS_SOURCE_ID) as GeoJSONSource;
+    if (!source) {
       this.ensureBaseLayers(map);
     }
+    
     const stations = dataService.getNearestStations();
-    const data = {
-      type: 'FeatureCollection',
-      features: stations.map(s => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
-        properties: { ...s }
-      }))
-    };
-    const source = map.getSource('stations') as maplibregl.GeoJSONSource;
-    if (source) source.setData(data as any);
-    MapRegistry.registerSource('stations', { type: 'geojson', data });
+    const features: Feature<Point>[] = stations.map(s => ({
+      type: 'Feature',
+      geometry: { 
+        type: 'Point', 
+        coordinates: [s.lon, s.lat] // MapLibre expects [lng, lat]
+      },
+      properties: { ...s },
+    }));
+
+    const data: FeatureCollection<Point> = { type: 'FeatureCollection', features };
+    if (source) source.setData(data);
   }
 
   public static updateMarkersLayer(map: maplibregl.Map, dataService: RoutingDataService) {
-    if (!map.getSource('routing-markers')) {
+    const source = map.getSource(ROUTING_MARKERS_SOURCE_ID) as GeoJSONSource;
+    if (!source) {
       this.ensureBaseLayers(map);
     }
-    const features: any[] = [];
+
+    const features: Feature<Point>[] = [];
     const start = dataService.getStartCoord();
     const target = dataService.getTargetCoord();
 
     if (start) {
       features.push({
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [start[1], start[0]] },
-        properties: { type: 'start' }
+        geometry: { 
+          type: 'Point', 
+          coordinates: [start[1], start[0]] // MapLibre expects [lng, lat]
+        },
+        properties: { type: 'start' },
       });
     }
     if (target) {
       features.push({
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [target[1], target[0]] },
-        properties: { type: 'target' }
+        geometry: { 
+          type: 'Point', 
+          coordinates: [target[1], target[0]] // MapLibre expects [lng, lat]
+        },
+        properties: { type: 'target' },
       });
     }
 
-    const data = { type: 'FeatureCollection', features };
-    const source = map.getSource('routing-markers') as maplibregl.GeoJSONSource;
-    if (source) source.setData(data as any);
-    MapRegistry.registerSource('routing-markers', { type: 'geojson', data });
+    const data: FeatureCollection<Point> = { type: 'FeatureCollection', features };
+    if (source) source.setData(data);
   }
-  
-  public static updateSingleRoute(map: maplibregl.Map, routeFeature: any) {
-      if (!map.getSource('routing-path')) this.ensureBaseLayers(map);
-      const data = {
-        type: 'FeatureCollection',
-        features: [{
+
+  public static updateSingleRoute(map: maplibregl.Map, routeFeature: Feature<LineString>) {
+    const source = map.getSource(ROUTING_PATH_SOURCE_ID) as GeoJSONSource;
+    if (!source) {
+      this.ensureBaseLayers(map);
+    }
+
+    const data: FeatureCollection<LineString> = {
+      type: 'FeatureCollection',
+      features: [
+        {
           type: 'Feature',
           geometry: routeFeature.geometry,
-          properties: { ...MAP_ROUTE_STYLES.active, width: MAP_ROUTE_STYLES.active.weight, opacity: MAP_ROUTE_STYLES.active.opacity }
-        }]
-      };
-      const source = map.getSource('routing-path') as maplibregl.GeoJSONSource;
-      if (source) source.setData(data as any);
-      MapRegistry.registerSource('routing-path', { type: 'geojson', data });
+          properties: {
+            color: MAP_ROUTE_STYLES.active.color,
+            width: MAP_ROUTE_STYLES.active.weight, // Mapped to 'line-width'
+            opacity: MAP_ROUTE_STYLES.active.opacity,
+          },
+        },
+      ],
+    };
+    
+    if (source) source.setData(data);
   }
 }
