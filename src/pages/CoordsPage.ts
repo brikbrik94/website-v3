@@ -1,502 +1,149 @@
-import proj4 from 'proj4';
-// @ts-ignore
-import * as mgrs from 'mgrs';
+import maplibregl from 'maplibre-gl';
+import { BasePageController } from '../core/BasePageController';
+import { CoordsDataService } from '../features/coords/CoordsDataService';
+import { CoordsSidebar } from '../features/coords/CoordsSidebar';
 import { MapCore } from '../lib/MapCore';
 import { initTopbar } from '../components/Topbar';
-import { Toast } from '../lib/Toast';
-import maplibregl from 'maplibre-gl';
-
-import { MAP_COLORS } from '../lib/MapStyles';
-import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
-import { GeocoderService } from '../lib/GeocoderService';
-import { renderGeocodeItemHtml } from '../lib/UIUtils';
-import { InventoryService } from '../services/InventoryService';
 import { LayoutHelper } from '../lib/LayoutHelper';
+import { InventoryService } from '../services/InventoryService';
+import { MapRegistry } from '../lib/MapRegistry';
+import { MAP_COLORS } from '../lib/MapStyles';
+import { Toast } from '../lib/Toast';
+import { initTerrainManager } from '../lib/TerrainManager';
 
 /**
- * CoordsPage - Bidirektionaler Koordinaten-Umrechner (Typ 7 Sidebar)
+ * CoordsPageController - Orchestrates the coordinate converter page.
  */
-export const initCoordsPage = async (container: HTMLElement) => {
-  // 1. Daten laden
-  const invService = InventoryService.getInstance();
-  const basemaps = await invService.getBasemaps();
+export class CoordsPageController extends BasePageController {
+    private map?: maplibregl.Map;
+    private marker?: maplibregl.Marker;
+    private service = new CoordsDataService();
+    private sidebar?: CoordsSidebar;
 
-  // 2. Basis-Layout
-  const mounts = LayoutHelper.renderBaseLayout(container);
+    private hikingActive = false;
+    private readonly HIKING_OVERLAY = {
+        id: 'hiking',
+        url: 'https://tiles.oe5ith.at/overlays/styles/hiking/style.json'
+    };
 
-  // Proj4 Definitionen für Österreich (BMN / Lambert)
-  proj4.defs([
-    ["EPSG:31254", "+proj=tmerc +lat_0=0 +lon_0=10.33333333333333 +k=1 +x_0=150000 +y_0=0 +ellps=bessel +towgs84=577.326,90.129,463.919,5.137,1.474,5.297,2.4232 +units=m +no_defs"],
-    ["EPSG:31255", "+proj=tmerc +lat_0=0 +lon_0=13.33333333333333 +k=1 +x_0=450000 +y_0=0 +ellps=bessel +towgs84=577.326,90.129,463.919,5.137,1.474,5.297,2.4232 +units=m +no_defs"],
-    ["EPSG:31256", "+proj=tmerc +lat_0=0 +lon_0=16.33333333333333 +k=1 +x_0=750000 +y_0=0 +ellps=bessel +towgs84=577.326,90.129,463.919,5.137,1.474,5.297,2.4232 +units=m +no_defs"]
-  ]);
+    public async mount(container: HTMLElement) {
+        // 1. Daten laden
+        const invService = InventoryService.getInstance();
+        const basemaps = await invService.getBasemaps();
 
-  // Initialer State (WGS84 Source of Truth)
-  let state = {
-    lat: 48.3064,
-    lon: 14.2858
-  };
+        // 2. Basis-Layout
+        const mounts = LayoutHelper.renderBaseLayout(container);
 
-  let hikingActive = false;
+        // 3. Sidebar initialisieren
+        this.sidebar = new CoordsSidebar(mounts.sidebar, this.service);
+        this.sidebar.init();
 
-  const OVERLAYS = {
-    hiking: {
-      id: 'hiking',
-      url: 'https://tiles.oe5ith.at/overlays/styles/hiking/style.json'
-    }
-  };
-
-  const toggleOverlay = async (type: keyof typeof OVERLAYS, active: boolean, m: maplibregl.Map) => {
-    if (type === 'hiking') hikingActive = active;
-    
-    const { id, url } = OVERLAYS[type];
-    
-    if (active) {
-      if (!m.getSource(id)) {
-        try {
-          const res = await fetch(url);
-          const style = await res.json();
-          
-          if (style.sprite) {
-            await MapCore.loadSprites(m, style.sprite, url);
-          }
-
-          for (const [sId, def] of Object.entries(style.sources)) {
-            if (!m.getSource(sId)) m.addSource(sId, def as any);
-          }
-          
-          style.layers.forEach((l: any) => {
-            if (!m.getLayer(l.id)) m.addLayer(l);
-          });
-        } catch (err) {
-          console.error(`Failed to load overlay: ${id}`, err);
-          Toast.error(`Fehler beim Laden von: ${id}`);
-          return;
-        }
-      } else {
-        const style = m.getStyle();
-        style.layers.forEach((l: any) => {
-          if (l.source === id) {
-             m.setLayoutProperty(l.id, 'visibility', 'visible');
-          }
-        });
-      }
-    } else {
-      const style = m.getStyle();
-      style.layers.forEach((l: any) => {
-        if (l.source === id) {
-           m.setLayoutProperty(l.id, 'visibility', 'none');
-        }
-      });
-    }
-  };
-
-  // 3. Karte initialisieren
-  const map = MapCore.init(
-    mounts.map, 
-    basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
-    async (m) => {
-      if (hikingActive) m.getSource(OVERLAYS.hiking.id) ? null : await toggleOverlay('hiking', true, m);
-    }
-  );
-
-  // 4. Topbar initialisieren
-  initTopbar(mounts.topbar, basemaps, (url) => {
-    map.setStyle(url);
-  }, undefined, [
-    {
-      id: 'hiking',
-      icon: 'fa-solid fa-map-signs',
-      title: 'Wanderwege',
-      onClick: (active) => toggleOverlay('hiking', active, map)
-    }
-  ]);
-
-  const marker = new maplibregl.Marker({ color: MAP_COLORS.accent })
-    .setLngLat([state.lon, state.lat])
-    .addTo(map);
-
-  const updateField = (system: string, field: string, value: string, source?: string) => {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-    const activeBlock = sidebar.querySelector('.coord-block.active') as HTMLElement;
-    const activeSystem = activeBlock?.getAttribute('data-system');
-    if (source === 'input' && activeSystem === system) return;
-    
-    const el = sidebar.querySelector(`[data-system="${system}"] [data-field="${field}"]`);
-    if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) {
-      el.value = value;
-    } else if (el) {
-      el.textContent = value;
-    }
-  };
-
-  const toDms = (val: number) => {
-    const d = Math.floor(Math.abs(val));
-    const m = Math.floor((Math.abs(val) - d) * 60);
-    const s = ((Math.abs(val) - d - m / 60) * 3600).toFixed(1);
-    return { d, m, s };
-  };
-
-  const initSidebarStructure = () => {
-    const isMobile = window.innerWidth <= 768;
-    mounts.sidebar.innerHTML = `
-      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-inner">
-          <div class="coord-block active" data-system="address">
-            <div class="coord-block-header">
-              <span class="coord-block-title">Adresse</span>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <div class="coord-header-status" id="address-status" style="font-size: 0.65rem; color: var(--subtle); font-weight: 500;"></div>
-                <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
-              </div>
-            </div>
-            <div class="coord-row" style="position: relative;">
-              <input class="coord-input-full" type="text" data-field="address" placeholder="Adresse suchen..." autocomplete="off">
-              <div id="geocoder-results" class="geocoder-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-dropdown);"></div>
-            </div>
-          </div>
-          <div class="tool-sep"></div>
-          <div class="coord-block" data-system="wgs84">
-            <div class="coord-block-header">
-              <span class="coord-block-title">WGS84 Dezimalgrad</span>
-              <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">Lat.</span>
-              <input class="coord-input" type="text" inputmode="decimal" data-field="lat" readonly>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">Lon.</span>
-              <input class="coord-input" type="text" inputmode="decimal" data-field="lon" readonly>
-            </div>
-          </div>
-          <div class="tool-sep"></div>
-          <div class="coord-block" data-system="dms">
-            <div class="coord-block-header">
-              <span class="coord-block-title">WGS84 DMS</span>
-              <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
-            </div>
-            <div class="coord-row-dms">
-              <span class="coord-label">Lat.</span>
-              <input class="coord-input-dms" type="text" data-field="lat-d" readonly>
-              <input class="coord-input-dms" type="text" data-field="lat-m" readonly>
-              <input class="coord-input-dms" type="text" data-field="lat-s" readonly>
-              <span class="coord-suffix" data-field="lat-suffix">N</span>
-            </div>
-            <div class="coord-row-dms">
-              <span class="coord-label">Lon.</span>
-              <input class="coord-input-dms" type="text" data-field="lon-d" readonly>
-              <input class="coord-input-dms" type="text" data-field="lon-m" readonly>
-              <input class="coord-input-dms" type="text" data-field="lon-s" readonly>
-              <span class="coord-suffix" data-field="lon-suffix">E</span>
-            </div>
-          </div>
-          <div class="tool-sep"></div>
-          <div class="coord-block" data-system="utm">
-            <div class="coord-block-header">
-              <span class="coord-block-title">UTM</span>
-              <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">Zone</span>
-              <input class="coord-input" type="text" data-field="zone" readonly>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">E</span>
-              <input class="coord-input" type="text" data-field="e" readonly>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">N</span>
-              <input class="coord-input" type="text" data-field="n" readonly>
-            </div>
-          </div>
-          <div class="tool-sep"></div>
-          <div class="coord-block" data-system="bmn">
-            <div class="coord-block-header">
-              <span class="coord-block-title">BMN (Österreich)</span>
-              <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">M</span>
-              <select class="coord-select" data-field="m" disabled>
-                <option value="M28">M28</option>
-                <option value="M31">M31</option>
-                <option value="M34">M34</option>
-              </select>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">RW</span>
-              <input class="coord-input" type="text" data-field="rw" readonly>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">HW</span>
-              <input class="coord-input" type="text" data-field="hw" readonly>
-            </div>
-          </div>
-          <div class="tool-sep"></div>
-          <div class="coord-block" data-system="mgrs">
-            <div class="coord-block-header">
-              <span class="coord-block-title">MGRS</span>
-              <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
-            </div>
-            <div class="coord-row-inline">
-              <span class="coord-label">GZD</span>
-              <input class="coord-input-short" type="text" data-field="gzd" readonly>
-              <span class="coord-label">100km</span>
-              <input class="coord-input-short" type="text" data-field="sq" readonly>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">E</span>
-              <input class="coord-input" type="text" data-field="e" readonly>
-            </div>
-            <div class="coord-row">
-              <span class="coord-label">N</span>
-              <input class="coord-input" type="text" data-field="n" readonly>
-            </div>
-          </div>
-          <div class="tool-sep"></div>
-          <div class="coord-block" data-system="maidenhead">
-            <div class="coord-block-header">
-              <span class="coord-block-title">Maidenhead</span>
-              <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
-            </div>
-            <div class="coord-row">
-              <input class="coord-input-full" type="text" data-field="locator" readonly>
-            </div>
-          </div>
-        </div>
-        ${getSidebarFooterHtml()}
-        <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">${isMobile ? '›' : '‹'}</div>
-      </aside>
-    `;
-    attachSidebarEvents();
-  };
-
-  const updateSidebarValues = (source: 'map' | 'input') => {
-    const sidebar = document.getElementById('sidebar')!;
-    const activeBlock = sidebar.querySelector('.coord-block.active') as HTMLElement;
-    const activeSystem = activeBlock?.getAttribute('data-system');
-    const addrStatus = sidebar.querySelector('#address-status')!;
-    if (source === 'map' || (source === 'input' && activeSystem !== 'address')) {
-      addrStatus.textContent = 'Suche...';
-      GeocoderService.reverse(state.lat, state.lon).then(res => {
-        if (res) {
-          updateField('address', 'address', res.display_name, source);
-          addrStatus.textContent = 'Gefunden';
-        } else {
-          addrStatus.textContent = 'Unbekannt';
-        }
-      });
-    }
-    updateField('wgs84', 'lat', state.lat.toFixed(6), source);
-    updateField('wgs84', 'lon', state.lon.toFixed(6), source);
-    const latDms = toDms(state.lat);
-    const lonDms = toDms(state.lon);
-    updateField('dms', 'lat-d', latDms.d.toString(), source);
-    updateField('dms', 'lat-m', latDms.m.toString(), source);
-    updateField('dms', 'lat-s', latDms.s, source);
-    updateField('dms', 'lat-suffix', state.lat >= 0 ? 'N' : 'S', source);
-    updateField('dms', 'lon-d', lonDms.d.toString(), source);
-    updateField('dms', 'lon-m', lonDms.m.toString(), source);
-    updateField('dms', 'lon-s', lonDms.s, source);
-    updateField('dms', 'lon-suffix', state.lon >= 0 ? 'E' : 'W', source);
-    const utmZoneNum = Math.floor((state.lon + 180) / 6) + 1;
-    const utm = proj4('EPSG:4326', `+proj=utm +zone=${utmZoneNum} +ellps=WGS84 +datum=WGS84 +units=m +no_defs`).forward([state.lon, state.lat]);
-    updateField('utm', 'zone', utmZoneNum + (state.lat >= 0 ? 'N' : 'S'), source);
-    updateField('utm', 'e', Math.round(utm[0]).toString(), source);
-    updateField('utm', 'n', Math.round(utm[1]).toString(), source);
-    let epsg = "EPSG:31255";
-    let m = "M31";
-    if (state.lon < 12) { epsg = "EPSG:31254"; m = "M28"; }
-    else if (state.lon > 15) { epsg = "EPSG:31256"; m = "M34"; }
-    const bmn = proj4('EPSG:4326', epsg).forward([state.lon, state.lat]);
-    updateField('bmn', 'm', m, source);
-    updateField('bmn', 'rw', Math.round(bmn[0]).toString(), source);
-    updateField('bmn', 'hw', Math.round(bmn[1]).toString(), source);
-    const mgrsStr = mgrs.forward([state.lon, state.lat]);
-    updateField('mgrs', 'gzd', mgrsStr.substring(0, 3), source);
-    updateField('mgrs', 'sq', mgrsStr.substring(3, 5), source);
-    updateField('mgrs', 'e', mgrsStr.substring(5, 10), source);
-    updateField('mgrs', 'n', mgrsStr.substring(10, 15), source);
-    const mlon = state.lon + 180;
-    const mlat = state.lat + 90;
-    const f1 = String.fromCharCode(65 + Math.floor(mlon / 20));
-    const f2 = String.fromCharCode(65 + Math.floor(mlat / 10));
-    const s1 = Math.floor((mlon % 20) / 2);
-    const s2 = Math.floor(mlat % 10);
-    const t1 = String.fromCharCode(97 + Math.floor((mlon % 2) * 12));
-    const t2 = String.fromCharCode(97 + Math.floor((mlat % 1) * 24));
-    updateField('maidenhead', 'locator', `${f1}${f2}${s1}${s2}${t1}${t2}`, source);
-  };
-
-  function attachSidebarEvents() {
-    const sidebar = document.getElementById('sidebar');
-    const sidebarTab = document.getElementById('sidebar-tab');
-    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-    if (!sidebar || !sidebarTab || !sidebarBackdrop) {
-      setTimeout(attachSidebarEvents, 100);
-      return;
-    }
-    setupSidebarToggle(sidebar, sidebarTab, sidebarBackdrop);
-    document.addEventListener('click', (e) => {
-      const results = document.getElementById('geocoder-results');
-      if (results && !results.contains(e.target as Node)) {
-        results.style.display = 'none';
-      }
-    });
-    const blocks = sidebar.querySelectorAll('.coord-block');
-    blocks.forEach(block => {
-      block.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        if (target.closest('.coord-copy')) {
-          handleCopy(block as HTMLElement);
-          return;
-        }
-        if (block.classList.contains('active')) return;
-        sidebar.querySelectorAll('.coord-block.active').forEach(b => {
-          b.classList.remove('active');
-          b.querySelectorAll('input').forEach(i => i.setAttribute('readonly', 'true'));
-          if (b.querySelector('select')) b.querySelector('select')!.setAttribute('disabled', 'true');
-        });
-        block.classList.add('active');
-        block.querySelectorAll('input').forEach(i => i.removeAttribute('readonly'));
-        if (block.querySelector('select')) block.querySelector('select')!.removeAttribute('disabled');
-      });
-    });
-    let geocodeTimeout: any;
-    sidebar.addEventListener('input', (e) => {
-      const target = e.target as HTMLInputElement;
-      const block = target.closest('.coord-block') as HTMLElement;
-      if (!block || !block.classList.contains('active')) return;
-      const system = block.getAttribute('data-system');
-      let newWgs: [number, number] | null = null;
-      try {
-        if (system === 'address') {
-          const query = target.value.trim();
-          const resultsContainer = document.getElementById('geocoder-results')!;
-          clearTimeout(geocodeTimeout);
-          if (query.length < 3) {
-            resultsContainer.style.display = 'none';
-            return;
-          }
-          geocodeTimeout = setTimeout(async () => {
-            const results = await GeocoderService.search(query);
-            if (results.length > 0) {
-              resultsContainer.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
-              resultsContainer.style.display = 'block';
-              resultsContainer.querySelectorAll('.geocoder-item').forEach(item => {
-                item.addEventListener('click', (ev) => {
-                  ev.stopPropagation();
-                  state.lat = parseFloat(item.getAttribute('data-lat')!);
-                  state.lon = parseFloat(item.getAttribute('data-lon')!);
-                  updateField('address', 'address', item.getAttribute('data-name')!);
-                  resultsContainer.style.display = 'none';
-                  updateAll();
-                });
-              });
-            } else {
-              resultsContainer.style.display = 'none';
+        // 4. Karte initialisieren
+        this.map = MapCore.init(
+            mounts.map,
+            basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
+            async (m) => {
+                initTerrainManager(m, basemaps[0]?.elevation_url || '');
+                if (this.hikingActive) await this.toggleHikingOverlay(true);
             }
-          }, 400);
-          return;
-        }
-        else if (system === 'wgs84') {
-          const lat = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lat"]')!.value);
-          const lon = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lon"]')!.value);
-          if (!isNaN(lat) && !isNaN(lon)) newWgs = [lon, lat];
-        } 
-        else if (system === 'dms') {
-          const latD = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lat-d"]')!.value);
-          const latM = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lat-m"]')!.value);
-          const latS = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lat-s"]')!.value);
-          const latSuf = block.querySelector<HTMLElement>('[data-field="lat-suffix"]')!.textContent;
-          const lonD = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lon-d"]')!.value);
-          const lonM = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lon-m"]')!.value);
-          const lonS = parseFloat(block.querySelector<HTMLInputElement>('[data-field="lon-s"]')!.value);
-          const lonSuf = block.querySelector<HTMLElement>('[data-field="lon-suffix"]')!.textContent;
-          if (!isNaN(latD) && !isNaN(latM) && !isNaN(latS) && !isNaN(lonD) && !isNaN(lonM) && !isNaN(lonS)) {
-            let lat = latD + latM / 60 + latS / 3600;
-            if (latSuf === 'S') lat *= -1;
-            let lon = lonD + lonM / 60 + lonS / 3600;
-            if (lonSuf === 'W') lon *= -1;
-            newWgs = [lon, lat];
-          }
-        }
-        else if (system === 'utm') {
-          const zoneStr = block.querySelector<HTMLInputElement>('[data-field="zone"]')!.value;
-          const eVal = parseFloat(block.querySelector<HTMLInputElement>('[data-field="e"]')!.value);
-          const nVal = parseFloat(block.querySelector<HTMLInputElement>('[data-field="n"]')!.value);
-          const zoneNum = parseInt(zoneStr);
-          if (!isNaN(zoneNum) && !isNaN(eVal) && !isNaN(nVal)) {
-            const res = proj4(`+proj=utm +zone=${zoneNum} +ellps=WGS84 +datum=WGS84 +units=m +no_defs`, 'EPSG:4326').forward([eVal, nVal]);
-            newWgs = [res[0], res[1]];
-          }
-        }
-        else if (system === 'bmn') {
-          const m = block.querySelector<HTMLSelectElement>('[data-field="m"]')!.value;
-          const rw = parseFloat(block.querySelector<HTMLInputElement>('[data-field="rw"]')!.value);
-          const hw = parseFloat(block.querySelector<HTMLInputElement>('[data-field="hw"]')!.value);
-          let epsg = m === 'M28' ? 'EPSG:31254' : (m === 'M34' ? 'EPSG:31256' : 'EPSG:31255');
-          if (!isNaN(rw) && !isNaN(hw)) {
-            const res = proj4(epsg, 'EPSG:4326').forward([rw, hw]);
-            newWgs = [res[0], res[1]];
-          }
-        }
-        else if (system === 'mgrs') {
-          const gzd = block.querySelector<HTMLInputElement>('[data-field="gzd"]')!.value;
-          const sq = block.querySelector<HTMLInputElement>('[data-field="sq"]')!.value;
-          const eVal = block.querySelector<HTMLInputElement>('[data-field="e"]')!.value;
-          const nVal = block.querySelector<HTMLInputElement>('[data-field="n"]')!.value;
-          if (gzd && sq && eVal.length === 5 && nVal.length === 5) {
-            const res = mgrs.inverse(gzd + sq + eVal + nVal);
-            newWgs = [res[0], res[1]];
-          }
-        }
-        else if (system === 'maidenhead') {
-          const locator = block.querySelector<HTMLInputElement>('[data-field="locator"]')!.value;
-          if (locator.length >= 4) {
-            const l = locator.toUpperCase();
-            const lon = (l.charCodeAt(0) - 65) * 20 + parseInt(l[2]) * 2 + (l.length > 4 ? (l.charCodeAt(4) - 65) * (2/24) : 1) - 180;
-            const lat = (l.charCodeAt(1) - 65) * 10 + parseInt(l[3]) * 1 + (l.length > 5 ? (l.charCodeAt(5) - 65) * (1/24) : 0.5) - 90;
-            newWgs = [lon, lat];
-          }
-        }
-      } catch (err) {
-        console.warn('Manual input conversion failed', err);
-      }
-      if (newWgs && !isNaN(newWgs[0]) && !isNaN(newWgs[1]) && newWgs[1] >= -90 && newWgs[1] <= 90 && newWgs[0] >= -180 && newWgs[0] <= 180) {
-        state.lat = newWgs[1];
-        state.lon = newWgs[0];
-        marker.setLngLat([state.lon, state.lat]);
-        map.easeTo({ center: [state.lon, state.lat] });
-        updateSidebarValues('input');
-      }
-    });
-  }
+        );
 
-  function handleCopy(block: HTMLElement) {
-    const title = block.querySelector('.coord-block-title')!.textContent;
-    const inputs = block.querySelectorAll('input');
-    let text = "";
-    inputs.forEach(i => text += i.value + " ");
-    navigator.clipboard.writeText(text.trim());
-    Toast.success(`${title} kopiert`);
-  }
+        // 5. Topbar initialisieren
+        initTopbar(mounts.topbar, basemaps, (url, elevationUrl) => {
+            if (this.map) {
+                this.map.setStyle(url);
+                if (elevationUrl) initTerrainManager(this.map, elevationUrl);
+            }
+        }, undefined, [
+            {
+                id: 'hiking',
+                icon: 'fa-solid fa-map-signs',
+                title: 'Wanderwege',
+                onClick: (active) => this.toggleHikingOverlay(active)
+            }
+        ]);
 
-  function updateAll() {
-    marker.setLngLat([state.lon, state.lat]);
-    map.easeTo({ center: [state.lon, state.lat] });
-    updateSidebarValues('map');
-  }
+        // 6. Marker setzen (initiale Position aus dem Service)
+        const startPos = this.service.getWgs();
+        this.marker = new maplibregl.Marker({ color: MAP_COLORS.accent })
+            .setLngLat([startPos.lon, startPos.lat])
+            .addTo(this.map);
 
-  initSidebarStructure();
-  updateSidebarValues('map');
-  
-  map.on('click', (e) => {
-    state.lat = e.lngLat.lat;
-    state.lon = e.lngLat.lng;
-    updateAll();
-  });
-};
+        // 7. Event Listeners
+        this.map.on('click', (e) => {
+            this.service.setWgs(e.lngLat.lat, e.lngLat.lng);
+        });
+
+        this.service.addListener((state) => {
+            if (this.marker) {
+                this.marker.setLngLat([state.lon, state.lat]);
+            }
+            if (this.map) {
+                this.map.easeTo({ center: [state.lon, state.lat] });
+            }
+        });
+
+        console.debug('[CoordsPageController] Mounted');
+    }
+
+    /**
+     * Schaltet den Wanderwege-Overlay ein/aus unter Verwendung der MapRegistry.
+     */
+    private async toggleHikingOverlay(active: boolean) {
+        this.hikingActive = active;
+        if (!this.map) return;
+
+        const { id, url } = this.HIKING_OVERLAY;
+
+        if (active) {
+            if (!MapRegistry.getSource(id)) {
+                try {
+                    const res = await fetch(url, { signal: this.signal });
+                    const style = await res.json();
+
+                    if (style.sprite) {
+                        MapRegistry.registerImage(id, style.sprite, url);
+                    }
+
+                    for (const [sId, def] of Object.entries(style.sources)) {
+                        MapRegistry.registerSource(sId, def);
+                    }
+
+                    style.layers.forEach((l: any) => {
+                        MapRegistry.registerLayer(l.id, l);
+                    });
+                } catch (err) {
+                    console.error(`Failed to load hiking overlay: ${id}`, err);
+                    Toast.error(`Fehler beim Laden von: ${id}`);
+                    return;
+                }
+            }
+        } else {
+            if (MapRegistry.getSource(id)) {
+                MapRegistry.unregisterSource(id);
+                // Alle Layer dieser Source aus Registry und Karte entfernen
+                const style = this.map.getStyle();
+                if (style && style.layers) {
+                    style.layers.forEach(l => {
+                        if (l.source === id) {
+                            MapRegistry.unregisterLayer(l.id);
+                            if (this.map?.getLayer(l.id)) this.map.removeLayer(l.id);
+                        }
+                    });
+                }
+                if (this.map.getSource(id)) this.map.removeSource(id);
+                MapRegistry.unregisterImage(id);
+            }
+        }
+        
+        // MapRegistry synchronisieren
+        await MapRegistry.restore(this.map, MapCore.loadSprites);
+    }
+
+    public destroy() {
+        super.destroy();
+        this.marker?.remove();
+        this.map?.remove();
+        console.debug('[CoordsPageController] Destroyed');
+    }
+}

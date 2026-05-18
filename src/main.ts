@@ -151,8 +151,9 @@ const router = async () => {
     currentPage = new NahPageController();
     await currentPage.mount(app);
   } else if (path === '/coords') {
-    const { initCoordsPage } = await import('./pages/CoordsPage');
-    initCoordsPage(app);
+    const { CoordsPageController } = await import('./pages/CoordsPage');
+    currentPage = new CoordsPageController();
+    await currentPage.mount(app);
   } else if (path === '/tracking') {
     const { TrackingPageController } = await import('./features/tracking/TrackingPage');
     currentPage = new TrackingPageController();
