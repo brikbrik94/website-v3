@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 10:30
+
+### Geändert
+- **Tracking:** AIS Popups nutzen nun die zentrale `ui_class` Eigenschaft für eine konsistente Anzeige der Schiffsklasse. Redundante `SHIP_CLASSES` Konstanten in `PopupManager.ts` wurden entfernt.
+
 ## [3.3.0-dev] - 2026-05-18 10:20
 
 ### Geändert
