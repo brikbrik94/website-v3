@@ -144,8 +144,9 @@ const router = async () => {
     // For now, wrapper without destroy until the page is refactored
     initMapPage(app);
   } else if (path === '/routing') {
-    const { initRoutingPage } = await import('./pages/RoutingPage');
-    initRoutingPage(app);
+    const { RoutingPageController } = await import('./pages/RoutingPage');
+    currentPage = new RoutingPageController();
+    await currentPage.mount(app);
   } else if (path === '/nah') {
     const { NahPageController } = await import('./pages/NahPage');
     currentPage = new NahPageController();
