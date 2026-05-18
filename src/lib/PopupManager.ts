@@ -10,10 +10,6 @@ export interface LayerPopupConfig {
     fields: PopupField[];
 }
 
-const SHIP_CLASSES: Record<number, string> = {
-    1: 'Small Vessel', 2: 'Cargo', 4: 'Passenger', 6: 'Tanker', 11: 'Base Station'
-};
-
 export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
     'adsb-icons': {
         title: (p) => (p.flight as string)?.trim() || (p.hex as string) || 'Unknown',
@@ -33,7 +29,7 @@ export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
         icon: 'fa-solid fa-ship',
         fields: [
             { key: 'mmsi', label: 'MMSI' },
-            { key: 'shipclass', label: 'Class', format: (v) => SHIP_CLASSES[v as number] || (v as string) },
+            { key: 'ui_class', label: 'Klasse' },
             { key: 'speed', label: 'Speed', format: (v) => v != null ? `${v} kn` : null },
             { key: 'cog', label: 'Course', format: (v) => v != null ? `${Math.round(v as number)}°` : null },
             { key: 'destination', label: 'Destination' }
