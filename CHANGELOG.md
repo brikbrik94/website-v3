@@ -1,6 +1,63 @@
 # Changelog
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
+
+## [3.3.0-dev] - 2026-05-18 10:00
+
+### Hinzugefügt
+- **Tracking:** `ShipTypeMapper` Utility zur Kategorisierung von Schiffstypen basierend auf AIS und ERIDM (Inland AIS) Codes inkl. Sprite-Zuweisung und CI-konformer Farbgebung.
+
+## [3.3.0-dev] - 2026-05-17 15:45
+
+### Hinzugefügt
+- **Tracking:** Migration von Polling auf WebSocket-Push (tracking-gateway V1.3).
+- **Tracking:** Native Unterstützung für Flugpfade (Track History). Das Frontend nutzt nun die autoritativen `track` und `trackPoints` Daten direkt vom Server.
+- **Tracking:** Live-Status Updates für Flugzeuge (ADS-B) und Schiffe (AIS) in Echtzeit über `wss://api.oe5ith.at/tracking/ws`.
+- **Tracking:** Detaillierte Source-Health Überwachung. Die Status-Dots im Sidebar reflektieren nun den tatsächlichen Zustand der Upstream-Receiver (SBS/AIS) über das Gateway.
+- **Tracking:** Unterstützung für erweiterte ADS-B Metadaten (Registrierung, Flugzeugtyp, Hersteller, Besitzer) durch PostgreSQL-Backend Integration.
+- **Tracking:** Paket-Raten Berechnung und Status-Reporting für den WebSocket-Feed.
+
+### Geändert
+- **Tracking:** `AdsbInterpreter` und `AisInterpreter` entfernt; Logik in `TrackingDataService` konsolidiert für Push-Betrieb mit nativem State-Merging der Pfad-Historie.
+- **Service Health:** Migration der Health-Checks auf den neuen `tracking-gateway` Endpunkt. Entfernung der legacy PHP-Proxies (`adsb.php`, `ais.php`) aus dem Monitoring.
+- **Debug:** API-Debug Playground auf das neue Gateway umgestellt.
+- **Map:** Optimierte Layer-Registrierung in `TrackingMapLayers` für bessere Sichtbarkeit und Persistenz der Pfade über Style-Wechsel hinweg.
+
+## [3.3.0-dev] - 2026-05-16 11:45
+
+### Behoben
+- **MapCore Restoration Timing (Final):** Ersetzung des unzuverlässigen `idle` Events durch eine doppelte `requestAnimationFrame` Kaskade. Dies stellt sicher, dass MapLibre den Style-Wechsel vollständig verarbeitet hat und die Grafik-Pipeline bereit für neue Ressourcen ist.
+- **MapPage Optimization:** Bereinigung der `onRestore` Logik. Redundante Wiederherstellungs-Aufrufe wurden entfernt, da `MapCore` nun die zentrale Verantwortung für die Registry-Restaurierung trägt.
+- **Rendering Synchronization:** Systematischer Einsatz von `triggerRepaint()` nach jeder Restaurierung, um die visuelle Konsistenz ohne Benutzerinteraktion zu garantieren.
+
+## [3.3.0-dev] - 2026-05-16 11:25
+
+### Behoben
+- **MapCore Restoration Timing (Resilient):** Umstellung der Restaurierungskette auf das `idle` Event der Karte. Dies garantiert, dass MapLibre alle internen Style-Operationen abgeschlossen hat, bevor Quellen und Layer injiziert werden.
+- **Async Synchronization:** Der `onRestore` Callback wird nun explizit in den nächsten Event-Loop Cycle verschoben (`setTimeout 0`), um eine saubere Trennung zwischen der Registry-Wiederherstellung und der seiten-spezifischen Daten-Synchronisation zu gewährleisten.
+- **Repaint Trigger:** Alle kartenbasierten Seiten forcieren nach der Wiederherstellung nun einen `triggerRepaint()`, um sicherzustellen, dass die neuen Daten sofort und ohne Interaktion gerendert werden.
+
+## [3.3.0-dev] - 2026-05-16 11:05
+...
+### Behoben
+- **MapPage Overlay Refresh:** Implementierung eines `onRestore` Callbacks in `MapPage.ts`, der aktive Layer nach einem Basemap-Wechsel automatisch neu anwendet. Dies stellt sicher, dass Overlays sofort nach dem Laden der Grundkarte wieder sichtbar sind, ohne dass eine manuelle Interaktion erforderlich ist.
+- **MapCore Restoration Timing:** Einführung einer Sicherheitsverzögerung (50ms) in der `MapCore` Restaurierungskette, um MapLibre Zeit zu geben, den neuen Style intern zu setzen, bevor Quellen und Layer injiziert werden.
+- **RoutingPage Sync:** Verstärkung der Synchronisation in `RoutingPage`, damit berechnete Routen auch nach einem Style-Wechsel konsistent angezeigt werden.
+
+## [3.3.0-dev] - 2026-05-16 10:45
+
+### Behoben
+- **MapPage URL Resolution:** Korrektur der URL-Auflösung für Overlays. Absolute URLs (inkl. `pmtiles://`) werden nun erkannt und nicht mehr fälschlicherweise als relative Pfade umgeschrieben.
+- **Registry Resilience:** Die Wiederherstellung der Karte (`MapRegistry.restore`) ist nun resilient gegen einzelne Fehler (z.B. 404 bei Sprites). Durch `Promise.allSettled` wird sichergestellt, dass restliche Quellen und Layer auch dann geladen werden, wenn ein Overlay-Ressourcenpaket fehlt.
+- **Routing Restoration:** Verbesserte Logging- und Self-Healing Logik für die Routing-Seite, um sicherzustellen, dass berechnete Routen nach einem Basemap-Wechsel zuverlässig wieder auf der Karte erscheinen.
+
+## [3.3.0-dev] - 2026-05-16 10:15
+
+### Behoben
+- **NAH Functionality:** Fix für die Suche nach der nächstgelegenen Station nach einem Basemap-Wechsel. Durch Self-Healing Logik in `performCalculation` wird sichergestellt, dass benötigte Karten-Ressourcen (nah-lines) auch während eines laufenden Style-Loads zur Verfügung stehen.
+- **Registry Data Corruption:** `MapRegistry` nutzt nun Deep-Cloning für GeoJSON-Daten, um zu verhindern, dass interne Modifikationen durch MapLibre den persistierten Zustand korrumpieren.
+- **Global Registry Lifecycle:** Automatisches Leeren der `MapRegistry` im globalen Router (`main.ts`) beim Seitenwechsel. Dies verhindert Ressourcen-Leaks und "Ghost"-Layer von vorherigen Seiten, stellt aber durch die `setTimeout` Logik in `MapCore` sicher, dass die neue Seite ihre Ressourcen rechtzeitig registrieren kann.
+
 ## [3.3.0-dev] - 2026-05-16 09:05
 
 ### Behoben
