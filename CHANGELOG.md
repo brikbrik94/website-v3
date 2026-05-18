@@ -2,6 +2,12 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 14:15
+
+### Geändert
+- **Luftrettung (NAH):** Refactoring der `NahPage` zu einem klassenbasierten Controller (`NahPageController`) basierend auf `BasePageController`.
+- **Luftrettung (NAH):** Implementierung eines systematischen Ressourcen-Managements. Alle laufenden API-Anfragen (Heartbeat, Stations-Refresh) werden beim Verlassen der Seite via `AbortSignal` abgebrochen.
+
 ## [3.3.0-dev] - 2026-05-18 14:00
 
 ### Geändert
