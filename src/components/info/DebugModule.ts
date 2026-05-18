@@ -6,8 +6,7 @@ import { Toast } from '../../lib/Toast';
 export const renderDebugModule = async (container: HTMLElement) => {
   const safeEndpoints = [
     { name: 'NAH Stations', url: '/api/nah.php', params: '' },
-    { name: 'ADS-B Data', url: '/api/adsb.php', params: '' },
-    { name: 'AIS Data', url: '/api/ais.php', params: '' },
+    { name: 'Tracking Health', url: 'https://api.oe5ith.at/tracking/health', params: '' },
     { name: 'Regional Stats', url: '/api/stats.php', params: '' },
     { name: 'Service Health', url: '/api/ping.php', params: '' },
     { name: 'Database Status', url: '/api/db.php', params: '' },

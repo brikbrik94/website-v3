@@ -4,7 +4,7 @@ import { formatTime } from '../../lib/UIUtils';
 /**
  * Renders the NAH Status UI module.
  */
-export const renderNahStatusModule = async (container: HTMLElement) => {
+export const renderNahStatusModule = async (container: HTMLElement, signal?: AbortSignal) => {
   let stations: NahStation[] = [];
   let sortColumn: keyof NahStation = 'callsign';
   let sortDir: 'asc' | 'desc' = 'asc';
@@ -246,11 +246,15 @@ export const renderNahStatusModule = async (container: HTMLElement) => {
   };
 
   const fetchData = async () => {
+    if (signal?.aborted) return;
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
     try {
-      const response = await fetch('/api/nah.php');
+      const response = await fetch('/api/nah.php', { signal });
       const data: NahResponse = await response.json();
+      
+      if (signal?.aborted) return;
+
       stations = data.stations || [];
 
       metaContainer.innerHTML = `Stand: ${new Date().toLocaleTimeString()}`;
@@ -260,7 +264,9 @@ export const renderNahStatusModule = async (container: HTMLElement) => {
       if (data.refresh_at) {
         scheduleNextRefresh(data.refresh_at);
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
+      
       tableBodyActive.innerHTML = `
         <tr>
           <td colspan="6" style="text-align: center; padding: 2rem; color: var(--danger);">
@@ -271,8 +277,10 @@ export const renderNahStatusModule = async (container: HTMLElement) => {
       // Retry in 60s
       scheduleNextRefresh(60000);
     } finally {
-      refreshBtn.classList.remove('loading');
-      refreshBtn.disabled = false;
+      if (!signal?.aborted) {
+        refreshBtn.classList.remove('loading');
+        refreshBtn.disabled = false;
+      }
     }
   };
 
