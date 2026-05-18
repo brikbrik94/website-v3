@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 18:00
+
+### Hinzugefügt
+- **Routing:** Implementierung des `RoutingDataService` zur zentralen Verwaltung des Routing-Zustands (Start/Ziel-Koordinaten, berechnete Routen, Highlight-Status). Inklusive Unit-Tests.
+
 ## [3.3.0-dev] - 2026-05-18 16:00
 
 ### Geändert
