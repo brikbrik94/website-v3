@@ -5,7 +5,8 @@ import {
     ServerMessage, 
     SnapshotMessage, 
     UpdateMessage,
-    SourceStatus
+    SourceStatus,
+    SystemTelemetry
 } from '../../types/tracking';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { ShipTypeMapper } from '../../lib/ShipTypeMapper';
@@ -24,7 +25,8 @@ export type TrackingStatusCallback = (
     adsbCount: number,
     aisCount: number,
     packetRate: number,
-    sources: SourceStatus[]
+    sources: SourceStatus[],
+    system?: SystemTelemetry
 ) => void;
 
 export class TrackingDataService {
@@ -32,6 +34,7 @@ export class TrackingDataService {
     private aircraftState = new Map<string, AircraftEntity>();
     private vesselState = new Map<string, VesselEntity>();
     private sourceState = new Map<string, SourceStatus>();
+    private lastSystemTelemetry?: SystemTelemetry;
     
     private isDestroyed = false;
     private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -110,6 +113,10 @@ export class TrackingDataService {
     private handleMessage(msg: ServerMessage) {
         this.packetCount++;
         
+        if ('system' in msg && msg.system) {
+            this.lastSystemTelemetry = msg.system;
+        }
+
         switch (msg.type) {
             case 'snapshot':
                 this.handleSnapshot(msg);
@@ -121,7 +128,7 @@ export class TrackingDataService {
                 console.log(`[TrackingDataService] Gateway Hello: Protocol V${msg.protocolVersion}, ServerTime ${msg.serverTime}`);
                 break;
             case 'heartbeat':
-                // Could be used for health check
+                this.emitStatus();
                 break;
         }
     }
@@ -293,7 +300,14 @@ export class TrackingDataService {
     private emitStatus() {
         const isConnected = this.ws !== null && this.ws.readyState === WebSocket.OPEN;
         const sources = Array.from(this.sourceState.values());
-        this.onStatus(isConnected, this.aircraftState.size, this.vesselState.size, this.currentPacketRate, sources);
+        this.onStatus(
+            isConnected, 
+            this.aircraftState.size, 
+            this.vesselState.size, 
+            this.lastSystemTelemetry?.decodedPerMinute || this.currentPacketRate, 
+            sources,
+            this.lastSystemTelemetry
+        );
     }
 
     private getAdsbGeoJson() {
