@@ -1,39 +1,7 @@
 import proj4 from 'proj4';
 // @ts-ignore
 import * as mgrs from 'mgrs';
-
-export interface CoordsState {
-  lat: number;
-  lon: number;
-}
-
-export interface DmsCoords {
-  lat: { d: number; m: number; s: string; suffix: string };
-  lon: { d: number; m: number; s: string; suffix: string };
-}
-
-export interface UtmCoords {
-  zone: string;
-  e: string;
-  n: string;
-}
-
-export interface BmnCoords {
-  m: string;
-  rw: string;
-  hw: string;
-}
-
-export interface MgrsCoords {
-  gzd: string;
-  sq: string;
-  e: string;
-  n: string;
-}
-
-export interface MaidenheadCoords {
-  locator: string;
-}
+import { CoordsState, DmsCoords, UtmCoords, BmnCoords, MgrsCoords, MaidenheadCoords } from './types';
 
 /**
  * CoordsDataService - Encapsulates coordinate conversion logic and state.
