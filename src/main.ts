@@ -1,12 +1,9 @@
 import './app.css';
-import { initMapPage } from './pages/MapPage';
-import { initRoutingPage } from './pages/RoutingPage';
-import { initNahPage } from './pages/NahPage';
-import { initInfoPage } from './pages/InfoPage';
-import { initCoordsPage } from './pages/CoordsPage';
-import { TrackingPage } from './pages/TrackingPage';
 import { initGlobalModals } from './lib/GlobalModals';
 import { APP_VERSION } from './version';
+
+import { MapRegistry } from './lib/MapRegistry';
+import type { PageController } from './core/PageController';
 
 // Global Modals initialisieren
 initGlobalModals();
@@ -124,22 +121,46 @@ const renderLandingPage = () => {
   }
 };
 
+let currentPage: PageController | null = null;
+
 // Einfacher Path-Router
-const router = () => {
+const router = async () => {
   const path = window.location.pathname;
+
+  // Cleanup current page if it implements PageController
+  if (currentPage) {
+    currentPage.destroy();
+    currentPage = null;
+  }
+
+  // Registry leeren beim Seitenwechsel, um Ressourcen-Verschmutzung zu vermeiden.
+  // Neue Seiten registrieren ihre benötigten Ressourcen während der Initialisierung.
+  MapRegistry.clear();
+
+  if (!app) return;
+
   if (path === '/karte') {
-    if (app) initMapPage(app);
+    const { initMapPage } = await import('./pages/MapPage');
+    // For now, wrapper without destroy until the page is refactored
+    initMapPage(app);
   } else if (path === '/routing') {
-    if (app) initRoutingPage(app);
+    const { initRoutingPage } = await import('./pages/RoutingPage');
+    initRoutingPage(app);
   } else if (path === '/nah') {
-    if (app) initNahPage(app);
+    const { initNahPage } = await import('./pages/NahPage');
+    initNahPage(app);
   } else if (path === '/coords') {
-    if (app) initCoordsPage(app);
+    const { initCoordsPage } = await import('./pages/CoordsPage');
+    initCoordsPage(app);
   } else if (path === '/tracking') {
-    if (app) TrackingPage.render(app);
+    const { TrackingPageController } = await import('./features/tracking/TrackingPage');
+    currentPage = new TrackingPageController();
+    await currentPage.mount(app);
   } else if (path.startsWith('/info')) {
     const subpath = path.split('/')[2] || 'nah';
-    if (app) initInfoPage(app, subpath);
+    const { InfoPageController } = await import('./pages/InfoPage');
+    currentPage = new InfoPageController();
+    await currentPage.mount(app, subpath);
   } else {
     renderLandingPage();
   }

@@ -2,6 +2,12 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 10:15
+
+### Geändert
+- **Info-Seite:** Refactoring der `InfoPage` zu einem klassenbasierten Controller (`InfoPageController`). Dies ermöglicht ein sauberes Ressourcen-Management (Cleanup von WebSocket-Verbindungen beim Verlassen der Seite).
+- **Info-Seite:** Integration des `TrackingGatewayModule` in den "Service Health" Bereich zur Live-Überwachung der Gateway-Telemetrie.
+
 ## [3.3.0-dev] - 2026-05-18 08:45
 
 ### Hinzugefügt
