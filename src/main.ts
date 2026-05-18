@@ -147,8 +147,9 @@ const router = async () => {
     const { initRoutingPage } = await import('./pages/RoutingPage');
     initRoutingPage(app);
   } else if (path === '/nah') {
-    const { initNahPage } = await import('./pages/NahPage');
-    initNahPage(app);
+    const { NahPageController } = await import('./pages/NahPage');
+    currentPage = new NahPageController();
+    await currentPage.mount(app);
   } else if (path === '/coords') {
     const { initCoordsPage } = await import('./pages/CoordsPage');
     initCoordsPage(app);
