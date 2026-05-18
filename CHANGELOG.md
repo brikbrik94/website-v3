@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 15:30
+
+### Geändert
+- **Terrain & Höhenlinien:** Konsolidierung des Terrain-Managements in `TerrainManager`. Höhenlinien (Contours) werden nun zentral verwaltet und nutzen die `MapRegistry` für Persistenz über Style-Wechsel hinweg.
+- **TerrainControls:** Erweiterung der Steuerungselemente in der Topbar um einen dedizierten Button für Höhenlinien.
+- **CoordsPage:** Entfernung der lokalen Höhenlinien-Logik zugunsten der zentralen `TerrainManager` Lösung.
+
 ## [3.3.0-dev] - 2026-05-18 14:15
 
 ### Geändert

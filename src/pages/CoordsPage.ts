@@ -37,14 +37,9 @@ export const initCoordsPage = async (container: HTMLElement) => {
     lon: 14.2858
   };
 
-  let contoursActive = false;
   let hikingActive = false;
 
   const OVERLAYS = {
-    contours: {
-      id: 'basemap-at-contours',
-      url: 'https://tiles.oe5ith.at/overlays/styles/basemap-at-contours/style.json'
-    },
     hiking: {
       id: 'hiking',
       url: 'https://tiles.oe5ith.at/overlays/styles/hiking/style.json'
@@ -52,7 +47,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
   };
 
   const toggleOverlay = async (type: keyof typeof OVERLAYS, active: boolean, m: maplibregl.Map) => {
-    if (type === 'contours') contoursActive = active;
     if (type === 'hiking') hikingActive = active;
     
     const { id, url } = OVERLAYS[type];
@@ -102,7 +96,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
     mounts.map, 
     basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
     async (m) => {
-      if (contoursActive) m.getSource(OVERLAYS.contours.id) ? null : await toggleOverlay('contours', true, m);
       if (hikingActive) m.getSource(OVERLAYS.hiking.id) ? null : await toggleOverlay('hiking', true, m);
     }
   );
@@ -111,12 +104,6 @@ export const initCoordsPage = async (container: HTMLElement) => {
   initTopbar(mounts.topbar, basemaps, (url) => {
     map.setStyle(url);
   }, undefined, [
-    {
-      id: 'contours',
-      icon: 'fa-solid fa-mountain',
-      title: 'Höhenlinien',
-      onClick: (active) => toggleOverlay('contours', active, map)
-    },
     {
       id: 'hiking',
       icon: 'fa-solid fa-map-signs',
