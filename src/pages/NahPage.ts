@@ -3,7 +3,6 @@ import { initTopbar } from '../components/Topbar';
 import maplibregl from 'maplibre-gl';
 import { Toast } from '../lib/Toast';
 import { initNahSidebar, updateNahServerStatus } from '../components/NahSidebar';
-import { calculateDistance, calculateFlightTime, formatDuration, formatETA } from '../lib/FlightMath';
 import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { MapLegend } from '../lib/MapLegend';
 import { NahStationResult } from '../types/nah';
@@ -151,22 +150,7 @@ export class NahPageController extends BasePageController {
     if (this.targetMarker) this.targetMarker.remove();
     this.targetMarker = NahMapLayers.createTargetMarker(map, lng, lat);
 
-    const results: NahStationResult[] = this.dataService.getStations()
-      .filter((s) => s.is_active)
-      .map((s) => {
-        const dist = calculateDistance(lat, lng, s.lat, s.lon);
-        const duration = calculateFlightTime(dist);
-        return {
-          ...s,
-          distance: dist,
-          duration,
-          durationStr: formatDuration(duration),
-          eta: formatETA(duration)
-        };
-      })
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 5);
-
+    const results = this.dataService.getNearestActiveStations(lng, lat);
     this.currentResults = results;
 
     NahMapLayers.updateFlightPaths(map, [lng, lat], results);
