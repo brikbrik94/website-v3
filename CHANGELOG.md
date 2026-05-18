@@ -6,6 +6,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ### Hinzugefügt
 - **Tracking:** `ShipTypeMapper` Utility zur Kategorisierung von Schiffstypen basierend auf AIS und ERIDM (Inland AIS) Codes inkl. Sprite-Zuweisung und CI-konformer Farbgebung.
+- **Tracking:** Unit-Tests für `ShipTypeMapper` zur Absicherung der AIS/ERIDM Kategorisierung.
 
 ## [3.3.0-dev] - 2026-05-17 15:45
 
