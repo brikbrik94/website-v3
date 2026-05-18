@@ -2,10 +2,10 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.3.0-dev] - 2026-05-18 07:45
+## [3.3.0-dev] - 2026-05-18 10:20
 
 ### Geändert
-- **Tracking:** AIS GeoJSON-Daten und Tracking-Items werden nun in `TrackingDataService` mit UI-Metadaten (`ui_sprite`, `ui_class`, `ui_color`) angereichert, um ein konsistentes Styling und eine detailliertere Anzeige zu ermöglichen.
+- **Tracking:** AIS Karten-Layer Styling in `TrackingMapLayers.ts` vereinfacht durch Nutzung der angereicherten UI-Properties (`ui_color`, `ui_sprite`). Komplexe `match`-Ausdrücke wurden entfernt.
 
 ## [3.3.0-dev] - 2026-05-18 10:00
 
