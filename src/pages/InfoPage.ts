@@ -5,7 +5,7 @@ import { renderHealthModule } from '../components/info/HealthModule';
 import { renderRegionsModule } from '../components/info/RegionsModule';
 import { renderInventoryModule } from '../components/info/InventoryModule';
 import { renderDebugModule } from '../components/info/DebugModule';
-import { PageController } from '../core/PageController';
+import { BasePageController } from '../core/BasePageController';
 import { TrackingGatewayModule } from '../components/info/TrackingGatewayModule';
 import { TrackingDataService } from '../features/tracking/TrackingDataService';
 
@@ -13,10 +13,10 @@ import { TrackingDataService } from '../features/tracking/TrackingDataService';
  * Info & Debug Page Controller
  * Handles layout, module switching and resource lifecycle.
  */
-export class InfoPageController implements PageController {
+export class InfoPageController extends BasePageController {
   private trackingService: TrackingDataService | null = null;
 
-  public async mount(container: HTMLElement, subpath: string = 'nah'): Promise<void> {
+  public override async mount(container: HTMLElement, subpath: string = 'nah'): Promise<void> {
     container.innerHTML = `
       <div id="topbar-mount"></div>
       <div class="layout">
@@ -61,9 +61,9 @@ export class InfoPageController implements PageController {
     const contentMount = document.getElementById('info-content-mount')!;
     
     if (subpath === 'nah') {
-      renderNahStatusModule(contentMount);
+      renderNahStatusModule(contentMount, this.signal);
     } else if (subpath === 'health') {
-      renderHealthModule(contentMount);
+      renderHealthModule(contentMount, this.signal);
 
       // Add Tracking Gateway Module below Health
       const gatewayContainer = document.createElement('div');
@@ -78,11 +78,11 @@ export class InfoPageController implements PageController {
       );
       this.trackingService.refresh();
     } else if (subpath === 'regions') {
-      renderRegionsModule(contentMount);
+      renderRegionsModule(contentMount, this.signal);
     } else if (subpath === 'inventory') {
-      renderInventoryModule(contentMount);
+      renderInventoryModule(contentMount, this.signal);
     } else if (subpath === 'debug') {
-      renderDebugModule(contentMount);
+      renderDebugModule(contentMount, this.signal);
     } else {
       contentMount.innerHTML = `
         <div class="content-body">
@@ -94,7 +94,8 @@ export class InfoPageController implements PageController {
     }
   }
 
-  public destroy(): void {
+  public override destroy(): void {
+    super.destroy();
     if (this.trackingService) {
       this.trackingService.destroy();
       this.trackingService = null;
