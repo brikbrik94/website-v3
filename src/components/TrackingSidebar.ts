@@ -1,5 +1,5 @@
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
-import { TrackingItem } from '../types/tracking';
+import { TrackingItem, SourceStatus, SystemTelemetry } from '../types/tracking';
 
 // Internal state to support interaction logic
 let lastItems: TrackingItem[] = [];
@@ -148,11 +148,12 @@ export const updateObjectDetail = (_item: TrackingItem | null) => {
 };
 
 export const updateTrackingServerStatus = (
-  adsbOk: boolean, 
-  aisOk: boolean, 
+  isConnected: boolean, 
   adsbCount: number = 0, 
   aisCount: number = 0,
-  packetsPerMin: number = 0
+  packetsPerMin: number = 0,
+  sources: SourceStatus[] = [],
+  system?: SystemTelemetry
 ) => {
   const adsbVal = document.getElementById('status-adsb-count');
   const adsbDot = document.getElementById('status-adsb-dot');
@@ -162,21 +163,39 @@ export const updateTrackingServerStatus = (
   const receiverDot = document.getElementById('status-receiver-dot');
   const packetsVal = document.getElementById('status-packets-val');
 
+  const getDotClass = (kind: 'adsb' | 'ais') => {
+    const filtered = sources.filter(s => s.kind === kind);
+    if (!isConnected || filtered.length === 0) return 'off';
+    
+    // logic: 
+    // - 'on' (green) if ALL sources are 'online'
+    // - 'warn' (yellow) if AT LEAST ONE is 'online' but others are degraded/offline
+    // - 'off' (red) if NO sources are 'online'
+    const onlineCount = filtered.filter(s => s.state === 'online').length;
+    
+    if (onlineCount === filtered.length && filtered.length > 0) return 'on';
+    if (onlineCount > 0) return 'warn';
+    return 'off';
+  };
+
   if (adsbVal && adsbDot) {
     adsbVal.textContent = String(adsbCount);
-    adsbDot.className = `status-dot ${adsbOk ? 'on' : 'off'}`;
+    adsbDot.className = `status-dot ${getDotClass('adsb')}`;
   }
+  
   if (aisVal && aisDot) {
     aisVal.textContent = String(aisCount);
-    aisDot.className = `status-dot ${aisOk ? 'on' : 'off'}`;
+    aisDot.className = `status-dot ${getDotClass('ais')}`;
   }
+  
   if (receiverVal && receiverDot) {
-    const isOk = adsbOk || aisOk;
-    receiverVal.textContent = isOk ? 'online' : 'offline';
-    receiverDot.className = `status-dot ${isOk ? 'on' : 'off'}`;
+    receiverVal.textContent = isConnected ? 'online' : 'offline';
+    receiverDot.className = `status-dot ${isConnected ? 'on' : 'off'}`;
   }
+  
   if (packetsVal) {
-    packetsVal.textContent = String(packetsPerMin);
+    // Use decodedPerMinute if available from system telemetry
+    packetsVal.textContent = String(system?.decodedPerMinute ?? packetsPerMin);
   }
 };
 
