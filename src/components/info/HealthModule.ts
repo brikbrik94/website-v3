@@ -100,13 +100,15 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
   };
 
   const runAllChecks = async () => {
-    if (!container.isConnected) return;
+    if (signal?.aborted || !container.isConnected) return;
     
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
     meta.textContent = 'Prüfe...';
 
     await Promise.all(services.map(s => pingService(s)));
+
+    if (signal?.aborted || !container.isConnected) return;
 
     meta.textContent = `Stand: ${new Date().toLocaleTimeString()}`;
     refreshBtn.classList.remove('loading');
@@ -117,7 +119,7 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
 
   const scheduleNext = () => {
     if (refreshTimeout) clearTimeout(refreshTimeout);
-    if (!container.isConnected) return;
+    if (signal?.aborted || !container.isConnected) return;
 
     refreshTimeout = setTimeout(() => {
       runAllChecks();
@@ -128,6 +130,12 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
     if (refreshTimeout) clearTimeout(refreshTimeout);
     runAllChecks();
   });
+
+  if (signal) {
+    signal.addEventListener('abort', () => {
+      if (refreshTimeout) clearTimeout(refreshTimeout);
+    });
+  }
 
   runAllChecks();
 };

@@ -31,7 +31,7 @@ export const renderInventoryModule = async (container: HTMLElement, signal?: Abo
   const refreshBtn = document.getElementById('inventory-refresh-btn') as HTMLButtonElement;
 
   const fetchData = async () => {
-    if (signal?.aborted) return;
+    if (signal?.aborted || !container.isConnected) return;
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
 
@@ -40,7 +40,7 @@ export const renderInventoryModule = async (container: HTMLElement, signal?: Abo
       if (!response.ok) throw new Error('Failed to fetch inventory');
       const data: InventoryResponse = await response.json();
 
-      if (signal?.aborted) return;
+      if (signal?.aborted || !container.isConnected) return;
 
       meta.textContent = `Stand: ${new Date(data.generated_at).toLocaleString()}`;
       renderData(data);
