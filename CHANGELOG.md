@@ -2,11 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 07:45
+
+### Geändert
+- **Tracking:** AIS GeoJSON-Daten und Tracking-Items werden nun in `TrackingDataService` mit UI-Metadaten (`ui_sprite`, `ui_class`, `ui_color`) angereichert, um ein konsistentes Styling und eine detailliertere Anzeige zu ermöglichen.
+
 ## [3.3.0-dev] - 2026-05-18 10:00
 
 ### Hinzugefügt
 - **Tracking:** `ShipTypeMapper` Utility zur Kategorisierung von Schiffstypen basierend auf AIS und ERIDM (Inland AIS) Codes inkl. Sprite-Zuweisung und CI-konformer Farbgebung.
-- **Tracking:** Unit-Tests für `ShipTypeMapper` zur Absicherung der AIS/ERIDM Kategorisierung.
+- **Tracking:** Umfassende Unit-Tests für `ShipTypeMapper` zur Absicherung aller AIS/ERIDM Kategorisierungs-Bereiche, Farbmappings und Eingabetypen (verifiziert).
 
 ## [3.3.0-dev] - 2026-05-17 15:45
 
