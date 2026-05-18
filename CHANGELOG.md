@@ -2,9 +2,10 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.3.0-dev] - 2026-05-18 08:38
+## [3.3.0-dev] - 2026-05-18 08:45
 
 ### Hinzugefügt
+- **Info-Seite:** `TrackingGatewayModule` zur detaillierten Anzeige des Gateway-Status (Uptime, Memory, Clients) und der individuellen Empfänger-Health (ADS-B/AIS Quellen) hinzugefügt.
 - **Tracking:** `SystemTelemetry` Typen in `src/types/tracking.ts` hinzugefügt, um Gateway-Statusinformationen (Uptime, Memory, Clients, Entities) in WebSocket-Messages zu unterstützen.
 - **Tracking:** `ShipTypeMapper` Utility zur Kategorisierung von Schiffstypen basierend auf AIS und ERIDM (Inland AIS) Codes inkl. Sprite-Zuweisung und CI-konformer Farbgebung.
 - **Tracking:** Umfassende Unit-Tests für `ShipTypeMapper` zur Absicherung aller AIS/ERIDM Kategorisierungs-Bereiche, Farbmappings und Eingabetypen (verifiziert).
