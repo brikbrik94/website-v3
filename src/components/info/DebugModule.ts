@@ -3,7 +3,7 @@ import { Toast } from '../../lib/Toast';
 /**
  * Renders the API Debug technical playground.
  */
-export const renderDebugModule = async (container: HTMLElement) => {
+export const renderDebugModule = async (container: HTMLElement, signal?: AbortSignal) => {
   const safeEndpoints = [
     { name: 'NAH Stations', url: '/api/nah.php', params: '' },
     { name: 'Tracking Health', url: 'https://api.oe5ith.at/tracking/health', params: '' },
@@ -98,7 +98,7 @@ export const renderDebugModule = async (container: HTMLElement) => {
     
     const start = performance.now();
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal });
       const latency = Math.round(performance.now() - start);
       
       statusBadge.textContent = `${response.status} ${response.statusText}`;

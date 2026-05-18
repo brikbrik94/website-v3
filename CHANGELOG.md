@@ -2,6 +2,12 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-18 13:45
+
+### Geändert
+- **Info-Seite:** Refactoring des `InfoPageController` zur Nutzung von `BasePageController`. Dies ermöglicht ein systematisches Ressourcen-Management über `AbortSignal`.
+- **Info-Seite:** Alle Info-Submodule (`NahStatus`, `Health`, `Regions`, `Inventory`, `Debug`) unterstützen nun `AbortSignal` zur sauberen Stornierung von API-Anfragen beim Seitenwechsel.
+
 ## [3.3.0-dev] - 2026-05-18 10:15
 
 ### Geändert
