@@ -3,7 +3,7 @@ import { StatsResponse } from '../../types/common';
 /**
  * Renders the Regions Analysis module.
  */
-export const renderRegionsModule = async (container: HTMLElement) => {
+export const renderRegionsModule = async (container: HTMLElement, signal?: AbortSignal) => {
   container.innerHTML = `
     <header class="page-header">
       <div class="page-header-left">
@@ -87,26 +87,33 @@ export const renderRegionsModule = async (container: HTMLElement) => {
   };
 
   const fetchData = async () => {
+    if (signal?.aborted) return;
     if (!container.isConnected) return;
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
 
     try {
-      const response = await fetch('/api/stats.php');
+      const response = await fetch('/api/stats.php', { signal });
       const data: StatsResponse = await response.json();
+
+      if (signal?.aborted) return;
 
       renderData(data);
       meta.innerHTML = `Stand: ${new Date(data.generated_at).toLocaleTimeString()}`;
       
       scheduleNext();
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
+
       content.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 2rem;">
         <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Regionaldaten.
       </div>`;
       scheduleNext(60000);
     } finally {
-      refreshBtn.classList.remove('loading');
-      refreshBtn.disabled = false;
+      if (!signal?.aborted) {
+        refreshBtn.classList.remove('loading');
+        refreshBtn.disabled = false;
+      }
     }
   };
 

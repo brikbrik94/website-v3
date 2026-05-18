@@ -4,7 +4,7 @@ import { Toast } from '../../lib/Toast';
 /**
  * Renders the Map Inventory module.
  */
-export const renderInventoryModule = async (container: HTMLElement) => {
+export const renderInventoryModule = async (container: HTMLElement, signal?: AbortSignal) => {
   container.innerHTML = `
     <header class="page-header">
       <div class="page-header-left">
@@ -31,17 +31,22 @@ export const renderInventoryModule = async (container: HTMLElement) => {
   const refreshBtn = document.getElementById('inventory-refresh-btn') as HTMLButtonElement;
 
   const fetchData = async () => {
+    if (signal?.aborted) return;
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
 
     try {
-      const response = await fetch('https://tiles.oe5ith.at/inventory.json');
+      const response = await fetch('https://tiles.oe5ith.at/inventory.json', { signal });
       if (!response.ok) throw new Error('Failed to fetch inventory');
       const data: InventoryResponse = await response.json();
 
+      if (signal?.aborted) return;
+
       meta.textContent = `Stand: ${new Date(data.generated_at).toLocaleString()}`;
       renderData(data);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
+
       Toast.error('Fehler beim Laden des Karten-Inventars');
       content.innerHTML = `
         <div class="card card-warn">
@@ -49,8 +54,10 @@ export const renderInventoryModule = async (container: HTMLElement) => {
         </div>
       `;
     } finally {
-      refreshBtn.classList.remove('loading');
-      refreshBtn.disabled = false;
+      if (!signal?.aborted) {
+        refreshBtn.classList.remove('loading');
+        refreshBtn.disabled = false;
+      }
     }
   };
 
