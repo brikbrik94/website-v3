@@ -27,7 +27,7 @@ export class MgrsBlock extends CoordSystemBlock {
     `;
   }
 
-  public update(state: CoordsState): void {
+  public update(_state: CoordsState): void {
     const mgrs = this.service.getMgrs();
     this.updateField('gzd', mgrs.gzd);
     this.updateField('sq', mgrs.sq);

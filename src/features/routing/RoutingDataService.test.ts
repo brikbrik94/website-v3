@@ -30,7 +30,8 @@ describe('RoutingDataService', () => {
 
   it('should clear results but keep coords', () => {
     service.setCoords('start', [1, 2]);
-    service.setNearestStations([{ id: 1 }]);
+    const mockStation = { id: 1, name: 'Test', org: 'Test', lat: 0, lon: 0, distance: 0, duration: 0 };
+    service.setNearestStations([mockStation]);
     service.setCurrentHighlightedId(1);
     
     service.clearResults();

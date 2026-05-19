@@ -4,6 +4,9 @@ import { initTerrainManager, applyTerrainInfrastructure } from './TerrainManager
 import { BasemapStore } from './BasemapStore';
 import { MapRegistry } from './MapRegistry';
 
+// Modul-lokale Variable um die Protokoll-Instanz am Leben zu halten
+let _pmtilesProtocol: Protocol | null = null;
+
 /**
  * Zentraler Orchestrator für MapLibre Instanzen im Projekt.
  * Verhindert Code-Duplizierung und stellt CI-Konformität sicher.
@@ -11,10 +14,9 @@ import { MapRegistry } from './MapRegistry';
 export const MapCore = {
   init(container: HTMLElement, styleUrl?: string, onRestore?: (map: maplibregl.Map) => Promise<void> | void) {
     // Protokoll nur einmal global registrieren
-    if (!(maplibregl as any)._pmtilesProtocolAdded) {
-      const protocol = new Protocol();
-      maplibregl.addProtocol("pmtiles", protocol.tile);
-      (maplibregl as any)._pmtilesProtocolAdded = true;
+    if (!_pmtilesProtocol) {
+      _pmtilesProtocol = new Protocol();
+      maplibregl.addProtocol("pmtiles", _pmtilesProtocol.tile);
     }
 
     // Prioritize persistence. If styleUrl is provided, it acts as a secondary fallback.
@@ -29,44 +31,49 @@ export const MapCore = {
       maxPitch: 85
     });
 
-    const restore = async () => {
-      console.log('[MapCore] Style loaded, starting restoration sequence...');
+    let isRestoring = false;
+
+    const restore = async (source: string) => {
+      if (isRestoring) return;
+      isRestoring = true;
+      
+      console.log(`[MapCore] Restoration sequence started (Trigger: ${source})`);
       
       // We wait two frames to ensure MapLibre has processed the style change
-      // and is ready for new sources/layers.
       requestAnimationFrame(() => {
         requestAnimationFrame(async () => {
-          console.log('[MapCore] Starting registry restoration...');
           try {
-            // 1. Terrain & Hillshade
+            // 1. Terrain & Hillshade (Base infrastructure)
             await applyTerrainInfrastructure();
 
-            // 2. Registry Restore (Persistierte Layer/Sources/Images)
-            await MapRegistry.restore(map, MapCore.loadSprites);
-            
-            // 3. Custom Restore Callback
+            // 2. Custom Page Restore Callback (Where pages register their overlays/sources)
             if (onRestore) {
-              console.log('[MapCore] Calling custom onRestore callback...');
+              console.debug('[MapCore] Executing page-specific onRestore callback...');
               await onRestore(map);
             }
 
-            // Force a repaint to ensure everything is visible
+            // 3. Central Registry Restore (Ensures EVERYTHING in registry is on the map)
+            console.debug('[MapCore] Final MapRegistry restoration pass...');
+            await MapRegistry.restore(map, MapCore.loadSprites);
+            
             map.triggerRepaint();
-            console.log('[MapCore] Restoration sequence completed.');
+            console.log('[MapCore] Restoration sequence completed successfully.');
           } catch (err) {
-            console.error('[MapCore] Restoration failed:', err);
+            console.error('[MapCore] Restoration sequence failed:', err);
+          } finally {
+            isRestoring = false;
           }
         });
       });
     };
 
-    // Style.load is the primary event for setStyle()
-    map.on('style.load', () => {
-      console.log('[MapCore] style.load event detected');
-      restore();
-    });
+    // Listen to multiple events for maximum reliability
+    map.on('style.load', () => restore('style.load'));
 
-    map.on('error', (e) => console.error('[MapCore] Map error:', e));
+    map.on('error', (e) => {
+      const errMsg = e.error?.message || e.error || 'Unknown error';
+      console.error(`[MapCore] Map error: ${errMsg}`, e);
+    });
 
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
@@ -80,6 +87,21 @@ export const MapCore = {
     }
 
     return map;
+  },
+
+  /**
+   * Triggers the restoration sequence for a given map instance.
+   * Useful if events like style.load are missed or blocked.
+   */
+  async triggerRestore(map: maplibregl.Map, onRestore?: (map: maplibregl.Map) => Promise<void> | void) {
+    try {
+      await applyTerrainInfrastructure();
+      await MapRegistry.restore(map, MapCore.loadSprites);
+      if (onRestore) await onRestore(map);
+      map.triggerRepaint();
+    } catch (err) {
+      console.error('[MapCore] Manual restore failed:', err);
+    }
   },
 
   /**
@@ -118,12 +140,66 @@ export const MapCore = {
     if (!map.getSource(sourceId)) {
       const regSource = MapRegistry.getSource(sourceId);
       if (regSource) {
-        map.addSource(sourceId, regSource.definition);
+        try {
+          map.addSource(sourceId, JSON.parse(JSON.stringify(regSource.definition)));
+        } catch (e) {
+          console.warn(`[MapCore] Failed to add source ${sourceId}`, e);
+        }
       }
     }
     if (!map.getLayer(layerDef.id)) {
-      map.addLayer(layerDef);
+      try {
+        map.addLayer(JSON.parse(JSON.stringify(layerDef)));
+      } catch (e) {
+        console.warn(`[MapCore] Failed to add layer ${layerDef.id}`, e);
+      }
     }
+  },
+
+  /**
+   * Resolves relative URLs in map source definitions (url and tiles) against a base URL.
+   * Also ensures 'pmtiles://' identifiers don't get unwanted trailing slashes from URL().
+   */
+  resolveSourceUrls(sources: any, baseUrl: string): any {
+    const resolvedSources = JSON.parse(JSON.stringify(sources));
+    
+    const resolveUrl = (u: string) => {
+      if (!u) return u;
+      
+      // Case 1: Already absolute HTTP(S) URL
+      if (u.startsWith('http://') || u.startsWith('https://')) return u;
+      
+      // Case 2: PMTiles URL
+      if (u.startsWith('pmtiles://')) {
+        const innerUrl = u.slice(10);
+        // If inner URL is already absolute, don't touch it
+        if (innerUrl.startsWith('http://') || innerUrl.startsWith('https://')) return u;
+        
+        try {
+          // Resolve relative path against baseUrl
+          const resolvedInner = new URL(innerUrl, baseUrl).href;
+          return `pmtiles://${resolvedInner}`;
+        } catch (e) {
+          return u;
+        }
+      }
+
+      // Case 3: Other relative URLs (e.g. GeoJSON files)
+      try {
+        return new URL(u, baseUrl).href;
+      } catch (e) {
+        return u;
+      }
+    };
+
+    for (const src of Object.values(resolvedSources) as any) {
+      if (src.url) src.url = resolveUrl(src.url);
+      if (Array.isArray(src.tiles)) {
+        src.tiles = src.tiles.map((u: string) => resolveUrl(u));
+      }
+    }
+
+    return resolvedSources;
   },
 
   /**

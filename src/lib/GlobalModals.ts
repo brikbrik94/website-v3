@@ -18,6 +18,23 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.3.0] - 2026-05-19</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Live Tracking Portal:</strong> Vollständige Integration von Flugverkehr (ADS-B) und Schifffahrt (AIS) mit Echtzeit-Updates via WebSocket. Inklusive Track-Historie und höhenabhängiger Farbcodierung.</li>
+            <li><strong>Modernisiertes Routing:</strong> Neues modulares Routing-System mit Unterstützung für PKW und Blaulicht-Profile. Verbessertes Context-Menü für schnelle Zielwahl direkt auf der Karte.</li>
+            <li><strong>Erweiterte Info-Zentrale:</strong> Live-Überwachung der Gateway-Telemetrie (Paketraten, Signalstärke) und detaillierte Status-Anzeige für alle Empfänger-Stationen.</li>
+            <li><strong>Intelligentes Layer-Management:</strong> Neues Registry-System sorgt dafür, dass gewählte Overlays (RD-Stationen, Wanderwege etc.) beim Wechsel der Basiskarte automatisch erhalten bleiben.</li>
+            <li><strong>Architektur V3:</strong> Komplette Umstellung der Anwendung auf ein performantes Controller-Modell für schnellere Seitenwechsel und sauberes Ressourcen-Management.</li>
+          </ul>
+
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Overlay-Stabilität:</strong> Kritischer Fix für verschwindende Karten-Layer und Korrektur der URL-Auflösung für PMTiles-Quellen.</li>
+            <li><strong>CI-Konformität:</strong> Umstellung aller UI-Elemente auf den neuesten Design-Standard inkl. Icon-Only Toggles in der Topbar.</li>
+            <li><strong>Daten-Sicherheit:</strong> Implementierung von Deep-Cloning für Map-Ressourcen zur Vermeidung von internen Datenfehlern.</li>
+          </ul>
+
           <h2>[3.2.9] - 2026-05-15</h2>
           <ul>
             <li><strong>Routing Seite:</strong> Fix der Highlight-Logik. Ergebnisse können nun durch erneuten Klick abgewählt werden. Strikte Einhaltung der CI-Farben für Routen.</li>

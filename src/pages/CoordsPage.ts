@@ -9,7 +9,6 @@ import { InventoryService } from '../services/InventoryService';
 import { MapRegistry } from '../lib/MapRegistry';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { Toast } from '../lib/Toast';
-import { initTerrainManager } from '../lib/TerrainManager';
 
 /**
  * CoordsPageController - Orchestrates the coordinate converter page.
@@ -86,6 +85,7 @@ export class CoordsPageController extends BasePageController {
 
     /**
      * Schaltet den Wanderwege-Overlay ein/aus unter Verwendung der MapRegistry.
+     * Hybride Logik: Direktes Feedback + Persistenz-Registry.
      */
     private async toggleHikingOverlay(active: boolean) {
         this.hikingActive = active;
@@ -101,14 +101,22 @@ export class CoordsPageController extends BasePageController {
 
                     if (style.sprite) {
                         MapRegistry.registerImage(id, style.sprite, url);
+                        await MapCore.loadSprites(this.map, style.sprite, url);
                     }
 
-                    for (const [sId, def] of Object.entries(style.sources)) {
+                    const resolvedSources = MapCore.resolveSourceUrls(style.sources, url);
+                    for (const [sId, def] of Object.entries(resolvedSources)) {
                         MapRegistry.registerSource(sId, def);
+                        if (!this.map.getSource(sId)) {
+                            this.map.addSource(sId, JSON.parse(JSON.stringify(def)));
+                        }
                     }
 
                     style.layers.forEach((l: any) => {
                         MapRegistry.registerLayer(l.id, l);
+                        if (!this.map?.getLayer(l.id)) {
+                            this.map?.addLayer(JSON.parse(JSON.stringify(l)));
+                        }
                     });
                 } catch (err) {
                     console.error(`Failed to load hiking overlay: ${id}`, err);
@@ -125,17 +133,22 @@ export class CoordsPageController extends BasePageController {
                     style.layers.forEach((l: any) => {
                         if (l.source === id) {
                             MapRegistry.unregisterLayer(l.id);
-                            if (this.map?.getLayer(l.id)) this.map.removeLayer(l.id);
+                            if (this.map?.getLayer(l.id)) {
+                                this.map.removeLayer(l.id);
+                                console.debug(`[CoordsPage] Removed layer: ${l.id}`);
+                            }
                         }
                     });
                 }
-                if (this.map.getSource(id)) this.map.removeSource(id);
+                if (this.map.getSource(id)) {
+                    this.map.removeSource(id);
+                    console.debug(`[CoordsPage] Removed source: ${id}`);
+                }
                 MapRegistry.unregisterImage(id);
             }
         }
         
-        // MapRegistry synchronisieren
-        await MapRegistry.restore(this.map, MapCore.loadSprites);
+        // Kein expliziter restore() Aufruf nötig, da wir die Karte direkt aktualisiert haben.
     }
 
     public destroy() {

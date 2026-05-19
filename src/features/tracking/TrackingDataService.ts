@@ -57,12 +57,14 @@ export class TrackingDataService {
         if (!MapRegistry.getSource('ais')) MapRegistry.registerSource('ais', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, tolerance: 0 });
         if (!MapRegistry.getSource('ais-tracks')) MapRegistry.registerSource('ais-tracks', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, tolerance: 0 });
 
-        // Start packet rate calculator
+        // Start packet rate calculator (every 10s for more immediate feedback)
         this.packetRateInterval = setInterval(() => {
-            this.currentPacketRate = this.packetCount;
+            this.currentPacketRate = this.packetCount * 6; // Estimate per minute
             this.packetCount = 0;
-            this.emitStatus();
-        }, 60000);
+            if (this.ws?.readyState === WebSocket.OPEN) {
+                this.emitStatus();
+            }
+        }, 10000);
     }
 
     public refresh() {
@@ -204,7 +206,7 @@ export class TrackingDataService {
             if (!a.track || a.track.length < 2) continue;
             
             const coords = a.track
-                .filter(p => p.lon != null && p.lat != null)
+                .filter(p => Number.isFinite(p.lon) && Number.isFinite(p.lat))
                 .map(p => [p.lon, p.lat]);
             
             if (coords.length < 2) continue;
@@ -300,11 +302,17 @@ export class TrackingDataService {
     private emitStatus() {
         const isConnected = this.ws !== null && this.ws.readyState === WebSocket.OPEN;
         const sources = Array.from(this.sourceState.values());
+        
+        // Use server telemetry if available, fallback to local estimate
+        const rate = (this.lastSystemTelemetry?.decodedPerMinute !== undefined)
+            ? this.lastSystemTelemetry.decodedPerMinute
+            : this.currentPacketRate;
+
         this.onStatus(
             isConnected, 
             this.aircraftState.size, 
             this.vesselState.size, 
-            this.lastSystemTelemetry?.decodedPerMinute || this.currentPacketRate, 
+            rate, 
             sources,
             this.lastSystemTelemetry
         );
@@ -314,7 +322,7 @@ export class TrackingDataService {
         return {
             type: 'FeatureCollection',
             features: Array.from(this.aircraftState.values())
-                .filter(a => a.lat != null && a.lon != null)
+                .filter(a => Number.isFinite(a.lat) && Number.isFinite(a.lon))
                 .map(a => ({
                     type: 'Feature',
                     geometry: { type: 'Point', coordinates: [a.lon!, a.lat!] },
@@ -369,7 +377,7 @@ export class TrackingDataService {
         return {
             type: 'FeatureCollection',
             features: Array.from(this.vesselState.values())
-                .filter(v => v.lat != null && v.lon != null)
+                .filter(v => Number.isFinite(v.lat) && Number.isFinite(v.lon))
                 .map(v => {
                     const typeCode = v.shipType;
                     return {

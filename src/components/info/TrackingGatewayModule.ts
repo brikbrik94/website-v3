@@ -22,9 +22,9 @@ export class TrackingGatewayModule {
     public update(sources: SourceStatus[], system?: SystemTelemetry) {
         if (!system) return;
 
-        const uptime = Math.floor(system.uptimeSec / 3600);
-        const mem = system.process.memoryMiB.toFixed(1);
-        
+        const uptime = system.uptimeSec ? Math.floor(system.uptimeSec / 3600) : 0;
+        const mem = system.process?.memoryMiB ? system.process.memoryMiB.toFixed(1) : '---';
+
         const sourceRows = sources.map(s => `
             <tr>
                 <td>${s.id}</td>
@@ -50,14 +50,14 @@ export class TrackingGatewayModule {
                         </div>
                         <div class="status-row">
                             <span class="status-row-name">Clients</span>
-                            <span class="status-row-value">${system.clients}</span>
+                            <span class="status-row-value">${system.clients ?? 0}</span>
                         </div>
                         <div class="status-row">
                             <span class="status-row-name">Load (Entities)</span>
-                            <span class="status-row-value">${system.entities}</span>
+                            <span class="status-row-value">${system.entities ?? 0}</span>
                         </div>
                     </div>
-                    
+    ...
                     <div class="tool-sep"></div>
                     
                     <div style="overflow-x: auto;">

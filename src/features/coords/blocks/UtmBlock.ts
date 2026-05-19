@@ -25,7 +25,7 @@ export class UtmBlock extends CoordSystemBlock {
     `;
   }
 
-  public update(state: CoordsState): void {
+  public update(_state: CoordsState): void {
     const utm = this.service.getUtm();
     this.updateField('zone', utm.zone);
     this.updateField('e', utm.e);

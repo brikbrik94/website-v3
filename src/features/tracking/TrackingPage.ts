@@ -65,8 +65,29 @@ export class TrackingPageController extends BasePageController {
             });
         });
 
-        initTopbar(mounts.topbar, basemaps, (url) => {
-            this.map?.setStyle(url);
+        initTopbar(mounts.topbar, basemaps, async (url) => {
+            if (this.map) {
+                console.log(`[Tracking] Changing basemap to: ${url}`);
+                this.map.setStyle(url);
+                
+                // Expliziter Trigger für die Wiederherstellung (wie auf MapPage), 
+                // da style.load in manchen Umgebungen unzuverlässig ist.
+                await MapCore.triggerRestore(this.map, async (_m) => {
+                    console.log('[Tracking] Explicit restore triggering...');
+                    if (this.mapLayers) {
+                        this.mapLayers.ensureLayers(this.selectedId);
+                        const initData = this.dataService?.getInitialData();
+                        if (initData) {
+                            this.mapLayers.updateData('adsb', initData.adsbData);
+                            this.mapLayers.updateData('adsb-tracks', initData.adsbTracks);
+                            this.mapLayers.updateData('ais', initData.aisData);
+                            this.mapLayers.updateData('ais-tracks', initData.aisTracks);
+                        }
+                        await this.mapLayers.loadSprites();
+                    }
+                    this.dataService?.refresh();
+                });
+            }
         }, undefined, [
             {
                 id: 'toggle-adsb',

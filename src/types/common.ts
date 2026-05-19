@@ -43,6 +43,17 @@ export interface RouteResult {
     metadata: any;
 }
 
+export interface RoutingStation {
+    id: number;
+    name: string;
+    org: string;
+    lat: number;
+    lon: number;
+    distance: number;
+    duration: number;
+    route?: any;
+}
+
 export interface StatsResponse {
     generated_at: string;
     nah: Record<string, { total: number, active: number }>;
