@@ -9,9 +9,13 @@ import {
   renderRoutingError,
   setRoutingCoord
 } from '../../components/RoutingSidebar';
-import { RouteResult, RoutingStation } from '../../types/common';
+import { RoutingStation } from '../../types/common';
+import { MAP_COLORS } from '../../lib/MapStyles';
 
 export class RoutingSidebarAdapter {
+  private startMarker: maplibregl.Marker | null = null;
+  private targetMarker: maplibregl.Marker | null = null;
+
   constructor(
     private dataService: RoutingDataService,
     private map: maplibregl.Map,
@@ -24,13 +28,11 @@ export class RoutingSidebarAdapter {
       if (btn) btn.classList.add('loading');
       
       this.clearAll();
-      this.dataService.setCoords('target', params.target);
-      RoutingMapLayers.updateMarkersLayer(this.map, this.dataService);
+      await this.setCoord('target', params.target[0], params.target[1]);
       
       try {
         if (params.mode === 'ab' && params.start) {
-          this.dataService.setCoords('start', params.start);
-          RoutingMapLayers.updateMarkersLayer(this.map, this.dataService);
+          await this.setCoord('start', params.start[0], params.start[1]);
           
           const route = await RoutingService.calculateRoute(params.start, params.target, params.profile);
           if (this.abortSignal.aborted) return;
@@ -122,15 +124,78 @@ export class RoutingSidebarAdapter {
     });
   }
 
+  public async setCoord(type: 'start' | 'target', lat: number, lon: number) {
+    this.dataService.setCoords(type, [lat, lon]);
+    await setRoutingCoord(type, lat, lon);
+    
+    if (type === 'start') {
+      if (this.startMarker) this.startMarker.remove();
+      this.startMarker = new maplibregl.Marker({ color: MAP_COLORS.success })
+        .setLngLat([lon, lat])
+        .addTo(this.map);
+    } else {
+      if (this.targetMarker) this.targetMarker.remove();
+      this.targetMarker = new maplibregl.Marker({ color: MAP_COLORS.danger })
+        .setLngLat([lon, lat])
+        .addTo(this.map);
+    }
+  }
+
+  public handleMapClick(e: maplibregl.MapMouseEvent) {
+    const modeBtn = document.querySelector('.segmented-btn.active');
+    const mode = modeBtn?.getAttribute('data-mode') || 'ab';
+
+    if (mode === 'ab') {
+      const startInput = document.getElementById('input-start') as HTMLInputElement;
+      if (!startInput || !startInput.value) {
+        this.setCoord('start', e.lngLat.lat, e.lngLat.lng);
+      } else {
+        this.setCoord('target', e.lngLat.lat, e.lngLat.lng);
+      }
+    } else {
+      this.setCoord('target', e.lngLat.lat, e.lngLat.lng);
+    }
+  }
+
+  public addWaypoint(lngLat: maplibregl.LngLat) {
+    this.setCoord('target', lngLat.lat, lngLat.lng);
+  }
+
+  public clearRoute() {
+    this.clearAll();
+    const startInput = document.getElementById('input-start') as HTMLInputElement;
+    const targetInput = document.getElementById('input-target') as HTMLInputElement;
+    if (startInput) startInput.value = '';
+    if (targetInput) targetInput.value = '';
+  }
+
+  public reapplyLayers() {
+    RoutingMapLayers.ensureBaseLayers(this.map);
+    RoutingMapLayers.updateRoutesLayer(this.map, this.dataService);
+    RoutingMapLayers.updateStationsLayer(this.map, this.dataService);
+    
+    // Restore markers
+    const start = this.dataService.getStartCoord();
+    const target = this.dataService.getTargetCoord();
+    if (start) this.setCoord('start', start[0], start[1]);
+    if (target) this.setCoord('target', target[0], target[1]);
+  }
+
   private clearAll() {
     this.dataService.clearResults();
     this.dataService.clearCoords();
+    
+    if (this.startMarker) this.startMarker.remove();
+    if (this.targetMarker) this.targetMarker.remove();
+    this.startMarker = null;
+    this.targetMarker = null;
+
     RoutingMapLayers.updateRoutesLayer(this.map, this.dataService);
     RoutingMapLayers.updateStationsLayer(this.map, this.dataService);
-    RoutingMapLayers.updateMarkersLayer(this.map, this.dataService);
     renderStationResults([], () => {}, () => {});
     updateRoutingSummary(0, 0);
     const details = document.getElementById('routing-details');
     if (details) details.style.display = 'none';
   }
 }
+

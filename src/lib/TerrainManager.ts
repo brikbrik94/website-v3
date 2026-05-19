@@ -94,14 +94,22 @@ export async function applyTerrainInfrastructure() {
                 
                 if (style.sprite) {
                     MapRegistry.registerImage(CONTOURS_OVERLAY.id, style.sprite, CONTOURS_OVERLAY.url);
+                    await MapCore.loadSprites(_map, style.sprite, CONTOURS_OVERLAY.url);
                 }
 
-                for (const [sId, def] of Object.entries(style.sources)) {
+                const resolvedSources = MapCore.resolveSourceUrls(style.sources, CONTOURS_OVERLAY.url);
+                for (const [sId, def] of Object.entries(resolvedSources)) {
                     MapRegistry.registerSource(sId, def);
+                    if (!_map.getSource(sId)) {
+                        _map.addSource(sId, JSON.parse(JSON.stringify(def)));
+                    }
                 }
                 
                 style.layers.forEach((l: any) => {
                     MapRegistry.registerLayer(l.id, l);
+                    if (_map && !_map.getLayer(l.id)) {
+                        _map.addLayer(JSON.parse(JSON.stringify(l)));
+                    }
                 });
             } catch (err) {
                 console.error(`Failed to load contours overlay: ${CONTOURS_OVERLAY.id}`, err);
@@ -110,29 +118,27 @@ export async function applyTerrainInfrastructure() {
     } else {
         // Wenn deaktiviert, aus Registry entfernen
         if (MapRegistry.getSource(CONTOURS_OVERLAY.id)) {
-            // Wir müssen hier die Quellen und Layer entfernen, die wir registriert haben.
-            // Da wir die Style-Datei nicht permanent im Speicher haben, versuchen wir es über die ID.
-            // In diesem speziellen Fall wissen wir, dass die Source ID 'basemap-at-contours' ist.
             MapRegistry.unregisterSource(CONTOURS_OVERLAY.id);
             
-            // Layer sind schwieriger zu identifizieren ohne Liste.
-            // Wir entfernen sie auch direkt von der Karte, falls vorhanden.
             const style = _map.getStyle();
             if (style && style.layers) {
                 style.layers.forEach((l: any) => {
                     if (l.source === CONTOURS_OVERLAY.id) {
                         MapRegistry.unregisterLayer(l.id);
-                        if (_map?.getLayer(l.id)) _map.removeLayer(l.id);
+                        if (_map?.getLayer(l.id)) {
+                            _map.removeLayer(l.id);
+                            console.debug(`[TerrainManager] Removed contour layer: ${l.id}`);
+                        }
                     }
                 });
             }
-            if (_map.getSource(CONTOURS_OVERLAY.id)) _map.removeSource(CONTOURS_OVERLAY.id);
+            if (_map.getSource(CONTOURS_OVERLAY.id)) {
+                _map.removeSource(CONTOURS_OVERLAY.id);
+                console.debug(`[TerrainManager] Removed contour source: ${CONTOURS_OVERLAY.id}`);
+            }
             MapRegistry.unregisterImage(CONTOURS_OVERLAY.id);
         }
     }
-
-    // MapRegistry synchronisieren (fügt fehlende hinzu)
-    await MapRegistry.restore(_map, MapCore.loadSprites);
 }
 
 export function toggleTerrain(): boolean {

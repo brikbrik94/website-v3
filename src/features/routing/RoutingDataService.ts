@@ -1,10 +1,12 @@
+import { RoutingStation } from '../../types/common';
+
 export class RoutingDataService {
   private startCoord: [number, number] | null = null;
   private targetCoord: [number, number] | null = null;
   private stationRoutes = new Map<number, any>();
   private eyeActiveStates = new Set<number>();
   private currentHighlightedId: number | null = null;
-  private nearestStations: any[] = [];
+  private nearestStations: RoutingStation[] = [];
 
   public getStartCoord() { return this.startCoord; }
   public getTargetCoord() { return this.targetCoord; }
@@ -18,6 +20,7 @@ export class RoutingDataService {
   public setStationRoute(id: number, route: any) { this.stationRoutes.set(id, route); }
 
   public getEyeActiveStates() { return this.eyeActiveStates; }
+  public isEyeActive(id: number) { return this.eyeActiveStates.has(id); }
   public setEyeActiveState(id: number, active: boolean) {
     if (active) this.eyeActiveStates.add(id);
     else this.eyeActiveStates.delete(id);
@@ -27,7 +30,7 @@ export class RoutingDataService {
   public setCurrentHighlightedId(id: number | null) { this.currentHighlightedId = id; }
 
   public getNearestStations() { return this.nearestStations; }
-  public setNearestStations(stations: any[]) { this.nearestStations = stations; }
+  public setNearestStations(stations: RoutingStation[]) { this.nearestStations = stations; }
 
   public clearResults() {
     this.stationRoutes.clear();

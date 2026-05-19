@@ -140,9 +140,9 @@ const router = async () => {
   if (!app) return;
 
   if (path === '/karte') {
-    const { initMapPage } = await import('./pages/MapPage');
-    // For now, wrapper without destroy until the page is refactored
-    initMapPage(app);
+    const { MapPageController } = await import('./pages/MapPage');
+    currentPage = new MapPageController();
+    await currentPage.mount(app);
   } else if (path === '/routing') {
     const { RoutingPageController } = await import('./pages/RoutingPage');
     currentPage = new RoutingPageController();

@@ -16,7 +16,7 @@ export class MaidenheadBlock extends CoordSystemBlock {
     `;
   }
 
-  public update(state: CoordsState): void {
+  public update(_state: CoordsState): void {
     const mh = this.service.getMaidenhead();
     this.updateField('locator', mh.locator);
   }

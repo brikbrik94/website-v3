@@ -12,14 +12,12 @@ const ROUTING_PATH_LAYER_ID = 'routing-path';
 const STATIONS_SOURCE_ID = 'stations';
 const STATIONS_LAYER_ID = 'station-icons';
 
-const ROUTING_MARKERS_SOURCE_ID = 'routing-markers';
-const ROUTING_MARKERS_LAYER_ID = 'routing-markers';
-
 export class RoutingMapLayers {
   private static SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
 
   public static registerResources() {
-    MapRegistry.registerImage(ROUTING_MARKERS_LAYER_ID, this.SPRITE_BASE);
+    // Only stations need sprites now
+    MapRegistry.registerImage(STATIONS_LAYER_ID, this.SPRITE_BASE);
   }
 
   public static ensureBaseLayers(map: maplibregl.Map) {
@@ -52,29 +50,10 @@ export class RoutingMapLayers {
     };
     MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE_ID, stationsLayerDef);
     MapRegistry.registerSource(STATIONS_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    
-    // 3. Start/Target Markers Layer (top)
-    const markersLayerDef: LayerSpecification = {
-      id: ROUTING_MARKERS_LAYER_ID,
-      type: 'symbol',
-      source: ROUTING_MARKERS_SOURCE_ID,
-      layout: {
-        'icon-image': ['match', ['get', 'type'], 'start', 'marker-green', 'target', 'marker-red', 'marker-blue'],
-        'icon-size': 1.0,
-        'icon-anchor': 'bottom',
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-      },
-    };
-    MapCore.ensureGeoJsonLayer(map, ROUTING_MARKERS_SOURCE_ID, markersLayerDef);
-    MapRegistry.registerSource(ROUTING_MARKERS_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 
     // Enforce layer order
     if (map.getLayer(STATIONS_LAYER_ID) && map.getLayer(ROUTING_PATH_LAYER_ID)) {
       map.moveLayer(ROUTING_PATH_LAYER_ID, STATIONS_LAYER_ID);
-    }
-    if (map.getLayer(ROUTING_MARKERS_LAYER_ID) && map.getLayer(STATIONS_LAYER_ID)) {
-      map.moveLayer(STATIONS_LAYER_ID, ROUTING_MARKERS_LAYER_ID);
     }
   }
 
@@ -132,41 +111,6 @@ export class RoutingMapLayers {
     if (source) source.setData(data);
   }
 
-  public static updateMarkersLayer(map: maplibregl.Map, dataService: RoutingDataService) {
-    const source = map.getSource(ROUTING_MARKERS_SOURCE_ID) as GeoJSONSource;
-    if (!source) {
-      this.ensureBaseLayers(map);
-    }
-
-    const features: Feature<Point>[] = [];
-    const start = dataService.getStartCoord();
-    const target = dataService.getTargetCoord();
-
-    if (start) {
-      features.push({
-        type: 'Feature',
-        geometry: { 
-          type: 'Point', 
-          coordinates: [start[1], start[0]] // MapLibre expects [lng, lat]
-        },
-        properties: { type: 'start' },
-      });
-    }
-    if (target) {
-      features.push({
-        type: 'Feature',
-        geometry: { 
-          type: 'Point', 
-          coordinates: [target[1], target[0]] // MapLibre expects [lng, lat]
-        },
-        properties: { type: 'target' },
-      });
-    }
-
-    const data: FeatureCollection<Point> = { type: 'FeatureCollection', features };
-    if (source) source.setData(data);
-  }
-
   public static updateSingleRoute(map: maplibregl.Map, routeFeature: Feature<LineString>) {
     const source = map.getSource(ROUTING_PATH_SOURCE_ID) as GeoJSONSource;
     if (!source) {
@@ -191,3 +135,4 @@ export class RoutingMapLayers {
     if (source) source.setData(data);
   }
 }
+

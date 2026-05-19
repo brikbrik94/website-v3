@@ -71,16 +71,23 @@ export const MapRegistry = {
   async restore(map: maplibregl.Map, loadSpritesFn: (map: maplibregl.Map, path: string, style?: string) => Promise<void>) {
     console.log(`[MapRegistry] Restoring ${sources.size} sources, ${images.size} image sets, and ${layers.size} layers`);
 
-    // 1. Load Images (Sprites) - Parallelized for efficiency
-    await Promise.all(
-      Array.from(images.values()).map(img => loadSpritesFn(map, img.url, img.styleUrl))
-    );
+    // 1. Load Images (Sprites) - Parallelized with allSettled for resilience
+    const imageList = Array.from(images.values());
+    if (imageList.length > 0) {
+      console.debug(`[MapRegistry] Loading ${imageList.length} sprite sets...`);
+      await Promise.allSettled(
+        imageList.map(img => loadSpritesFn(map, img.url, img.styleUrl))
+      );
+    }
 
-    // 2. Add Sources
+    // 2. Add Sources - Use deep cloning to prevent MapLibre from corrupting our registry state
     for (const src of sources.values()) {
       if (!map.getSource(src.id)) {
         try {
-          map.addSource(src.id, src.definition);
+          // Deep clone the definition to ensure we always have a clean copy for future restorations
+          const definition = JSON.parse(JSON.stringify(src.definition));
+          map.addSource(src.id, definition);
+          console.debug(`[MapRegistry] Restored source: ${src.id}`);
         } catch (e) {
           console.warn(`[MapRegistry] Failed to restore source ${src.id}`, e);
         }
@@ -91,11 +98,16 @@ export const MapRegistry = {
     for (const layer of layers.values()) {
       if (!map.getLayer(layer.id)) {
         try {
-          map.addLayer(layer.definition, layer.beforeId);
+          // Deep clone the definition
+          const definition = JSON.parse(JSON.stringify(layer.definition));
+          map.addLayer(definition, layer.beforeId);
+          console.debug(`[MapRegistry] Restored layer: ${layer.id}`);
         } catch (e) {
           console.warn(`[MapRegistry] Failed to restore layer ${layer.id}`, e);
         }
       }
     }
+    
+    console.log(`[MapRegistry] Restoration completed.`);
   }
 };

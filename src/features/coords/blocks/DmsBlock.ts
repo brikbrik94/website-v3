@@ -47,7 +47,7 @@ export class DmsBlock extends CoordSystemBlock {
     });
   }
 
-  public update(state: CoordsState): void {
+  public update(_state: CoordsState): void {
     const dms = this.service.getDms();
     this.updateField('lat-d', dms.lat.d.toString());
     this.updateField('lat-m', dms.lat.m.toString());

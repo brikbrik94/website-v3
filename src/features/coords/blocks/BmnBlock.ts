@@ -29,7 +29,7 @@ export class BmnBlock extends CoordSystemBlock {
     `;
   }
 
-  public update(state: CoordsState): void {
+  public update(_state: CoordsState): void {
     const bmn = this.service.getBmn();
     this.updateField('m', bmn.m);
     this.updateField('rw', bmn.rw);
