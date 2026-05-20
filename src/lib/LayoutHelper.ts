@@ -26,7 +26,7 @@ export class LayoutHelper {
                 <div id="sidebar-mount"></div>
                 <main id="map" class="full-map"></main>
                 ${options.withLegend ? `
-                    <div class="map-legend" id="map-legend" style="display:none;">
+                    <div class="map-legend hidden" id="map-legend">
                         <div class="map-legend-title">${options.legendTitle || ''}</div>
                         <div class="map-legend-entries"></div>
                     </div>

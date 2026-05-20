@@ -24,15 +24,15 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
     </header>
 
     <div class="content-body">
-      <div class="card-grid" id="nah-stats-cards" style="margin-bottom: var(--card-gap);"></div>
+      <div class="card-grid mb-gap" id="nah-stats-cards"></div>
       
-      <div id="nah-tables-container" style="display: flex; flex-direction: column; gap: 24px;">
+      <div id="nah-tables-container" class="flex-col gap-24">
         <!-- 1. Active Table -->
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title" style="color: var(--success);"><i class="fa-solid fa-helicopter"></i> Aktuell im Dienst</div>
+            <div class="panel-title t-success"><i class="fa-solid fa-helicopter"></i> Aktuell im Dienst</div>
           </div>
-          <div class="panel-body panel-body-flush" style="overflow-x: auto;">
+          <div class="panel-body panel-body-flush table-wrapper">
             <table class="ci-table">
               <thead>
                 <tr>
@@ -45,7 +45,7 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
                 </tr>
               </thead>
               <tbody id="nah-table-body-active">
-                <tr><td colspan="6" style="text-align: center; padding: 20px;">Lade...</td></tr>
+                <tr><td colspan="6" class="text-center tbl-cell-pad-20">Lade...</td></tr>
               </tbody>
             </table>
           </div>
@@ -54,16 +54,16 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
         <!-- 2. Standby Table -->
         <div class="panel" id="nah-panel-standby">
           <div class="panel-header">
-            <div class="panel-title" style="color: var(--danger);"><i class="fa-solid fa-clock"></i> Außer Dienst (Betriebszeit)</div>
+            <div class="panel-title t-danger"><i class="fa-solid fa-clock"></i> Außer Dienst (Betriebszeit)</div>
           </div>
-          <div class="panel-body panel-body-flush" style="overflow-x: auto;">
+          <div class="panel-body panel-body-flush table-wrapper">
             <table class="ci-table">
               <thead>
                 <tr>
-                  <th style="width: 25%;">Station</th>
-                  <th style="width: 25%;">Organisation</th>
-                  <th style="width: 25%;">Typ</th>
-                  <th style="width: 25%;">Nächster Dienst</th>
+                  <th class="table-col-25">Station</th>
+                  <th class="table-col-25">Organisation</th>
+                  <th class="table-col-25">Typ</th>
+                  <th class="table-col-25">Nächster Dienst</th>
                 </tr>
               </thead>
               <tbody id="nah-table-body-standby"></tbody>
@@ -74,16 +74,16 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
         <!-- 3. Off Season Table -->
         <div class="panel" id="nah-panel-offseason">
           <div class="panel-header">
-            <div class="panel-title" style="color: var(--muted);"><i class="fa-solid fa-snowflake"></i> Aktuell keine Saison</div>
+            <div class="panel-title t-muted"><i class="fa-solid fa-snowflake"></i> Aktuell keine Saison</div>
           </div>
-          <div class="panel-body panel-body-flush" style="overflow-x: auto;">
+          <div class="panel-body panel-body-flush table-wrapper">
             <table class="ci-table">
               <thead>
                 <tr>
-                  <th style="width: 25%;">Station</th>
-                  <th style="width: 25%;">Organisation</th>
-                  <th style="width: 25%;">Typ</th>
-                  <th style="width: 25%;">Status</th>
+                  <th class="table-col-25">Station</th>
+                  <th class="table-col-25">Organisation</th>
+                  <th class="table-col-25">Typ</th>
+                  <th class="table-col-25">Status</th>
                 </tr>
               </thead>
               <tbody id="nah-table-body-offseason"></tbody>
@@ -162,20 +162,20 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
       </div>
 
       <div class="card card-dashboard">
-        <h1 class="t-h1" style="margin: 0; color: var(--success);">${activeCount}</h1>
+        <h1 class="t-h1 m-0 t-success">${activeCount}</h1>
         <h3>Verfügbar</h3>
         <p class="t-body">Aktuell einsatzbereit</p>
       </div>
 
       <div class="card card-dashboard">
-        <h1 class="t-h1" style="margin: 0; color: var(--muted);">${offSeasonCount}</h1>
+        <h1 class="t-h1 m-0 t-muted">${offSeasonCount}</h1>
         <h3>Saisonpause</h3>
         <p class="t-body">Von gesamt ${total} Stationen</p>
       </div>
       
       <div class="card card-dashboard">
-        <div class="card-status-dot online" style="background: none; box-shadow: none;">
-          <i class="fa-solid fa-moon" style="color: var(--subtle);"></i>
+        <div class="card-status-dot online no-dot-bg">
+          <i class="fa-solid fa-moon t-subtle"></i>
         </div>
         <h3>Nacht-Bereit</h3>
         <p class="t-body">${nightReadyCount} Stationen (H24)</p>
@@ -212,8 +212,8 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
         return `
           <tr>
             <td>
-              <div style="font-weight: 500;">${s.callsign}</div>
-              <div style="font-size: 0.8rem; color: var(--subtle);">${s.name}</div>
+              <div class="font-medium">${s.callsign}</div>
+              <div class="t-small t-subtle">${s.name}</div>
             </td>
             <td>${s.region}</td>
             <td><span class="badge badge-gray">${s.op_type}</span></td>
@@ -228,8 +228,8 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
       return `
         <tr>
           <td>
-            <div style="font-weight: 500;">${s.callsign}</div>
-            <div style="font-size: 0.8rem; color: var(--subtle);">${s.name}</div>
+            <div class="font-medium">${s.callsign}</div>
+            <div class="t-small t-subtle">${s.name}</div>
           </td>
           <td>${s.region}</td>
           <td><span class="badge badge-gray">${s.op_type}</span></td>
@@ -240,9 +240,9 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
       `;
     };
 
-    tableBodyActive.innerHTML = activeStations.map(s => renderRow(s)).join('') || '<tr><td colspan="6" style="text-align: center; padding: 12px;">Keine Stationen aktiv</td></tr>';
-    tableBodyStandby.innerHTML = standbyStations.map(s => renderRow(s, true)).join('') || '<tr><td colspan="4" style="text-align: center; padding: 12px;">Keine Stationen auf Standby</td></tr>';
-    tableBodyOffseason.innerHTML = offSeasonStations.map(s => renderRow(s, true)).join('') || '<tr><td colspan="4" style="text-align: center; padding: 12px;">Alle Stationen in Saison</td></tr>';
+    tableBodyActive.innerHTML = activeStations.map(s => renderRow(s)).join('') || '<tr><td colspan="6" class="text-center tbl-cell-pad-12">Keine Stationen aktiv</td></tr>';
+    tableBodyStandby.innerHTML = standbyStations.map(s => renderRow(s, true)).join('') || '<tr><td colspan="4" class="text-center tbl-cell-pad-12">Keine Stationen auf Standby</td></tr>';
+    tableBodyOffseason.innerHTML = offSeasonStations.map(s => renderRow(s, true)).join('') || '<tr><td colspan="4" class="text-center tbl-cell-pad-12">Alle Stationen in Saison</td></tr>';
   };
 
   const fetchData = async () => {
@@ -269,7 +269,7 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
       
       tableBodyActive.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; padding: 2rem; color: var(--danger);">
+          <td colspan="6" class="text-center tbl-cell-pad-2rem t-danger">
             <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Daten.
           </td>
         </tr>

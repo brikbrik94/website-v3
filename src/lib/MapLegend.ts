@@ -18,7 +18,11 @@ export class MapLegend {
 
   setTitle(text: string): void {
     this._titleEl.textContent = text;
-    this._titleEl.style.display = text ? 'block' : 'none';
+    if (text) {
+      this._titleEl.classList.remove('hidden');
+    } else {
+      this._titleEl.classList.add('hidden');
+    }
   }
 
   addEntry(entry: LegendEntry): void {
@@ -43,10 +47,10 @@ export class MapLegend {
     this._entriesEl.innerHTML = '';
   }
 
-  show(): void { this._el.style.display = 'block'; }
-  hide(): void { this._el.style.display = 'none'; }
-  toggle(): void { this._el.style.display = this.isVisible() ? 'none' : 'block'; }
-  isVisible(): boolean { return this._el.style.display !== 'none'; }
+  show(): void { this._el.classList.remove('hidden'); }
+  hide(): void { this._el.classList.add('hidden'); }
+  toggle(): void { this._el.classList.toggle('hidden'); }
+  isVisible(): boolean { return !this._el.classList.contains('hidden'); }
 
   destroy(): void {
     this._el.remove();

@@ -97,7 +97,7 @@ export const initGlobalModals = () => {
 
           <h2>Software</h2>
           <p>© 2026 OE5ITH Cloud Services. Alle Rechte vorbehalten.</p>
-          <p style="font-size: 0.75rem; color: var(--subtle);">Anwendung Version: ${APP_VERSION}</p>
+          <p class="t-tiny t-subtle">Anwendung Version: ${APP_VERSION}</p>
         </div>
       </div>
     </div>

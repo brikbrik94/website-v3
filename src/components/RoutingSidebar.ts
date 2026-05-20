@@ -31,7 +31,7 @@ export const setRoutingCoord = async (type: 'start' | 'target', lat: number, lon
     }
     const resultsId = type === 'start' ? 'results-start' : 'results-target';
     const results = document.getElementById(resultsId);
-    if (results) results.style.display = 'none';
+    if (results) results.classList.add('hidden');
   }
 };
 
@@ -100,7 +100,7 @@ export const initRoutingSidebar = async (
             <i class="fa-solid fa-location-dot form-input-icon"></i>
             <input type="text" class="form-input" id="input-start" placeholder="Adresse oder Lat, Lon" ${!isOnline ? 'disabled' : ''} autocomplete="off">
           </div>
-          <div id="results-start" class="geocoder-results" style="display: none;"></div>
+          <div id="results-start" class="geocoder-results hidden"></div>
         </div>
 
         <!-- Ziel -->
@@ -110,7 +110,7 @@ export const initRoutingSidebar = async (
             <i class="fa-solid fa-flag-checkered form-input-icon"></i>
             <input type="text" class="form-input" id="input-target" placeholder="Adresse oder Lat, Lon" ${!isOnline ? 'disabled' : ''} autocomplete="off">
           </div>
-          <div id="results-target" class="geocoder-results" style="display: none;"></div>
+          <div id="results-target" class="geocoder-results hidden"></div>
         </div>
 
         <button class="form-submit" id="btn-start-routing" ${!isOnline ? 'disabled' : ''}>
@@ -118,9 +118,9 @@ export const initRoutingSidebar = async (
         </button>
 
         <!-- Getrennte Container für Status, Details und Liste -->
-        <div id="routing-status" class="result-container" style="display: none;"></div>
-        <div id="routing-details" class="result-container" style="display: none;"></div>
-        <div id="routing-results" class="result-container" style="display: none;"></div>
+        <div id="routing-status" class="result-container hidden"></div>
+        <div id="routing-details" class="result-container hidden"></div>
+        <div id="routing-results" class="result-container hidden"></div>
       </div>
       
       ${getSidebarFooterHtml()}
@@ -146,16 +146,16 @@ export const initRoutingSidebar = async (
 
   const updateModeUI = (mode: string) => {
     if (mode === 'ab') {
-      fieldStart.style.display = 'flex';
+      fieldStart.classList.remove('hidden');
       labelTarget.textContent = 'Ziel';
     } else {
-      fieldStart.style.display = 'none';
+      fieldStart.classList.add('hidden');
       labelTarget.textContent = 'Einsatzort (Ziel)';
     }
     // Bei Modus-Wechsel alles leeren
-    document.getElementById('routing-status')!.style.display = 'none';
-    document.getElementById('routing-details')!.style.display = 'none';
-    document.getElementById('routing-results')!.style.display = 'none';
+    document.getElementById('routing-status')!.classList.add('hidden');
+    document.getElementById('routing-details')!.classList.add('hidden');
+    document.getElementById('routing-results')!.classList.add('hidden');
   };
 
   routeMode.addEventListener('click', (e) => {
@@ -189,7 +189,7 @@ export const initRoutingSidebar = async (
       clearTimeout(timeout);
       const query = input.value.trim();
       if (query.length < 3 || parseCoords(query)) {
-        resultsContainer.style.display = 'none';
+        resultsContainer.classList.add('hidden');
         return;
       }
       timeout = setTimeout(async () => {
@@ -199,18 +199,18 @@ export const initRoutingSidebar = async (
     });
     document.addEventListener('click', (e) => {
       if (!input.contains(e.target as Node) && !resultsContainer.contains(e.target as Node)) {
-        resultsContainer.style.display = 'none';
+        resultsContainer.classList.add('hidden');
       }
     });
   };
 
   const renderResults = (results: GeocodeResult[], input: HTMLInputElement, container: HTMLElement) => {
     if (results.length === 0) {
-      container.style.display = 'none';
+      container.classList.add('hidden');
       return;
     }
     container.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
-    container.style.display = 'block';
+    container.classList.remove('hidden');
     container.querySelectorAll('.geocoder-item').forEach(item => {
       item.addEventListener('click', () => {
         const lat = item.getAttribute('data-lat')!;
@@ -219,7 +219,7 @@ export const initRoutingSidebar = async (
         input.value = name;
         input.dataset.lat = lat;
         input.dataset.lon = lon;
-        container.style.display = 'none';
+        container.classList.add('hidden');
       });
     });
   };
@@ -250,7 +250,7 @@ export const initRoutingSidebar = async (
 
 export const renderRoutingLoading = (message: string) => {
   const status = document.getElementById('routing-status')!;
-  status.style.display = 'block';
+  status.classList.remove('hidden');
   status.innerHTML = `
     <div class="result-header">
       <span class="badge badge-yellow">
@@ -258,13 +258,13 @@ export const renderRoutingLoading = (message: string) => {
       </span>
     </div>
   `;
-  document.getElementById('routing-details')!.style.display = 'none';
-  document.getElementById('routing-results')!.style.display = 'none';
+  document.getElementById('routing-details')!.classList.add('hidden');
+  document.getElementById('routing-results')!.classList.add('hidden');
 };
 
 export const renderRoutingError = (message: string) => {
   const status = document.getElementById('routing-status')!;
-  status.style.display = 'block';
+  status.classList.remove('hidden');
   status.innerHTML = `
     <div class="result-header">
       <span class="badge badge-red">
@@ -279,7 +279,7 @@ export const updateRoutingSummary = (distance: number, duration: number, title: 
   const distKm = (distance / 1000).toFixed(2);
   const durMin = Math.round(duration / 60);
 
-  details.style.display = 'block';
+  details.classList.remove('hidden');
   details.innerHTML = `
     <div class="result-header">
       <span class="result-label">${title}</span>
@@ -302,9 +302,9 @@ export const renderStationResults = (
 ) => {
   const results = document.getElementById('routing-results')!;
   const status = document.getElementById('routing-status')!;
-  status.style.display = 'none';
+  status.classList.add('hidden');
 
-  results.style.display = 'block';
+  results.classList.remove('hidden');
   results.innerHTML = `
     <div class="result-header">
       <span class="result-count">${stations.length} Standorte gefunden</span>

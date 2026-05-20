@@ -84,7 +84,7 @@ export const NahMapLayers = {
             <div class="popup-header-org">${station.name}</div>
           </div>
           <table class="popup-kv">
-            <tr><td>Status</td><td style="color: ${color}; font-weight: 700;">${statusText}</td></tr>
+            <tr><td>Status</td><td style="color: ${color};"><strong>${statusText}</strong></td></tr>
             <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
             ${hoursHtml}
             <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>

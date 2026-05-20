@@ -31,13 +31,13 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
         </div>
         <div class="panel-body">
           <div class="form-row">
-            <div class="form-field" style="flex: 1; min-width: 200px;">
+            <div class="form-field flex-1 min-w-200">
               <label class="form-label" for="debug-endpoint">Endpoint</label>
               <select class="form-select" id="debug-endpoint">
                 ${safeEndpoints.map(e => `<option value="${e.url}">${e.name} (${e.url})</option>`).join('')}
               </select>
             </div>
-            <div class="form-field" style="flex: 2; min-width: 200px;">
+            <div class="form-field flex-2 min-w-200">
               <label class="form-label" for="debug-params">Parameters (optional)</label>
               <input type="text" class="form-input mono" id="debug-params" placeholder="?key=val&..." value="">
             </div>
@@ -48,7 +48,7 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
         </div>
       </div>
 
-      <div id="debug-response-container" style="display: none;">
+      <div id="debug-response-container" class="hidden">
         <div class="panel panel-code">
           <div class="panel-header">
             <div class="panel-title">
@@ -68,7 +68,7 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
 
       <div id="debug-empty-state">
         <div class="card-info">
-          <i class="fa-solid fa-terminal" style="margin-right: 8px;"></i>
+          <i class="fa-solid fa-terminal mr-8"></i>
           <strong>Hinweis:</strong> Wähle einen Endpunkt und klicke auf <code class="t-code">Senden</code>, um die API-Analyse zu starten.
         </div>
       </div>
@@ -92,8 +92,8 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
     
     sendBtn.classList.add('loading');
     sendBtn.disabled = true;
-    emptyState.style.display = 'none';
-    responseContainer.style.display = 'block';
+    emptyState.classList.add('hidden');
+    responseContainer.classList.remove('hidden');
     jsonViewer.textContent = '// Requesting data...';
     
     const start = performance.now();
