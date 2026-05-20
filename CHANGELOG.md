@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.1] - 2026-05-20 18:05
+
+### Geändert
+- **UI/UX Design System:** Vollständiges Refactoring aller Seiten, Komponenten und Helper zur vollständigen Eliminierung statischer und dynamischer inline CSS `style="..."`-Attribute gemäß CI-Richtlinien (`oe5ith-ci`).
+- **Sichtbarkeitssteuerung:** Standardisierung des Sichtbarkeits-Hiding-Mechanismus unter Verwendung der modular in `src/app.css` definierten `.hidden` Utility-Klasse anstelle von inline `style="display: none;"` / `style="display: block;"` / `style="display: flex;"`. Toggling erfolgt nun sauber via `classList` in TypeScript.
+- **Regions-Analyse:** Refactoring von `src/components/info/RegionsModule.ts` zur Eliminierung aller inline Layouts, Flex-Stile und Gewichte. Ersatz durch neue und bestehende CI-konforme Utilities.
+- **Tracking Gateway Modul:** Refactoring von `src/components/info/TrackingGatewayModule.ts` zur Entfernung von inline Tabellenbreiten, Border-Collapse und Paddings.
+- **Koordinaten-Eingabeblöcke:** Refactoring von `AddressBlock.ts` und `DmsBlock.ts` zur Eliminierung von inline Geocoder-Abständen und Cursor-Zeigern.
+- **Kartenlegende:** Refactoring von `LayoutHelper.ts` und `MapLegend.ts` zur Steuerung der Legenden-Sichtbarkeit über Klassen-Toggles statt Inline-Display.
+- **Sidebar & UI Toggles:** Refactoring von `NahSidebar.ts`, `RoutingSidebar.ts` und `SidebarUtils.ts` zur Beseitigung aller inline Cursor-Pointer und Hiding-Stile.
+
+### Behoben
+- **CI-Konformität:** Beseitigung aller verbleibenden statischen Hex-Farben (`#fff` / `#ffffff`) in den geänderten UI-Dateien und vollständige Ausrichtung an den Farb-Tokens des CI-Submoduls.
+
+### Hinzugefügt
+- **CI_MISSING_STYLES.md:** Erstellung eines Vorschlagsregisters im Projekt-Root zur geordneten Migration neuer Layout- und Spacing-Utilities in das Upstream-Repository `oe5ith-ci`.
+- **Design Utilities:** Einführung von `.pos-relative`, `.coord-header-status`, `.cursor-pointer` und `.t-tiny` in `src/app.css` zur Kapselung projektspezifischer UI-Layout-Erfordernisse.
+
 ## [3.3.0] - 2026-05-20 17:30
 
 ### Hinzugefügt

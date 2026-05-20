@@ -7,7 +7,7 @@ import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 
 export const initNahSidebar = (container: HTMLElement) => {
   const extraFooter = `
-    <div class="sidebar-footer-status" id="sidebar-status-container" style="display: none;">
+    <div class="sidebar-footer-status hidden" id="sidebar-status-container">
       <span class="footer-dot"></span>
       <span class="footer-status-text">verbinden...</span>
     </div>
@@ -41,7 +41,7 @@ export const updateNahServerStatus = (online: boolean) => {
   const container = document.getElementById('sidebar-status-container');
   if (!container) return;
   
-  container.style.display = 'flex';
+  container.classList.remove('hidden');
   const textEl = container.querySelector('.footer-status-text') as HTMLElement;
   const dotEl = container.querySelector('.footer-dot') as HTMLElement;
 

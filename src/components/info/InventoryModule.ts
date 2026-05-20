@@ -20,7 +20,7 @@ export const renderInventoryModule = async (container: HTMLElement, signal?: Abo
     </header>
 
     <div class="content-body" id="inventory-content">
-      <div style="text-align: center; padding: calc(2 * var(--card-gap));">
+      <div class="text-center p-double-gap">
         <i class="fa-solid fa-circle-notch fa-spin"></i> Lade Karten-Inventar...
       </div>
     </div>
@@ -77,8 +77,8 @@ export const renderInventoryModule = async (container: HTMLElement, signal?: Abo
       if (maps.length === 0) return;
 
       html += `
-        <h2 class="t-h2" style="margin-top: 0;">${typeLabels[type]}</h2>
-        <div class="card-grid" style="margin-bottom: calc(1.5 * var(--card-gap));">
+        <h2 class="t-h2 mt-0">${typeLabels[type]}</h2>
+        <div class="card-grid mb-1-5-gap">
           ${maps.map(map => `
             <div class="card">
               <div class="card-content-header">
@@ -107,10 +107,10 @@ export const renderInventoryModule = async (container: HTMLElement, signal?: Abo
           <h3>Schriftarten</h3>
           <span class="card-badge">Fonts</span>
         </div>
-        <div class="t-small" style="margin-top: 12px;">
+        <div class="t-small mt-12">
           ${data.fonts.map(f => `
-            <div style="margin-bottom: 8px;">
-              <div style="color: #fff; font-weight: 600;">${f.family}</div>
+            <div class="mb-8">
+              <div class="t-white font-semibold">${f.family}</div>
               <div>${f.variants.length} Varianten</div>
             </div>
           `).join('')}
@@ -125,10 +125,10 @@ export const renderInventoryModule = async (container: HTMLElement, signal?: Abo
           <h3>Icon Sprites</h3>
           <span class="card-badge">Sprites</span>
         </div>
-        <div class="t-small" style="margin-top: 12px;">
+        <div class="t-small mt-12">
           ${data.sprites.map(s => `
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-              <img src="${s.preview}" style="width: 20px; height: 20px; background: var(--bg); padding: 2px; border-radius: var(--badge-radius);">
+            <div class="flex-align-center gap-10 mb-8">
+              <img src="${s.preview}" class="sprite-preview-img">
               <span>${s.name}</span>
             </div>
           `).join('')}

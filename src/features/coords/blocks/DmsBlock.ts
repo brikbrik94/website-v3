@@ -14,14 +14,14 @@ export class DmsBlock extends CoordSystemBlock {
           <input class="coord-input-dms" type="text" data-field="lat-d" readonly>
           <input class="coord-input-dms" type="text" data-field="lat-m" readonly>
           <input class="coord-input-dms" type="text" data-field="lat-s" readonly>
-          <span class="coord-suffix" data-field="lat-suffix" style="cursor: pointer;">N</span>
+          <span class="coord-suffix cursor-pointer" data-field="lat-suffix">N</span>
         </div>
         <div class="coord-row-dms">
           <span class="coord-label">Lon.</span>
           <input class="coord-input-dms" type="text" data-field="lon-d" readonly>
           <input class="coord-input-dms" type="text" data-field="lon-m" readonly>
           <input class="coord-input-dms" type="text" data-field="lon-s" readonly>
-          <span class="coord-suffix" data-field="lon-suffix" style="cursor: pointer;">E</span>
+          <span class="coord-suffix cursor-pointer" data-field="lon-suffix">E</span>
         </div>
       </div>
     `;

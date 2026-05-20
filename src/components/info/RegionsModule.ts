@@ -19,7 +19,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
     </header>
 
     <div class="content-body" id="regions-content">
-      <div style="text-align: center; padding: calc(2 * var(--card-gap));">
+      <div class="text-center p-double-gap">
         <i class="fa-solid fa-circle-notch fa-spin"></i> Berechne regionale Analyse...
       </div>
     </div>
@@ -35,8 +35,8 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
 
     // 1. NAH Stats
     const nahRegions = Object.keys(data.nah).sort();
-    html += `<h2 class="t-h2" style="margin-top: 0;">Luftrettung (NAH)</h2>`;
-    html += `<div class="card-grid" style="margin-bottom: 32px;">`;
+    html += `<h2 class="t-h2 mt-0">Luftrettung (NAH)</h2>`;
+    html += `<div class="card-grid mb-1-5-gap">`;
     nahRegions.forEach(region => {
       const { total, active } = data.nah[region];
       const pct = Math.round((active / total) * 100);
@@ -48,8 +48,8 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
         <div class="card card-dashboard">
           <div class="card-status-dot ${statusClass}" title="${pct}% bereit"></div>
           <h3 title="${region}">${region}</h3>
-          <p class="t-body" style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-weight: 600;">${active} / ${total}</span> 
+          <p class="t-body flex-align-center gap-8">
+            <span class="font-semibold">${active} / ${total}</span> 
             <span class="badge badge-gray">${pct}%</span>
           </p>
         </div>
@@ -67,15 +67,15 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
 
       html += `
         <div class="card card-dashboard">
-          <h3 title="${state}" style="border: none; padding-bottom: 0;">${state}</h3>
-          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 title="${state}" class="border-none pb-0">${state}</h3>
+          <div class="flex-col gap-4 mt-8">
+            <div class="flex-align-center justify-between">
               <span class="t-small">Rettungsdienst (RD)</span>
-              <span style="font-weight: 600;">${rdCount}</span>
+              <span class="font-semibold">${rdCount}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="flex-align-center justify-between">
               <span class="t-small">Notarzt (NEF)</span>
-              <span style="font-weight: 600;">${nefCount}</span>
+              <span class="font-semibold">${nefCount}</span>
             </div>
           </div>
         </div>
@@ -105,7 +105,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
     } catch (error: any) {
       if (error.name === 'AbortError') return;
 
-      content.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 2rem;">
+      content.innerHTML = `<div class="t-danger text-center p-2rem">
         <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Regionaldaten.
       </div>`;
       scheduleNext(60000);

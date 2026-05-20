@@ -60,15 +60,15 @@ export class TrackingGatewayModule {
     ...
                     <div class="tool-sep"></div>
                     
-                    <div style="overflow-x: auto;">
-                        <table class="popup-kv" style="width: 100%; border-collapse: collapse;">
+                    <div class="table-wrapper">
+                        <table class="popup-kv w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th class="t-label" style="text-align: left; padding: 4px;">Source</th>
-                                    <th class="t-label" style="text-align: left; padding: 4px;">Typ</th>
-                                    <th class="t-label" style="text-align: left; padding: 4px;">Status</th>
-                                    <th class="t-label" style="text-align: left; padding: 4px;">Last Data</th>
-                                    <th class="t-label" style="text-align: left; padding: 4px;">Info</th>
+                                    <th class="t-label text-left tbl-cell-pad-4">Source</th>
+                                    <th class="t-label text-left tbl-cell-pad-4">Typ</th>
+                                    <th class="t-label text-left tbl-cell-pad-4">Status</th>
+                                    <th class="t-label text-left tbl-cell-pad-4">Last Data</th>
+                                    <th class="t-label text-left tbl-cell-pad-4">Info</th>
                                 </tr>
                             </thead>
                             <tbody>${sourceRows}</tbody>

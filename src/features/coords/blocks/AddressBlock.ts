@@ -11,14 +11,14 @@ export class AddressBlock extends CoordSystemBlock {
       <div class="coord-block active" data-system="address">
         <div class="coord-block-header">
           <span class="coord-block-title">Adresse</span>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="coord-header-status" id="address-status" style="font-size: 0.65rem; color: var(--subtle); font-weight: 500;"></div>
+          <div class="flex-align-center gap-8">
+            <div class="coord-header-status" id="address-status"></div>
             <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
           </div>
         </div>
-        <div class="coord-row" style="position: relative;">
+        <div class="coord-row pos-relative">
           <input class="coord-input-full" type="text" data-field="address" placeholder="Adresse suchen..." autocomplete="off">
-          <div id="geocoder-results" class="geocoder-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-dropdown);"></div>
+          <div id="geocoder-results" class="geocoder-results hidden"></div>
         </div>
       </div>
     `;
@@ -36,7 +36,7 @@ export class AddressBlock extends CoordSystemBlock {
       clearTimeout(this.geocodeTimeout);
 
       if (query.length < 3) {
-        resultsContainer.style.display = 'none';
+        resultsContainer.classList.add('hidden');
         return;
       }
 
@@ -44,26 +44,26 @@ export class AddressBlock extends CoordSystemBlock {
         const results = await GeocoderService.search(query);
         if (results.length > 0) {
           resultsContainer.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
-          resultsContainer.style.display = 'block';
+          resultsContainer.classList.remove('hidden');
           resultsContainer.querySelectorAll('.geocoder-item').forEach(item => {
             item.addEventListener('click', (ev) => {
               ev.stopPropagation();
               const lat = parseFloat(item.getAttribute('data-lat')!);
               const lon = parseFloat(item.getAttribute('data-lon')!);
               this.updateField('address', item.getAttribute('data-name')!);
-              resultsContainer.style.display = 'none';
+              resultsContainer.classList.add('hidden');
               this.service.setWgs(lat, lon);
             });
           });
         } else {
-          resultsContainer.style.display = 'none';
+          resultsContainer.classList.add('hidden');
         }
       }, 400);
     });
 
     document.addEventListener('click', (e) => {
       if (resultsContainer && !resultsContainer.contains(e.target as Node)) {
-        resultsContainer.style.display = 'none';
+        resultsContainer.classList.add('hidden');
       }
     });
   }

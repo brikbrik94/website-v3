@@ -34,9 +34,9 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
               <div class="status-row" id="svc-${s.id}">
                 <div class="status-row-left">
                   <i class="${s.icon} status-row-icon"></i>
-                  <div style="display: flex; flex-direction: column;">
+                  <div class="flex-col">
                     <span class="status-row-name" title="${s.description}">${s.name}</span>
-                    <span class="t-small mono" style="opacity: 0.5;">${s.url}</span>
+                    <span class="t-small mono opacity-50">${s.url}</span>
                   </div>
                 </div>
                 <div class="status-row-right">

@@ -8,9 +8,8 @@ import { APP_VERSION } from '../version';
 export const getSidebarFooterHtml = (extraContent: string = '') => {
   return `
     <div class="sidebar-footer">
-      <span class="sidebar-footer-version" 
+      <span class="sidebar-footer-version cursor-pointer" 
             onclick="window.dispatchEvent(new CustomEvent('open-changelog'))" 
-            style="cursor: pointer;" 
             title="Changelog anzeigen">v${APP_VERSION}</span>
       ${extraContent}
       <button class="sidebar-footer-copyright" 
