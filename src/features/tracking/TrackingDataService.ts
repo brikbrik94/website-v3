@@ -182,7 +182,12 @@ export class TrackingDataService {
         msg.aircraft.forEach(a => {
             this.aircraftState.set(a.id, a);
         });
-        msg.vessels.forEach(v => this.vesselState.set(v.id, v));
+        msg.vessels.forEach(v => {
+            this.vesselState.set(v.id, {
+                ...v,
+                trackPoints: undefined
+            });
+        });
         msg.sources.forEach(s => this.sourceState.set(s.id, s));
         this.emitData();
     }
@@ -219,9 +224,24 @@ export class TrackingDataService {
         msg.vessels.forEach(v => {
             const existing = this.vesselState.get(v.id);
             if (existing) {
-                this.vesselState.set(v.id, { ...existing, ...v });
+                const newTrack = existing.track ? [...existing.track] : [];
+                if (v.trackPoints && v.trackPoints.length > 0) {
+                    newTrack.push(...v.trackPoints);
+                }
+                const prunedTrack = newTrack.slice(-200);
+                
+                this.vesselState.set(v.id, { 
+                    ...existing, 
+                    ...v,
+                    track: prunedTrack.length > 0 ? prunedTrack : undefined,
+                    trackPoints: undefined
+                });
             } else {
-                this.vesselState.set(v.id, v);
+                this.vesselState.set(v.id, {
+                    ...v,
+                    track: v.trackPoints,
+                    trackPoints: undefined
+                });
             }
         });
         msg.removed.forEach(r => {
@@ -267,14 +287,31 @@ export class TrackingDataService {
         return { type: 'FeatureCollection', features };
     }
 
+    private getAisTracksGeoJson() {
+        const features: any[] = [];
+        for (const v of this.vesselState.values()) {
+            if (!v.track || v.track.length < 2) continue;
+            const coords = v.track
+                .filter(p => Number.isFinite(p.lon) && Number.isFinite(p.lat))
+                .map(p => [p.lon, p.lat]);
+            if (coords.length < 2) continue;
+            features.push({
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: coords },
+                properties: { mmsi: v.id }
+            });
+        }
+        return { type: 'FeatureCollection', features };
+    }
+
     private emitData() {
         const adsbData = this.getAdsbGeoJson();
         const aisData = this.getAisGeoJson();
         const adsbTracks = this.getAdsbTracksGeoJson();
-        const aisTracks = { type: 'FeatureCollection', features: [] };
+        const aisTracks = this.getAisTracksGeoJson();
         
-        if (adsbTracks.features.length > 0) {
-            console.debug(`[TrackingDataService] Generated ${adsbTracks.features.length} aircraft tracks`);
+        if (adsbTracks.features.length > 0 || aisTracks.features.length > 0) {
+            console.debug(`[TrackingDataService] Generated ${adsbTracks.features.length} aircraft tracks, ${aisTracks.features.length} vessel tracks`);
         }
 
         // Update Registry for persistent storage across page switches/style changes
@@ -448,7 +485,7 @@ export class TrackingDataService {
             adsbData: this.getAdsbGeoJson(),
             adsbTracks: this.getAdsbTracksGeoJson(),
             aisData: this.getAisGeoJson(),
-            aisTracks: { type: 'FeatureCollection', features: [] }
+            aisTracks: this.getAisTracksGeoJson()
         };
     }
 
