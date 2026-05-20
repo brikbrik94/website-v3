@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-20 11:15
+
+### Geändert
+- **Tracking-Protokoll:** Aktualisierung der TypeScript-Typen in `src/types/tracking.ts` auf Version 2.1 des Tracking Gateway Protokolls.
+- **Vessel Tracking:** Unterstützung für Track-Daten (Historie) bei Schiffen (`VesselEntity`) hinzugefügt.
+- **Protokoll-Erweiterung:** Unterstützung für `protocolVersion: 2`, sowie neue `AckMessage` und `ErrorMessage` Typen in `HelloMessage` und `ServerMessage` integriert.
+
 ## [3.3.0] - 2026-05-19 20:45
 
 ### Behoben

@@ -134,6 +134,8 @@ export type VesselEntity = {
   country?: string;
   shipType?: number | string;
   status?: number;
+  track?: AircraftTrackPoint[];
+  trackPoints?: AircraftTrackPoint[];
   lastSeen: string;
   updatedAt: string;
 };
@@ -183,7 +185,20 @@ export type UpdateMessage = {
 
 export type HelloMessage = {
   type: 'hello';
-  protocolVersion: 1;
+  protocolVersion: 1 | 2;
+  serverTime: string;
+};
+
+export type AckMessage = {
+  type: 'ack';
+  serverTime: string;
+  sequence: number;
+};
+
+export type ErrorMessage = {
+  type: 'error';
+  message: string;
+  code?: string;
   serverTime: string;
 };
 
@@ -194,4 +209,10 @@ export type HeartbeatMessage = {
   sequence: number;
 };
 
-export type ServerMessage = HelloMessage | SnapshotMessage | UpdateMessage | HeartbeatMessage;
+export type ServerMessage = 
+  | HelloMessage 
+  | SnapshotMessage 
+  | UpdateMessage 
+  | HeartbeatMessage 
+  | AckMessage 
+  | ErrorMessage;
