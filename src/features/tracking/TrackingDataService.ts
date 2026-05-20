@@ -46,7 +46,6 @@ export class TrackingDataService {
     private onStatus: TrackingStatusCallback;
 
     private wsUrl = 'wss://api.oe5ith.at/tracking/ws/v2';
-    private hasSubscribed = false;
     private currentBounds: [number, number, number, number] | null = null;
     private subscribeDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -75,6 +74,23 @@ export class TrackingDataService {
         this.connect();
     }
 
+    public setBounds(bounds: { getWest: () => number, getSouth: () => number, getEast: () => number, getNorth: () => number }) {
+        this.currentBounds = [
+            bounds.getWest(),
+            bounds.getSouth(),
+            bounds.getEast(),
+            bounds.getNorth()
+        ];
+
+        if (this.subscribeDebounceTimeout) clearTimeout(this.subscribeDebounceTimeout);
+        
+        this.subscribeDebounceTimeout = setTimeout(() => {
+            if (this.ws?.readyState === WebSocket.OPEN) {
+                this.sendSubscription();
+            }
+        }, 500);
+    }
+
     private connect() {
         if (this.isDestroyed) return;
         
@@ -98,7 +114,6 @@ export class TrackingDataService {
         this.ws.onclose = () => {
             console.log('[TrackingDataService] WebSocket closed');
             this.ws = null;
-            this.hasSubscribed = false;
             if (!this.isDestroyed) {
                 this.scheduleReconnect();
             }
@@ -130,7 +145,6 @@ export class TrackingDataService {
                 break;
             case 'ack':
                 console.log('[TrackingDataService] Subscription acknowledged');
-                this.hasSubscribed = true;
                 break;
             case 'error':
                 console.error('[TrackingDataService] Gateway error:', msg.message);
@@ -148,7 +162,7 @@ export class TrackingDataService {
     }
 
     private sendSubscription() {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN || this.hasSubscribed) return;
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
         const sub = {
             type: 'subscribe',
