@@ -6,6 +6,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ### Hinzugefügt
 - **Tracking-Service:** Implementierung von BBox-basiertem Filtern mit Debouncing (500ms) bei Kartenbewegung zur Reduzierung der Gateway-Last.
+- **Tracking-UI:** Verknüpfung der Karten-Events (`moveend`) mit dem Tracking-Service zur dynamischen Aktualisierung der Sichtbarkeitsbereiche.
 
 ### Geändert
 - **Tracking-Service:** Refactoring von `TrackingDataService` zur Unterstützung des V2-Protokoll-Lebenszyklus (`hello` -> `subscribe` -> `ack`).
