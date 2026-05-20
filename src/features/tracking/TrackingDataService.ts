@@ -30,6 +30,7 @@ export type TrackingStatusCallback = (
 ) => void;
 
 export class TrackingDataService {
+    private static readonly MAX_TRACK_POINTS = 200;
     private ws: WebSocket | null = null;
     private aircraftState = new Map<string, AircraftEntity>();
     private vesselState = new Map<string, VesselEntity>();
@@ -67,6 +68,15 @@ export class TrackingDataService {
                 this.emitStatus();
             }
         }, 10000);
+    }
+
+    private mergeTrack(existingTrack: any[] | undefined, newPoints: any[] | undefined): any[] | undefined {
+        const track = existingTrack ? [...existingTrack] : [];
+        if (newPoints && newPoints.length > 0) {
+            track.push(...newPoints);
+        }
+        if (track.length === 0) return undefined;
+        return track.slice(-TrackingDataService.MAX_TRACK_POINTS);
     }
 
     public refresh() {
@@ -180,11 +190,11 @@ export class TrackingDataService {
         this.vesselState.clear();
         this.sourceState.clear();
         msg.aircraft.forEach(a => {
-            const track = a.track || a.trackPoints;
+            const track = this.mergeTrack(undefined, a.track || a.trackPoints);
             this.aircraftState.set(a.id, { ...a, track, trackPoints: undefined });
         });
         msg.vessels.forEach(v => {
-            const track = v.track || v.trackPoints;
+            const track = this.mergeTrack(undefined, v.track || v.trackPoints);
             this.vesselState.set(v.id, { ...v, track, trackPoints: undefined });
         });
         msg.sources.forEach(s => this.sourceState.set(s.id, s));
@@ -194,54 +204,25 @@ export class TrackingDataService {
     private handleUpdate(msg: UpdateMessage) {
         msg.aircraft.forEach(a => {
             const existing = this.aircraftState.get(a.id);
+            const track = this.mergeTrack(existing?.track, a.trackPoints);
             
-            if (existing) {
-                // Merge server-provided trackPoints into existing history
-                const newTrack = existing.track ? [...existing.track] : [];
-                if (a.trackPoints && a.trackPoints.length > 0) {
-                    newTrack.push(...a.trackPoints);
-                }
-                
-                // Keep history within reasonable bounds (200 points)
-                const prunedTrack = newTrack.slice(-200);
-                
-                this.aircraftState.set(a.id, { 
-                    ...existing, 
-                    ...a, 
-                    track: prunedTrack.length > 0 ? prunedTrack : undefined,
-                    trackPoints: undefined 
-                });
-            } else {
-                // Initial creation from update: use trackPoints as initial track
-                this.aircraftState.set(a.id, {
-                    ...a,
-                    track: a.trackPoints,
-                    trackPoints: undefined
-                });
-            }
+            this.aircraftState.set(a.id, { 
+                ...existing, 
+                ...a, 
+                track,
+                trackPoints: undefined 
+            } as AircraftEntity);
         });
         msg.vessels.forEach(v => {
             const existing = this.vesselState.get(v.id);
-            if (existing) {
-                const newTrack = existing.track ? [...existing.track] : [];
-                if (v.trackPoints && v.trackPoints.length > 0) {
-                    newTrack.push(...v.trackPoints);
-                }
-                const prunedTrack = newTrack.slice(-200);
-                
-                this.vesselState.set(v.id, { 
-                    ...existing, 
-                    ...v,
-                    track: prunedTrack.length > 0 ? prunedTrack : undefined,
-                    trackPoints: undefined
-                });
-            } else {
-                this.vesselState.set(v.id, {
-                    ...v,
-                    track: v.trackPoints,
-                    trackPoints: undefined
-                });
-            }
+            const track = this.mergeTrack(existing?.track, v.trackPoints);
+            
+            this.vesselState.set(v.id, { 
+                ...existing, 
+                ...v,
+                track,
+                trackPoints: undefined
+            } as VesselEntity);
         });
         msg.removed.forEach(r => {
             if (r.kind === 'aircraft') this.aircraftState.delete(r.id);
