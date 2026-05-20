@@ -2,9 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.3.0-dev] - 2026-05-20 11:15
+## [3.3.0-dev] - 2026-05-20 13:15
 
 ### Geändert
+- **Tracking-Service:** Refactoring von `TrackingDataService` zur Unterstützung des V2-Protokoll-Lebenszyklus (`hello` -> `subscribe` -> `ack`).
+- **WebSocket:** Umstellung auf Gateway-V2 (`wss://api.oe5ith.at/tracking/ws/v2`) mit Unterstützung für BBox-basierte Subscriptions.
 - **Tracking-Protokoll:** Aktualisierung der TypeScript-Typen in `src/types/tracking.ts` auf Version 2.1 des Tracking Gateway Protokolls.
 - **Vessel Tracking:** Unterstützung für Track-Daten (Historie) bei Schiffen (`VesselEntity`) hinzugefügt.
 - **Protokoll-Erweiterung:** Unterstützung für `protocolVersion: 2`, sowie neue `AckMessage` und `ErrorMessage` Typen in `HelloMessage` und `ServerMessage` integriert.
