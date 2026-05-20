@@ -2,7 +2,10 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.3.0-dev] - 2026-05-20 13:15
+## [3.3.0-dev] - 2026-05-20 14:14
+
+### Hinzugefügt
+- **Tracking-Service:** Implementierung von BBox-basiertem Filtern mit Debouncing (500ms) bei Kartenbewegung zur Reduzierung der Gateway-Last.
 
 ### Geändert
 - **Tracking-Service:** Refactoring von `TrackingDataService` zur Unterstützung des V2-Protokoll-Lebenszyklus (`hello` -> `subscribe` -> `ack`).
