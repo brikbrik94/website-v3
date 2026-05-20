@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-20 14:37
+
+### Behoben
+- **Tracking-Service:** Fix für verloren gegangene Track-Historie in Snapshots. `handleSnapshot` verarbeitet nun `track` und `trackPoints` korrekt für Flugzeuge und Schiffe, um eine lückenlose Darstellung der Pfade sicherzustellen.
+
 ## [3.3.0-dev] - 2026-05-20 14:31
 
 ### Behoben

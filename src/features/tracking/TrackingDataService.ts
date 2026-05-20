@@ -180,13 +180,12 @@ export class TrackingDataService {
         this.vesselState.clear();
         this.sourceState.clear();
         msg.aircraft.forEach(a => {
-            this.aircraftState.set(a.id, a);
+            const track = a.track || a.trackPoints;
+            this.aircraftState.set(a.id, { ...a, track, trackPoints: undefined });
         });
         msg.vessels.forEach(v => {
-            this.vesselState.set(v.id, {
-                ...v,
-                trackPoints: undefined
-            });
+            const track = v.track || v.trackPoints;
+            this.vesselState.set(v.id, { ...v, track, trackPoints: undefined });
         });
         msg.sources.forEach(s => this.sourceState.set(s.id, s));
         this.emitData();
