@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-20 14:31
+
+### Behoben
+- **Tracking-UI:** Fix für fehlendes Event-Cleanup und Map-Removal in `TrackingPage`. Implementierung einer dedizierten `handleMoveEnd` Methode zur sicheren Entfernung des Listeners beim Zerstören der Seite.
+
 ## [3.3.0-dev] - 2026-05-20 14:14
 
 ### Hinzugefügt
