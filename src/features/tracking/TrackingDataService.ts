@@ -45,7 +45,10 @@ export class TrackingDataService {
     private onData: TrackingDataCallback;
     private onStatus: TrackingStatusCallback;
 
-    private wsUrl = 'wss://api.oe5ith.at/tracking/ws';
+    private wsUrl = 'wss://api.oe5ith.at/tracking/ws/v2';
+    private hasSubscribed = false;
+    private currentBounds: [number, number, number, number] | null = null;
+    private subscribeDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
     constructor(onData: TrackingDataCallback, onStatus: TrackingStatusCallback) {
         this.onData = onData;
@@ -95,6 +98,7 @@ export class TrackingDataService {
         this.ws.onclose = () => {
             console.log('[TrackingDataService] WebSocket closed');
             this.ws = null;
+            this.hasSubscribed = false;
             if (!this.isDestroyed) {
                 this.scheduleReconnect();
             }
@@ -120,19 +124,41 @@ export class TrackingDataService {
         }
 
         switch (msg.type) {
+            case 'hello':
+                console.log(`[TrackingDataService] Gateway Hello: Protocol V${msg.protocolVersion}`);
+                this.sendSubscription();
+                break;
+            case 'ack':
+                console.log('[TrackingDataService] Subscription acknowledged');
+                this.hasSubscribed = true;
+                break;
+            case 'error':
+                console.error('[TrackingDataService] Gateway error:', msg.message);
+                break;
             case 'snapshot':
                 this.handleSnapshot(msg);
                 break;
             case 'update':
                 this.handleUpdate(msg);
                 break;
-            case 'hello':
-                console.log(`[TrackingDataService] Gateway Hello: Protocol V${msg.protocolVersion}, ServerTime ${msg.serverTime}`);
-                break;
             case 'heartbeat':
                 this.emitStatus();
                 break;
         }
+    }
+
+    private sendSubscription() {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN || this.hasSubscribed) return;
+
+        const sub = {
+            type: 'subscribe',
+            bbox: this.currentBounds, // null means global/server-default
+            rate: 1,
+            includeVesselTracks: true
+        };
+
+        console.log('[TrackingDataService] Sending subscription:', sub);
+        this.ws.send(JSON.stringify(sub));
     }
 
     private handleSnapshot(msg: SnapshotMessage) {
@@ -416,6 +442,7 @@ export class TrackingDataService {
         this.isDestroyed = true;
         if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
         if (this.packetRateInterval) clearInterval(this.packetRateInterval);
+        if (this.subscribeDebounceTimeout) clearTimeout(this.subscribeDebounceTimeout);
         if (this.ws) {
             this.ws.close();
             this.ws = null;
