@@ -38,6 +38,10 @@ The `TrackingDataService` will be the primary component undergoing changes.
 4. **TrackingDataService** sends `subscribe` message with new BBox.
 5. **Gateway** acknowledges and starts streaming entities within the new BBox.
 
+### 3.4 InfoPage Integration
+The `TrackingDataService` is also used in `InfoPage.ts` to display system and source status.
+- **Behavior:** On the InfoPage, where no map is present, the service will send a "global" subscription (no BBox or a very large one) to ensure system telemetry and source status updates are still received.
+
 ## 4. Technical Details
 
 ### 4.1 Protocol V2.1 Messages
