@@ -134,7 +134,7 @@ export type VesselEntity = {
   country?: string;
   shipType?: number | string;
   status?: number;
-  track?: AircraftTrackPoint[];
+  track?: AircraftTrackPoint[]; // Reuse track point type
   trackPoints?: AircraftTrackPoint[];
   lastSeen: string;
   updatedAt: string;
