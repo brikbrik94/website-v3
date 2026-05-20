@@ -65,6 +65,18 @@ export class TrackingPageController extends BasePageController {
             });
         });
 
+        // Link map bounds to tracking service
+        this.map.on('moveend', () => {
+            if (this.dataService && this.map) {
+                this.dataService.setBounds(this.map.getBounds());
+            }
+        });
+
+        // Set initial bounds
+        if (this.dataService && this.map) {
+            this.dataService.setBounds(this.map.getBounds());
+        }
+
         initTopbar(mounts.topbar, basemaps, async (url) => {
             if (this.map) {
                 console.log(`[Tracking] Changing basemap to: ${url}`);
