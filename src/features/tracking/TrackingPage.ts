@@ -15,6 +15,12 @@ export class TrackingPageController extends BasePageController {
     private selectedId: string | number | null = null;
     private currentFilter = 'all';
 
+    private handleMoveEnd = () => {
+        if (this.dataService && this.map) {
+            this.dataService.setBounds(this.map.getBounds());
+        }
+    };
+
     public async mount(container: HTMLElement): Promise<void> {
         const invService = InventoryService.getInstance();
         const basemaps = await invService.getBasemaps();
@@ -66,11 +72,7 @@ export class TrackingPageController extends BasePageController {
         });
 
         // Link map bounds to tracking service
-        this.map.on('moveend', () => {
-            if (this.dataService && this.map) {
-                this.dataService.setBounds(this.map.getBounds());
-            }
-        });
+        this.map.on('moveend', this.handleMoveEnd);
 
         // Set initial bounds
         if (this.dataService && this.map) {
@@ -151,7 +153,8 @@ export class TrackingPageController extends BasePageController {
             this.mapLayers = null;
         }
         if (this.map) {
-            // maplibregl.Map cleanup if necessary, or handled by replacing container
+            this.map.off('moveend', this.handleMoveEnd);
+            this.map.remove();
             this.map = null;
         }
     }
