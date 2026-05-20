@@ -2,39 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.3.0-dev] - 2026-05-20 17:18
-
-### Geändert
-- **Tracking-Service:** Deaktivierung des BBox-basierten Filterns zugunsten eines globalen Snapshots mit anschließenden inkrementellen Updates (optimiert für Desktop-Ansichten).
-- **Tracking-UI:** Entfernung der Karten-Event-Verknüpfung (`moveend`) zum Tracking-Service.
-
-## [3.3.0-dev] - 2026-05-20 14:42
-
-### Geändert
-- **Tracking-Service:** Refactoring von `TrackingDataService` zur Vermeidung von Code-Duplikaten bei der Track-Verarbeitung. Einführung einer zentralen `mergeTrack` Hilfsmethode und Nutzung der Konstante `MAX_TRACK_POINTS`.
-
-## [3.3.0-dev] - 2026-05-20 14:37
-
-### Behoben
-- **Tracking-Service:** Fix für verloren gegangene Track-Historie in Snapshots. `handleSnapshot` verarbeitet nun `track` und `trackPoints` korrekt für Flugzeuge und Schiffe, um eine lückenlose Darstellung der Pfade sicherzustellen.
-
-## [3.3.0-dev] - 2026-05-20 14:31
-
-### Behoben
-- **Tracking-UI:** Fix für fehlendes Event-Cleanup und Map-Removal in `TrackingPage`. Implementierung einer dedizierten `handleMoveEnd` Methode zur sicheren Entfernung des Listeners beim Zerstören der Seite.
-
-## [3.3.0-dev] - 2026-05-20 14:14
+## [3.3.0] - 2026-05-20 17:30
 
 ### Hinzugefügt
-- **Tracking-Service:** Implementierung von BBox-basiertem Filtern mit Debouncing (500ms) bei Kartenbewegung zur Reduzierung der Gateway-Last.
-- **Tracking-UI:** Verknüpfung der Karten-Events (`moveend`) mit dem Tracking-Service zur dynamischen Aktualisierung der Sichtbarkeitsbereiche.
+- **Tracking-Service:** Migration auf Tracking Gateway Protokoll V2.1 mit Unterstützung für Live-Vessel-Tracks (Schifffahrt).
+- **Protokoll-Erweiterung:** Unterstützung für `protocolVersion: 2`, sowie neue `AckMessage` und `ErrorMessage` Typen.
+- **System-Telemetrie:** Integration detaillierter Gateway-Statusinformationen (Paketraten, Signalstärken) in die Info-Seite und das Tracking-Portal.
 
 ### Geändert
-- **Tracking-Service:** Refactoring von `TrackingDataService` zur Unterstützung des V2-Protokoll-Lebenszyklus (`hello` -> `subscribe` -> `ack`).
-- **WebSocket:** Umstellung auf Gateway-V2 (`wss://api.oe5ith.at/tracking/ws/v2`) mit Unterstützung für BBox-basierte Subscriptions.
-- **Tracking-Protokoll:** Aktualisierung der TypeScript-Typen in `src/types/tracking.ts` auf Version 2.1 des Tracking Gateway Protokolls.
-- **Vessel Tracking:** Unterstützung für Track-Daten (Historie) bei Schiffen (`VesselEntity`) hinzugefügt.
-- **Protokoll-Erweiterung:** Unterstützung für `protocolVersion: 2`, sowie neue `AckMessage` und `ErrorMessage` Typen in `HelloMessage` und `ServerMessage` integriert.
+- **Tracking-Architektur:** Umstellung auf Gateway-V2 (`wss://api.oe5ith.at/tracking/ws/v2`) mit Unterstützung für globalen Snapshot + inkrementelle Updates.
+- **Tracking-Service:** Refactoring von `TrackingDataService` zur Vermeidung von Code-Duplikaten bei der Track-Verarbeitung und Unterstützung des V2-Protokoll-Lebenszyklus (`hello` -> `subscribe` -> `ack`).
+- **Tracking-UI:** Optimierung der Tracking-Seite für Desktop-Ansichten (Entfernung von BBox-Filtern).
+- **Tracking-Protokoll:** Aktualisierung der TypeScript-Typen in `src/types/tracking.ts` auf Version 2.1.
+
+### Behoben
+- **Tracking-Stabilität:** Fix für verloren gegangene Track-Historie in Snapshots und lückenlose Darstellung der Pfade.
+- **Tracking-UI:** Fix für fehlendes Event-Cleanup und Map-Removal in `TrackingPage`.
 
 ## [3.3.0] - 2026-05-19 20:45
 
