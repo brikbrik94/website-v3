@@ -2,6 +2,12 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-20 17:18
+
+### Geändert
+- **Tracking-Service:** Deaktivierung des BBox-basierten Filterns zugunsten eines globalen Snapshots mit anschließenden inkrementellen Updates (optimiert für Desktop-Ansichten).
+- **Tracking-UI:** Entfernung der Karten-Event-Verknüpfung (`moveend`) zum Tracking-Service.
+
 ## [3.3.0-dev] - 2026-05-20 14:42
 
 ### Geändert

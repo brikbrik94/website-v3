@@ -47,8 +47,6 @@ export class TrackingDataService {
     private onStatus: TrackingStatusCallback;
 
     private wsUrl = 'wss://api.oe5ith.at/tracking/ws/v2';
-    private currentBounds: [number, number, number, number] | null = null;
-    private subscribeDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
     constructor(onData: TrackingDataCallback, onStatus: TrackingStatusCallback) {
         this.onData = onData;
@@ -82,23 +80,6 @@ export class TrackingDataService {
     public refresh() {
         if (this.isDestroyed || (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING))) return;
         this.connect();
-    }
-
-    public setBounds(bounds: { getWest: () => number, getSouth: () => number, getEast: () => number, getNorth: () => number }) {
-        this.currentBounds = [
-            bounds.getWest(),
-            bounds.getSouth(),
-            bounds.getEast(),
-            bounds.getNorth()
-        ];
-
-        if (this.subscribeDebounceTimeout) clearTimeout(this.subscribeDebounceTimeout);
-        
-        this.subscribeDebounceTimeout = setTimeout(() => {
-            if (this.ws?.readyState === WebSocket.OPEN) {
-                this.sendSubscription();
-            }
-        }, 500);
     }
 
     private connect() {
@@ -176,7 +157,7 @@ export class TrackingDataService {
 
         const sub = {
             type: 'subscribe',
-            bbox: this.currentBounds, // null means global/server-default
+            bbox: null, // Request global data
             rate: 1,
             includeVesselTracks: true
         };
@@ -473,7 +454,6 @@ export class TrackingDataService {
         this.isDestroyed = true;
         if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
         if (this.packetRateInterval) clearInterval(this.packetRateInterval);
-        if (this.subscribeDebounceTimeout) clearTimeout(this.subscribeDebounceTimeout);
         if (this.ws) {
             this.ws.close();
             this.ws = null;
