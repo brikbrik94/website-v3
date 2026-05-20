@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.0-dev] - 2026-05-20 14:42
+
+### Geändert
+- **Tracking-Service:** Refactoring von `TrackingDataService` zur Vermeidung von Code-Duplikaten bei der Track-Verarbeitung. Einführung einer zentralen `mergeTrack` Hilfsmethode und Nutzung der Konstante `MAX_TRACK_POINTS`.
+
 ## [3.3.0-dev] - 2026-05-20 14:37
 
 ### Behoben
