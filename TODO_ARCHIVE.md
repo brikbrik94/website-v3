@@ -1,6 +1,27 @@
 # TODO Archiv
 
 ## Abgeschlossene Aufgaben (Mai 2026)
+### Release v3.3.0 - Tracking Gateway Migration & BBox Deactivation
+- [x] Tracking Gateway V2 Migration (Types, Service, Tracks)
+- [x] BBox-Filtering Implementation & Deactivation (for Desktop Optimization)
+- [x] Map Bounds Sync Implementation & Cleanup
+- [x] Protocol Expansion (Ack, Error, System Telemetry)
+- [x] Vessel Track History Persistence
+- [x] Final Verification & SemVer Release
+
+### Map Registry & Overlay Fixes
+- [x] Basemap Persistence Store
+- [x] Map Resource Registry
+- [x] MapCore Integration & triggerRestore logic
+- [x] Topbar Basemap Sync
+- [x] MapPage Refactoring
+- [x] NAH and Routing Page Refactoring
+- [x] Deep Cloning in MapRegistry (Safety)
+- [x] Robust URL Resolution in MapCore
+- [x] MapPage/CoordsPage/TerrainManager Integration
+- [x] Resilience with Promise.allSettled
+
+### Frühere Aufgaben (Mai 2026)
 - [x] Task 1: Style Synchronization
 - [x] Task 2: Create MapStyles Library
 - [x] Task 3: Create MapLegend Library
