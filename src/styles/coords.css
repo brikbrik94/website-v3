@@ -289,3 +289,13 @@
   box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
 }
 .coord-select option { background: var(--panel-deep); color: var(--text); }
+
+/* ═══════════════════════════════════════
+   COORD-HEADER-STATUS — Zusatzinfo im Block-Header
+   ═══════════════════════════════════════ */
+
+.coord-header-status {
+  font-size: 0.65rem;
+  color: var(--subtle);
+  font-weight: 500;
+}

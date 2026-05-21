@@ -201,6 +201,11 @@
   padding: 0;
 }
 
+.panel-body-flush--scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ═══════════════════════════════════════
    TABELLE
    CI-konforme dunkle Tabelle.
@@ -239,6 +244,10 @@
 .ci-table th.sortable:hover { color: var(--muted); }
 .ci-table th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
 .ci-table th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+
+/* JS-Marker: Tabelle hat sortierbare Spalten.
+   Visuelle States via th.sortable / th.sort-asc / th.sort-desc */
+.ci-table--sortable { }
 
 /* Daten-Zeilen */
 .ci-table tbody tr {

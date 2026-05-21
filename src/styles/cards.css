@@ -324,7 +324,21 @@
 /* ═══════════════════════════════════════
    ═══════════════════════════════════════ */
 
+/* ═══════════════════════════════════════
+   SPRITE & ASSET PREVIEW
+   ═══════════════════════════════════════ */
+
+/* Quadratische Icon-/Bildvorschau innerhalb von Cards (z.B. Inventory-Debugger) */
+.sprite-preview-img {
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  border-radius: var(--badge-radius);
+  background: var(--bg);
+  object-fit: contain;
+}
+
 
 @media (max-width: 768px) {
-  
+
 }
