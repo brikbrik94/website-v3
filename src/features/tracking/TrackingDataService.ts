@@ -48,6 +48,11 @@ export class TrackingDataService {
 
     private wsUrl = 'wss://api.oe5ith.at/tracking/ws/v2';
 
+    // V2 Subscription State
+    private hasSubscribed = false;
+    private currentBounds: [number, number, number, number] | null = null;
+    private subscribeDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
+
     constructor(onData: TrackingDataCallback, onStatus: TrackingStatusCallback) {
         this.onData = onData;
         this.onStatus = onStatus;
@@ -80,6 +85,24 @@ export class TrackingDataService {
     public refresh() {
         if (this.isDestroyed || (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING))) return;
         this.connect();
+    }
+
+    public setBounds(bounds: { getWest: () => number, getSouth: () => number, getEast: () => number, getNorth: () => number }) {
+        this.currentBounds = [
+            bounds.getWest(),
+            bounds.getSouth(),
+            bounds.getEast(),
+            bounds.getNorth()
+        ];
+
+        if (this.subscribeDebounceTimeout) clearTimeout(this.subscribeDebounceTimeout);
+        
+        // Only send if we are already connected and had an initial hello
+        this.subscribeDebounceTimeout = setTimeout(() => {
+            if (this.ws?.readyState === WebSocket.OPEN && this.hasSubscribed) {
+                this.sendSubscription();
+            }
+        }, 500);
     }
 
     private connect() {
@@ -136,6 +159,7 @@ export class TrackingDataService {
                 break;
             case 'ack':
                 console.log('[TrackingDataService] Subscription acknowledged');
+                this.hasSubscribed = true;
                 break;
             case 'error':
                 console.error('[TrackingDataService] Gateway error:', msg.message);
@@ -157,7 +181,7 @@ export class TrackingDataService {
 
         const sub = {
             type: 'subscribe',
-            bbox: null, // Request global data
+            bbox: this.currentBounds, // null means global/server-default
             rate: 1,
             includeVesselTracks: true
         };
