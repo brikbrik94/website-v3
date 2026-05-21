@@ -18,6 +18,20 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.3.1] - 2026-05-21</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Zentrale Navigations-Optimierung:</strong> Integration von clientseitigem SPA-Routing für alle Topbar- und Logo-Navigationslinks, um nahtlose, neuladungsfreie Seitenwechsel zu ermöglichen.</li>
+            <li><strong>CI-Konformität:</strong> Vollständiges Refactoring aller Portal-Seiten und Komponenten zur Eliminierung statischer/dynamischer inline CSS-Style-Attribute und Hex-Farben. Synchronisation des CI-Submoduls und Bereinigung redundanter Hilfsklassen.</li>
+          </ul>
+
+          <h3>Build- & Bibliotheken-Upgrades</h3>
+          <ul>
+            <li><strong>Vite 8 & TypeScript 6 Upgrade:</strong> Modernisierung der Build-Kette auf Vite 8 und TypeScript 6. Behebung strengerer Typ-Prüfungen bei CSS-Import-Seiteneffekten via \`src/vite-env.d.ts\`.</li>
+            <li><strong>Geodaten-Rendering:</strong> Upgrade auf MapLibre GL JS v5 (inkl. WebGPU-Support) und PMTiles v4 zur Erhöhung der Performance und Zukunftssicherheit des Karten-Renderings.</li>
+            <li><strong>UI-Assets:</strong> Upgrade auf FontAwesome v7.2.0 für modernste Symbol-Ressourcen.</li>
+          </ul>
+
           <h2>[3.3.0] - 2026-05-19</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>
