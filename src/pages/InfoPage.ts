@@ -6,15 +6,13 @@ import { renderRegionsModule } from '../components/info/RegionsModule';
 import { renderInventoryModule } from '../components/info/InventoryModule';
 import { renderDebugModule } from '../components/info/DebugModule';
 import { BasePageController } from '../core/BasePageController';
-import { TrackingGatewayModule } from '../components/info/TrackingGatewayModule';
-import { TrackingDataService } from '../features/tracking/TrackingDataService';
+import { renderTrackingEndpointsModule } from '../components/info/TrackingEndpointsModule';
 
 /**
  * Info & Debug Page Controller
  * Handles layout, module switching and resource lifecycle.
  */
 export class InfoPageController extends BasePageController {
-  private trackingService: TrackingDataService | null = null;
 
   public override async mount(container: HTMLElement, subpath: string = 'nah'): Promise<void> {
     container.innerHTML = `
@@ -32,6 +30,9 @@ export class InfoPageController extends BasePageController {
             </a>
             <a href="/info/regions" class="sidebar-nav-item nav-link ${subpath === 'regions' ? 'active' : ''}" data-module="regions">
               <i class="fa-solid fa-map-location nav-icon"></i> Regions Analyse
+            </a>
+            <a href="/info/tracking" class="sidebar-nav-item nav-link ${subpath === 'tracking' ? 'active' : ''}" data-module="tracking">
+              <i class="fa-solid fa-satellite-dish nav-icon"></i> Tracking API
             </a>
             <a href="/info/inventory" class="sidebar-nav-item nav-link ${subpath === 'inventory' ? 'active' : ''}" data-module="inventory">
               <i class="fa-solid fa-layer-group nav-icon"></i> Karten Inventar
@@ -64,19 +65,8 @@ export class InfoPageController extends BasePageController {
       renderNahStatusModule(contentMount, this.signal);
     } else if (subpath === 'health') {
       renderHealthModule(contentMount, this.signal);
-
-      // Add Tracking Gateway Module below Health
-      const gatewayContainer = document.createElement('div');
-      contentMount.appendChild(gatewayContainer);
-      const gatewayModule = new TrackingGatewayModule(gatewayContainer);
-
-      this.trackingService = new TrackingDataService(
-        () => {}, // entities (ignored here)
-        (_success, _adsb, _ais, _rate, sources, system) => {
-          gatewayModule.update(sources, system);
-        }
-      );
-      this.trackingService.refresh();
+    } else if (subpath === 'tracking') {
+      renderTrackingEndpointsModule(contentMount, this.signal);
     } else if (subpath === 'regions') {
       renderRegionsModule(contentMount, this.signal);
     } else if (subpath === 'inventory') {
@@ -96,9 +86,5 @@ export class InfoPageController extends BasePageController {
 
   public override destroy(): void {
     super.destroy();
-    if (this.trackingService) {
-      this.trackingService.destroy();
-      this.trackingService = null;
-    }
   }
 }
