@@ -63,10 +63,10 @@ function renderHealthPanel(health: any) {
     const sources = health.sources || [];
     const sourceRows = sources.map((s: any) => `
         <tr>
-            <td><span class="badge ${s.kind === 'adsb' ? 'bg-primary' : 'bg-info'}">${(s.kind || 'unknown').toUpperCase()}</span></td>
-            <td class="font-mono">${s.id}</td>
-            <td><span class="status-indicator ${s.state === 'online' ? 'status-ok' : 'status-error'}"></span> ${s.state}</td>
-            <td class="text-right">${new Date(s.lastDataAt).toLocaleTimeString()}</td>
+            <td><span class="badge badge-gray">${(s.kind || 'unknown').toUpperCase()}</span></td>
+            <td class="mono">${s.id}</td>
+            <td><span class="badge ${s.state === 'online' ? 'badge-green' : 'badge-red'}"><span class="badge-dot"></span> ${s.state}</span></td>
+            <td style="text-align: right;">${new Date(s.lastDataAt).toLocaleTimeString()}</td>
         </tr>
     `).join('');
 
@@ -76,46 +76,47 @@ function renderHealthPanel(health: any) {
                 <h2><i class="fa-solid fa-heart-pulse"></i> /health (Live Status)</h2>
             </div>
             <div class="panel-body">
-                <div class="metric-grid mb-4">
-                    <div class="metric-card">
-                        <div class="metric-label">Gateway Status</div>
-                        <div class="metric-value ${health.status === 'ok' ? 'text-success' : 'text-danger'}">${(health.status || 'unknown').toUpperCase()}</div>
+                <div class="card-grid mb-4">
+                    <div class="card card-dashboard">
+                        <div class="card-status-dot ${health.status === 'ok' ? 'online' : 'offline'}"></div>
+                        <h3>${(health.status || 'unknown').toUpperCase()}</h3>
+                        <p>Gateway Status</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Uptime</div>
-                        <div class="metric-value">${formatUptime(sys.uptimeSec || 0)}</div>
+                    <div class="card card-dashboard">
+                        <h3>${formatUptime(sys.uptimeSec || 0)}</h3>
+                        <p>Uptime</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Memory (RSS+Heap)</div>
-                        <div class="metric-value">${memTotal} MB</div>
+                    <div class="card card-dashboard">
+                        <h3>${memTotal} MB</h3>
+                        <p>Memory (RSS+Heap)</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Decoded / Min</div>
-                        <div class="metric-value">${(sys.totals?.decodedPerMinute || 0).toLocaleString()}</div>
+                    <div class="card card-dashboard">
+                        <h3>${(sys.totals?.decodedPerMinute || 0).toLocaleString()}</h3>
+                        <p>Decoded / Min</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Flugzeuge (Live)</div>
-                        <div class="metric-value">${health.aircraft || 0}</div>
+                    <div class="card card-dashboard">
+                        <h3>${health.aircraft || 0}</h3>
+                        <p>Flugzeuge (Live)</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Schiffe (Live)</div>
-                        <div class="metric-value">${health.vessels || 0}</div>
+                    <div class="card card-dashboard">
+                        <h3>${health.vessels || 0}</h3>
+                        <p>Schiffe (Live)</p>
                     </div>
                 </div>
 
-                <h3 class="mt-4 mb-2">Aktive Datenquellen</h3>
-                <div class="table-responsive">
-                    <table class="data-table">
+                <h3 class="mt-4 mb-2" style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem; color: #fff;">Aktive Datenquellen</h3>
+                <div class="table-wrapper">
+                    <table class="ci-table">
                         <thead>
                             <tr>
                                 <th>Typ</th>
                                 <th>Source ID</th>
                                 <th>Status</th>
-                                <th class="text-right">Letztes Paket</th>
+                                <th style="text-align: right;">Letztes Paket</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${sourceRows || '<tr><td colspan="4" class="text-center">Keine Quellen</td></tr>'}
+                            ${sourceRows || '<tr><td colspan="4" style="text-align: center; color: var(--muted);">Keine Quellen</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -130,37 +131,37 @@ function renderStatsPanel(stats: any) {
             <div class="panel-header">
                 <h2><i class="fa-solid fa-chart-pie"></i> /stats/today (Tages-Zähler)</h2>
                 <div class="panel-header-actions">
-                    <span class="badge bg-secondary">${stats.day || 'Heute'}</span>
+                    <span class="badge badge-blue">${stats.day || 'Heute'}</span>
                 </div>
             </div>
             <div class="panel-body">
-                <div class="metric-grid">
-                    <div class="metric-card">
-                        <div class="metric-label">ADS-B Messages</div>
-                        <div class="metric-value">${(stats.adsbMessages || 0).toLocaleString()}</div>
+                <div class="card-grid">
+                    <div class="card card-dashboard">
+                        <h3>${(stats.adsbMessages || 0).toLocaleString()}</h3>
+                        <p>ADS-B Messages</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">AIS Messages</div>
-                        <div class="metric-value">${(stats.aisMessages || 0).toLocaleString()}</div>
+                    <div class="card card-dashboard">
+                        <h3>${(stats.aisMessages || 0).toLocaleString()}</h3>
+                        <p>AIS Messages</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Aircraft Seen / New</div>
-                        <div class="metric-value">${stats.aircraftSeen || 0} / <span class="text-success">+${stats.aircraftNew || 0}</span></div>
+                    <div class="card card-dashboard">
+                        <h3>${stats.aircraftSeen || 0} / <span style="color: var(--success);">+${stats.aircraftNew || 0}</span></h3>
+                        <p>Aircraft Seen / New</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Vessels Seen</div>
-                        <div class="metric-value">${stats.vesselsSeen || 0}</div>
+                    <div class="card card-dashboard">
+                        <h3>${stats.vesselsSeen || 0}</h3>
+                        <p>Vessels Seen</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Metadata Hits</div>
-                        <div class="metric-value text-success">${(stats.metadataCacheHit || 0).toLocaleString()}</div>
+                    <div class="card card-dashboard">
+                        <h3 style="color: var(--success);">${(stats.metadataCacheHit || 0).toLocaleString()}</h3>
+                        <p>Metadata Hits</p>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Metadata Misses</div>
-                        <div class="metric-value text-warning">${stats.metadataNotFound || 0}</div>
+                    <div class="card card-dashboard">
+                        <h3 style="color: #eab308;">${stats.metadataNotFound || 0}</h3>
+                        <p>Metadata Misses</p>
                     </div>
                 </div>
-                <div class="text-muted mt-3" style="font-size: 0.85em;">
+                <div style="margin-top: 16px; font-size: 0.85rem; color: var(--muted);">
                     Letztes Rollup Update in der Datenbank: ${stats.updatedAt ? new Date(stats.updatedAt).toLocaleTimeString() : 'Unbekannt'}
                 </div>
             </div>
@@ -172,25 +173,25 @@ function renderInfoPanel(info: any) {
     const endpoints = info.endpoints || [];
     const rows = endpoints.map((e: any) => `
         <tr>
-            <td><span class="badge bg-dark">${e.method || 'WS'}</span></td>
-            <td class="font-mono"><strong>${e.path}</strong></td>
+            <td><span class="badge badge-gray">${e.method || 'WS'}</span></td>
+            <td class="mono"><strong>${e.path}</strong></td>
             <td>${e.description}</td>
         </tr>
     `).join('');
 
     return `
-        <div class="panel mt-4 mb-4">
+        <div class="panel mt-4 mb-4" style="margin-top: 24px; margin-bottom: 24px;">
             <div class="panel-header">
                 <h2><i class="fa-solid fa-circle-info"></i> /info (API Übersicht)</h2>
             </div>
             <div class="panel-body">
                 <p><strong>Service:</strong> ${info.name}</p>
-                <p><strong>API Version:</strong> <span class="badge bg-primary">${info.apiVersion}</span></p>
+                <p><strong>API Version:</strong> <span class="badge badge-blue">${info.apiVersion}</span></p>
                 <p><strong>Beschreibung:</strong> ${info.description}</p>
                 
-                <h3 class="mt-4 mb-2">Verfügbare Endpunkte</h3>
-                <div class="table-responsive">
-                    <table class="data-table">
+                <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem; color: #fff;">Verfügbare Endpunkte</h3>
+                <div class="table-wrapper">
+                    <table class="ci-table">
                         <thead>
                             <tr>
                                 <th>Methode</th>
@@ -199,7 +200,7 @@ function renderInfoPanel(info: any) {
                             </tr>
                         </thead>
                         <tbody>
-                            ${rows || '<tr><td colspan="3" class="text-center">Keine Endpunkte</td></tr>'}
+                            ${rows || '<tr><td colspan="3" style="text-align: center; color: var(--muted);">Keine Endpunkte</td></tr>'}
                         </tbody>
                     </table>
                 </div>
