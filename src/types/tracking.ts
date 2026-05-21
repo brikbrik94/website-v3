@@ -185,7 +185,7 @@ export type UpdateMessage = {
 
 export type HelloMessage = {
   type: 'hello';
-  protocolVersion: 1 | 2;
+  protocolVersion: 1 | 2; // Allow both during transition, but target 2
   serverTime: string;
 };
 
