@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.3.1-dev] - 2026-05-21 20:01
+
+### Geändert
+- **Tracking-Protokoll:** Ergänzung eines Übergangskommentars für `protocolVersion` in den Typ-Definitionen (`src/types/tracking.ts`).
+
 ## [3.3.1] - 2026-05-21 02:40
 
 ### Aktualisiert
