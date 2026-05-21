@@ -30,7 +30,7 @@ export const initSidebar = (
     return `
       <div class="acc-group" id="group-${id}" data-id="${id}" data-url="${m.style.url}">
         <div class="acc-header" role="button" tabindex="0" aria-expanded="false">
-          <span class="acc-dot acc-dot-bg"></span>
+          <span class="acc-dot"></span>
           <span class="acc-title">${m.name}</span>
           <span class="acc-status unloaded">nicht geladen</span>
           <i class="fa-solid fa-chevron-down acc-chevron"></i>
@@ -41,7 +41,7 @@ export const initSidebar = (
         </div>
         <div class="acc-body">
           <div class="acc-item-list">
-            <div class="acc-item loading-state acc-item-loading">
+            <div class="acc-item loading-state">
               <i class="fa-solid fa-circle-notch fa-spin"></i> Lade Layer...
             </div>
           </div>
@@ -110,7 +110,7 @@ export const initSidebar = (
       } catch (err) {
         console.error(`Error loading layers for ${id}:`, err);
         listEl.innerHTML = `
-          <div class="acc-item acc-item-error">
+          <div class="acc-item error-state">
             <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden
           </div>
         `;

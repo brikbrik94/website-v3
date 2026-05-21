@@ -121,3 +121,17 @@ pre, .t-code-block {
   text-transform: uppercase;
   color: var(--subtle);
 }
+
+/* ── Font-Weight Utilities ── */
+
+.font-medium   { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+
+/* ── Text Utilities (Farbe + Größe, CI-Token-basiert) ── */
+
+.t-success { color: var(--success); }
+.t-danger  { color: var(--danger); }
+.t-muted   { color: var(--muted); }
+.t-subtle  { color: var(--subtle); }
+.t-white   { color: var(--white); }
+.t-tiny    { font-size: 0.75rem; }

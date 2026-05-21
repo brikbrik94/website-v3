@@ -2,23 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.3.1] - 2026-05-20 18:05
+## [3.3.1-dev] - 2026-05-21 02:32
+
+### Aktualisiert
+- **Kern-Abhängigkeiten-Upgrade:** Aktualisierung aller zentralen Build- und Laufzeit-Bibliotheken auf die neuesten Versionen (`typescript` v6.0.3, `vite` v8.0.13, `vitest` v4.1.7, `@fortawesome/fontawesome-free` v7.2.0, `maplibre-gl` v5.24.0, `pmtiles` v4.4.1) zur Verbesserung der Performance (inkl. WebGPU-Support in MapLibre 5) und zur langfristigen Wartbarkeit.
+- **Typ-Kompatibilität:** Bereitstellung von `src/vite-env.d.ts` zur Behebung strengerer TypeScript 6-Prüfungen bei CSS-Import-Seiteneffekten.
+
+## [3.3.1-dev] - 2026-05-21 02:16
 
 ### Geändert
-- **UI/UX Design System:** Vollständiges Refactoring aller Seiten, Komponenten und Helper zur vollständigen Eliminierung statischer und dynamischer inline CSS `style="..."`-Attribute gemäß CI-Richtlinien (`oe5ith-ci`).
+- **Allgemeine CI-Anpassungen:** Vollständiges Refactoring aller Seiten, Komponenten und Helper zur vollständigen Eliminierung statischer/dynamischer inline CSS `style="..."`-Attribute gemäß CI-Richtlinien (`oe5ith-ci`). Dies umfasst auch die Synchronisation des `oe5ith-ci` Submoduls sowie die anschließende Bereinigung redundanter Hilfsklassen in `src/app.css` und `Sidebar.ts`.
 - **Sichtbarkeitssteuerung:** Standardisierung des Sichtbarkeits-Hiding-Mechanismus unter Verwendung der modular in `src/app.css` definierten `.hidden` Utility-Klasse anstelle von inline `style="display: none;"` / `style="display: block;"` / `style="display: flex;"`. Toggling erfolgt nun sauber via `classList` in TypeScript.
-- **Regions-Analyse:** Refactoring von `src/components/info/RegionsModule.ts` zur Eliminierung aller inline Layouts, Flex-Stile und Gewichte. Ersatz durch neue und bestehende CI-konforme Utilities.
-- **Tracking Gateway Modul:** Refactoring von `src/components/info/TrackingGatewayModule.ts` zur Entfernung von inline Tabellenbreiten, Border-Collapse und Paddings.
-- **Koordinaten-Eingabeblöcke:** Refactoring von `AddressBlock.ts` und `DmsBlock.ts` zur Eliminierung von inline Geocoder-Abständen und Cursor-Zeigern.
-- **Kartenlegende:** Refactoring von `LayoutHelper.ts` und `MapLegend.ts` zur Steuerung der Legenden-Sichtbarkeit über Klassen-Toggles statt Inline-Display.
-- **Sidebar & UI Toggles:** Refactoring von `NahSidebar.ts`, `RoutingSidebar.ts` und `SidebarUtils.ts` zur Beseitigung aller inline Cursor-Pointer und Hiding-Stile.
+- **Header-Navigation:** Hinzufügen der Klasse `.nav-link` zu allen Topbar- und Logo-Navigationslinks in `Topbar.ts` und `main.ts`, um clientseitiges SPA-Routing (ohne Neuladen der Seite) im gesamten Portal zu aktivieren.
 
 ### Behoben
 - **CI-Konformität:** Beseitigung aller verbleibenden statischen Hex-Farben (`#fff` / `#ffffff`) in den geänderten UI-Dateien und vollständige Ausrichtung an den Farb-Tokens des CI-Submoduls.
 
 ### Hinzugefügt
-- **CI_MISSING_STYLES.md:** Erstellung eines Vorschlagsregisters im Projekt-Root zur geordneten Migration neuer Layout- und Spacing-Utilities in das Upstream-Repository `oe5ith-ci`.
-- **Design Utilities:** Einführung von `.pos-relative`, `.coord-header-status`, `.cursor-pointer` und `.t-tiny` in `src/app.css` zur Kapselung projektspezifischer UI-Layout-Erfordernisse.
+- **CI-Strukturierung:** Erstellung (und anschließende Löschung nach erfolgreicher Upstream-Migration) eines temporären Vorschlagsregisters (`CI_MISSING_STYLES.md`) im Projekt-Root zur Migration der Layout-Utilities.
 
 ## [3.3.0] - 2026-05-20 17:30
 

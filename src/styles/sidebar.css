@@ -103,8 +103,8 @@
 }
 .acc-header:hover { background: rgba(255,255,255,0.03); }
 
-/* Dot — Farbe ist site-spezifisch, kein CI-Token */
-.acc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+/* Dot — Akzentfarbe als CI-Default; site-spezifische Overrides möglich */
+.acc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--accent); }
 
 .acc-title {
   font-size: 0.85rem; font-weight: 600; color: var(--text);
@@ -175,6 +175,16 @@
 }
 .acc-item-label { font-size: 0.82rem; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acc-item.checked .acc-item-label { color: var(--text); }
+.acc-item.loading-state {
+  padding-left: 24px;
+  color: var(--subtle);
+  font-size: 0.8rem;
+}
+.acc-item.error-state {
+  padding-left: 24px;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
 
 /* ═══ SIDEBAR TAB ═══ */
 .sidebar-tab {
