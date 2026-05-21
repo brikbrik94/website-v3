@@ -342,8 +342,8 @@ export class TrackingDataService {
         const sources = Array.from(this.sourceState.values());
         
         // Use server telemetry if available, fallback to local estimate
-        const rate = (this.lastSystemTelemetry?.decodedPerMinute !== undefined)
-            ? this.lastSystemTelemetry.decodedPerMinute
+        const rate = (this.lastSystemTelemetry?.totals?.decodedPerMinute !== undefined)
+            ? this.lastSystemTelemetry.totals.decodedPerMinute
             : this.currentPacketRate;
 
         this.onStatus(

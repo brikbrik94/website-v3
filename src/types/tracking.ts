@@ -72,6 +72,10 @@ export type SourceStatus = {
   kind: SourceKind;
   state: SourceState;
   message?: string;
+  isSending?: boolean;
+  messagesPerMinute?: number;
+  decodedPerMinute?: number;
+  invalidPerMinute?: number;
   lastConnectedAt?: string;
   lastDataAt?: string;
   updatedAt: string;
@@ -152,14 +156,19 @@ export type SystemTelemetry = {
   serverStartedAt: string;
   uptimeSec: number;
   process: {
-    memoryMiB: number;
+    rssMb?: number;
+    heapUsedMb?: number;
   };
   clients: number;
-  entities: number;
-  messagesPerMinute: number;
-  decodedPerMinute: number;
-  invalidPerMinute: number;
-  isSending: boolean;
+  entities: {
+    aircraft: number;
+    vessels: number;
+  };
+  totals?: {
+    messagesPerMinute: number;
+    decodedPerMinute: number;
+    invalidPerMinute: number;
+  };
 };
 
 export type SnapshotMessage = {

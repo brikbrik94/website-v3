@@ -195,7 +195,7 @@ export const updateTrackingServerStatus = (
   
   if (packetsVal) {
     // Use decodedPerMinute if available from system telemetry
-    packetsVal.textContent = String(system?.decodedPerMinute ?? packetsPerMin);
+    packetsVal.textContent = String(system?.totals?.decodedPerMinute ?? packetsPerMin);
   }
 };
 
