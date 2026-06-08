@@ -75,7 +75,7 @@
   background: #444; margin-left: auto; flex-shrink: 0;
 }
 .sidebar-status-dot.online  { background: var(--success); box-shadow: 0 0 4px var(--success); }
-.sidebar-status-dot.offline { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.5); }
+.sidebar-status-dot.offline { background: var(--danger); box-shadow: 0 0 4px var(--danger); }
 
 /* ═══ ACCORDION ═══ */
 .accordion { display: flex; flex-direction: column; gap: 2px; }
@@ -116,7 +116,7 @@
   text-transform: uppercase; padding: 2px 6px;
   border-radius: 4px; white-space: nowrap; flex-shrink: 0;
 }
-.acc-status.unloaded { background: rgba(255,255,255,0.04); color: #555; border: 1px solid #2a2a2a; }
+.acc-status.unloaded { background: rgba(255,255,255,0.04); color: var(--subtle); border: 1px solid #2a2a2a; }
 .acc-status.partial  { background: var(--accent-subtle-md); color: var(--accent); border: 1px solid var(--accent-border); }
 .acc-status.all-on   { background: var(--success-subtle); color: var(--success); border: 1px solid var(--success-border); }
 
@@ -190,7 +190,7 @@
 .sidebar-tab {
   position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
   width: var(--sidebar-tab-width); height: var(--sidebar-tab-height);
-  background: rgba(59,130,246,0.35); border: 1px solid rgba(59,130,246,0.60);
+  background: var(--sidebar-tab-bg); border: 1px solid var(--sidebar-tab-border);
   border-left: none; border-radius: 0 7px 7px 0;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: var(--accent); font-size: 12px; font-weight: 700;
@@ -227,12 +227,12 @@
 }
 .sidebar-footer-copyright:hover {
   color: var(--muted);
-  background: rgba(255,255,255,0.05);
+  background: var(--surface-hover);
 }
 .sidebar-footer-status { display: flex; align-items: center; gap: 5px; font-size: 0.65rem; }
 .footer-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .footer-dot.green { background: var(--success); box-shadow: 0 0 4px var(--success); }
-.footer-dot.red   { background: #ef4444; box-shadow: 0 0 4px rgba(239,68,68,0.5); }
+.footer-dot.red   { background: var(--danger); box-shadow: 0 0 4px var(--danger); }
 .footer-status-text.green { color: #4a7c59; }
 .footer-status-text.red   { color: #7c4a4a; }
 
