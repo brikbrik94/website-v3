@@ -163,14 +163,41 @@ function renderStatsPanel(stats: TrackingStats) {
 
 function renderSourcesPanel(health: TrackingHealth) {
     const sources = health.system?.sources || health.sources || [];
-    const sourceRows = sources.map((s: any) => `
-        <tr>
-            <td><span class="badge badge-gray">${(s.kind || 'unknown').toUpperCase()}</span></td>
-            <td class="mono">${s.id}</td>
-            <td><span class="badge ${s.state === 'online' ? 'badge-green' : 'badge-red'}"><span class="badge-dot"></span> ${s.state}</span></td>
-            <td style="text-align: right;">${s.messagesPerMinute || 0}</td>
-            <td style="text-align: right;">${s.lastDataAt ? new Date(s.lastDataAt).toLocaleTimeString() : '-'}</td>
-        </tr>
+    
+    if (sources.length === 0) {
+        return `
+            <div class="panel mt-4">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fa-solid fa-plug"></i> Aktive Datenquellen</div>
+                </div>
+                <div class="panel-body">
+                    <p class="svc-info-line">Keine Quellen aktiv</p>
+                </div>
+            </div>
+        `;
+    }
+
+    const sourceGrids = sources.map((s: any) => `
+        <div class="svc-data-cell">
+            <span class="svc-data-label">Typ</span>
+            <span class="svc-data-value">${(s.kind || 'unknown').toUpperCase()}</span>
+        </div>
+        <div class="svc-data-cell">
+            <span class="svc-data-label">Source ID</span>
+            <span class="svc-data-value">${s.id}</span>
+        </div>
+        <div class="svc-data-cell">
+            <span class="svc-data-label">Status</span>
+            <span class="svc-data-value ${s.state === 'online' ? 'success' : 'danger'}">${s.state}</span>
+        </div>
+        <div class="svc-data-cell">
+            <span class="svc-data-label">Nachrichten/Min</span>
+            <span class="svc-data-value">${s.messagesPerMinute || 0}</span>
+        </div>
+        <div class="svc-data-cell">
+            <span class="svc-data-label">Letztes Paket</span>
+            <span class="svc-data-value">${s.lastDataAt ? new Date(s.lastDataAt).toLocaleTimeString() : '-'}</span>
+        </div>
     `).join('');
 
     return `
@@ -179,21 +206,8 @@ function renderSourcesPanel(health: TrackingHealth) {
                 <div class="panel-title"><i class="fa-solid fa-plug"></i> Aktive Datenquellen</div>
             </div>
             <div class="panel-body">
-                <div class="table-wrapper">
-                    <table class="ci-table">
-                        <thead>
-                            <tr>
-                                <th>Typ</th>
-                                <th>Source ID</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Nachrichten/Min</th>
-                                <th style="text-align: right;">Letztes Paket</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${sourceRows || '<tr><td colspan="5" style="text-align: center; color: var(--muted);">Keine Quellen</td></tr>'}
-                        </tbody>
-                    </table>
+                <div class="svc-data-grid">
+                    ${sourceGrids}
                 </div>
             </div>
         </div>
