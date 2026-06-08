@@ -2,7 +2,10 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [3.3.2-dev] - 2026-06-08 12:58
+## [3.3.2-dev] - 2026-06-08 14:14
+
+### Behoben
+- **Info-Modul (Regions):** Ein 500 Internal Server Error im neuen API-Endpunkt `/api/region_stations.php` wurde behoben. Die Datenbankverbindung (`$db`) war nicht initialisiert worden.
 
 ### Hinzugefügt
 - **Info-Modul (Regions):** Interaktive Detailansicht für Bundesländer im Regions Analyse Modul hinzugefügt. Ein Klick auf ein Bundesland zeigt nun eine tabellarische Auflistung aller dortigen Rettungsdienst- und Notarzt-Stationen (RD/NEF), geladen über den neuen API-Endpunkt `/api/region_stations.php`.

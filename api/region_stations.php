@@ -11,6 +11,8 @@ if (!isset($_GET['state'])) {
 
 $state = $_GET['state'];
 
+$db = get_db_conn();
+
 $query = "
     SELECT id, 'RD' as type, name, short_name, organization as org 
     FROM emergency.rd_stations 
