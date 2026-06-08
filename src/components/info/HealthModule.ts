@@ -27,26 +27,18 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
     </header>
 
     <div class="content-body">
-      <div class="panel">
-        <div class="panel-body">
-          <div class="status-panel" id="health-list">
-            ${services.map(s => `
-              <div class="status-row" id="svc-${s.id}">
-                <div class="status-row-left">
-                  <i class="${s.icon} status-row-icon"></i>
-                  <div class="flex-col">
-                    <span class="status-row-name" title="${s.description}">${s.name}</span>
-                    <span class="t-small mono opacity-50">${s.url}</span>
-                  </div>
-                </div>
-                <div class="status-row-right">
-                  <span class="status-row-value mono">-- ms</span>
-                  <div class="status-dot"></div>
-                </div>
-              </div>
-            `).join('')}
+      <div class="card-grid mb-gap" id="health-list">
+        ${services.map(s => `
+          <div class="card card-dashboard" id="svc-${s.id}">
+            <div class="card-status-dot unknown"></div>
+            <h3>
+              <i class="${s.icon} svc-card-icon"></i>
+              <span>${s.name}</span>
+            </h3>
+            <p class="svc-info-line">${s.description}</p>
+            <span class="svc-status-line unknown mono">-- ms</span>
           </div>
-        </div>
+        `).join('')}
       </div>
     </div>
   `;
@@ -58,8 +50,8 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
   const pingService = async (service: typeof services[0]) => {
     if (signal?.aborted) return;
     const row = container.querySelector(`#svc-${service.id}`)!;
-    const latencyEl = row.querySelector('.status-row-value')!;
-    const dot = row.querySelector('.status-dot')!;
+    const latencyEl = row.querySelector('.svc-status-line')!;
+    const dot = row.querySelector('.card-status-dot')!;
 
     const start = performance.now();
     try {
@@ -82,20 +74,33 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
       const latency = Math.round(performance.now() - start);
       latencyEl.textContent = `${latency} ms`;
       
-      dot.classList.remove('on', 'warn', 'off');
+      dot.classList.remove('online', 'unknown', 'offline');
+      latencyEl.classList.remove('online', 'unknown', 'offline');
+      
       if (response.ok) {
-        if (latency < 200) dot.classList.add('on');
-        else if (latency < 500) dot.classList.add('warn');
-        else dot.classList.add('off');
+        if (latency < 200) {
+          dot.classList.add('online');
+          latencyEl.classList.add('online');
+        } else if (latency < 500) {
+          dot.classList.add('unknown');
+          latencyEl.classList.add('unknown');
+        } else {
+          dot.classList.add('offline');
+          latencyEl.classList.add('offline');
+        }
       } else {
-        dot.classList.add('off');
+        dot.classList.add('offline');
+        latencyEl.classList.add('offline');
       }
     } catch (e: any) {
       if (e.name === 'AbortError' && signal?.aborted) return;
       
       latencyEl.textContent = 'Error';
-      dot.classList.remove('on', 'warn', 'off');
-      dot.classList.add('off');
+      dot.classList.remove('online', 'unknown', 'offline');
+      latencyEl.classList.remove('online', 'unknown', 'offline');
+      
+      dot.classList.add('offline');
+      latencyEl.classList.add('offline');
     }
   };
 
