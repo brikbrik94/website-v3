@@ -1,3 +1,36 @@
+interface TrackingHealth {
+    status?: string;
+    aircraft?: number;
+    vessels?: number;
+    system?: {
+        process?: { rssMb?: number; heapUsedMb?: number };
+        uptimeSec?: number;
+        totals?: { decodedPerMinute?: number };
+    };
+    sources?: Array<{ kind?: string; id: string; state?: string; lastDataAt: string }>;
+}
+
+interface TrackingStats {
+    day?: string;
+    adsbMessages?: number;
+    aisMessages?: number;
+    aircraftSeen?: number;
+    aircraftNew?: number;
+    vesselsSeen?: number;
+    metadataCacheHit?: number;
+    metadataNotFound?: number;
+    updatedAt?: string;
+}
+
+interface TrackingInfo {
+    name?: string;
+    apiVersion?: string;
+    description?: string;
+    endpoints?: Array<{ method?: string; path: string; description: string }>;
+}
+
+const TRACKING_API_BASE = 'https://api.oe5ith.at/tracking';
+
 export async function renderTrackingEndpointsModule(container: HTMLElement, signal: AbortSignal) {
     container.innerHTML = `
         <header class="page-header">
@@ -20,13 +53,13 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
         </div>
     `;
 
-    const body = document.getElementById('tracking-endpoints-body')!;
+    const body = container.querySelector('#tracking-endpoints-body')!;
 
     try {
         const [healthRes, statsRes, infoRes] = await Promise.all([
-            fetch('https://api.oe5ith.at/tracking/health', { signal }),
-            fetch('https://api.oe5ith.at/tracking/stats/today', { signal }),
-            fetch('https://api.oe5ith.at/tracking/info', { signal })
+            fetch(`${TRACKING_API_BASE}/health`, { signal }),
+            fetch(`${TRACKING_API_BASE}/stats/today`, { signal }),
+            fetch(`${TRACKING_API_BASE}/info`, { signal })
         ]);
 
         if (!healthRes.ok || !statsRes.ok || !infoRes.ok) {
@@ -60,7 +93,7 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
     }
 }
 
-function renderHealthPanel(health: any) {
+function renderHealthPanel(health: TrackingHealth) {
     const sys = health.system || {};
     const process = sys.process || {};
     const memTotal = ((process.rssMb || 0) + (process.heapUsedMb || 0)).toFixed(1);
@@ -129,7 +162,7 @@ function renderHealthPanel(health: any) {
     `;
 }
 
-function renderStatsPanel(stats: any) {
+function renderStatsPanel(stats: TrackingStats) {
     return `
         <div class="panel mt-4">
             <div class="panel-header">
@@ -173,7 +206,7 @@ function renderStatsPanel(stats: any) {
     `;
 }
 
-function renderInfoPanel(info: any) {
+function renderInfoPanel(info: TrackingInfo) {
     const endpoints = info.endpoints || [];
     const rows = endpoints.map((e: any) => `
         <tr>
