@@ -122,7 +122,7 @@ function renderStatsPanel(stats: TrackingStats) {
             <div class="panel-header">
                 <div class="panel-title"><i class="fa-solid fa-chart-pie"></i> /stats/today (Tages-Zähler)</div>
                 <div class="panel-meta">
-                    <span class="badge badge-blue">${stats.day || 'Heute'}</span>
+                    Letztes Update: ${stats.updatedAt ? new Date(stats.updatedAt).toLocaleTimeString() : 'Unbekannt'}
                 </div>
             </div>
             <div class="panel-body">
@@ -155,9 +155,6 @@ function renderStatsPanel(stats: TrackingStats) {
                         <span class="svc-data-label">Metadata Misses</span>
                         <span class="svc-data-value danger">${stats.metadataNotFound || 0}</span>
                     </div>
-                </div>
-                <div style="margin-top: 16px; font-size: 0.85rem; color: var(--muted);">
-                    Letztes Rollup Update in der Datenbank: ${stats.updatedAt ? new Date(stats.updatedAt).toLocaleTimeString() : 'Unbekannt'}
                 </div>
             </div>
         </div>
