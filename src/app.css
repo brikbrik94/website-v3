@@ -19,6 +19,7 @@
 @import "./styles/utils.css";
 @import "./styles/modal.css";
 @import "./styles/toast.css";
+@import "./styles/service-dashboard.css";
 
 /* App-spezifische Overrides */
 :root {
