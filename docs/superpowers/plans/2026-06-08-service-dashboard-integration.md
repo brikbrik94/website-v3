@@ -15,7 +15,7 @@
 **Files:**
 - Modify: `src/components/info/HealthModule.ts`
 
-- [ ] **Step 1: Rewrite HTML template to use card-grid**
+- [x] **Step 1: Rewrite HTML template to use card-grid**
 
 ```typescript
   container.innerHTML = `
@@ -50,7 +50,7 @@
   `;
 ```
 
-- [ ] **Step 2: Update logic in `pingService()`**
+- [x] **Step 2: Update logic in `pingService()`**
 
 Replace the `.status-dot` class toggling with the new structure updating `.card-status-dot` and `.svc-status-line`.
 
@@ -92,11 +92,11 @@ Replace the `.status-dot` class toggling with the new structure updating `.card-
     }
 ```
 
-- [ ] **Step 3: Build & Verify HealthModule**
+- [x] **Step 3: Build & Verify HealthModule**
 Run: `npm run build` or `npx tsc --noEmit`
 Expected: Passes type checking successfully.
 
-- [ ] **Step 4: Commit HealthModule changes**
+- [x] **Step 4: Commit HealthModule changes**
 ```bash
 git add src/components/info/HealthModule.ts
 git commit -m "refactor: adapt HealthModule to CI dashboard overview pattern"

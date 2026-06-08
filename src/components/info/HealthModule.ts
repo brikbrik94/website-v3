@@ -1,7 +1,7 @@
 /**
  * Renders the Service Health monitoring module.
  */
-export const renderHealthModule = async (container: HTMLElement, signal?: AbortSignal) => {
+export const renderHealthModule = async (container: HTMLElement, signal: AbortSignal) => {
   const services = [
     { id: 'backend', name: 'Backend Core', url: '/api/ping.php', icon: 'fa-brands fa-php', description: 'Basis API-Infrastruktur' },
     { id: 'database', name: 'PostgreSQL Database', url: '/api/db.php', icon: 'fa-solid fa-database', description: 'PostGIS Datenbank Status' },
@@ -48,7 +48,7 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
   let refreshTimeout: any = null;
 
   const pingService = async (service: typeof services[0]) => {
-    if (signal?.aborted) return;
+    if (signal.aborted) return;
     const row = container.querySelector(`#svc-${service.id}`)!;
     const latencyEl = row.querySelector('.svc-status-line')!;
     const dot = row.querySelector('.card-status-dot')!;
@@ -58,9 +58,12 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
       const timeoutController = new AbortController();
       const timeoutId = setTimeout(() => timeoutController.abort(), 5000);
       
-      const fetchSignal = signal 
-        ? (AbortSignal.any ? AbortSignal.any([signal, timeoutController.signal]) : timeoutController.signal)
-        : timeoutController.signal;
+      let fetchSignal = timeoutController.signal;
+      if (AbortSignal.any) {
+        fetchSignal = AbortSignal.any([signal, timeoutController.signal]);
+      } else {
+        signal.addEventListener('abort', () => timeoutController.abort(), { once: true });
+      }
 
       const response = await fetch(service.url, { 
         method: 'GET',
@@ -69,7 +72,7 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
       });
       clearTimeout(timeoutId);
 
-      if (signal?.aborted) return;
+      if (signal.aborted) return;
 
       const latency = Math.round(performance.now() - start);
       latencyEl.textContent = `${latency} ms`;
@@ -93,7 +96,7 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
         latencyEl.classList.add('offline');
       }
     } catch (e: any) {
-      if (e.name === 'AbortError' && signal?.aborted) return;
+      if (e.name === 'AbortError' && signal.aborted) return;
       
       latencyEl.textContent = 'Error';
       dot.classList.remove('online', 'unknown', 'offline');
@@ -105,7 +108,7 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
   };
 
   const runAllChecks = async () => {
-    if (signal?.aborted || !container.isConnected) return;
+    if (signal.aborted || !container.isConnected) return;
     
     refreshBtn.classList.add('loading');
     refreshBtn.disabled = true;
@@ -113,7 +116,7 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
 
     await Promise.all(services.map(s => pingService(s)));
 
-    if (signal?.aborted || !container.isConnected) return;
+    if (signal.aborted || !container.isConnected) return;
 
     meta.textContent = `Stand: ${new Date().toLocaleTimeString()}`;
     refreshBtn.classList.remove('loading');
@@ -124,7 +127,7 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
 
   const scheduleNext = () => {
     if (refreshTimeout) clearTimeout(refreshTimeout);
-    if (signal?.aborted || !container.isConnected) return;
+    if (signal.aborted || !container.isConnected) return;
 
     refreshTimeout = setTimeout(() => {
       runAllChecks();
@@ -136,11 +139,9 @@ export const renderHealthModule = async (container: HTMLElement, signal?: AbortS
     runAllChecks();
   });
 
-  if (signal) {
-    signal.addEventListener('abort', () => {
-      if (refreshTimeout) clearTimeout(refreshTimeout);
-    });
-  }
+  signal.addEventListener('abort', () => {
+    if (refreshTimeout) clearTimeout(refreshTimeout);
+  });
 
   runAllChecks();
 };
