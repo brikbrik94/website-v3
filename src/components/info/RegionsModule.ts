@@ -25,9 +25,9 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
     </div>
   `;
 
-  const content = document.getElementById('regions-content')!;
-  const meta = document.getElementById('regions-meta')!;
-  const refreshBtn = document.getElementById('regions-refresh-btn') as HTMLButtonElement;
+  let content = document.getElementById('regions-content')!;
+  let meta = document.getElementById('regions-meta')!;
+  let refreshBtn = document.getElementById('regions-refresh-btn') as HTMLButtonElement;
   let refreshTimeout: any = null;
 
   const renderData = (data: StatsResponse) => {
@@ -66,7 +66,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
       const nefCount = data.nef[state] || 0;
 
       html += `
-        <div class="card card-dashboard">
+        <div class="card card-dashboard cursor-pointer" data-state="${state}">
           <h3 title="${state}" class="border-none pb-0">${state}</h3>
           <div class="flex-col gap-4 mt-8">
             <div class="flex-align-center justify-between">
@@ -84,6 +84,131 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
     html += `</div>`;
 
     content.innerHTML = html;
+
+    const cards = content.querySelectorAll('.card-dashboard[data-state]');
+    cards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const state = target.dataset.state;
+        if (state) showRegionDetail(state);
+      });
+    });
+  };
+
+  const showRegionDetail = async (state: string) => {
+    if (refreshTimeout) clearTimeout(refreshTimeout);
+
+    container.innerHTML = `
+      <header class="page-header">
+        <div class="page-header-left">
+          <button class="page-action" id="regions-back-btn"><i class="fa-solid fa-arrow-left"></i> Zurück</button>
+          <h1 class="page-title">${state} <span>Wachen</span></h1>
+        </div>
+      </header>
+      <div class="content-body">
+        <div class="text-center p-double-gap">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Lade Stationen...
+        </div>
+      </div>
+    `;
+
+    const backBtn = container.querySelector('#regions-back-btn')!;
+    backBtn.addEventListener('click', () => {
+      // Restore original HTML structure
+      container.innerHTML = `
+        <header class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Regions <span>Analyse</span></h1>
+            <p class="page-subtitle">Verfügbarkeit nach Organisation und Einsatzgebieten (NAH, RD, NEF).</p>
+          </div>
+          <div class="page-header-right">
+            <div class="page-meta" id="regions-meta">Lade Daten...</div>
+            <button class="page-action" id="regions-refresh-btn">
+              <i class="fa-solid fa-sync"></i> Aktualisieren
+            </button>
+          </div>
+        </header>
+        <div class="content-body" id="regions-content">
+          <div class="text-center p-double-gap">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Berechne regionale Analyse...
+          </div>
+        </div>
+      `;
+      
+      // Update element references
+      content = document.getElementById('regions-content')!;
+      meta = document.getElementById('regions-meta')!;
+      refreshBtn = document.getElementById('regions-refresh-btn') as HTMLButtonElement;
+      
+      refreshBtn.addEventListener('click', () => {
+        if (refreshTimeout) clearTimeout(refreshTimeout);
+        fetchData();
+      });
+
+      fetchData();
+    });
+
+    try {
+      const response = await fetch(`/api/region_stations.php?state=${encodeURIComponent(state)}`, { signal });
+      const data = await response.json();
+
+      if (signal?.aborted || !container.isConnected) return;
+
+      const body = container.querySelector('.content-body')!;
+      
+      if (data.error) {
+        body.innerHTML = `<div class="t-danger text-center p-2rem">Fehler: ${data.error}</div>`;
+        return;
+      }
+
+      if (data.length === 0) {
+        body.innerHTML = `<div class="text-center p-2rem">Keine Stationen gefunden.</div>`;
+        return;
+      }
+
+      let tableHtml = `
+        <div class="table-wrapper">
+          <table class="ci-table">
+            <thead>
+              <tr>
+                <th>Typ</th>
+                <th>Organisation</th>
+                <th>Kurzname</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      data.forEach((station: any) => {
+        const badgeClass = station.type === 'RD' ? 'badge-gray' : 'badge-red';
+        tableHtml += `
+          <tr>
+            <td><span class="badge ${badgeClass}">${station.type}</span></td>
+            <td>${station.org}</td>
+            <td>${station.short_name}</td>
+            <td>${station.name}</td>
+          </tr>
+        `;
+      });
+
+      tableHtml += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      body.innerHTML = tableHtml;
+
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
+      const body = container.querySelector('.content-body')!;
+      if (body) {
+         body.innerHTML = `<div class="t-danger text-center p-2rem">
+          <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Stationen.
+        </div>`;
+      }
+    }
   };
 
   const fetchData = async () => {
