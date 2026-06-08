@@ -32,7 +32,7 @@ export class InfoPageController extends BasePageController {
               <i class="fa-solid fa-map-location nav-icon"></i> Regions Analyse
             </a>
             <a href="/info/tracking" class="sidebar-nav-item nav-link ${subpath === 'tracking' ? 'active' : ''}" data-module="tracking">
-              <i class="fa-solid fa-satellite-dish nav-icon"></i> Tracking API
+              <i class="fa-solid fa-satellite-dish nav-icon"></i> Tracking Telemetrie
             </a>
             <a href="/info/inventory" class="sidebar-nav-item nav-link ${subpath === 'inventory' ? 'active' : ''}" data-module="inventory">
               <i class="fa-solid fa-layer-group nav-icon"></i> Karten Inventar
