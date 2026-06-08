@@ -5,9 +5,10 @@ interface TrackingHealth {
     system?: {
         process?: { rssMb?: number; heapUsedMb?: number };
         uptimeSec?: number;
-        totals?: { decodedPerMinute?: number };
+        totals?: { decodedPerMinute?: number; messagesPerMinute?: number };
+        sources?: Array<{ kind: string; id: string; state: string; messagesPerMinute: number; lastDataAt: string }>;
     };
-    sources?: Array<{ kind?: string; id: string; state?: string; lastDataAt: string }>;
+    sources?: Array<{ kind?: string; id: string; state?: string; messagesPerMinute?: number; lastDataAt: string }>;
 }
 
 interface TrackingStats {
@@ -22,13 +23,6 @@ interface TrackingStats {
     updatedAt?: string;
 }
 
-interface TrackingInfo {
-    name?: string;
-    apiVersion?: string;
-    description?: string;
-    endpoints?: Array<{ method?: string; path: string; description: string }>;
-}
-
 const TRACKING_API_BASE = 'https://api.oe5ith.at/tracking';
 
 export async function renderTrackingEndpointsModule(container: HTMLElement, signal: AbortSignal) {
@@ -37,16 +31,16 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
             <div class="page-header-left">
                 <div class="svc-page-title-row">
                     <i class="fa-solid fa-satellite-dish svc-page-icon"></i>
-                    <h1 class="page-title">Tracking Gateway API</h1>
+                    <h1 class="page-title">Tracking System Telemetrie</h1>
                 </div>
-                <p class="page-subtitle">Statische HTTP Endpunkte Übersicht</p>
+                <p class="page-subtitle">Live-Status und statistische Auswertungen</p>
             </div>
         </header>
         <div class="content-body" id="tracking-endpoints-body">
             <div class="panel">
                 <div class="panel-body">
                     <div style="text-align: center; padding: 20px;">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Lade API Daten...
+                        <i class="fa-solid fa-spinner fa-spin"></i> Lade Tracking-Daten...
                     </div>
                 </div>
             </div>
@@ -56,26 +50,24 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
     const body = container.querySelector('#tracking-endpoints-body')!;
 
     try {
-        const [healthRes, statsRes, infoRes] = await Promise.all([
+        const [healthRes, statsRes] = await Promise.all([
             fetch(`${TRACKING_API_BASE}/health`, { signal }),
-            fetch(`${TRACKING_API_BASE}/stats/today`, { signal }),
-            fetch(`${TRACKING_API_BASE}/info`, { signal })
+            fetch(`${TRACKING_API_BASE}/stats/today`, { signal })
         ]);
 
-        if (!healthRes.ok || !statsRes.ok || !infoRes.ok) {
+        if (!healthRes.ok || !statsRes.ok) {
             throw new Error('Fehler beim Abrufen der API-Daten (HTTP Status nicht ok)');
         }
 
         const health = await healthRes.json();
         const stats = await statsRes.json();
-        const info = await infoRes.json();
 
         if (signal.aborted) return;
 
         body.innerHTML = `
-            ${renderHealthPanel(health)}
+            ${renderLiveKpis(health)}
             ${renderStatsPanel(stats)}
-            ${renderInfoPanel(info)}
+            ${renderSourcesPanel(health)}
         `;
     } catch (e: any) {
         if (signal.aborted) return;
@@ -93,69 +85,35 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
     }
 }
 
-function renderHealthPanel(health: TrackingHealth) {
-    const sys = health.system || {};
-    const process = sys.process || {};
-    const memTotal = ((process.rssMb || 0) + (process.heapUsedMb || 0)).toFixed(1);
-
-    const sources = health.sources || [];
-    const sourceRows = sources.map((s: any) => `
-        <tr>
-            <td><span class="badge badge-gray">${(s.kind || 'unknown').toUpperCase()}</span></td>
-            <td class="mono">${s.id}</td>
-            <td><span class="badge ${s.state === 'online' ? 'badge-green' : 'badge-red'}"><span class="badge-dot"></span> ${s.state}</span></td>
-            <td style="text-align: right;">${new Date(s.lastDataAt).toLocaleTimeString()}</td>
-        </tr>
-    `).join('');
-
+function renderLiveKpis(health: TrackingHealth) {
     return `
-        <div class="panel">
-            <div class="panel-header">
-                <div class="panel-title"><i class="fa-solid fa-heart-pulse"></i> /health (Live Status)</div>
-            </div>
-            <div class="panel-body">
-                <div class="svc-data-grid mb-4">
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Gateway Status</span>
-                        <span class="svc-data-value ${health.status === 'ok' ? 'success' : 'danger'}">${(health.status || 'unknown').toUpperCase()}</span>
-                    </div>
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Uptime</span>
-                        <span class="svc-data-value">${formatUptime(sys.uptimeSec || 0)}</span>
-                    </div>
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Memory (RSS+Heap)</span>
-                        <span class="svc-data-value">${memTotal} MB</span>
-                    </div>
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Decoded / Min</span>
-                        <span class="svc-data-value">${(sys.totals?.decodedPerMinute || 0).toLocaleString()}</span>
-                    </div>
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Flugzeuge (Live)</span>
-                        <span class="svc-data-value">${health.aircraft || 0}</span>
-                    </div>
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Schiffe (Live)</span>
-                        <span class="svc-data-value">${health.vessels || 0}</span>
-                    </div>
+        <div class="card-grid mb-gap">
+            <div class="card card-dashboard">
+                <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="card-data">
+                    <div class="card-value">${health.system?.totals?.messagesPerMinute || 0} / Min</div>
+                    <div class="card-label">Paketrate</div>
                 </div>
-
-                <div class="panel-title" style="margin-top: 24px; margin-bottom: 12px;"><i class="fa-solid fa-plug"></i> Aktive Datenquellen</div>
-                <div class="table-wrapper">
-                    <table class="ci-table">
-                        <thead>
-                            <tr>
-                                <th>Typ</th>
-                                <th>Source ID</th>
-                                <th>Status</th>
-                                <th style="text-align: right;">Letztes Paket</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${sourceRows || '<tr><td colspan="4" style="text-align: center; color: var(--muted);">Keine Quellen</td></tr>'}
-                        </tbody>
-                    </table>
+            </div>
+            <div class="card card-dashboard">
+                <div class="card-icon"><i class="fa-solid fa-plane"></i></div>
+                <div class="card-data">
+                    <div class="card-value">${health.aircraft || 0}</div>
+                    <div class="card-label">Flugzeuge Live</div>
+                </div>
+            </div>
+            <div class="card card-dashboard">
+                <div class="card-icon"><i class="fa-solid fa-ship"></i></div>
+                <div class="card-data">
+                    <div class="card-value">${health.vessels || 0}</div>
+                    <div class="card-label">Schiffe Live</div>
+                </div>
+            </div>
+            <div class="card card-dashboard">
+                <div class="card-icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="card-data">
+                    <div class="card-value">${formatUptime(health.system?.uptimeSec || 0)}</div>
+                    <div class="card-label">Uptime</div>
                 </div>
             </div>
         </div>
@@ -206,49 +164,37 @@ function renderStatsPanel(stats: TrackingStats) {
     `;
 }
 
-function renderInfoPanel(info: TrackingInfo) {
-    const endpoints = info.endpoints || [];
-    const rows = endpoints.map((e: any) => `
+function renderSourcesPanel(health: TrackingHealth) {
+    const sources = health.system?.sources || health.sources || [];
+    const sourceRows = sources.map((s: any) => `
         <tr>
-            <td><span class="badge badge-gray">${e.method || 'WS'}</span></td>
-            <td class="mono"><strong>${e.path}</strong></td>
-            <td>${e.description}</td>
+            <td><span class="badge badge-gray">${(s.kind || 'unknown').toUpperCase()}</span></td>
+            <td class="mono">${s.id}</td>
+            <td><span class="badge ${s.state === 'online' ? 'badge-green' : 'badge-red'}"><span class="badge-dot"></span> ${s.state}</span></td>
+            <td style="text-align: right;">${s.messagesPerMinute || 0}</td>
+            <td style="text-align: right;">${s.lastDataAt ? new Date(s.lastDataAt).toLocaleTimeString() : '-'}</td>
         </tr>
     `).join('');
 
     return `
-        <div class="panel mt-4 mb-4" style="margin-top: 24px; margin-bottom: 24px;">
+        <div class="panel mt-4">
             <div class="panel-header">
-                <div class="panel-title"><i class="fa-solid fa-circle-info"></i> /info (API Übersicht)</div>
+                <div class="panel-title"><i class="fa-solid fa-plug"></i> Aktive Datenquellen</div>
             </div>
             <div class="panel-body">
-                <div class="svc-data-grid mb-4">
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Service</span>
-                        <span class="svc-data-value">${info.name}</span>
-                    </div>
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">API Version</span>
-                        <span class="svc-data-value"><span class="badge badge-blue">${info.apiVersion}</span></span>
-                    </div>
-                    <div class="svc-data-cell">
-                        <span class="svc-data-label">Beschreibung</span>
-                        <span class="svc-data-value" style="font-size:0.85rem">${info.description}</span>
-                    </div>
-                </div>
-                
-                <div class="panel-title" style="margin-top: 24px; margin-bottom: 12px;"><i class="fa-solid fa-server"></i> Verfügbare Endpunkte</div>
                 <div class="table-wrapper">
                     <table class="ci-table">
                         <thead>
                             <tr>
-                                <th>Methode</th>
-                                <th>Pfad</th>
-                                <th>Beschreibung</th>
+                                <th>Typ</th>
+                                <th>Source ID</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Nachrichten/Min</th>
+                                <th style="text-align: right;">Letztes Paket</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${rows || '<tr><td colspan="3" style="text-align: center; color: var(--muted);">Keine Endpunkte</td></tr>'}
+                            ${sourceRows || '<tr><td colspan="5" style="text-align: center; color: var(--muted);">Keine Quellen</td></tr>'}
                         </tbody>
                     </table>
                 </div>

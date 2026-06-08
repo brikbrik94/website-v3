@@ -6,7 +6,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ### Geändert
 - **Info-Modul (Health):** Das HealthModule wurde auf das neue Dashboard-Grid Layout (`.card-grid`, `.card-dashboard`) gemäß CI-Vorgaben umgestellt. Status-Indikatoren verwenden nun die gültigen Modifikatoren (`.online`, `.offline`, `.unknown`).
-- **Info-Modul (Tracking):** Das TrackingEndpointsModule wurde auf das neue Dashboard-Detail Layout (`.svc-data-grid`, `.svc-page-title-row`) umgestellt. API-Antworten werden nun via TypeScript Interfaces streng typisiert und DOM Scoping Sicherheitsrisiken wurden behoben.
+- **Info-Modul (Tracking):** Das TrackingEndpointsModule wurde in ein vollständiges "Tracking System Telemetrie" Dashboard umgewandelt. Die statische Liste der API-Endpunkte wurde entfernt. Stattdessen nutzt die Ansicht nun die neuen `.card-dashboard` Kacheln für Live-KPIs (Paketrate, Flugzeuge, Schiffe, Uptime), ein kompaktes `.svc-data-grid` für die Tagesstatistiken und detaillierte Paketraten-Metriken pro Receiver-Datenquelle. API-Antworten sind via TypeScript Interfaces streng typisiert und DOM Scoping Risiken wurden behoben.
 
 ## [3.3.1-dev] - 2026-05-21 20:01
 
