@@ -95,7 +95,8 @@ function renderLiveKpis(health: TrackingHealth) {
                 <div class="svc-data-grid">
                     <div class="svc-data-cell">
                         <span class="svc-data-label">Paketrate</span>
-                        <span class="svc-data-value">${health.system?.totals?.messagesPerMinute || 0} / Min</span>
+                        <span class="svc-data-value">${health.system?.totals?.messagesPerMinute || 0}</span>
+                        <span class="svc-data-sub">Nachrichten / Min</span>
                     </div>
                     <div class="svc-data-cell">
                         <span class="svc-data-label">Flugzeuge Live</span>
