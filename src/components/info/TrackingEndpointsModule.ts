@@ -39,9 +39,7 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
         <div class="content-body" id="tracking-endpoints-body">
             <div class="panel">
                 <div class="panel-body">
-                    <div style="text-align: center; padding: 20px;">
-                        <i class="fa-solid fa-spinner fa-spin"></i> Lade Tracking-Daten...
-                    </div>
+                    <p class="svc-info-line"><i class="fa-solid fa-spinner fa-spin"></i> Lade Tracking-Daten...</p>
                 </div>
             </div>
         </div>
@@ -74,7 +72,7 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
         body.innerHTML = `
             <div class="panel error-panel">
                 <div class="panel-header">
-                    <h2><i class="fa-solid fa-triangle-exclamation"></i> Fehler</h2>
+                    <div class="panel-title"><i class="fa-solid fa-triangle-exclamation"></i> Fehler</div>
                 </div>
                 <div class="panel-body">
                     <p>Die Tracking-Endpunkte konnten nicht geladen werden.</p>
