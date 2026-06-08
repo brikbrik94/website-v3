@@ -59,18 +59,24 @@ export const renderHealthModule = async (container: HTMLElement, signal: AbortSi
       const timeoutId = setTimeout(() => timeoutController.abort(), 5000);
       
       let fetchSignal = timeoutController.signal;
+      let abortHandler: (() => void) | undefined;
       if (AbortSignal.any) {
         fetchSignal = AbortSignal.any([signal, timeoutController.signal]);
       } else {
-        signal.addEventListener('abort', () => timeoutController.abort(), { once: true });
+        abortHandler = () => timeoutController.abort();
+        signal.addEventListener('abort', abortHandler, { once: true });
       }
 
       const response = await fetch(service.url, { 
         method: 'GET',
+        headers: { 'Accept': 'application/json' },
         signal: fetchSignal,
         cache: 'no-store'
       });
       clearTimeout(timeoutId);
+      if (abortHandler) {
+        signal.removeEventListener('abort', abortHandler);
+      }
 
       if (signal.aborted) return;
 
