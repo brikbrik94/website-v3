@@ -109,7 +109,7 @@ git commit -m "refactor: adapt HealthModule to CI dashboard overview pattern"
 **Files:**
 - Modify: `src/components/info/TrackingEndpointsModule.ts`
 
-- [ ] **Step 1: Rewrite Main Header**
+- [x] **Step 1: Rewrite Main Header**
 
 ```typescript
     container.innerHTML = `
@@ -125,7 +125,7 @@ git commit -m "refactor: adapt HealthModule to CI dashboard overview pattern"
         <div class="content-body" id="tracking-endpoints-body">
 ```
 
-- [ ] **Step 2: Rewrite `renderHealthPanel`**
+- [x] **Step 2: Rewrite `renderHealthPanel`**
 
 ```typescript
 function renderHealthPanel(health: any) {
@@ -169,7 +169,7 @@ function renderHealthPanel(health: any) {
 // ...
 ```
 
-- [ ] **Step 3: Rewrite `renderStatsPanel`**
+- [x] **Step 3: Rewrite `renderStatsPanel`**
 
 ```typescript
 function renderStatsPanel(stats: any) {
@@ -217,7 +217,7 @@ function renderStatsPanel(stats: any) {
 }
 ```
 
-- [ ] **Step 4: Rewrite `renderInfoPanel`**
+- [x] **Step 4: Rewrite `renderInfoPanel`**
 
 ```typescript
 function renderInfoPanel(info: any) {
@@ -247,11 +247,11 @@ function renderInfoPanel(info: any) {
 // ...
 ```
 
-- [ ] **Step 5: Build & Verify TrackingEndpointsModule**
+- [x] **Step 5: Build & Verify TrackingEndpointsModule**
 Run: `npx tsc --noEmit`
 Expected: Passes type checking successfully.
 
-- [ ] **Step 6: Commit TrackingEndpointsModule changes**
+- [x] **Step 6: Commit TrackingEndpointsModule changes**
 ```bash
 git add src/components/info/TrackingEndpointsModule.ts
 git commit -m "refactor: adapt TrackingEndpointsModule to CI dashboard detail pattern"

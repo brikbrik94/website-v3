@@ -1,9 +1,14 @@
 export async function renderTrackingEndpointsModule(container: HTMLElement, signal: AbortSignal) {
     container.innerHTML = `
-        <div class="content-header">
-            <h1 class="page-title">Tracking Gateway API</h1>
-            <div class="page-subtitle">Statische HTTP Endpunkte Übersicht</div>
-        </div>
+        <header class="page-header">
+            <div class="page-header-left">
+                <div class="svc-page-title-row">
+                    <i class="fa-solid fa-satellite-dish svc-page-icon"></i>
+                    <h1 class="page-title">Tracking Gateway API</h1>
+                </div>
+                <p class="page-subtitle">Statische HTTP Endpunkte Übersicht</p>
+            </div>
+        </header>
         <div class="content-body" id="tracking-endpoints-body">
             <div class="panel">
                 <div class="panel-body">
@@ -73,38 +78,37 @@ function renderHealthPanel(health: any) {
     return `
         <div class="panel">
             <div class="panel-header">
-                <h2><i class="fa-solid fa-heart-pulse"></i> /health (Live Status)</h2>
+                <div class="panel-title"><i class="fa-solid fa-heart-pulse"></i> /health (Live Status)</div>
             </div>
             <div class="panel-body">
-                <div class="card-grid mb-4">
-                    <div class="card card-dashboard">
-                        <div class="card-status-dot ${health.status === 'ok' ? 'online' : 'offline'}"></div>
-                        <h3>${(health.status || 'unknown').toUpperCase()}</h3>
-                        <p>Gateway Status</p>
+                <div class="svc-data-grid mb-4">
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Gateway Status</span>
+                        <span class="svc-data-value ${health.status === 'ok' ? 'success' : 'danger'}">${(health.status || 'unknown').toUpperCase()}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${formatUptime(sys.uptimeSec || 0)}</h3>
-                        <p>Uptime</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Uptime</span>
+                        <span class="svc-data-value">${formatUptime(sys.uptimeSec || 0)}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${memTotal} MB</h3>
-                        <p>Memory (RSS+Heap)</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Memory (RSS+Heap)</span>
+                        <span class="svc-data-value">${memTotal} MB</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${(sys.totals?.decodedPerMinute || 0).toLocaleString()}</h3>
-                        <p>Decoded / Min</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Decoded / Min</span>
+                        <span class="svc-data-value">${(sys.totals?.decodedPerMinute || 0).toLocaleString()}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${health.aircraft || 0}</h3>
-                        <p>Flugzeuge (Live)</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Flugzeuge (Live)</span>
+                        <span class="svc-data-value">${health.aircraft || 0}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${health.vessels || 0}</h3>
-                        <p>Schiffe (Live)</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Schiffe (Live)</span>
+                        <span class="svc-data-value">${health.vessels || 0}</span>
                     </div>
                 </div>
 
-                <h3 class="mt-4 mb-2" style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem; color: #fff;">Aktive Datenquellen</h3>
+                <div class="panel-title" style="margin-top: 24px; margin-bottom: 12px;"><i class="fa-solid fa-plug"></i> Aktive Datenquellen</div>
                 <div class="table-wrapper">
                     <table class="ci-table">
                         <thead>
@@ -129,36 +133,36 @@ function renderStatsPanel(stats: any) {
     return `
         <div class="panel mt-4">
             <div class="panel-header">
-                <h2><i class="fa-solid fa-chart-pie"></i> /stats/today (Tages-Zähler)</h2>
-                <div class="panel-header-actions">
+                <div class="panel-title"><i class="fa-solid fa-chart-pie"></i> /stats/today (Tages-Zähler)</div>
+                <div class="panel-meta">
                     <span class="badge badge-blue">${stats.day || 'Heute'}</span>
                 </div>
             </div>
             <div class="panel-body">
-                <div class="card-grid">
-                    <div class="card card-dashboard">
-                        <h3>${(stats.adsbMessages || 0).toLocaleString()}</h3>
-                        <p>ADS-B Messages</p>
+                <div class="svc-data-grid">
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">ADS-B Messages</span>
+                        <span class="svc-data-value">${(stats.adsbMessages || 0).toLocaleString()}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${(stats.aisMessages || 0).toLocaleString()}</h3>
-                        <p>AIS Messages</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">AIS Messages</span>
+                        <span class="svc-data-value">${(stats.aisMessages || 0).toLocaleString()}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${stats.aircraftSeen || 0} / <span style="color: var(--success);">+${stats.aircraftNew || 0}</span></h3>
-                        <p>Aircraft Seen / New</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Aircraft Seen / New</span>
+                        <span class="svc-data-value">${stats.aircraftSeen || 0} / <span class="t-success">+${stats.aircraftNew || 0}</span></span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3>${stats.vesselsSeen || 0}</h3>
-                        <p>Vessels Seen</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Vessels Seen</span>
+                        <span class="svc-data-value">${stats.vesselsSeen || 0}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3 style="color: var(--success);">${(stats.metadataCacheHit || 0).toLocaleString()}</h3>
-                        <p>Metadata Hits</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Metadata Hits</span>
+                        <span class="svc-data-value success">${(stats.metadataCacheHit || 0).toLocaleString()}</span>
                     </div>
-                    <div class="card card-dashboard">
-                        <h3 style="color: #eab308;">${stats.metadataNotFound || 0}</h3>
-                        <p>Metadata Misses</p>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Metadata Misses</span>
+                        <span class="svc-data-value danger">${stats.metadataNotFound || 0}</span>
                     </div>
                 </div>
                 <div style="margin-top: 16px; font-size: 0.85rem; color: var(--muted);">
@@ -182,14 +186,25 @@ function renderInfoPanel(info: any) {
     return `
         <div class="panel mt-4 mb-4" style="margin-top: 24px; margin-bottom: 24px;">
             <div class="panel-header">
-                <h2><i class="fa-solid fa-circle-info"></i> /info (API Übersicht)</h2>
+                <div class="panel-title"><i class="fa-solid fa-circle-info"></i> /info (API Übersicht)</div>
             </div>
             <div class="panel-body">
-                <p><strong>Service:</strong> ${info.name}</p>
-                <p><strong>API Version:</strong> <span class="badge badge-blue">${info.apiVersion}</span></p>
-                <p><strong>Beschreibung:</strong> ${info.description}</p>
+                <div class="svc-data-grid mb-4">
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Service</span>
+                        <span class="svc-data-value">${info.name}</span>
+                    </div>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">API Version</span>
+                        <span class="svc-data-value"><span class="badge badge-blue">${info.apiVersion}</span></span>
+                    </div>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Beschreibung</span>
+                        <span class="svc-data-value" style="font-size:0.85rem">${info.description}</span>
+                    </div>
+                </div>
                 
-                <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem; color: #fff;">Verfügbare Endpunkte</h3>
+                <div class="panel-title" style="margin-top: 24px; margin-bottom: 12px;"><i class="fa-solid fa-server"></i> Verfügbare Endpunkte</div>
                 <div class="table-wrapper">
                     <table class="ci-table">
                         <thead>
