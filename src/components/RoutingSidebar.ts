@@ -53,7 +53,7 @@ export const initRoutingSidebar = async (
         <div class="sidebar-section-label">Routing</div>
 
         <!-- Status Anzeige -->
-        <div class="form-field">
+        <div class="form-field" style="margin-bottom:8px">
           <span class="form-label">Service Status</span>
           <div class="status-panel">
             <div class="status-row">
@@ -68,10 +68,10 @@ export const initRoutingSidebar = async (
           </div>
         </div>
 
-        <div class="sidebar-sep"></div>
+        <div class="tool-sep"></div>
 
         <!-- Profil Auswahl -->
-        <div class="form-field">
+        <div class="form-field" style="margin-bottom:7px">
           <label class="form-label" for="route-profile">Profil</label>
           <select class="form-select" id="route-profile" ${!isOnline ? 'disabled' : ''}>
             ${profiles.length > 0 
@@ -82,7 +82,7 @@ export const initRoutingSidebar = async (
         </div>
 
         <!-- Modus Auswahl -->
-        <div class="form-field">
+        <div class="form-field" style="margin-bottom:7px">
           <span class="form-label">Modus</span>
           <div class="segmented" id="route-mode">
             <button class="segmented-btn active" data-mode="ab">A → B</button>
@@ -91,10 +91,10 @@ export const initRoutingSidebar = async (
           </div>
         </div>
 
-        <div class="sidebar-sep"></div>
+        <div class="tool-sep"></div>
 
         <!-- Start -->
-        <div class="form-field form-field-relative" id="field-start">
+        <div class="form-field form-field-relative" style="margin-bottom:7px" id="field-start">
           <label class="form-label" for="input-start">Start</label>
           <div class="form-input-wrap">
             <i class="fa-solid fa-location-dot form-input-icon"></i>
@@ -104,7 +104,7 @@ export const initRoutingSidebar = async (
         </div>
 
         <!-- Ziel -->
-        <div class="form-field form-field-relative">
+        <div class="form-field form-field-relative" style="margin-bottom:7px">
           <label class="form-label" for="input-target" id="label-target">Ziel</label>
           <div class="form-input-wrap">
             <i class="fa-solid fa-flag-checkered form-input-icon"></i>
@@ -113,7 +113,7 @@ export const initRoutingSidebar = async (
           <div id="results-target" class="geocoder-results hidden"></div>
         </div>
 
-        <button class="form-submit" id="btn-start-routing" ${!isOnline ? 'disabled' : ''}>
+        <button class="form-submit" style="margin-bottom:10px" id="btn-start-routing" ${!isOnline ? 'disabled' : ''}>
           <i class="fa-solid fa-route"></i> Start
         </button>
 

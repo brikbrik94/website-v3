@@ -50,6 +50,47 @@
   --auth-subtle:      rgba(139,92,246,0.10);
   --auth-border:      rgba(139,92,246,0.25);
 
+  /* ── FARBEN: Kalender-Farbslots (pro Website frei belegbar) ── */
+  --cal-color-1:        #22c55e;
+  --cal-color-1-subtle: rgba(34,197,94,0.10);
+  --cal-color-1-border: rgba(34,197,94,0.25);
+
+  --cal-color-2:        #eab308;
+  --cal-color-2-subtle: rgba(234,179,8,0.10);
+  --cal-color-2-border: rgba(234,179,8,0.25);
+
+  --cal-color-3:        #a78bfa;
+  --cal-color-3-subtle: rgba(167,139,250,0.10);
+  --cal-color-3-border: rgba(167,139,250,0.25);
+
+  --cal-color-4:        #3b82f6;
+  --cal-color-4-subtle: rgba(59,130,246,0.07);
+  --cal-color-4-border: rgba(59,130,246,0.25);
+
+  --cal-color-5:        #f97316;
+  --cal-color-5-subtle: rgba(249,115,22,0.10);
+  --cal-color-5-border: rgba(249,115,22,0.25);
+
+  --cal-color-6:        #ef4444;
+  --cal-color-6-subtle: rgba(239,68,68,0.10);
+  --cal-color-6-border: rgba(239,68,68,0.25);
+
+  --cal-color-7:        #06b6d4;
+  --cal-color-7-subtle: rgba(6,182,212,0.10);
+  --cal-color-7-border: rgba(6,182,212,0.25);
+
+  --cal-color-8:        #ec4899;
+  --cal-color-8-subtle: rgba(236,72,153,0.10);
+  --cal-color-8-border: rgba(236,72,153,0.25);
+
+  --cal-color-9:        #84cc16;
+  --cal-color-9-subtle: rgba(132,204,22,0.10);
+  --cal-color-9-border: rgba(132,204,22,0.25);
+
+  --cal-color-10:       #94a3b8;
+  --cal-color-10-subtle: rgba(148,163,184,0.10);
+  --cal-color-10-border: rgba(148,163,184,0.25);
+
   /* ── FARBEN: Code / Terminal ── */
   --code-bg:          #000000;
   --code-text:        #4ade80;

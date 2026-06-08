@@ -87,33 +87,28 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
 
 function renderLiveKpis(health: TrackingHealth) {
     return `
-        <div class="card-grid mb-gap">
-            <div class="card card-dashboard">
-                <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
-                <div class="card-data">
-                    <div class="card-value">${health.system?.totals?.messagesPerMinute || 0} / Min</div>
-                    <div class="card-label">Paketrate</div>
-                </div>
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fa-solid fa-bolt"></i> Live-Status</div>
             </div>
-            <div class="card card-dashboard">
-                <div class="card-icon"><i class="fa-solid fa-plane"></i></div>
-                <div class="card-data">
-                    <div class="card-value">${health.aircraft || 0}</div>
-                    <div class="card-label">Flugzeuge Live</div>
-                </div>
-            </div>
-            <div class="card card-dashboard">
-                <div class="card-icon"><i class="fa-solid fa-ship"></i></div>
-                <div class="card-data">
-                    <div class="card-value">${health.vessels || 0}</div>
-                    <div class="card-label">Schiffe Live</div>
-                </div>
-            </div>
-            <div class="card card-dashboard">
-                <div class="card-icon"><i class="fa-solid fa-clock"></i></div>
-                <div class="card-data">
-                    <div class="card-value">${formatUptime(health.system?.uptimeSec || 0)}</div>
-                    <div class="card-label">Uptime</div>
+            <div class="panel-body">
+                <div class="svc-data-grid">
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Paketrate</span>
+                        <span class="svc-data-value">${health.system?.totals?.messagesPerMinute || 0} / Min</span>
+                    </div>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Flugzeuge Live</span>
+                        <span class="svc-data-value">${health.aircraft || 0}</span>
+                    </div>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Schiffe Live</span>
+                        <span class="svc-data-value">${health.vessels || 0}</span>
+                    </div>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Uptime</span>
+                        <span class="svc-data-value">${formatUptime(health.system?.uptimeSec || 0)}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -140,8 +135,12 @@ function renderStatsPanel(stats: TrackingStats) {
                         <span class="svc-data-value">${(stats.aisMessages || 0).toLocaleString()}</span>
                     </div>
                     <div class="svc-data-cell">
-                        <span class="svc-data-label">Aircraft Seen / New</span>
-                        <span class="svc-data-value">${stats.aircraftSeen || 0} / <span class="t-success">+${stats.aircraftNew || 0}</span></span>
+                        <span class="svc-data-label">Aircraft Seen</span>
+                        <span class="svc-data-value">${stats.aircraftSeen || 0}</span>
+                    </div>
+                    <div class="svc-data-cell">
+                        <span class="svc-data-label">Aircraft New</span>
+                        <span class="svc-data-value success">+${stats.aircraftNew || 0}</span>
                     </div>
                     <div class="svc-data-cell">
                         <span class="svc-data-label">Vessels Seen</span>

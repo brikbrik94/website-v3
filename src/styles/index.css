@@ -30,6 +30,7 @@
 
 /* 4a. Komponenten */
 @import "code-viewer.css";
+@import "calendar.css";
 
 /* 5. Interaktion */
 @import "forms.css";
@@ -37,3 +38,6 @@
 @import "utils.css";
 @import "modal.css";
 @import "toast.css";
+
+/* 6. Service-Dashboard */
+@import "service-dashboard.css";

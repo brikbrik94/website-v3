@@ -58,30 +58,30 @@
 
 /* Blau — Info, allgemein */
 .badge-blue {
-  background: rgba(59,130,246, 0.10);
-  color: #3b82f6;
-  border-color: rgba(59,130,246, 0.25);
+  background: var(--accent-subtle-md);
+  color: var(--accent);
+  border-color: var(--accent-border);
 }
 
 /* Grün — OK, Online, Aktiv */
 .badge-green {
-  background: rgba(34,197,94, 0.10);
-  color: #22c55e;
-  border-color: rgba(34,197,94, 0.25);
+  background: var(--success-subtle);
+  color: var(--success);
+  border-color: var(--success-border);
 }
 
 /* Gelb — Warnung, Auth required, Pending */
 .badge-yellow {
-  background: rgba(234,179,8, 0.10);
-  color: #eab308;
-  border-color: rgba(234,179,8, 0.25);
+  background: var(--warning-subtle);
+  color: var(--warning);
+  border-color: var(--warning-border);
 }
 
 /* Rot — Fehler, Offline */
 .badge-red {
-  background: rgba(239,68,68, 0.10);
-  color: #ef4444;
-  border-color: rgba(239,68,68, 0.25);
+  background: var(--danger-subtle);
+  color: var(--danger);
+  border-color: var(--danger-border);
 }
 
 /* Grau — Typ-Info, keine Semantik (z.B. "Basemap", "v1.4.2") */
@@ -93,9 +93,9 @@
 
 /* Lila — Auth / Security (Authentik, SSO, OIDC) */
 .badge-purple {
-  background: rgba(139,92,246, 0.10);
-  color: #a78bfa;
-  border-color: rgba(139,92,246, 0.25);
+  background: var(--auth-subtle);
+  color: var(--auth);
+  border-color: var(--auth-border);
 }
 
 /* ═══════════════════════════════════════
