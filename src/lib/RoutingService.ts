@@ -79,7 +79,9 @@ export const RoutingService = {
               ...s,
               duration: summary.duration,
               distance: summary.distance,
-              route: route.features[0]
+              // Vollständige FeatureCollection speichern – so wie calculateRoute sie liefert
+              // und wie RoutingMapLayers.updateRoutesLayer sie erwartet (route.features[0].geometry).
+              route: route
             };
           }
           return null;
