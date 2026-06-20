@@ -26,6 +26,30 @@ describe('CoordsDataService', () => {
     expect(dms.lon.suffix).toBe('E');
   });
 
+  it('should convert WGS to DDM correctly', () => {
+    const ddm = service.getDdm();
+    expect(ddm.lat.d).toBe(48);
+    expect(ddm.lat.m).toBe('18.384');
+    expect(ddm.lat.suffix).toBe('N');
+    expect(ddm.lon.d).toBe(14);
+    expect(ddm.lon.m).toBe('17.148');
+    expect(ddm.lon.suffix).toBe('E');
+  });
+
+  it('should set state from DDM correctly', () => {
+    service.setDdm(48, 18.384, 'N', 14, 17.148, 'E');
+    const wgs = service.getWgs();
+    expect(wgs.lat).toBeCloseTo(48.3064, 5);
+    expect(wgs.lon).toBeCloseTo(14.2858, 5);
+  });
+
+  it('should apply S/W signs when setting from DDM', () => {
+    service.setDdm(48, 18.384, 'S', 14, 17.148, 'W');
+    const wgs = service.getWgs();
+    expect(wgs.lat).toBeCloseTo(-48.3064, 5);
+    expect(wgs.lon).toBeCloseTo(-14.2858, 5);
+  });
+
   it('should convert WGS to UTM correctly', () => {
     const utm = service.getUtm();
     expect(utm.zone).toBe('33N');
@@ -86,6 +110,43 @@ describe('CoordsDataService', () => {
     const wgs = service.getWgs();
     expect(wgs.lat).toBeCloseTo(48.3064, 1);
     expect(wgs.lon).toBeCloseTo(14.2858, 1);
+  });
+
+  it('should convert WGS to an 11-digit Plus Code when the source is precise', () => {
+    const pc = service.getPlusCode();
+    expect(pc.code).toBe('8FWP874P+H83');
+  });
+
+  it('should set state from a 10-digit Plus Code and echo it back as 10 digits', () => {
+    service.setPlusCode('8FWP874P+H8');
+    const wgs = service.getWgs();
+    expect(wgs.lat).toBeCloseTo(48.3064, 3);
+    expect(wgs.lon).toBeCloseTo(14.2858, 3);
+    expect(service.getPlusCode().code).toBe('8FWP874P+H8');
+  });
+
+  it('should set state from an 11-digit Plus Code and echo it back as 11 digits', () => {
+    service.setPlusCode('8FWP874P+H83');
+    expect(service.getPlusCode().code).toBe('8FWP874P+H83');
+  });
+
+  it('should output 11 digits after a precise system (WGS) sets the coordinate', () => {
+    service.setPlusCode('8FWP874P+H8'); // coarse first
+    service.setWgs(48.3064, 14.2858);
+    expect(service.getPlusCode().code.split('+')[1].length).toBe(3);
+  });
+
+  it('should fall back to a 10-digit Plus Code for a coarse system (Maidenhead)', () => {
+    service.setMaidenhead('JN78dh');
+    expect(service.getPlusCode().code.split('+')[1].length).toBe(2);
+  });
+
+  it('should ignore invalid or short Plus Codes', () => {
+    service.setWgs(48.3064, 14.2858);
+    service.setPlusCode('not-a-code');
+    const wgs = service.getWgs();
+    expect(wgs.lat).toBeCloseTo(48.3064, 5);
+    expect(wgs.lon).toBeCloseTo(14.2858, 5);
   });
 
   it('should notify listeners on update', () => {

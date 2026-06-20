@@ -1,7 +1,11 @@
 import proj4 from 'proj4';
 // @ts-ignore
 import * as mgrs from 'mgrs';
-import { CoordsState, DmsCoords, UtmCoords, BmnCoords, MgrsCoords, MaidenheadCoords } from './types';
+// @ts-ignore
+import * as olcPkg from 'open-location-code';
+import { CoordsState, DmsCoords, DdmCoords, UtmCoords, BmnCoords, MgrsCoords, MaidenheadCoords, PlusCodeCoords } from './types';
+
+const olc = new olcPkg.OpenLocationCode();
 
 /**
  * CoordsDataService - Encapsulates coordinate conversion logic and state.
@@ -13,6 +17,12 @@ export class CoordsDataService {
   };
 
   private listeners: ((state: CoordsState) => void)[] = [];
+
+  /**
+   * Genauigkeit der zuletzt gesetzten Quelle. Steuert die Plus-Code-Länge:
+   * 'fine' -> 11 Stellen, 'coarse' -> 10 Stellen.
+   */
+  private sourcePrecision: 'fine' | 'coarse' = 'fine';
 
   constructor() {
     // Proj4 Definitionen für Österreich (BMN / Lambert)
@@ -38,10 +48,36 @@ export class CoordsDataService {
     return { d, m, s };
   }
 
-  public setWgs(lat: number, lon: number) {
+  public toDdm(val: number) {
+    const d = Math.floor(Math.abs(val));
+    const m = ((Math.abs(val) - d) * 60).toFixed(3);
+    return { d, m };
+  }
+
+  public getDdm(): DdmCoords {
+    const latDdm = this.toDdm(this.state.lat);
+    const lonDdm = this.toDdm(this.state.lon);
+    return {
+      lat: { ...latDdm, suffix: this.state.lat >= 0 ? 'N' : 'S' },
+      lon: { ...lonDdm, suffix: this.state.lon >= 0 ? 'E' : 'W' }
+    };
+  }
+
+  public setDdm(latD: number, latM: number, latSuf: string, lonD: number, lonM: number, lonSuf: string) {
+    if (!isNaN(latD) && !isNaN(latM) && !isNaN(lonD) && !isNaN(lonM)) {
+      let lat = latD + latM / 60;
+      if (latSuf === 'S') lat *= -1;
+      let lon = lonD + lonM / 60;
+      if (lonSuf === 'W') lon *= -1;
+      this.setWgs(lat, lon);
+    }
+  }
+
+  public setWgs(lat: number, lon: number, precision: 'fine' | 'coarse' = 'fine') {
     if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return;
     this.state.lat = lat;
     this.state.lon = lon;
+    this.sourcePrecision = precision;
     this.notifyListeners();
   }
 
@@ -143,7 +179,22 @@ export class CoordsDataService {
       const l = locator.toUpperCase();
       const lon = (l.charCodeAt(0) - 65) * 20 + parseInt(l[2]) * 2 + (l.length > 4 ? (l.charCodeAt(4) - 65) * (2/24) : 1) - 180;
       const lat = (l.charCodeAt(1) - 65) * 10 + parseInt(l[3]) * 1 + (l.length > 5 ? (l.charCodeAt(5) - 65) * (1/24) : 0.5) - 90;
-      this.setWgs(lat, lon);
+      // Maidenhead ist grob (~km) -> Plus Code mit 10 Stellen ausgeben
+      this.setWgs(lat, lon, 'coarse');
     }
+  }
+
+  public getPlusCode(): PlusCodeCoords {
+    const length = this.sourcePrecision === 'coarse' ? 10 : 11;
+    return { code: olc.encode(this.state.lat, this.state.lon, length) };
+  }
+
+  public setPlusCode(code: string) {
+    const c = code.trim();
+    if (!olc.isValid(c) || !olc.isFull(c)) return;
+    const area = olc.decode(c);
+    // Anzahl signifikanter Stellen (ohne '+') bestimmt die Genauigkeit
+    const sig = c.replace('+', '').length;
+    this.setWgs(area.latitudeCenter, area.longitudeCenter, sig >= 11 ? 'fine' : 'coarse');
   }
 }

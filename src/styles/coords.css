@@ -214,6 +214,33 @@
 }
 
 /* ═══════════════════════════════════════
+   COORD-ROW-WGS — Einheitliche WGS84-Zeile (Label + n Felder + Suffix)
+   Gleiche Gesamtbreite über DD / DDM / DMS hinweg; Felder teilen sich
+   den verfügbaren Platz, das Suffix sitzt immer am selben Anschlag.
+   ═══════════════════════════════════════ */
+
+.coord-row-wgs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.coord-row-wgs:last-child { margin-bottom: 0; }
+
+.coord-vals {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+.coord-vals .coord-input-dms {
+  width: auto;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+/* ═══════════════════════════════════════
    COORD-ROW-INLINE — 2 Feld-Paare nebeneinander (MGRS GZD + 100km)
    ═══════════════════════════════════════ */
 

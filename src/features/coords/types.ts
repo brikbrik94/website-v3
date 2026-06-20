@@ -8,6 +8,11 @@ export interface DmsCoords {
   lon: { d: number; m: number; s: string; suffix: string };
 }
 
+export interface DdmCoords {
+  lat: { d: number; m: string; suffix: string };
+  lon: { d: number; m: string; suffix: string };
+}
+
 export interface UtmCoords {
   zone: string;
   e: string;
@@ -29,4 +34,8 @@ export interface MgrsCoords {
 
 export interface MaidenheadCoords {
   locator: string;
+}
+
+export interface PlusCodeCoords {
+  code: string;
 }

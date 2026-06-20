@@ -2,11 +2,11 @@ import { CoordsDataService } from './CoordsDataService';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../../lib/SidebarUtils';
 import { AddressBlock } from './blocks/AddressBlock';
 import { Wgs84Block } from './blocks/Wgs84Block';
-import { DmsBlock } from './blocks/DmsBlock';
 import { UtmBlock } from './blocks/UtmBlock';
 import { BmnBlock } from './blocks/BmnBlock';
 import { MgrsBlock } from './blocks/MgrsBlock';
 import { MaidenheadBlock } from './blocks/MaidenheadBlock';
+import { PlusCodeBlock } from './blocks/PlusCodeBlock';
 import { CoordSystemBlock } from './CoordSystemBlock';
 
 export class CoordsSidebar {
@@ -36,12 +36,12 @@ export class CoordsSidebar {
     // Initialize blocks
     this.blocks = [
       new AddressBlock(blocksContainer, this.service, 'address', 'Adresse'),
-      new Wgs84Block(blocksContainer, this.service, 'wgs84', 'WGS84 Dezimalgrad'),
-      new DmsBlock(blocksContainer, this.service, 'dms', 'WGS84 DMS'),
+      new Wgs84Block(blocksContainer, this.service, 'wgs84', 'WGS84'),
       new UtmBlock(blocksContainer, this.service, 'utm', 'UTM'),
       new BmnBlock(blocksContainer, this.service, 'bmn', 'BMN'),
       new MgrsBlock(blocksContainer, this.service, 'mgrs', 'MGRS'),
-      new MaidenheadBlock(blocksContainer, this.service, 'maidenhead', 'Maidenhead')
+      new MaidenheadBlock(blocksContainer, this.service, 'maidenhead', 'Maidenhead'),
+      new PlusCodeBlock(blocksContainer, this.service, 'pluscode', 'Plus Code')
     ];
 
     this.blocks.forEach((block, index) => {
