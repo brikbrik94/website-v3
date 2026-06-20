@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.4.0-dev] - 2026-06-20 07:44
+
+### Geändert
+- **Koordinaten (WGS84):** Die bisher getrennten Blöcke „WGS84 Dezimalgrad" und „WGS84 DMS" wurden zu einem einzigen WGS84-Block zusammengefasst. Darüber befindet sich nun ein Segment-Umschalter (`.segmented`, analog zum Modus-Umschalter A→B/SEW/NEF auf der Routing-Seite) zum Wechseln des Anzeige-/Eingabeformats zwischen **Dezimalgrad (DD)**, **Grad Dezimalminuten (DDM)** und **Grad Minuten Sekunden (DMS)**. Der Umschalter ist jederzeit bedienbar; die Eingabefelder werden – wie bei den übrigen Blöcken – erst durch Klick auf den Block editierbar.
+- **Koordinaten (WGS84):** Einheitliche Darstellung über alle drei Formate – alle nutzen nun positive Werte mit klickbarem Himmelsrichtungs-Suffix (N/S, E/W), auch Dezimalgrad. Die Zeilen sind formatübergreifend gleich breit (Label · Felder · Suffix an festem Anschlag); die Felder teilen sich den verfügbaren Platz, wodurch das Dezimalminuten-Feld breit genug für mehr Nachkommastellen ist. Der Kopieren-Button übernimmt jetzt die Himmelsrichtung mit.
+
+### Hinzugefügt
+- **Koordinaten-Service:** Neues Format „Grad Dezimalminuten" (DDM) inkl. Konvertierungsmethoden (`toDdm`, `getDdm`, `setDdm`) und Round-Trip-Tests.
+- **Koordinaten (Plus Code):** Neues Koordinatensystem „Plus Code" (Google Open Location Code, Apache-2.0, Paket `open-location-code`). Das Feld akzeptiert 10- und 11-stellige Codes; die Ausgabe nutzt 11 Stellen, wenn die zugrunde liegende Koordinate genau genug ist (alle numerischen Systeme), und fällt auf 10 Stellen zurück, wenn die Quelle grob ist (Maidenhead). Inkl. `getPlusCode`/`setPlusCode` und Tests.
+
 ## [3.3.2-dev] - 2026-06-08 14:14
 
 ### Behoben
