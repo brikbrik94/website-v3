@@ -1,0 +1,399 @@
+/*
+ * OE5ITH CI — service-dashboard.css
+ * Service-Monitoring-Baustein für lokale Pi-Dashboards.
+ *
+ * Abhängigkeiten (müssen vorher geladen sein):
+ *   common.css, cards.css, badges.css, buttons.css,
+ *   page.css, sidebar.css, forms.css
+ *
+ * <link rel="stylesheet" href="shared/css/service-dashboard.css">
+ */
+
+/* ═══════════════════════════════════════
+   SERVICE CARD — Übersicht-Kachel
+   ═══════════════════════════════════════ */
+
+/* h3 mit Icon: flex-Layout für Icon + Text */
+.card-dashboard h3:has(.svc-card-icon) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Textspan im h3 mit Icon: korrekte Truncation */
+.card-dashboard h3:has(.svc-card-icon) > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* FA-Icon inline im Titel */
+.svc-card-icon {
+  color: var(--accent);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Kurzbeschreibung unter dem Titel */
+.svc-info-line {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+  /* .card p setzt -webkit-box — hier überschreiben */
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-line-clamp: unset;
+}
+
+/* Statuszeile unten in der Kachel */
+.svc-status-line {
+  font-size: 0.7rem;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.svc-status-line.online  { color: var(--success); }
+.svc-status-line.offline { color: var(--danger); }
+.svc-status-line.unknown { color: var(--warning); }
+
+/* ═══════════════════════════════════════
+   SIDEBAR — fehlende unknown-Variante
+   ═══════════════════════════════════════ */
+
+.sidebar-status-dot.unknown {
+  background: var(--warning);
+  box-shadow: 0 0 4px var(--warning);
+}
+
+/* ═══════════════════════════════════════
+   DETAIL-SEITE — Page-Header Icon
+   ═══════════════════════════════════════ */
+
+.svc-page-icon {
+  color: var(--accent);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+/* ═══════════════════════════════════════
+   DATA GRID — Live-Status-Panel
+   Desktop: 3 Spalten · Tablet: 2 · Mobile: 1
+   ═══════════════════════════════════════ */
+
+.svc-data-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .svc-data-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .svc-data-grid { grid-template-columns: 1fr; }
+}
+
+.svc-data-cell {
+  background: var(--panel-deep);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.svc-data-label {
+  font-size: 0.68rem;
+  color: var(--subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.svc-data-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.svc-data-value.success { color: var(--success); }
+.svc-data-value.danger  { color: var(--danger); }
+
+.svc-data-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════
+   CONFIG — Zurück-Link
+   ═══════════════════════════════════════ */
+
+.svc-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color var(--transition-fast);
+}
+
+.svc-back-link:hover { color: var(--text); }
+
+/* ═══════════════════════════════════════
+   CONFIG — Formular-Felder
+   ═══════════════════════════════════════ */
+
+/* Wrapper: Label + Input + Hilfstext */
+.svc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.svc-field > label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.svc-field > input,
+.svc-field > select,
+.svc-field > textarea {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast);
+}
+
+.svc-field > input:focus,
+.svc-field > select:focus,
+.svc-field > textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Hilfstext unter dem Feld */
+.svc-field-hint {
+  font-size: 0.72rem;
+  color: var(--subtle);
+}
+
+/* Read-only Anzeige — kein Fokus-Ring, kein Edit-Cursor */
+.svc-field-readonly {
+  background: var(--panel-deep);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--subtle);
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  user-select: all;
+}
+
+/* URL-Prefix (z.B. "https://") vor einem Input */
+.svc-input-prefix {
+  display: flex;
+  align-items: stretch;
+}
+
+.svc-input-prefix-label {
+  background: var(--panel-deep);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  padding: 8px 10px;
+  color: var(--subtle);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Secret / Password mit Auge-Toggle */
+.svc-secret {
+  display: flex;
+  align-items: stretch;
+}
+
+/* Shared base styling for nested inputs (direct child selector won't match here) */
+.svc-input-prefix > input,
+.svc-secret > input {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color var(--transition-fast);
+}
+
+.svc-input-prefix > input:focus,
+.svc-secret > input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.svc-input-prefix > input {
+  border-radius: 0 6px 6px 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.svc-secret > input {
+  border-radius: 6px 0 0 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.svc-secret-toggle {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  padding: 0 12px;
+  color: var(--subtle);
+  cursor: pointer;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  transition: color var(--transition-fast);
+}
+
+.svc-secret-toggle:hover { color: var(--text); }
+
+/* Toggle-Switch (on = grün, off = grau) */
+.svc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.svc-toggle-track {
+  width: 36px;
+  height: 20px;
+  background: var(--border-strong);
+  border-radius: 10px;
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.svc-toggle-thumb {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  background: var(--subtle);
+  border-radius: 50%;
+  transition: left var(--transition-fast), background var(--transition-fast);
+}
+
+.svc-toggle.on .svc-toggle-track { background: var(--success); }
+.svc-toggle.on .svc-toggle-thumb { left: 19px; background: var(--white); }
+
+/* Warn-Variante: on = gelb */
+.svc-toggle.warn.on .svc-toggle-track { background: var(--warning); }
+
+.svc-toggle-label {
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.svc-toggle-sublabel {
+  font-size: 0.7rem;
+  color: var(--subtle);
+}
+
+/* Form-Aktionsleiste */
+.svc-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.svc-form-hint {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 768px) {
+  .svc-form-hint { margin-left: 0; }
+}
+
+/* ═══════════════════════════════════════
+   LAYOUT-WRAPPER (ersetzen frühere Inline-Styles)
+   ═══════════════════════════════════════ */
+
+.svc-page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.svc-page-title-row .page-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.svc-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.svc-field-grid--cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.svc-label-type {
+  font-weight: 400;
+  color: var(--subtle);
+}
+
+.svc-field-code {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--code-text);
+  resize: vertical;
+}
+
+/* Warn-Toggle: Sublabel in Warnfarbe */
+.svc-toggle.warn .svc-toggle-sublabel {
+  color: var(--warning);
+}

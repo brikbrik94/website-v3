@@ -20,6 +20,7 @@
   --subtle:           #555555;
   --border:           #333333;
   --border-strong:    #444444;
+  --map-bg:           #ffffff; /* Hintergrund des Karten-Containers (weiß als Default, per Stylesheet überschreibbar) */
   --surface-hover:    rgba(255,255,255,0.05); /* Subtle hover on dark backgrounds */
 
   /* ── FARBEN: Akzent ── */
