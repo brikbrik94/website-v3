@@ -1,14 +1,35 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
 import { MapCore } from '../../lib/MapCore';
 import { MAP_COLORS, MAP_ROUTE_STYLES } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { NahStation, NahStationResult } from '../../types/nah';
+
+const SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
+const TARGET_PIN_SOURCE = 'nah-target-pin';
+const TARGET_PIN_LAYER = 'nah-target-pin-layer';
 
 export const NahMapLayers = {
   /**
    * Initializes the NAH-specific map layers and sources.
    */
   initLayers(map: maplibregl.Map) {
+    MapRegistry.registerImage('oe5ith-markers', SPRITE_BASE);
+
+    // Einsatzort-Pin (ci-marker-ring, accent-Farbe)
+    const targetPinLayerDef: LayerSpecification = {
+      id: TARGET_PIN_LAYER,
+      type: 'symbol',
+      source: TARGET_PIN_SOURCE,
+      layout: {
+        'icon-image': 'ci-symbol-location',
+        'icon-size': 0.5,
+        'icon-anchor': 'center',
+        'icon-allow-overlap': true,
+      },
+      paint: { 'icon-color': MAP_COLORS.accent, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+    };
+    MapCore.ensureGeoJsonLayer(map, TARGET_PIN_SOURCE, targetPinLayerDef);
+
     const sourceId = 'nah-lines';
     const layerId = 'nah-lines';
 
@@ -100,13 +121,14 @@ export const NahMapLayers = {
     });
   },
 
-  /**
-   * Creates and adds a target marker at the specified coordinates.
-   */
-  createTargetMarker(map: maplibregl.Map, lng: number, lat: number): maplibregl.Marker {
-    return new maplibregl.Marker({ color: MAP_COLORS.accent })
-      .setLngLat([lng, lat])
-      .addTo(map);
+  setTargetPin(map: maplibregl.Map, lng: number, lat: number) {
+    const source = map.getSource(TARGET_PIN_SOURCE) as GeoJSONSource | undefined;
+    source?.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [lng, lat] }, properties: {} });
+  },
+
+  clearTargetPin(map: maplibregl.Map) {
+    const source = map.getSource(TARGET_PIN_SOURCE) as GeoJSONSource | undefined;
+    source?.setData({ type: 'FeatureCollection', features: [] });
   },
 
   /**

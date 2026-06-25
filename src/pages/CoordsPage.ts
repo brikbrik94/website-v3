@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { CoordsDataService } from '../features/coords/CoordsDataService';
 import { CoordsSidebar } from '../features/coords/CoordsSidebar';
@@ -10,12 +10,15 @@ import { MapRegistry } from '../lib/MapRegistry';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { Toast } from '../lib/Toast';
 
+const COORDS_PIN_SOURCE = 'coords-pin';
+const COORDS_PIN_LAYER = 'coords-pin-layer';
+const SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
+
 /**
  * CoordsPageController - Orchestrates the coordinate converter page.
  */
 export class CoordsPageController extends BasePageController {
     private map?: maplibregl.Map;
-    private marker?: maplibregl.Marker;
     private service = new CoordsDataService();
     private sidebar?: CoordsSidebar;
 
@@ -37,16 +40,20 @@ export class CoordsPageController extends BasePageController {
         this.sidebar = new CoordsSidebar(mounts.sidebar, this.service);
         this.sidebar.init();
 
-        // 4. Karte initialisieren
+        // 4. Sprite registrieren (wird von MapRegistry.restore geladen)
+        MapRegistry.registerImage('oe5ith-markers', SPRITE_BASE);
+
+        // 5. Karte initialisieren
         this.map = MapCore.init(
             mounts.map,
             basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
-            async () => {
+            async (m) => {
+                this._setupCoordsPin(m);
                 if (this.hikingActive) await this.toggleHikingOverlay(true);
             }
         );
 
-        // 5. Topbar initialisieren
+        // 6. Topbar initialisieren
         initTopbar(mounts.topbar, basemaps, (url) => {
             if (this.map) {
                 this.map.setStyle(url);
@@ -60,22 +67,15 @@ export class CoordsPageController extends BasePageController {
             }
         ]);
 
-        // 6. Marker setzen (initiale Position aus dem Service)
-        const startPos = this.service.getWgs();
-        this.marker = new maplibregl.Marker({ color: MAP_COLORS.accent })
-            .setLngLat([startPos.lon, startPos.lat])
-            .addTo(this.map);
-
         // 7. Event Listeners
         this.map.on('click', (e) => {
             this.service.setWgs(e.lngLat.lat, e.lngLat.lng);
         });
 
         this.service.addListener((state) => {
-            if (this.marker) {
-                this.marker.setLngLat([state.lon, state.lat]);
-            }
             if (this.map) {
+                const source = this.map.getSource(COORDS_PIN_SOURCE) as GeoJSONSource | undefined;
+                source?.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [state.lon, state.lat] }, properties: {} });
                 this.map.easeTo({ center: [state.lon, state.lat] });
             }
         });
@@ -151,9 +151,27 @@ export class CoordsPageController extends BasePageController {
         // Kein expliziter restore() Aufruf nötig, da wir die Karte direkt aktualisiert haben.
     }
 
+    private _setupCoordsPin(map: maplibregl.Map) {
+        const pos = this.service.getWgs();
+        const layerDef: LayerSpecification = {
+            id: COORDS_PIN_LAYER,
+            type: 'symbol',
+            source: COORDS_PIN_SOURCE,
+            layout: {
+                'icon-image': 'ci-symbol-location',
+                'icon-size': 0.5,
+                'icon-anchor': 'bottom',
+                'icon-allow-overlap': true,
+            },
+            paint: { 'icon-color': MAP_COLORS.accent, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+        };
+        MapCore.ensureGeoJsonLayer(map, COORDS_PIN_SOURCE, layerDef);
+        const source = map.getSource(COORDS_PIN_SOURCE) as GeoJSONSource | undefined;
+        source?.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [pos.lon, pos.lat] }, properties: {} });
+    }
+
     public destroy() {
         super.destroy();
-        this.marker?.remove();
         this.map?.remove();
         console.debug('[CoordsPageController] Destroyed');
     }

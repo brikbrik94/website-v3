@@ -18,7 +18,6 @@ import { NahSidebarAdapter } from '../features/nah/NahSidebarAdapter';
 export class NahPageController extends BasePageController {
   private dataService: NahDataService | null = null;
   private stationMarkers: maplibregl.Marker[] = [];
-  private targetMarker: maplibregl.Marker | null = null;
   private currentResults: NahStationResult[] = [];
   private currentIncidentCoord: [number, number] | null = null;
   private map: maplibregl.Map | null = null;
@@ -107,10 +106,9 @@ export class NahPageController extends BasePageController {
     
     this.stationMarkers.forEach(m => m.remove());
     this.stationMarkers = [];
-    
-    if (this.targetMarker) {
-      this.targetMarker.remove();
-      this.targetMarker = null;
+
+    if (this.map) {
+      NahMapLayers.clearTargetPin(this.map);
     }
 
     if (this.map) {
@@ -147,8 +145,7 @@ export class NahPageController extends BasePageController {
 
     this.currentIncidentCoord = [lng, lat];
 
-    if (this.targetMarker) this.targetMarker.remove();
-    this.targetMarker = NahMapLayers.createTargetMarker(map, lng, lat);
+    NahMapLayers.setTargetPin(map, lng, lat);
 
     const results = this.dataService.getNearestActiveStations(lng, lat);
     this.currentResults = results;
