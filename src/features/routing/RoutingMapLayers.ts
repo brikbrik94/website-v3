@@ -3,7 +3,7 @@ import { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { MapCore } from '../../lib/MapCore';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { RoutingDataService } from './RoutingDataService';
-import { MAP_ROUTE_STYLES } from '../../lib/MapStyles';
+import { MAP_ROUTE_STYLES, MAP_COLORS } from '../../lib/MapStyles';
 
 // --- Constants for Source and Layer IDs ---
 const ROUTING_PATH_SOURCE_ID = 'routing-path';
@@ -12,12 +12,33 @@ const ROUTING_PATH_LAYER_ID = 'routing-path';
 const STATIONS_SOURCE_ID = 'stations';
 const STATIONS_LAYER_ID = 'station-icons';
 
+const PIN_SOURCE_START = 'routing-pin-start';
+const PIN_SOURCE_TARGET = 'routing-pin-target';
+const PIN_LAYER_START = 'routing-pin-start-layer';
+const PIN_LAYER_TARGET = 'routing-pin-target-layer';
+
 export class RoutingMapLayers {
   private static SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
 
   public static registerResources() {
-    // Only stations need sprites now
-    MapRegistry.registerImage(STATIONS_LAYER_ID, this.SPRITE_BASE);
+    MapRegistry.registerImage('oe5ith-markers', this.SPRITE_BASE);
+  }
+
+  public static updateStartPin(map: maplibregl.Map, lngLat: [number, number] | null) {
+    this._updatePin(map, PIN_SOURCE_START, lngLat);
+  }
+
+  public static updateTargetPin(map: maplibregl.Map, lngLat: [number, number] | null) {
+    this._updatePin(map, PIN_SOURCE_TARGET, lngLat);
+  }
+
+  private static _updatePin(map: maplibregl.Map, sourceId: string, lngLat: [number, number] | null) {
+    const source = map.getSource(sourceId) as GeoJSONSource | undefined;
+    if (!source) return;
+    const data = lngLat
+      ? { type: 'Feature' as const, geometry: { type: 'Point' as const, coordinates: lngLat }, properties: {} }
+      : { type: 'FeatureCollection' as const, features: [] };
+    source.setData(data);
   }
 
   public static ensureBaseLayers(map: maplibregl.Map) {
@@ -51,7 +72,37 @@ export class RoutingMapLayers {
     MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE_ID, stationsLayerDef);
     MapRegistry.registerSource(STATIONS_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 
-    // Enforce layer order
+    // 3. CI-Pin Layer für Start (grün)
+    const startPinLayerDef: LayerSpecification = {
+      id: PIN_LAYER_START,
+      type: 'symbol',
+      source: PIN_SOURCE_START,
+      layout: {
+        'icon-image': 'ci-pin',
+        'icon-size': 0.5,
+        'icon-anchor': 'bottom',
+        'icon-allow-overlap': true,
+      },
+      paint: { 'icon-color': MAP_COLORS.success, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+    };
+    MapCore.ensureGeoJsonLayer(map, PIN_SOURCE_START, startPinLayerDef);
+
+    // 4. CI-Pin Layer für Ziel (rot)
+    const targetPinLayerDef: LayerSpecification = {
+      id: PIN_LAYER_TARGET,
+      type: 'symbol',
+      source: PIN_SOURCE_TARGET,
+      layout: {
+        'icon-image': 'ci-pin',
+        'icon-size': 0.5,
+        'icon-anchor': 'bottom',
+        'icon-allow-overlap': true,
+      },
+      paint: { 'icon-color': MAP_COLORS.danger, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+    };
+    MapCore.ensureGeoJsonLayer(map, PIN_SOURCE_TARGET, targetPinLayerDef);
+
+    // Enforce layer order: Routen unter Stationen, Pins oben
     if (map.getLayer(STATIONS_LAYER_ID) && map.getLayer(ROUTING_PATH_LAYER_ID)) {
       map.moveLayer(ROUTING_PATH_LAYER_ID, STATIONS_LAYER_ID);
     }

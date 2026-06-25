@@ -2,20 +2,16 @@ import maplibregl from 'maplibre-gl';
 import { RoutingDataService } from './RoutingDataService';
 import { RoutingMapLayers } from './RoutingMapLayers';
 import { RoutingService } from '../../lib/RoutingService';
-import { 
-  initRoutingSidebar, 
-  updateRoutingSummary, 
-  renderStationResults, 
+import {
+  initRoutingSidebar,
+  updateRoutingSummary,
+  renderStationResults,
   renderRoutingError,
   setRoutingCoord
 } from '../../components/RoutingSidebar';
 import { RoutingStation } from '../../types/common';
-import { MAP_COLORS } from '../../lib/MapStyles';
 
 export class RoutingSidebarAdapter {
-  private startMarker: maplibregl.Marker | null = null;
-  private targetMarker: maplibregl.Marker | null = null;
-
   constructor(
     private dataService: RoutingDataService,
     private map: maplibregl.Map,
@@ -129,15 +125,9 @@ export class RoutingSidebarAdapter {
     await setRoutingCoord(type, lat, lon);
     
     if (type === 'start') {
-      if (this.startMarker) this.startMarker.remove();
-      this.startMarker = new maplibregl.Marker({ color: MAP_COLORS.success })
-        .setLngLat([lon, lat])
-        .addTo(this.map);
+      RoutingMapLayers.updateStartPin(this.map, [lon, lat]);
     } else {
-      if (this.targetMarker) this.targetMarker.remove();
-      this.targetMarker = new maplibregl.Marker({ color: MAP_COLORS.danger })
-        .setLngLat([lon, lat])
-        .addTo(this.map);
+      RoutingMapLayers.updateTargetPin(this.map, [lon, lat]);
     }
   }
 
@@ -185,10 +175,8 @@ export class RoutingSidebarAdapter {
     this.dataService.clearResults();
     this.dataService.clearCoords();
     
-    if (this.startMarker) this.startMarker.remove();
-    if (this.targetMarker) this.targetMarker.remove();
-    this.startMarker = null;
-    this.targetMarker = null;
+    RoutingMapLayers.updateStartPin(this.map, null);
+    RoutingMapLayers.updateTargetPin(this.map, null);
 
     RoutingMapLayers.updateRoutesLayer(this.map, this.dataService);
     RoutingMapLayers.updateStationsLayer(this.map, this.dataService);
