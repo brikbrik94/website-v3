@@ -21,7 +21,7 @@ export const NahMapLayers = {
       type: 'symbol',
       source: TARGET_PIN_SOURCE,
       layout: {
-        'icon-image': 'ci-symbol-location',
+        'icon-image': 'ci-marker-dot',
         'icon-size': 0.75,
         'icon-anchor': 'center',
         'icon-allow-overlap': true,
