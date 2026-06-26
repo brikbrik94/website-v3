@@ -9,6 +9,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 - **CI-Submodul auf v1.18.0** aktualisiert (map-icons SDF-Shapes, Split-View, Chart, Status-Msg, Width-Utilities u.a.).
 - **`icon-halo-width` auf 2** erhöht für Routing-Pins (Start/Ziel), NAH-Einsatzort-Pin und Coords-Pin — jetzt nutzbar durch korrekten Safe-Area-Puffer in den neuen Sprite-Quellen.
 - **Coords-Pin `icon-anchor` korrigiert** (`bottom` → `center`): `ci-symbol-location` ist ein 64×64-Symbol (kein Pin) und muss am Mittelpunkt verankert werden.
+- **`ci-symbol-location` ohne Halo** (Coords + NAH-Einsatzort): Der weiße Halo übermalt den schmalen Fadenkreuz-Ring bei kleiner `icon-size` — die Symbole werden jetzt nur mit `icon-color: accent` gerendert.
 
 ## [3.4.0] - 2026-06-20 15:41
 
