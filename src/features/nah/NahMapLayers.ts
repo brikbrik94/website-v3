@@ -26,7 +26,7 @@ export const NahMapLayers = {
         'icon-anchor': 'center',
         'icon-allow-overlap': true,
       },
-      paint: { 'icon-color': MAP_COLORS.accent, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+      paint: { 'icon-color': MAP_COLORS.accent, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 2 },
     };
     MapCore.ensureGeoJsonLayer(map, TARGET_PIN_SOURCE, targetPinLayerDef);
 

@@ -83,7 +83,7 @@ export class RoutingMapLayers {
         'icon-anchor': 'bottom',
         'icon-allow-overlap': true,
       },
-      paint: { 'icon-color': MAP_COLORS.success, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+      paint: { 'icon-color': MAP_COLORS.success, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 2 },
     };
     MapCore.ensureGeoJsonLayer(map, PIN_SOURCE_START, startPinLayerDef);
 
@@ -98,7 +98,7 @@ export class RoutingMapLayers {
         'icon-anchor': 'bottom',
         'icon-allow-overlap': true,
       },
-      paint: { 'icon-color': MAP_COLORS.danger, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+      paint: { 'icon-color': MAP_COLORS.danger, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 2 },
     };
     MapCore.ensureGeoJsonLayer(map, PIN_SOURCE_TARGET, targetPinLayerDef);
 

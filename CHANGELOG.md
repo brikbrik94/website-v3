@@ -2,10 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-06-25 09:35
+## [Unreleased] - 2026-06-26 19:52
 
 ### Geändert
 - **CI-Pins (Routing, NAH, Coords):** MapLibre-Standard-Drop-Pins wurden durch CI-Sprites aus dem `oe5ith-markers` Sprite-Set ersetzt. Routing-Start: `ci-pin` (success), Routing-Ziel: `ci-pin` (danger), NAH-Einsatzort: `ci-marker-ring` (accent), Koordinaten: `ci-pin` (accent). Alle Sprites sind SDF und werden via `icon-color` mit den CI-Tokens eingefärbt. Implementiert als GeoJSON-Source + Symbol-Layer (anstelle von `maplibregl.Marker`), kompatibel mit MapRegistry-Restore bei Kartenthemawechsel.
+- **CI-Submodul auf v1.18.0** aktualisiert (map-icons SDF-Shapes, Split-View, Chart, Status-Msg, Width-Utilities u.a.).
+- **`icon-halo-width` auf 2** erhöht für Routing-Pins (Start/Ziel), NAH-Einsatzort-Pin und Coords-Pin — jetzt nutzbar durch korrekten Safe-Area-Puffer in den neuen Sprite-Quellen.
+- **Coords-Pin `icon-anchor` korrigiert** (`bottom` → `center`): `ci-symbol-location` ist ein 64×64-Symbol (kein Pin) und muss am Mittelpunkt verankert werden.
 
 ## [3.4.0] - 2026-06-20 15:41
 
