@@ -160,10 +160,10 @@ export class CoordsPageController extends BasePageController {
             layout: {
                 'icon-image': 'ci-symbol-location',
                 'icon-size': 0.5,
-                'icon-anchor': 'bottom',
+                'icon-anchor': 'center',
                 'icon-allow-overlap': true,
             },
-            paint: { 'icon-color': MAP_COLORS.accent, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 1 },
+            paint: { 'icon-color': MAP_COLORS.accent, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 2 },
         };
         MapCore.ensureGeoJsonLayer(map, COORDS_PIN_SOURCE, layerDef);
         const source = map.getSource(COORDS_PIN_SOURCE) as GeoJSONSource | undefined;
