@@ -52,17 +52,12 @@ export class MapPageController extends BasePageController {
                 if (this.map) {
                     console.log(`[MapPageController] Changing basemap to: ${url}`);
                     this.map.setStyle(url);
-                    
+
                     // Wir leeren den Promise-Cache für Styles
                     this.styleFetchPromises.clear();
 
-                    // Expliziter Trigger: Wir warten nicht auf Events, sondern stoßen die 
-                    // Wiederherstellung direkt an. MapCore sorgt intern für die richtige 
-                    // Verzögerung (2 Frames), damit MapLibre bereit ist.
-                    console.log('[MapPageController] Explicit restoration trigger after style change.');
-                    await MapCore.triggerRestore(this.map, async (m) => {
-                        await this.reapplyActiveOverlays(m);
-                    });
+                    // Die Wiederherstellung läuft automatisch über den style.load-Listener
+                    // aus MapCore.init, dessen onRestore reapplyActiveOverlays aufruft.
                 }
             }, () => legend.toggle());
 

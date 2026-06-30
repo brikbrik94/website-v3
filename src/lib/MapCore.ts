@@ -90,31 +90,6 @@ export const MapCore = {
   },
 
   /**
-   * Triggers the restoration sequence for a given map instance.
-   * Useful if events like style.load are missed or blocked.
-   */
-  async triggerRestore(map: maplibregl.Map, onRestore?: (map: maplibregl.Map) => Promise<void> | void) {
-    try {
-      await applyTerrainInfrastructure();
-      await MapRegistry.restore(map, MapCore.loadSprites);
-      if (onRestore) await onRestore(map);
-      map.triggerRepaint();
-    } catch (err) {
-      console.error('[MapCore] Manual restore failed:', err);
-    }
-  },
-
-  /**
-   * Hilfsfunktion um nach einem manuellen Style-Wechsel oder bei Bedarf alles wiederherzustellen.
-   * Wird durch den automatischen Listener in init() weitestgehend obsolet, bleibt aber für 
-   * Spezialfälle (z.B. diff: true) bestehen.
-   */
-  async reapplyBaseLayers(callback?: () => Promise<void>) {
-    await applyTerrainInfrastructure();
-    if (callback) await callback();
-  },
-
-  /**
    * Safe helper to add a GeoJSON source and layer if they don't exist.
    * Useful for persistent overlays across style changes.
    * 

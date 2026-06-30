@@ -18,6 +18,13 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.5.2] - 2026-06-30</h2>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Karte:</strong> Stabileres und schnelleres Verhalten beim Wechsel der Hintergrundkarte (Overlays und Symbole werden nicht mehr doppelt geladen).</li>
+            <li><strong>Höhenlinien & Overlays:</strong> Zuverlässigeres Ein-/Ausschalten; aktivierte Karten-Effekte „wandern" nicht mehr ungewollt auf andere Seiten.</li>
+          </ul>
+
           <h2>[3.5.0] - 2026-06-30</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>
