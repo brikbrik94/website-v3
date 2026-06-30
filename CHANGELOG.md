@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.5.1] - 2026-06-30 16:30
+
+### Geändert
+- **In-App-Changelog nachgezogen (`GlobalModals.ts`).** Das über die Versionsanzeige in der Sidebar erreichbare Changelog-Modal hing beim Stand `[3.3.1]`. Kuratierte, user-facing Einträge für `3.3.2`, `3.4.0` und `3.5.0` ergänzt. Hintergrund: Das Modal wird nicht aus `CHANGELOG.md` generiert und muss laut den neuen Release-Regeln (CLAUDE.md → „Releases, versioning & git") bei jedem Release separat gepflegt werden.
+
 ## [3.5.0] - 2026-06-30 15:10
 
 ### Behoben
