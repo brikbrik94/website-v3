@@ -18,6 +18,36 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.5.0] - 2026-06-30</h2>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Karten-Symbole:</strong> Einsatzort- und Koordinaten-Marker nutzen jetzt das einheitliche CI-Standortsymbol; Pins für Routing und Stationen stammen aus dem CI-Symbolsatz.</li>
+            <li><strong>Overlays:</strong> Die Hintergründe hinter Stationsnamen (z.B. auf der Rettungsdienst-Karte) haben wieder den richtigen Abstand zum Text, und Symbole werden auf hochauflösenden Displays in korrekter Größe dargestellt.</li>
+            <li><strong>Höhenlinien:</strong> Lassen sich wieder zuverlässig ein- und ausschalten.</li>
+            <li><strong>Live-Tracking:</strong> Behobener Performance-Effekt beim häufigen Wechsel der Hintergrundkarte.</li>
+          </ul>
+
+          <h2>[3.4.0] - 2026-06-20</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Koordinaten:</strong> Neue Formate „Grad Dezimalminuten" (DDM) und „Plus Code" (Google Open Location Code). Ein Umschalter wechselt direkt zwischen Dezimalgrad, DDM und Grad/Minuten/Sekunden; alle Formate zeigen einheitlich die Himmelsrichtung als klickbares Suffix.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Routing:</strong> Sondersignal-Routen („5 schnellste", Blaulicht) werden wieder korrekt auf der Karte angezeigt.</li>
+            <li><strong>Karte:</strong> Hellerer Hintergrund des Kartenbereichs.</li>
+          </ul>
+
+          <h2>[3.3.2] - 2026-06-08</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Info-Bereich:</strong> Neue interaktive Detailansicht je Bundesland (Auflistung aller Rettungsdienst- und Notarzt-Stationen) sowie ein überarbeitetes Telemetrie-Dashboard für das Tracking-System.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Info-Bereich:</strong> Fehler in der Regionen-Auswertung behoben; Health- und Tracking-Ansicht auf das neue Dashboard-Layout umgestellt.</li>
+          </ul>
+
           <h2>[3.3.1] - 2026-05-21</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>
