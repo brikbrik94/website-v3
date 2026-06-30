@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { type StyleImageMetadata } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { initTerrainManager, applyTerrainInfrastructure } from './TerrainManager';
 import { BasemapStore } from './BasemapStore';
@@ -208,53 +208,78 @@ export const MapCore = {
    */
   async loadSprites(map: maplibregl.Map, spritePath: string, styleUrl?: string) {
     const absoluteSpriteUrl = (spritePath.startsWith('http') || !styleUrl)
-      ? spritePath 
+      ? spritePath
       : new URL(spritePath, styleUrl).href;
 
-    console.log(`[MapCore] Loading sprites from ${absoluteSpriteUrl}`);
+    // Eine Sprite-Variante (1x oder @2x) laden. Wirft bei fehlendem .json/.png.
+    const fetchVariant = (baseUrl: string) => Promise.all([
+      fetch(`${baseUrl}.json`).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} for ${baseUrl}.json`);
+        return r.json() as Promise<Record<string, any>>;
+      }),
+      new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load sprite image: ${baseUrl}.png`));
+        img.src = `${baseUrl}.png`;
+      })
+    ] as const);
+
+    // MapLibre lädt für HiDPI-Displays nativ das @2x-Sprite (Bilder mit pixelRatio 2 →
+    // korrekte Anzeigegröße). Beim manuellen Nachladen müssen wir das nachbilden, sonst
+    // werden die Symbole auf Retina-Displays doppelt so groß gerendert.
+    const wantHiDpi = typeof window !== 'undefined' && window.devicePixelRatio >= 1.5;
+
+    console.log(`[MapCore] Loading sprites from ${absoluteSpriteUrl}${wantHiDpi ? '@2x' : ''}`);
 
     try {
-      const [jsonRes, imageRes] = await Promise.all([
-        fetch(`${absoluteSpriteUrl}.json`).then(r => {
-          if (!r.ok) throw new Error(`HTTP ${r.status} for ${absoluteSpriteUrl}.json`);
-          return r.json();
-        }),
-        new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = 'Anonymous';
-          img.onload = () => resolve(img);
-          img.onerror = () => reject(new Error(`Failed to load sprite image: ${absoluteSpriteUrl}.png`));
-          img.src = `${absoluteSpriteUrl}.png`;
-        })
-      ]);
+      let jsonRes: Record<string, any>;
+      let imageRes: HTMLImageElement;
+      if (wantHiDpi) {
+        // @2x bevorzugen, bei fehlendem @2x-Sprite (z.B. 404) auf 1x zurückfallen.
+        try {
+          [jsonRes, imageRes] = await fetchVariant(`${absoluteSpriteUrl}@2x`);
+        } catch {
+          [jsonRes, imageRes] = await fetchVariant(absoluteSpriteUrl);
+        }
+      } else {
+        [jsonRes, imageRes] = await fetchVariant(absoluteSpriteUrl);
+      }
 
-      for (const [id, pos] of Object.entries(jsonRes) as any) {
+      for (const [id, pos] of Object.entries(jsonRes) as [string, any][]) {
         if (map.hasImage(id)) continue;
 
         const canvas = document.createElement('canvas');
         canvas.width = pos.width;
         canvas.height = pos.height;
         const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(
-            imageRes,
-            pos.x, pos.y, pos.width, pos.height,
-            0, 0, pos.width, pos.height
-          );
-          
-          const pixelRatio = pos.pixelRatio || 1;
-          const isSdf = Boolean(pos.sdf);
-          
-          try {
-            const imageData = ctx.getImageData(0, 0, pos.width, pos.height);
-            map.addImage(id, imageData, { 
-              pixelRatio: pixelRatio,
-              sdf: isSdf
-            });
-            // console.debug(`[MapCore] Added image ${id} (SDF: ${isSdf}, PR: ${pixelRatio})`);
-          } catch (e) {
-            console.error(`[MapCore] Failed to add image ${id} to map:`, e);
-          }
+        if (!ctx) continue;
+
+        ctx.drawImage(
+          imageRes,
+          pos.x, pos.y, pos.width, pos.height,
+          0, 0, pos.width, pos.height
+        );
+
+        // Alle Sprite-Metadaten weiterreichen. stretchX/stretchY/content steuern
+        // icon-text-fit (Label-Hintergründe mit Innenabstand) – fehlen sie, wird die
+        // im Stylesheet definierte Skalierung ignoriert und der Hintergrund klebt am Text.
+        const options: Partial<StyleImageMetadata> = {
+          pixelRatio: pos.pixelRatio || 1,
+          sdf: Boolean(pos.sdf),
+        };
+        if (pos.stretchX) options.stretchX = pos.stretchX;
+        if (pos.stretchY) options.stretchY = pos.stretchY;
+        if (pos.content) options.content = pos.content;
+        if (pos.textFitWidth) options.textFitWidth = pos.textFitWidth;
+        if (pos.textFitHeight) options.textFitHeight = pos.textFitHeight;
+
+        try {
+          const imageData = ctx.getImageData(0, 0, pos.width, pos.height);
+          map.addImage(id, imageData, options);
+        } catch (e) {
+          console.error(`[MapCore] Failed to add image ${id} to map:`, e);
         }
       }
       console.log(`[MapCore] Sprites loaded successfully from ${absoluteSpriteUrl}`);

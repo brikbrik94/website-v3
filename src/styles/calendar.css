@@ -1,0 +1,344 @@
+/*
+ * OE5ITH CI — calendar.css
+ * Monatskalender-Komponente für Dienstplan-Darstellung.
+ *
+ * Ladereihenfolge:
+ *   common.css → buttons.css → modal.css → calendar.css
+ */
+
+/* ═══════════════════════════════════════
+   WURZEL & HEADER
+   ═══════════════════════════════════════ */
+
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.calendar-nav-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.calendar-nav-btn:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.calendar-nav-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════
+   RASTER & WOCHENTAGE
+   ═══════════════════════════════════════ */
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-weekday {
+  background: var(--panel-deep);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 6px 0;
+  border-radius: var(--badge-radius);
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════
+   TAGESZELLEN
+   ═══════════════════════════════════════ */
+
+.calendar-day {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--btn-radius);
+  padding: 6px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0; /* flex fix: allows overflow truncation in grid cells */
+  overflow: hidden;
+}
+
+.calendar-day--outside {
+  opacity: 0.35;
+}
+
+.calendar-day-number {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.calendar-day--today .calendar-day-number {
+  background: var(--accent);
+  color: var(--white);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════
+   EINTRÄGE
+   ═══════════════════════════════════════ */
+
+.calendar-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: var(--badge-radius);
+  border-left: 3px solid;
+  font-size: 0.72rem;
+  cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+  transition: filter var(--transition-fast);
+}
+
+.calendar-entry:hover {
+  filter: brightness(1.15); /* subtle lighten on hover */
+}
+
+.calendar-entry:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.calendar-entry-time {
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.calendar-entry-title {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.calendar-entry-changed {
+  color: var(--warning);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ─── Generische Farbslots (color-1 … color-10) ─── */
+
+.calendar-entry--color-1  { background: var(--cal-color-1-subtle);  border-color: var(--cal-color-1); }
+.calendar-entry--color-2  { background: var(--cal-color-2-subtle);  border-color: var(--cal-color-2); }
+.calendar-entry--color-3  { background: var(--cal-color-3-subtle);  border-color: var(--cal-color-3); }
+.calendar-entry--color-4  { background: var(--cal-color-4-subtle);  border-color: var(--cal-color-4); }
+.calendar-entry--color-5  { background: var(--cal-color-5-subtle);  border-color: var(--cal-color-5); }
+.calendar-entry--color-6  { background: var(--cal-color-6-subtle);  border-color: var(--cal-color-6); }
+.calendar-entry--color-7  { background: var(--cal-color-7-subtle);  border-color: var(--cal-color-7); }
+.calendar-entry--color-8  { background: var(--cal-color-8-subtle);  border-color: var(--cal-color-8); }
+.calendar-entry--color-9  { background: var(--cal-color-9-subtle);  border-color: var(--cal-color-9); }
+.calendar-entry--color-10 { background: var(--cal-color-10-subtle); border-color: var(--cal-color-10); }
+
+/* ─── Aliase (rückwärtskompatibel — können später entfernt werden) ─── */
+
+.calendar-entry--early   { background: var(--cal-color-1-subtle);  border-color: var(--cal-color-1); }
+.calendar-entry--late    { background: var(--cal-color-2-subtle);  border-color: var(--cal-color-2); }
+.calendar-entry--night   { background: var(--cal-color-3-subtle);  border-color: var(--cal-color-3); }
+.calendar-entry--default { background: var(--cal-color-4-subtle);  border-color: var(--cal-color-4); }
+
+/* ─── Mehrtägige Events ─── */
+
+.calendar-entry--continues-right::after {
+  content: "›";
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.calendar-entry--continues-left {
+  border-left-color: transparent;
+}
+
+.calendar-entry--continues-left::before {
+  content: "‹";
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+/* ─── Mehrzeilen-Layout ─── */
+
+.calendar-entry--multiline {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.calendar-entry--multiline .calendar-entry-time {
+  flex-basis: 100%;
+}
+
+.calendar-entry--multiline .calendar-entry-title {
+  white-space: normal;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════
+   MODAL-INHALT (Detail-Ansicht)
+   ═══════════════════════════════════════ */
+
+.cal-modal-date {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.cal-modal-time {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.cal-modal-description,
+.cal-modal-location {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.cal-modal-location {
+  color: var(--muted);
+}
+
+.cal-modal-changed {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: var(--warning-subtle);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--btn-radius);
+  font-size: 0.82rem;
+  color: var(--warning);
+}
+
+.cal-modal-changed i {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cal-modal-changed-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════
+   MOBILE (≤768px)
+   ═══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .calendar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-weekday {
+    display: none;
+  }
+
+  .calendar-day:not(:has(.calendar-entry)) {
+    display: none;
+  }
+
+  .calendar-day {
+    min-height: unset;
+  }
+
+  .calendar-day-number {
+    font-size: 0.85rem;
+  }
+
+  .calendar.calendar--show-all .calendar-day:not(:has(.calendar-entry)) {
+    display: flex;
+  }
+}
+
+/* ═══════════════════════════════════════
+   TABLET (769px–1024px)
+   ═══════════════════════════════════════ */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .calendar-day {
+    padding: 4px;
+    min-height: 64px;
+  }
+
+  .calendar-day-number {
+    font-size: 0.72rem;
+  }
+
+  .calendar-entry {
+    padding: 2px 4px;
+    font-size: 0.68rem;
+    gap: 2px;
+  }
+
+  .calendar-entry-time {
+    max-width: 36px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .calendar-entry-title {
+    font-size: 0.68rem;
+  }
+}

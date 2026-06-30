@@ -106,11 +106,17 @@ export class MapPageController extends BasePageController {
         if (this.cachedStyles.has(overlayId)) return this.cachedStyles.get(overlayId);
         if (this.styleFetchPromises.has(overlayId)) return this.styleFetchPromises.get(overlayId);
 
-        const promise = fetch(url, { signal: this.signal }).then(r => r.json()).then(style => {
-            this.cachedStyles.set(overlayId, style);
-            this.styleFetchPromises.delete(overlayId);
-            return style;
-        });
+        const promise = fetch(url, { signal: this.signal })
+            .then(r => r.json())
+            .then(style => {
+                this.cachedStyles.set(overlayId, style);
+                return style;
+            })
+            .finally(() => {
+                // In-Flight-Eintrag immer entfernen – auch bei Fehler/Abort, sonst bliebe
+                // ein rejektetes Promise dauerhaft gecacht und jeder Retry schlüge fehl.
+                this.styleFetchPromises.delete(overlayId);
+            });
         this.styleFetchPromises.set(overlayId, promise);
         return promise;
     }
