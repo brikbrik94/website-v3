@@ -9,6 +9,10 @@ export class TrackingMapLayers {
     private popup: maplibregl.Popup;
     private adsbVisible = true;
     private aisVisible = true;
+    private cursorListenersAttached = false;
+    private readonly hoverLayerIds = ['adsb-icons', 'ais-icons'];
+    private readonly onHoverEnter = () => { this.map.getCanvas().style.cursor = 'pointer'; };
+    private readonly onHoverLeave = () => { this.map.getCanvas().style.cursor = ''; };
 
     constructor(map: maplibregl.Map) {
         this.map = map;
@@ -212,10 +216,15 @@ export class TrackingMapLayers {
             }
         });
 
-        m.on('mouseenter', 'adsb-icons', () => m.getCanvas().style.cursor = 'pointer');
-        m.on('mouseleave', 'adsb-icons', () => m.getCanvas().style.cursor = '');
-        m.on('mouseenter', 'ais-icons', () => m.getCanvas().style.cursor = 'pointer');
-        m.on('mouseleave', 'ais-icons', () => m.getCanvas().style.cursor = '');
+        // Cursor-Listener nur einmal registrieren (ensureLayers läuft bei jedem
+        // Style-/Basemap-Wechsel erneut, sonst stapeln sich die Handler).
+        if (!this.cursorListenersAttached) {
+            this.cursorListenersAttached = true;
+            for (const id of this.hoverLayerIds) {
+                m.on('mouseenter', id, this.onHoverEnter);
+                m.on('mouseleave', id, this.onHoverLeave);
+            }
+        }
     }
 
     public highlightItem(selectedId: string | number | null) {
@@ -260,7 +269,13 @@ export class TrackingMapLayers {
 
     public destroy() {
         this.popup.remove();
-        // Remove event listeners if we added direct ones on the map?
-        // Map itself is destroyed by MapCore when container empties or removed.
+        // Cursor-Listener wieder abmelden (die Karte selbst wird von MapCore zerstört).
+        if (this.cursorListenersAttached) {
+            for (const id of this.hoverLayerIds) {
+                this.map.off('mouseenter', id, this.onHoverEnter);
+                this.map.off('mouseleave', id, this.onHoverLeave);
+            }
+            this.cursorListenersAttached = false;
+        }
     }
 }

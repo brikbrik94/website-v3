@@ -15,13 +15,13 @@ export const NahMapLayers = {
   initLayers(map: maplibregl.Map) {
     MapRegistry.registerImage('oe5ith-markers', SPRITE_BASE);
 
-    // Einsatzort-Pin (ci-marker-ring, accent-Farbe)
+    // Einsatzort-Pin (ci-symbol-location, accent-Farbe, ohne Halo)
     const targetPinLayerDef: LayerSpecification = {
       id: TARGET_PIN_LAYER,
       type: 'symbol',
       source: TARGET_PIN_SOURCE,
       layout: {
-        'icon-image': 'ci-marker-dot',
+        'icon-image': 'ci-symbol-location',
         'icon-size': 0.75,
         'icon-anchor': 'center',
         'icon-allow-overlap': true,

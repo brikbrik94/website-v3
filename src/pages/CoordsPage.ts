@@ -158,7 +158,7 @@ export class CoordsPageController extends BasePageController {
             type: 'symbol',
             source: COORDS_PIN_SOURCE,
             layout: {
-                'icon-image': 'ci-marker-dot',
+                'icon-image': 'ci-symbol-location',
                 'icon-size': 0.75,
                 'icon-anchor': 'center',
                 'icon-allow-overlap': true,

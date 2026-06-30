@@ -2,14 +2,21 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-06-26 19:52
+## [3.5.0] - 2026-06-30 15:10
+
+### Behoben
+- **Sprite-Nachladen (`MapCore.loadSprites`): Skalierung & HiDPI.** Beim manuellen Nachladen von Overlay-/Page-Sprites wurden zwei Dinge falsch gemacht, sichtbar v.a. beim `rd`-Overlay:
+  - **`stretchX`/`stretchY`/`content` wurden verworfen** → `icon-text-fit` (Label-Hintergründe) hatte keine Content-Box, der Hintergrund klebte ohne Innenabstand am Text. Jetzt werden alle Sprite-Metadaten (inkl. `textFitWidth`/`textFitHeight`) an `map.addImage()` weitergereicht.
+  - **Immer das 1×-Sprite geladen** → auf HiDPI-/Retina-Displays wurden Symbole (z.B. Dienststellen-Pins) doppelt so groß gerendert. `loadSprites` lädt jetzt analog zu MapLibre nativ das `@2x`-Sprite (mit Fallback auf 1× bei fehlendem `@2x`), wodurch der korrekte `pixelRatio` für die Anzeigegröße greift.
+- **Höhenlinien-Overlay ließ sich nicht mehr ausschalten (`TerrainManager`).** Die Abschalt-Logik prüfte/entfernte gegen `CONTOURS_OVERLAY.id`, während Sources/Layer unter ihren Style-eigenen IDs (z.B. Source `esri`) registriert wurden → der Entfern-Block lief nie. `TerrainManager` trackt jetzt die tatsächlich hinzugefügten Source-/Layer-IDs und entfernt genau diese (Layer vor Sources). Nebenbei: kein erneutes Fetchen des Contours-Styles mehr bei jedem `applyTerrainInfrastructure`-Durchlauf.
+- **Listener-Leak im Tracking (`TrackingMapLayers`).** `ensureLayers()` registrierte bei jedem Aufruf (u.a. bei jedem Basemap-/Style-Wechsel) neue `mouseenter`/`mouseleave`-Handler, die nie entfernt wurden. Handler werden jetzt einmalig registriert und in `destroy()` wieder abgemeldet.
+- **Overlay-Style-Cache (`MapPage`).** Ein fehlgeschlagener/abgebrochener Style-Fetch blieb als rejektetes Promise im `styleFetchPromises`-Cache und ließ jeden weiteren Aufruf für dieselbe Overlay-ID dauerhaft fehlschlagen. Der In-Flight-Eintrag wird jetzt per `finally` immer entfernt (Erfolg wie Fehler), sodass Retries möglich sind.
 
 ### Geändert
-- **CI-Pins (Routing, NAH, Coords):** MapLibre-Standard-Drop-Pins wurden durch CI-Sprites aus dem `oe5ith-markers` Sprite-Set ersetzt. Routing-Start: `ci-pin` (success), Routing-Ziel: `ci-pin` (danger), NAH-Einsatzort: `ci-marker-ring` (accent), Koordinaten: `ci-pin` (accent). Alle Sprites sind SDF und werden via `icon-color` mit den CI-Tokens eingefärbt. Implementiert als GeoJSON-Source + Symbol-Layer (anstelle von `maplibregl.Marker`), kompatibel mit MapRegistry-Restore bei Kartenthemawechsel.
+- **CI-Pins (Routing, NAH, Coords):** MapLibre-Standard-Drop-Pins wurden durch CI-Sprites aus dem `oe5ith-markers` Sprite-Set ersetzt. Routing-Start: `ci-pin` (success), Routing-Ziel: `ci-pin` (danger), NAH-Einsatzort und Koordinaten: `ci-symbol-location` (accent). Alle Sprites sind SDF und werden via `icon-color` mit den CI-Tokens eingefärbt. Implementiert als GeoJSON-Source + Symbol-Layer (anstelle von `maplibregl.Marker`), kompatibel mit MapRegistry-Restore bei Kartenthemawechsel.
 - **CI-Submodul auf v1.18.0** aktualisiert (map-icons SDF-Shapes, Split-View, Chart, Status-Msg, Width-Utilities u.a.).
-- **`icon-halo-width` auf 2** erhöht für Routing-Pins (Start/Ziel), NAH-Einsatzort-Pin und Coords-Pin — jetzt nutzbar durch korrekten Safe-Area-Puffer in den neuen Sprite-Quellen.
-- **Coords-Pin `icon-anchor` korrigiert** (`bottom` → `center`): `ci-symbol-location` ist ein 64×64-Symbol (kein Pin) und muss am Mittelpunkt verankert werden.
-- **`ci-symbol-location` ohne Halo** (Coords + NAH-Einsatzort): Der weiße Halo übermalt den schmalen Fadenkreuz-Ring bei kleiner `icon-size` — die Symbole werden jetzt nur mit `icon-color: accent` gerendert.
+- **`icon-halo-width` auf 2** erhöht für Routing-Pins (Start/Ziel) — nutzbar durch korrekten Safe-Area-Puffer in den neuen Sprite-Quellen.
+- **NAH-/Coords-Marker `ci-symbol-location`** (accent, ohne Halo, `icon-size: 0.75`, Anchor `center`): Der weiße Halo übermalte den schmalen Fadenkreuz-Ring; die Symbole werden nur mit `icon-color: accent` gerendert. Der zwischenzeitliche Workaround `ci-marker-dot` (wegen fehlerhaftem `evenodd`-SDF-Rendering) entfällt, da das Sprite-Rendering gefixt ist.
 
 ## [3.4.0] - 2026-06-20 15:41
 
