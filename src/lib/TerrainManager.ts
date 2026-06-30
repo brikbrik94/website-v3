@@ -1,6 +1,5 @@
 import { Map } from 'maplibre-gl';
-import { MapRegistry } from './MapRegistry';
-import { MapCore } from './MapCore';
+import { OverlayLoader } from './OverlayLoader';
 
 export const ELEVATION_SOURCE_ID = 'at-elevation';
 export const HILLSHADE_LAYER_ID = 'at-hillshade';
@@ -13,12 +12,6 @@ export const CONTOURS_OVERLAY = {
 let _map: Map | null = null;
 let _elevationUrl: string | null = null;
 
-// Tatsächlich hinzugefügte Contour-Ressourcen. Nötig, weil die Source-/Layer-IDs aus
-// dem Contours-Style stammen (z.B. Source 'esri') und nicht CONTOURS_OVERLAY.id sind –
-// ohne dieses Tracking lässt sich das Overlay nicht wieder entfernen.
-let _contourSourceIds: string[] = [];
-let _contourLayerIds: string[] = [];
-
 export let terrainEnabled = false;
 export let hillshadeEnabled = false;
 export let contoursEnabled = false;
@@ -26,9 +19,12 @@ export let contoursEnabled = false;
 export function initTerrainManager(map: Map, elevationUrl: string) {
     _map = map;
     _elevationUrl = elevationUrl;
-    // Neue Karteninstanz: Tracking zurücksetzen (alte IDs gehörten zur zerstörten Karte).
-    _contourSourceIds = [];
-    _contourLayerIds = [];
+    // Modul-globale Toggle-Zustände zurücksetzen: sonst würden Terrain/Hillshade/Contours,
+    // die auf einer Seite aktiviert wurden, auf der nächsten Seite (ohne passenden Toggle)
+    // still wieder angewandt. Jede Seite startet im Standard (alles aus).
+    terrainEnabled = false;
+    hillshadeEnabled = false;
+    contoursEnabled = false;
     // Sofort anwenden falls bereits aktiviert
     applyTerrainInfrastructure();
 }
@@ -94,58 +90,17 @@ export async function applyTerrainInfrastructure() {
         _map.removeLayer(HILLSHADE_LAYER_ID);
     }
 
-    // 3. Contours (via MapRegistry)
+    // 3. Contours – via gemeinsamem OverlayLoader (lädt/entfernt den kompletten Style).
     if (contoursEnabled) {
-        if (_contourLayerIds.length === 0 && _contourSourceIds.length === 0) {
+        if (!OverlayLoader.isLoaded(CONTOURS_OVERLAY.id)) {
             try {
-                const res = await fetch(CONTOURS_OVERLAY.url);
-                const style = await res.json();
-
-                if (style.sprite) {
-                    MapRegistry.registerImage(CONTOURS_OVERLAY.id, style.sprite, CONTOURS_OVERLAY.url);
-                    await MapCore.loadSprites(_map, style.sprite, CONTOURS_OVERLAY.url);
-                }
-
-                const resolvedSources = MapCore.resolveSourceUrls(style.sources, CONTOURS_OVERLAY.url);
-                for (const [sId, def] of Object.entries(resolvedSources)) {
-                    MapRegistry.registerSource(sId, def);
-                    if (!_map.getSource(sId)) {
-                        _map.addSource(sId, JSON.parse(JSON.stringify(def)));
-                    }
-                    _contourSourceIds.push(sId);
-                }
-
-                style.layers.forEach((l: any) => {
-                    MapRegistry.registerLayer(l.id, l);
-                    if (_map && !_map.getLayer(l.id)) {
-                        _map.addLayer(JSON.parse(JSON.stringify(l)));
-                    }
-                    _contourLayerIds.push(l.id);
-                });
+                await OverlayLoader.add(_map, CONTOURS_OVERLAY.id, CONTOURS_OVERLAY.url);
             } catch (err) {
                 console.error(`Failed to load contours overlay: ${CONTOURS_OVERLAY.id}`, err);
             }
         }
-    } else if (_contourLayerIds.length > 0 || _contourSourceIds.length > 0) {
-        // Wenn deaktiviert, exakt die hinzugefügten Ressourcen entfernen.
-        // Layer zuerst, dann Sources (Sources mit aktiven Layern lassen sich nicht entfernen).
-        for (const layerId of _contourLayerIds) {
-            if (_map.getLayer(layerId)) {
-                _map.removeLayer(layerId);
-                console.debug(`[TerrainManager] Removed contour layer: ${layerId}`);
-            }
-            MapRegistry.unregisterLayer(layerId);
-        }
-        for (const sourceId of _contourSourceIds) {
-            if (_map.getSource(sourceId)) {
-                _map.removeSource(sourceId);
-                console.debug(`[TerrainManager] Removed contour source: ${sourceId}`);
-            }
-            MapRegistry.unregisterSource(sourceId);
-        }
-        MapRegistry.unregisterImage(CONTOURS_OVERLAY.id);
-        _contourLayerIds = [];
-        _contourSourceIds = [];
+    } else if (OverlayLoader.isLoaded(CONTOURS_OVERLAY.id)) {
+        OverlayLoader.remove(_map, CONTOURS_OVERLAY.id);
     }
 }
 

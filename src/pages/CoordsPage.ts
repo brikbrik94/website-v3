@@ -7,6 +7,7 @@ import { initTopbar } from '../components/Topbar';
 import { LayoutHelper } from '../lib/LayoutHelper';
 import { InventoryService } from '../services/InventoryService';
 import { MapRegistry } from '../lib/MapRegistry';
+import { OverlayLoader } from '../lib/OverlayLoader';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { Toast } from '../lib/Toast';
 
@@ -94,58 +95,17 @@ export class CoordsPageController extends BasePageController {
         const { id, url } = this.HIKING_OVERLAY;
 
         if (active) {
-            if (!MapRegistry.getSource(id)) {
+            if (!OverlayLoader.isLoaded(id)) {
                 try {
-                    const res = await fetch(url, { signal: this.signal });
-                    const style = await res.json();
-
-                    if (style.sprite) {
-                        MapRegistry.registerImage(id, style.sprite, url);
-                        await MapCore.loadSprites(this.map, style.sprite, url);
-                    }
-
-                    const resolvedSources = MapCore.resolveSourceUrls(style.sources, url);
-                    for (const [sId, def] of Object.entries(resolvedSources)) {
-                        MapRegistry.registerSource(sId, def);
-                        if (!this.map.getSource(sId)) {
-                            this.map.addSource(sId, JSON.parse(JSON.stringify(def)));
-                        }
-                    }
-
-                    style.layers.forEach((l: any) => {
-                        MapRegistry.registerLayer(l.id, l);
-                        if (!this.map?.getLayer(l.id)) {
-                            this.map?.addLayer(JSON.parse(JSON.stringify(l)));
-                        }
-                    });
+                    await OverlayLoader.add(this.map, id, url, { signal: this.signal });
                 } catch (err) {
                     console.error(`Failed to load hiking overlay: ${id}`, err);
                     Toast.error(`Fehler beim Laden von: ${id}`);
                     return;
                 }
             }
-        } else {
-            if (MapRegistry.getSource(id)) {
-                MapRegistry.unregisterSource(id);
-                // Alle Layer dieser Source aus Registry und Karte entfernen
-                const style = this.map.getStyle();
-                if (style && style.layers) {
-                    style.layers.forEach((l: any) => {
-                        if (l.source === id) {
-                            MapRegistry.unregisterLayer(l.id);
-                            if (this.map?.getLayer(l.id)) {
-                                this.map.removeLayer(l.id);
-                                console.debug(`[CoordsPage] Removed layer: ${l.id}`);
-                            }
-                        }
-                    });
-                }
-                if (this.map.getSource(id)) {
-                    this.map.removeSource(id);
-                    console.debug(`[CoordsPage] Removed source: ${id}`);
-                }
-                MapRegistry.unregisterImage(id);
-            }
+        } else if (OverlayLoader.isLoaded(id)) {
+            OverlayLoader.remove(this.map, id);
         }
         
         // Kein expliziter restore() Aufruf nötig, da wir die Karte direkt aktualisiert haben.

@@ -3,6 +3,7 @@ import { initGlobalModals } from './lib/GlobalModals';
 import { APP_VERSION } from './version';
 
 import { MapRegistry } from './lib/MapRegistry';
+import { OverlayLoader } from './lib/OverlayLoader';
 import type { PageController } from './core/PageController';
 
 // Global Modals initialisieren
@@ -136,6 +137,7 @@ const router = async () => {
   // Registry leeren beim Seitenwechsel, um Ressourcen-Verschmutzung zu vermeiden.
   // Neue Seiten registrieren ihre benötigten Ressourcen während der Initialisierung.
   MapRegistry.clear();
+  OverlayLoader.reset();
 
   if (!app) return;
 

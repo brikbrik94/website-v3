@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [3.5.2] - 2026-06-30 16:45
+
+### Behoben
+- **Doppelter Restore bei Basemap-Wechsel (`MapPage`, `TrackingPage`).** `setStyle()` löste den `style.load`-Listener aus **und** es lief zusätzlich ein expliziter `triggerRestore()` → die komplette Registry-Wiederherstellung inkl. Sprite-Laden lief 2×. Die expliziten Trigger sind entfernt; die Wiederherstellung läuft nur noch über den `style.load`-Listener aus `MapCore.init` (so wie es 3 der 5 Kartenseiten ohnehin schon taten).
+- **Terrain-Zustand leckte über Seitenwechsel (`TerrainManager`).** Die modul-globalen Flags `terrainEnabled`/`hillshadeEnabled`/`contoursEnabled` wurden nie zurückgesetzt → auf einer Seite aktiviertes Terrain/Hillshade/Höhenlinien wurde auf der nächsten Seite (ohne passenden Toggle) still wieder angewandt. Werden jetzt bei jedem Karten-Init zurückgesetzt.
+
+### Geändert
+- **Overlay-Laden vereinheitlicht (`OverlayLoader`).** Neuer gemeinsamer `src/lib/OverlayLoader.ts` (`add`/`remove`/`isLoaded`/`reset`) für komplette Remote-Style-Overlays mit explizitem Source-/Layer-ID-Tracking (statt fragiler `l.source === id`-Scans). Höhenlinien (`TerrainManager`) und Wanderwege (`CoordsPage`) nutzen ihn jetzt — die je ~40 Zeilen kopierte Fetch/Add/Remove-Logik samt bespoke Contour-ID-Tracking entfällt.
+- **Restore-Pfade konsolidiert (`MapCore`).** `triggerRestore` und das ungenutzte `reapplyBaseLayers` entfernt; es bleibt ein kanonischer Restore-Pfad (`style.load` → `restore()`).
+
 ## [3.5.1] - 2026-06-30 16:30
 
 ### Geändert
