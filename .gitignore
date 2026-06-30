@@ -29,4 +29,8 @@ api/config.local.php
 # Worktrees
 .worktrees/
 
+# Scratch / local probes (see CLAUDE.md → Releases, versioning & git)
+scratch/
+*.local.*
+
 .env
