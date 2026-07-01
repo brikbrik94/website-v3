@@ -1,5 +1,10 @@
 # TODO Archiv
 
+Abgeschlossene Punkte aus [TODO.md](./TODO.md), chronologisch nach Release/Monat. Umgesetzte
+Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./ROADMAP_ARCHIVE.md).
+Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
+noch nicht getrennt) und sind entsprechend gemischt.
+
 ## Abgeschlossene Aufgaben (Mai 2026)
 ### Release v3.3.0 - Tracking Gateway Migration & BBox Deactivation
 - [x] Tracking Gateway V2 Migration (Types, Service, Tracks)

@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-01 21:55
+
+### Hinzugefügt
+- **TODO/Roadmap-Trennung + Standards-Referenzen (`CLAUDE.md`, `TODO.md`, `ROADMAP.md`).** `TODO.md` (aktueller Scope: Fixes/Cleanup/Erweiterungen) und neues `ROADMAP.md` (neue, noch nicht existierende Features) getrennt, je mit `*_ARCHIVE.md`-Gegenstück. `TODO.md` auf die offene Map-Subsystem-Cleanup-Roadmap (U1–U7) aktualisiert; die 4 alten CI-Token/Accessibility-Punkte entfernt, da sie tatsächlich zu `oe5ith-ci/docs/roadmap.md` gehören. `CLAUDE.md` bekam eine neue Sektion „Standards-Referenzen": referenziert die externen Standards hinter den Repo-Konventionen (Semantic Versioning, Keep a Changelog, Conventional Commits, PSR-12, EditorConfig, BEM, GeoJSON/RFC 7946, WGS84, ISO 8601, WCAG, ARIA APG, Twelve-Factor Config, ADR, OWASP Top 10, Core Web Vitals, OpenAPI) inkl. bekannter Abweichungen, plus eine Pflege-Regel für künftige neue Dienste/Sprachen. Neues `.editorconfig` an bestehenden Codestil angeglichen (2 Spaces JS/TS/CSS, 4 Spaces PHP). Konkrete Angleichungs-Aufgaben (PSR-12-Audit, OWASP-Self-Check, OpenAPI-Spec) als neue TODO.md-Sektion „Standards-Angleichung" erfasst.
+
 ## [3.5.2] - 2026-06-30 16:45
 
 ### Behoben
