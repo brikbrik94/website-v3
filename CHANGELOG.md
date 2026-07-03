@@ -2,7 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-03 09:59
+## [Unreleased] - 2026-07-03 11:45
+
+### Behoben
+- **RD-Overlay-Pins verschwinden dauerhaft bei Basemap-Wechsel auf „Basemap At"** (`src/pages/MapPage.ts`, `toggleLayer`). `isStyleLoaded()` wartete via `m.once('style.load', resolve)` auf ein bereits verstrichenes Event (feuert ohne erneuten `setStyle()`-Aufruf nicht wieder) → hing bei großen, langsam ladenden Basemaps (hier „Basemap At", ~2,4 GB PMTiles) für immer und blockierte wegen des dauerhaft `true` bleibenden `isRestoring`-Flags in `MapCore.ts` jede weitere Restore-Sequenz der Karteninstanz. Wartelogik jetzt ein Polling auf `isStyleLoaded()` (`requestAnimationFrame`-Loop) statt auf das Event.
+- **Höhenlinien rendern/entfernen sich nicht auf „Basemap At"** (`src/lib/OverlayLoader.ts`). Der Höhenlinien-Overlay-Style (`basemap-at-contours`) und der „Basemap At"-Basemap-Style definieren unabhängig voneinander beide eine Source namens `esri` — `OverlayLoader.add()` prüfte nur `!map.getSource(sourceId)`, die existierte durch den Basemap bereits, wodurch die eigentliche Höhenlinien-Source nie hinzugefügt wurde (Contour-Layer zeigten auf die falschen, Basemap-eigenen Vektordaten). Beim Ausschalten scheiterte zusätzlich `removeSource('esri')`, weil die Source noch von Basemap-Layern gebraucht wurde. `OverlayLoader` prefixt Source-/Layer-IDs jetzt immer mit der `overlayId` (gleiches Muster wie in `MapPageController.toggleLayer`), damit Overlay-IDs nie mit Basemap-eigenen IDs kollidieren können.
+
+Beide Bugs beim manuellen Durchtesten der U1/U2-Verifikations-Checkliste (Map-Subsystem Cleanup, siehe TODO_ARCHIVE.md) gefunden, per systematischer Fehlersuche (Root-Cause + Live-Reproduktion via Playwright) bestätigt und gefixt; `npx tsc --noEmit && npm test` grün.
 
 ### Hinzugefügt
 - **TODO/Roadmap-Trennung + Standards-Referenzen (`CLAUDE.md`, `TODO.md`, `ROADMAP.md`).** `TODO.md` (aktueller Scope: Fixes/Cleanup/Erweiterungen) und neues `ROADMAP.md` (neue, noch nicht existierende Features) getrennt, je mit `*_ARCHIVE.md`-Gegenstück. `TODO.md` auf die offene Map-Subsystem-Cleanup-Roadmap (U1–U7) aktualisiert; die 4 alten CI-Token/Accessibility-Punkte entfernt, da sie tatsächlich zu `oe5ith-ci/docs/roadmap.md` gehören. `CLAUDE.md` bekam eine neue Sektion „Standards-Referenzen": referenziert die externen Standards hinter den Repo-Konventionen (Semantic Versioning, Keep a Changelog, Conventional Commits, PSR-12, EditorConfig, BEM, GeoJSON/RFC 7946, WGS84, ISO 8601, WCAG, ARIA APG, Twelve-Factor Config, ADR, OWASP Top 10, Core Web Vitals, OpenAPI) inkl. bekannter Abweichungen, plus eine Pflege-Regel für künftige neue Dienste/Sprachen. Neues `.editorconfig` an bestehenden Codestil angeglichen (2 Spaces JS/TS/CSS, 4 Spaces PHP). Konkrete Angleichungs-Aufgaben (PSR-12-Audit, OWASP-Self-Check, OpenAPI-Spec) als neue TODO.md-Sektion „Standards-Angleichung" erfasst.
