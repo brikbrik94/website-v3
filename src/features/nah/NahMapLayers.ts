@@ -1,10 +1,10 @@
 import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
-import { MapCore } from '../../lib/MapCore';
+import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MAP_COLORS, MAP_ROUTE_STYLES } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { NahStation, NahStationResult } from '../../types/nah';
 
-const SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
+const SPRITE_BASE = MARKERS_SPRITE_BASE;
 const TARGET_PIN_SOURCE = 'nah-target-pin';
 const TARGET_PIN_LAYER = 'nah-target-pin-layer';
 
