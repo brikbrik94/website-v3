@@ -1,48 +1,17 @@
 # Gemini Projekt-Richtlinien
 
-Dieses Dokument enthält verbindliche Mandate für die KI-Assistenz in diesem Projekt. Diese Regeln haben oberste Priorität und überschreiben jegliche Standard-Logik der KI.
+Diese Datei wird von der Gemini CLI automatisch als Projekt-Kontext geladen. Sie ist bewusst
+kurz gehalten, um Drift gegenüber den eigentlichen Regel-Dokumenten zu vermeiden (siehe die
+„Zwei-Changelog"-Lehre in CLAUDE.md → Releases, versioning & git: eine separat gepflegte Kopie
+läuft sonst unbemerkt auseinander).
 
-## Mandate
+Verbindlich, in dieser Reihenfolge:
 
-1. **KEINE EIGENSTÄNDIGE INTERPRETATION:** Der Agent führt Aufgaben exakt so aus, wie sie gestellt wurden.
-2. **STRIKTE CI-KONFORMITÄT (PFLICHT):** 
-    - Designentscheidungen und CSS müssen strikt dem `oe5ith-ci` Repository folgen.
-    - Der Agent MUSS die Regeln in `oe5ith-ci/docs/for-coding-agents.md` befolgen.
-    - **KEINE HARDCODED FARBEN:** Farben in JS/TS dürfen nicht als Hex-Werte (`#ffffff`) gesetzt werden. Stattdessen sind die dynamischen Getters aus `src/lib/MapStyles.ts` (MAP_COLORS, MAP_ROUTE_STYLES) zu verwenden.
-3. **DATENBANK-SICHERHEIT:**
-    - Für Web-Anwendungen (PHP/API) darf NUR der `web_api_user` (Read-Only) verwendet werden.
-    - Credentials müssen in `api/config.php` verwaltet werden; `.env` darf nicht committet werden.
-4. **KLÄRUNG BEI UNKLARHEIT:** Bei Unsicherheit MUSS nachgefragt werden.
-5. **VERSIONS-MANAGEMENT & CHANGELOG (PFLICHT):**
-    - Die zentrale App-Version wird in `src/version.ts` definiert.
-    - JEDE Änderung MUSS im `CHANGELOG.md` mit Datum und Uhrzeit (Format: YYYY-MM-DD HH:mm) dokumentiert werden.
-    - Eine neue Version wird erst nach Abschluss eines vollständigen Arbeitsschritts vergeben; während der Entwicklung bleibt die Version auf dem Stand `-dev`.
-    - Der Changelog dient als Basis, um am Ende eines Tages oder Arbeitsschritts die finale Version und deren Umfang abzuleiten.
+1. **[AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md)** — generische, repo-unabhängige
+   Arbeitsweise (Core Mandates, Standards-Referenzen, TODO/Roadmap-Konvention,
+   Releases/Versionierung/Git).
+2. **[CLAUDE.md](./CLAUDE.md)** — repo-spezifisch: Architektur, Commands, Projekt-Konventionen,
+   konkrete Standards-Anwendung für website-v3.
 
-## Technischer Status (Stand: 02.05.2026)
-
-### Infrastruktur & Sicherheit
-- **Stack:** Vite, TypeScript (Vanilla), PHP (Backend-Proxy).
-- **DB-Schema:** Umstieg auf spezialisierte Tabellen erfolgt: `emergency.rd_stations` (SEW) und `emergency.nef_stations` (Notarzt).
-- **Security:** Zugriff via `web_api_user`. `.env` wird via `.gitignore` geschützt.
-- **Git:** `oe5ith-ci` ist als Submodule unter `/oe5ith-ci` eingebunden.
-
-### Architektur-Kernkomponenten
-- **MapStyles & Legend:** Zentrale Bibliotheken in `src/lib/` zur CI-konformen Kartensteuerung. Unterstützt dynamische CSS-Token Auflösung.
-- **Routing:** 
-    - Profile: `driving-car`, `driving-emergency` (Sonderlogik für Blaulicht).
-    - Multi-Route Visualisierung mit Fokus-Highlighting.
-- **Luftrettung (NAH):**
-    - Echtzeit-Statusberechnung (PHP) inkl. Sonnenstand (daylight) und saisonalen Filtern.
-    - Dynamische Reload-Logik (alle 30 Min oder nach Server-Vorgabe).
-- **Info & Debug Portal (`/info`):**
-    - Modulares System für Systemstatus.
-    - **NAH Status:** Tabellarische Übersicht der Betriebszeiten.
-    - **Service Health:** Live-Pings aller APIs (Backend, DB, ORS, Geocoder, Tiles).
-    - **Regions Analyse:** Aggregierte Statistiken (NAH, RD, NEF) nach Bundesland/Region.
-    - **Karten Inventar:** Automatisches Verzeichnis der verfügbaren Layer vom Tile-Server.
-
-### UI-Standards
-- **Z-Index:** Strikte Nutzung der CI-Tokens (`--z-topbar`, `--z-sidebar` etc.) aus `src/styles/common.css`.
-- **Layout:** Flex-Layout mit Z-Index Kaskade für Karten-Anwendungen (CI-Elemente > Map-Controls).
-- **Toasts:** Zentrales Feedback-System via `src/lib/Toast.ts`.
+Beide Dokumente haben für Agenten-Arbeit in diesem Repo oberste Priorität und überschreiben
+KI-Standardverhalten.
