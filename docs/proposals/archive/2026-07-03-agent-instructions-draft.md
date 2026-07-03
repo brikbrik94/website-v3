@@ -100,22 +100,3 @@ Basis-Standards: SemVer + Keep a Changelog + Conventional Commits (Quellen siehe
 - **Scratch/Hygiene:** Wegwerfskripte, Probes und Notizen nicht committen — gitignorter
   `scratch/`-Ordner oder `*.local.*`-Namenskonvention statt versehentlich versionierter
   Ad-hoc-Dateien.
-
-## 5. Meta-Dokument-Änderungen (Proposals)
-
-Änderungen an Regel-/Prozessdokumenten selbst (diese Datei, der repo-spezifische Einstiegspunkt,
-o.ä.) laufen über einen eigenen Draft-Review-Merge-Zyklus statt direkt im Live-Dokument diskutiert
-zu werden — Ziel: Diskussion und Ergebnis bleiben nachvollziehbar, das Live-Dokument bleibt
-Endzustand ohne Revisionsrauschen.
-
-- **Ablage:** `docs/proposals/` (Repo-Root-Ebene, parallel zu evtl. vorhandenen
-  Feature-Plan-/Spec-Ordnern — Proposals sind Meta-Dokument-Änderungen, keine Feature-Artefakte).
-- **Naming:** `YYYY-MM-DD-<slug>.md` für den Entwurf, `YYYY-MM-DD-<slug>-review.md` für die
-  zugehörige Review-Durchsprache (Tabelle: Punkt/Priorität/Status).
-- **Harte Grenze:** Nur Punkte, die in der Review-Tabelle explizit besprochen und mit Status
-  versehen sind, werden ins Live-Dokument übernommen. Keine stillschweigenden Zusatzänderungen
-  beim Merge — sonst entstehen nicht dokumentierte, nicht nachvollziehbare Artefakte im
-  Regelwerk.
-- **Nach dem Merge:** Entwurf + Review wandern nach `docs/proposals/archive/` (nicht löschen —
-  Historie bleibt erhalten), Review-Tabelle wird vorher mit dem finalen Status pro Punkt
-  aktualisiert.

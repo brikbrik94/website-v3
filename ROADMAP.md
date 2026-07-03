@@ -36,9 +36,3 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   Conventional Commits abgleichen (kein offizieller Typ — entweder dokumentieren warum bewusst
   abweichend, oder auf `chore(release):` umstellen). Danach `TODO_ARCHIVE.md`/`ROADMAP_ARCHIVE.md`
   auf einheitliche, selbstständig lesbare Darstellung prüfen.
-- [ ] **`CLAUDE.md` in portable + repo-spezifische Teile aufsplitten** — die repo-unabhängigen,
-  standardbasierten Regeln (Versionierung, Changelog, Commits, TODO/Roadmap-Split) in eine
-  eigenständige Vorlagendatei auslagern, die 1:1 in andere Repos kopiert werden kann. `CLAUDE.md`
-  bleibt eine einzelne Datei für dieses Repo, verweist aber auf die Vorlage statt die Regeln
-  erneut auszuformulieren; ergänzt nur noch OE5ITH/website-v3-Spezifisches (Architektur, PHP-API,
-  `oe5ith-ci`-Submodule, Sprachregel).
