@@ -124,7 +124,20 @@ export class MapPageController extends BasePageController {
     private async toggleLayer(overlayId: string, overlayUrl: string, layerIds: string[], checked: boolean, m: maplibregl.Map) {
         try {
             if (!m.isStyleLoaded()) {
-                await new Promise(resolve => m.once('style.load', resolve));
+                // isStyleLoaded() wird erst true, wenn ALLE Sources ihre initialen Tiles geladen
+                // haben (nicht nur der Style-JSON geparst ist). Bei großen Basemaps (z.B. "Basemap
+                // At", ~2.4 GB PMTiles) ist das an dieser Stelle oft noch nicht der Fall. Auf ein
+                // erneutes 'style.load'-Event zu warten hängt hier für immer, da dieses Event schon
+                // gefeuert hat (wir laufen ja im style.load-Restore-Callback) und ohne weiteren
+                // setStyle()-Aufruf nicht erneut feuert. Stattdessen pollen, bis der Style wirklich
+                // fertig geladen ist.
+                await new Promise<void>(resolve => {
+                    const check = () => {
+                        if (m.isStyleLoaded()) resolve();
+                        else requestAnimationFrame(check);
+                    };
+                    check();
+                });
             }
 
             const style = await this.getStyle(overlayId, overlayUrl);

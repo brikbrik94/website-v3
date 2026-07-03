@@ -51,21 +51,36 @@ export const OverlayLoader = {
       entry.hasImage = true;
     }
 
+    // Source-/Layer-IDs mit der overlayId prefixen: Overlay-Style-Dateien werden unabhängig
+    // voneinander gepflegt (Tile-Server) und können zufällig dieselbe ID wie eine Source/ein
+    // Layer des aktiven Basemap-Styles verwenden (z.B. "esri" in sowohl "Basemap At" als auch
+    // im "basemap-at-contours"-Overlay) – ohne Prefix würde addSource/removeSource dann gegen
+    // die falsche (Basemap-eigene) Source laufen, statt gegen die des Overlays.
+    const prefixed = (id: string) => (id.startsWith(overlayId) ? id : `${overlayId}-${id}`);
+
     const resolvedSources = MapCore.resolveSourceUrls(style.sources || {}, styleUrl);
+    const sourceIdMap = new Map<string, string>();
     for (const [sourceId, def] of Object.entries(resolvedSources)) {
-      MapRegistry.registerSource(sourceId, def);
-      if (!map.getSource(sourceId)) {
-        map.addSource(sourceId, JSON.parse(JSON.stringify(def)));
+      const uniqueSourceId = prefixed(sourceId);
+      sourceIdMap.set(sourceId, uniqueSourceId);
+      MapRegistry.registerSource(uniqueSourceId, def);
+      if (!map.getSource(uniqueSourceId)) {
+        map.addSource(uniqueSourceId, JSON.parse(JSON.stringify(def)));
       }
-      entry.sourceIds.push(sourceId);
+      entry.sourceIds.push(uniqueSourceId);
     }
 
     for (const layer of (style.layers || []) as any[]) {
-      MapRegistry.registerLayer(layer.id, layer);
-      if (!map.getLayer(layer.id)) {
-        map.addLayer(JSON.parse(JSON.stringify(layer)));
+      const uniqueLayerId = prefixed(layer.id);
+      const newLayer = { ...layer, id: uniqueLayerId };
+      if (newLayer.source && sourceIdMap.has(newLayer.source)) {
+        newLayer.source = sourceIdMap.get(newLayer.source);
       }
-      entry.layerIds.push(layer.id);
+      MapRegistry.registerLayer(uniqueLayerId, newLayer);
+      if (!map.getLayer(uniqueLayerId)) {
+        map.addLayer(JSON.parse(JSON.stringify(newLayer)));
+      }
+      entry.layerIds.push(uniqueLayerId);
     }
 
     loaded.set(overlayId, entry);

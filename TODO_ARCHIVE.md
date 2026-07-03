@@ -5,6 +5,40 @@ Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./R
 Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
 noch nicht getrennt) und sind entsprechend gemischt.
 
+## Unreleased (2026-07-03)
+
+### U1+U2 visuell verifiziert (Map-Subsystem Cleanup) — 2 Bugs gefunden + behoben
+6-Punkte-Checkliste aus [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md](./docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md)
+manuell durchgetestet (`npm run dev`, Basemap „Basemap At"). 4/6 Punkte bestanden direkt
+(Tracking-Restore, Terrain-Leak, Wanderwege-Toggle, Seitenwechsel-Persistenz); 2 Punkte
+schlugen fehl und wurden per systematischer Fehlersuche (Root-Cause + Live-Reproduktion via
+Playwright) auf zwei unabhängige Bugs zurückgeführt und gefixt:
+
+- [x] **Bug A — RD-Pins verschwinden dauerhaft bei Wechsel auf „Basemap At"** (`src/pages/MapPage.ts`,
+  `toggleLayer`). `isStyleLoaded()` wird erst `true`, wenn alle Sources ihre initialen Tiles
+  geladen haben, nicht nur wenn der Style-JSON geparst ist. Bei „Basemap At" (~2,4 GB PMTiles,
+  deutlich größer als die übrigen Basemaps) war das zum Restore-Zeitpunkt oft noch `false`. Der
+  Code wartete dann per `m.once('style.load', resolve)` auf ein **erneutes** `style.load` —
+  das Event hatte aber schon gefeuert (wir liefen im style.load-Restore-Callback) und feuert ohne
+  weiteren `setStyle()`-Aufruf nicht erneut → der `await` hing für immer, und da `isRestoring` in
+  `MapCore.ts` dadurch dauerhaft `true` blieb, war jede weitere Restore-Sequenz dieser
+  Karteninstanz blockiert. Fix: Wartelogik durch Polling auf `isStyleLoaded()`
+  (`requestAnimationFrame`-Loop) ersetzt statt auf ein ggf. bereits verstrichenes Event zu warten.
+- [x] **Bug B — Höhenlinien rendern/entfernen sich nicht auf „Basemap At"** (`src/lib/OverlayLoader.ts`).
+  Zufällige ID-Kollision: Sowohl der „Basemap At"-Basemap-Style als auch der
+  Höhenlinien-Overlay-Style (`basemap-at-contours`) definieren unabhängig voneinander eine
+  Source namens `esri`. `OverlayLoader.add()` prüfte nur `!map.getSource(sourceId)` — die
+  existierte durch den Basemap schon, das eigentliche Höhenlinien-Source wurde nie hinzugefügt
+  (Contour-Layer zeigten auf die falschen, Basemap-eigenen Vektordaten → nichts sichtbar).
+  Beim Ausschalten scheiterte `removeSource('esri')`, weil die Source noch von
+  Basemap-eigenen Layern gebraucht wurde (MapLibre `error`-Event statt Exception, sichtbar als
+  Konsolenfehler). Fix: `OverlayLoader.add()`/intern verwendete IDs jetzt immer mit der
+  `overlayId` geprefixt (gleiches Muster wie bereits in `MapPageController.toggleLayer`) —
+  Overlay-Sources/-Layer können dadurch nie mehr mit Basemap-eigenen IDs kollidieren.
+
+Beide Fixes mit `npx tsc --noEmit && npm test` (grün) und Live-Reproduktion vor/nach Fix
+(Playwright gegen laufenden Dev-Server) verifiziert.
+
 ## Abgeschlossene Aufgaben (Mai 2026)
 ### Release v3.3.0 - Tracking Gateway Migration & BBox Deactivation
 - [x] Tracking Gateway V2 Migration (Types, Service, Tracks)

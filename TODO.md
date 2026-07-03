@@ -7,10 +7,9 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 ## Map-Subsystem Cleanup
 
 Kontext & Details: [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md](./docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md).
-U1 (OverlayLoader) + U2 (Restore-Pfade) sind seit v3.5.2 erledigt.
-
-### Verifikation (offen seit v3.5.2)
-- [ ] U1+U2 visuell verifizieren — 6-Punkte-Checkliste in der Roadmap-Doc, `npm run dev` (kein Dev-Server-Zugang beim Commit)
+U1 (OverlayLoader) + U2 (Restore-Pfade) sind seit v3.5.2 erledigt und seit 2026-07-03 visuell
+verifiziert (6-Punkte-Checkliste, siehe TODO_ARCHIVE.md) — dabei 2 Bugs gefunden und behoben,
+ebenfalls im Archiv dokumentiert.
 
 ### Cleanup / Vereinheitlichung
 - [ ] U3 Sprite-Handling cachen + `SPRITE_BASE`-Konstante (`MapCore.ts:209`, lädt/dekodiert bei jedem Style-Reload neu; wirkt direkt auf Core Web Vitals LCP/INP beim Karten-Init, siehe CLAUDE.md → Standards-Referenzen)
