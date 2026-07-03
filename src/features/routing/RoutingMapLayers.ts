@@ -1,6 +1,6 @@
 import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
 import { Feature, FeatureCollection, LineString, Point } from 'geojson';
-import { MapCore } from '../../lib/MapCore';
+import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { RoutingDataService } from './RoutingDataService';
 import { MAP_ROUTE_STYLES, MAP_COLORS } from '../../lib/MapStyles';
@@ -18,7 +18,7 @@ const PIN_LAYER_START = 'routing-pin-start-layer';
 const PIN_LAYER_TARGET = 'routing-pin-target-layer';
 
 export class RoutingMapLayers {
-  private static SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
+  private static SPRITE_BASE = MARKERS_SPRITE_BASE;
 
   public static registerResources() {
     MapRegistry.registerImage('oe5ith-markers', this.SPRITE_BASE);

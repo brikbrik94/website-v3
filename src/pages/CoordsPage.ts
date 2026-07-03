@@ -2,7 +2,7 @@ import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { CoordsDataService } from '../features/coords/CoordsDataService';
 import { CoordsSidebar } from '../features/coords/CoordsSidebar';
-import { MapCore } from '../lib/MapCore';
+import { MapCore, MARKERS_SPRITE_BASE } from '../lib/MapCore';
 import { initTopbar } from '../components/Topbar';
 import { LayoutHelper } from '../lib/LayoutHelper';
 import { InventoryService } from '../services/InventoryService';
@@ -13,7 +13,7 @@ import { Toast } from '../lib/Toast';
 
 const COORDS_PIN_SOURCE = 'coords-pin';
 const COORDS_PIN_LAYER = 'coords-pin-layer';
-const SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
+const SPRITE_BASE = MARKERS_SPRITE_BASE;
 
 /**
  * CoordsPageController - Orchestrates the coordinate converter page.

@@ -7,6 +7,21 @@ noch nicht getrennt) und sind entsprechend gemischt.
 
 ## Unreleased (2026-07-03)
 
+### U3 Sprite-Handling gecacht + `SPRITE_BASE`-Konstante zentralisiert
+- [x] `MapCore.loadSprites` fetchte/dekodierte das Sprite-Sheet (JSON-Atlas + Bild) bisher bei
+  jedem Style-Reload (Basemap-Wechsel) neu, obwohl Inhalt pro Sprite-URL identisch ist — wirkt
+  auf Core Web Vitals LCP/INP beim Karten-Init. Jetzt Cache (`_spriteSheetCache` in `MapCore.ts`,
+  keyed nach Sprite-URL inkl. HiDPI-Suffix) für den Fetch+Decode-Schritt; der pro Map-Instanz
+  nötige `addImage()`-Schritt bleibt unverändert (kann nicht cross-Style gecacht werden, da
+  Style-Wechsel die vorherigen Bilder verwirft).
+- [x] Die 3 identisch duplizierten `SPRITE_BASE`-Konstanten (`NahMapLayers.ts`,
+  `RoutingMapLayers.ts`, `CoordsPage.ts`) durch eine zentrale, aus `MapCore.ts` exportierte
+  `MARKERS_SPRITE_BASE`-Konstante ersetzt.
+- Live per Playwright verifiziert: zweiter/dritter Basemap-Wechsel loggt „Reusing cached sprite
+  sheet" statt erneut „Loading sprites from …". `npx tsc --noEmit && npm test` grün.
+- Dabei unabhängigen 404 bei Basemap „At Plus" entdeckt (natives MapLibre-Style-Sprite, nicht
+  `MapCore.loadSprites`) — als eigener TODO.md-Punkt erfasst, nicht mitgefixt.
+
 ### U1+U2 visuell verifiziert (Map-Subsystem Cleanup) — 2 Bugs gefunden + behoben
 6-Punkte-Checkliste aus [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md](./docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md)
 manuell durchgetestet (`npm run dev`, Basemap „Basemap At"). 4/6 Punkte bestanden direkt

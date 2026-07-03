@@ -12,7 +12,6 @@ verifiziert (6-Punkte-Checkliste, siehe TODO_ARCHIVE.md) — dabei 2 Bugs gefund
 ebenfalls im Archiv dokumentiert.
 
 ### Cleanup / Vereinheitlichung
-- [ ] U3 Sprite-Handling cachen + `SPRITE_BASE`-Konstante (`MapCore.ts:209`, lädt/dekodiert bei jedem Style-Reload neu; wirkt direkt auf Core Web Vitals LCP/INP beim Karten-Init, siehe CLAUDE.md → Standards-Referenzen)
 - [ ] U4 Pin-/Marker-Boilerplate zusammenfassen (`createPinLayer`, `setPointSource`)
 - [ ] U5 NAH DOM-Marker → Symbol-Layer migrieren (FA-Helicopter-HTML-Marker → `nah-*` Sprites, Popup-Refactor auf Click-Events); dabei auch Inline-`style="color:…"` in `NahMapLayers.ts:84,108` entfernen
 - [ ] U6 Hover-Cursor vereinheitlichen (`attachHoverCursor`; Routing noch inline, `RoutingPage.ts:69`)
@@ -24,6 +23,10 @@ ebenfalls im Archiv dokumentiert.
 - [ ] TerrainManager Double-Add-Race bei „warmem" Init prüfen (un-awaited `applyTerrainInfrastructure` + paralleler Restore)
 - [ ] NAH-Feature-State-Reset hardcoded `for (i<5)` (`NahMapLayers.ts:148`) → stale `selected` bei >5 Ergebnissen
 - [ ] TrackingPage-Timer (`setTimeout`, `TrackingPage.ts:130`) nicht in `destroy()` gecleart
+- [ ] Basemap-Style „At Plus" liefert 404 für sein eigenes (natives, nicht von `MapCore.loadSprites`
+  verwaltetes) Sprite (`https://tiles.oe5ith.at/assets/sprites/basemaps/sprite.json`) — MapLibre
+  loggt beim Laden dieses Basemaps einen `AJAXError (404)`. Serverseitig (Tile-Server-Assets) oder
+  im Style-JSON zu prüfen, nicht im Repo-Code; bei U3-Live-Verifikation (2026-07-03) entdeckt.
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
 

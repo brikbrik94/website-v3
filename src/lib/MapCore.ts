@@ -7,6 +7,19 @@ import { MapRegistry } from './MapRegistry';
 // Modul-lokale Variable um die Protokoll-Instanz am Leben zu halten
 let _pmtilesProtocol: Protocol | null = null;
 
+// Zentrale Konstante für das gemeinsame CI-Marker-Spriteset, statt an drei Stellen
+// (NahMapLayers, RoutingMapLayers, CoordsPage) identisch dupliziert zu werden.
+export const MARKERS_SPRITE_BASE = 'https://tiles.oe5ith.at/assets/sprites/oe5ith-markers/sprite';
+
+// Cache für geladene Sprite-Sheets (JSON-Atlas + dekodiertes Bild), keyed nach
+// Sprite-URL inkl. HiDPI-Suffix. Ein Style-Reload (Basemap-Wechsel) verwirft die per
+// map.addImage() hinzugefügten Bilder der alten Style-Instanz, sodass sie für die neue
+// Instanz erneut hinzugefügt werden müssen – das ist unvermeidbar. Der Netzwerk-Fetch +
+// die Bild-Dekodierung des Sprite-Sheets selbst sind aber pro Sprite-URL immer identisch
+// und wurden bisher bei jedem Style-Reload unnötig wiederholt (wirkt sich direkt auf
+// Core Web Vitals LCP/INP beim Karten-Init aus, siehe CLAUDE.md → Standards-Referenzen).
+const _spriteSheetCache = new Map<string, Promise<[Record<string, any>, HTMLImageElement]>>();
+
 /**
  * Zentraler Orchestrator für MapLibre Instanzen im Projekt.
  * Verhindert Code-Duplizierung und stellt CI-Konformität sicher.
@@ -205,22 +218,27 @@ export const MapCore = {
     // korrekte Anzeigegröße). Beim manuellen Nachladen müssen wir das nachbilden, sonst
     // werden die Symbole auf Retina-Displays doppelt so groß gerendert.
     const wantHiDpi = typeof window !== 'undefined' && window.devicePixelRatio >= 1.5;
-
-    console.log(`[MapCore] Loading sprites from ${absoluteSpriteUrl}${wantHiDpi ? '@2x' : ''}`);
+    const cacheKey = `${absoluteSpriteUrl}${wantHiDpi ? '@2x' : ''}`;
 
     try {
-      let jsonRes: Record<string, any>;
-      let imageRes: HTMLImageElement;
-      if (wantHiDpi) {
-        // @2x bevorzugen, bei fehlendem @2x-Sprite (z.B. 404) auf 1x zurückfallen.
-        try {
-          [jsonRes, imageRes] = await fetchVariant(`${absoluteSpriteUrl}@2x`);
-        } catch {
-          [jsonRes, imageRes] = await fetchVariant(absoluteSpriteUrl);
-        }
+      // Sprite-Sheet (JSON-Atlas + dekodiertes Bild) nur einmal pro URL fetchen/dekodieren,
+      // nicht bei jedem Style-Reload neu (siehe _spriteSheetCache-Kommentar oben).
+      let sheetPromise = _spriteSheetCache.get(cacheKey);
+      if (!sheetPromise) {
+        console.log(`[MapCore] Loading sprites from ${absoluteSpriteUrl}${wantHiDpi ? '@2x' : ''}`);
+        sheetPromise = wantHiDpi
+          // @2x bevorzugen, bei fehlendem @2x-Sprite (z.B. 404) auf 1x zurückfallen.
+          ? fetchVariant(`${absoluteSpriteUrl}@2x`).catch(() => fetchVariant(absoluteSpriteUrl))
+          : fetchVariant(absoluteSpriteUrl);
+        _spriteSheetCache.set(cacheKey, sheetPromise);
+        // Bei Fehlschlag aus dem Cache entfernen, sonst bliebe ein rejektetes Promise
+        // dauerhaft gecacht und jeder weitere Versuch schlüge fehl (auch nach Netzwerk-Retry).
+        sheetPromise.catch(() => _spriteSheetCache.delete(cacheKey));
       } else {
-        [jsonRes, imageRes] = await fetchVariant(absoluteSpriteUrl);
+        console.debug(`[MapCore] Reusing cached sprite sheet for ${cacheKey}`);
       }
+
+      const [jsonRes, imageRes] = await sheetPromise;
 
       for (const [id, pos] of Object.entries(jsonRes) as [string, any][]) {
         if (map.hasImage(id)) continue;
