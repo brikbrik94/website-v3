@@ -7,6 +7,19 @@ noch nicht getrennt) und sind entsprechend gemischt.
 
 ## Unreleased (2026-07-03)
 
+### U4 Pin-/Marker-Boilerplate zusammengefasst
+- [x] Die fast identisch kopierte Symbol-Layer-Definition für Einzel-Pins (NAH-Einsatzort,
+  Routing-Start/-Ziel, Coords-Pin: `icon-image`/`icon-size`/`icon-anchor`/`icon-color`/Halo) in
+  `MapCore.createPinLayer(layerId, sourceId, opts)` zusammengefasst; ersetzt die drei Kopien in
+  `NahMapLayers.ts`, `RoutingMapLayers.ts`, `CoordsPage.ts`.
+- [x] Die mehrfach kopierte „Pin-Position setzen/leeren"-Logik (`getSource` + `setData` mit
+  Point-Feature oder leerer FeatureCollection) in `MapCore.setPointSource(map, sourceId, lngLat)`
+  zusammengefasst; ersetzt `NahMapLayers.setTargetPin`/`clearTargetPin`-Bodies,
+  `RoutingMapLayers._updatePin` (entfällt, `updateStartPin`/`updateTargetPin` rufen jetzt direkt
+  `MapCore.setPointSource` auf) und die zwei inline-Stellen in `CoordsPage.ts`.
+- Live per Playwright verifiziert (Coords-Pin, Routing-Start-/Ziel-Pin je per Screenshot geprüft,
+  keine Konsolenfehler). `npx tsc --noEmit && npm test` grün.
+
 ### U3 Sprite-Handling gecacht + `SPRITE_BASE`-Konstante zentralisiert
 - [x] `MapCore.loadSprites` fetchte/dekodierte das Sprite-Sheet (JSON-Atlas + Bild) bisher bei
   jedem Style-Reload (Basemap-Wechsel) neu, obwohl Inhalt pro Sprite-URL identisch ist — wirkt

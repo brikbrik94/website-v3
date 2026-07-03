@@ -2,10 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-03 12:26
+## [Unreleased] - 2026-07-03 13:16
 
 ### Geändert
 - **Sprite-Sheets werden gecacht statt bei jedem Style-Reload neu geladen (`MapCore.loadSprites`).** Fetch + Bild-Dekodierung eines Sprite-Sheets liefen bisher bei jedem Basemap-Wechsel erneut ab, obwohl der Inhalt pro Sprite-URL identisch ist — wirkt sich auf Core Web Vitals (LCP/INP) beim Karten-Init aus. Neuer Cache (`_spriteSheetCache`, keyed nach Sprite-URL inkl. HiDPI-Suffix) übernimmt jetzt nur noch den einmaligen Fetch/Decode; das (unvermeidbare) erneute `map.addImage()` pro Style-Instanz bleibt bestehen. Zusätzlich die 3 identisch duplizierten `SPRITE_BASE`-Konstanten (`NahMapLayers.ts`, `RoutingMapLayers.ts`, `CoordsPage.ts`) durch eine zentrale, aus `MapCore.ts` exportierte `MARKERS_SPRITE_BASE` ersetzt. Live per Playwright verifiziert (`npx tsc --noEmit && npm test` grün).
+- **Pin-/Marker-Boilerplate zusammengefasst (`MapCore.createPinLayer`, `MapCore.setPointSource`).** Die Symbol-Layer-Definition für Einzel-Pins (NAH-Einsatzort, Routing-Start/-Ziel, Coords-Pin) und die „Pin-Position setzen/leeren"-Logik waren an drei Stellen fast identisch kopiert. Jetzt zwei gemeinsame `MapCore`-Helper (`createPinLayer` baut die `LayerSpecification`, `setPointSource` setzt/leert die Point-GeoJSON-Source); ersetzt die Duplikate in `NahMapLayers.ts`, `RoutingMapLayers.ts` (inkl. Wegfall der privaten `_updatePin`) und `CoordsPage.ts`. Live per Playwright verifiziert (Coords-/Routing-Pins rendern korrekt, keine Konsolenfehler), `npx tsc --noEmit && npm test` grün.
 
 ### Behoben
 - **RD-Overlay-Pins verschwinden dauerhaft bei Basemap-Wechsel auf „Basemap At"** (`src/pages/MapPage.ts`, `toggleLayer`). `isStyleLoaded()` wartete via `m.once('style.load', resolve)` auf ein bereits verstrichenes Event (feuert ohne erneuten `setStyle()`-Aufruf nicht wieder) → hing bei großen, langsam ladenden Basemaps (hier „Basemap At", ~2,4 GB PMTiles) für immer und blockierte wegen des dauerhaft `true` bleibenden `isRestoring`-Flags in `MapCore.ts` jede weitere Restore-Sequenz der Karteninstanz. Wartelogik jetzt ein Polling auf `isStyleLoaded()` (`requestAnimationFrame`-Loop) statt auf das Event.
