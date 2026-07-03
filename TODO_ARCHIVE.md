@@ -19,6 +19,12 @@ noch nicht getrennt) und sind entsprechend gemischt.
   `MapCore.setPointSource` auf) und die zwei inline-Stellen in `CoordsPage.ts`.
 - Live per Playwright verifiziert (Coords-Pin, Routing-Start-/Ziel-Pin je per Screenshot geprüft,
   keine Konsolenfehler). `npx tsc --noEmit && npm test` grün.
+- [x] Nachträglich Unit-Tests ergänzt (`src/lib/MapCore.test.ts`): `createPinLayer` (Defaults,
+  Custom-Optionen, Halo nur bei gesetzter Farbe) und `setPointSource` (Punkt setzen, leeren bei
+  `null`, No-Op bei fehlender Source) — reine Funktionen, ohne DOM/MapLibre-Mock testbar.
+  `loadSprites`-Caching (U3) bewusst nicht unit-getestet: hängt an `Image`/`canvas`/`getImageData`,
+  die im Node-Testenvironment dieses Repos (kein jsdom/canvas-Package) nicht verfügbar sind —
+  hierfür bleibt die Playwright-Live-Verifikation die Evidenzform.
 
 ### U3 Sprite-Handling gecacht + `SPRITE_BASE`-Konstante zentralisiert
 - [x] `MapCore.loadSprites` fetchte/dekodierte das Sprite-Sheet (JSON-Atlas + Bild) bisher bei
