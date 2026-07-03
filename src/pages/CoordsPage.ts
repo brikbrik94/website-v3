@@ -1,4 +1,4 @@
-import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
+import maplibregl from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { CoordsDataService } from '../features/coords/CoordsDataService';
 import { CoordsSidebar } from '../features/coords/CoordsSidebar';
@@ -75,8 +75,7 @@ export class CoordsPageController extends BasePageController {
 
         this.service.addListener((state) => {
             if (this.map) {
-                const source = this.map.getSource(COORDS_PIN_SOURCE) as GeoJSONSource | undefined;
-                source?.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [state.lon, state.lat] }, properties: {} });
+                MapCore.setPointSource(this.map, COORDS_PIN_SOURCE, [state.lon, state.lat]);
                 this.map.easeTo({ center: [state.lon, state.lat] });
             }
         });
@@ -113,21 +112,14 @@ export class CoordsPageController extends BasePageController {
 
     private _setupCoordsPin(map: maplibregl.Map) {
         const pos = this.service.getWgs();
-        const layerDef: LayerSpecification = {
-            id: COORDS_PIN_LAYER,
-            type: 'symbol',
-            source: COORDS_PIN_SOURCE,
-            layout: {
-                'icon-image': 'ci-symbol-location',
-                'icon-size': 0.75,
-                'icon-anchor': 'center',
-                'icon-allow-overlap': true,
-            },
-            paint: { 'icon-color': MAP_COLORS.accent },
-        };
+        const layerDef = MapCore.createPinLayer(COORDS_PIN_LAYER, COORDS_PIN_SOURCE, {
+            icon: 'ci-symbol-location',
+            size: 0.75,
+            anchor: 'center',
+            color: MAP_COLORS.accent,
+        });
         MapCore.ensureGeoJsonLayer(map, COORDS_PIN_SOURCE, layerDef);
-        const source = map.getSource(COORDS_PIN_SOURCE) as GeoJSONSource | undefined;
-        source?.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [pos.lon, pos.lat] }, properties: {} });
+        MapCore.setPointSource(map, COORDS_PIN_SOURCE, [pos.lon, pos.lat]);
     }
 
     public destroy() {

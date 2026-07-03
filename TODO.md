@@ -12,7 +12,6 @@ verifiziert (6-Punkte-Checkliste, siehe TODO_ARCHIVE.md) — dabei 2 Bugs gefund
 ebenfalls im Archiv dokumentiert.
 
 ### Cleanup / Vereinheitlichung
-- [ ] U4 Pin-/Marker-Boilerplate zusammenfassen (`createPinLayer`, `setPointSource`)
 - [ ] U5 NAH DOM-Marker → Symbol-Layer migrieren (FA-Helicopter-HTML-Marker → `nah-*` Sprites, Popup-Refactor auf Click-Events); dabei auch Inline-`style="color:…"` in `NahMapLayers.ts:84,108` entfernen
 - [ ] U6 Hover-Cursor vereinheitlichen (`attachHoverCursor`; Routing noch inline, `RoutingPage.ts:69`)
 - [ ] U7 MapRegistry-Buchhaltung vereinfachen (Dreifach-Buchhaltung `activeLayers`/`overlayMetadata`/`MapRegistry`)

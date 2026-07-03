@@ -25,20 +25,11 @@ export class RoutingMapLayers {
   }
 
   public static updateStartPin(map: maplibregl.Map, lngLat: [number, number] | null) {
-    this._updatePin(map, PIN_SOURCE_START, lngLat);
+    MapCore.setPointSource(map, PIN_SOURCE_START, lngLat);
   }
 
   public static updateTargetPin(map: maplibregl.Map, lngLat: [number, number] | null) {
-    this._updatePin(map, PIN_SOURCE_TARGET, lngLat);
-  }
-
-  private static _updatePin(map: maplibregl.Map, sourceId: string, lngLat: [number, number] | null) {
-    const source = map.getSource(sourceId) as GeoJSONSource | undefined;
-    if (!source) return;
-    const data = lngLat
-      ? { type: 'Feature' as const, geometry: { type: 'Point' as const, coordinates: lngLat }, properties: {} }
-      : { type: 'FeatureCollection' as const, features: [] };
-    source.setData(data);
+    MapCore.setPointSource(map, PIN_SOURCE_TARGET, lngLat);
   }
 
   public static ensureBaseLayers(map: maplibregl.Map) {
@@ -73,33 +64,25 @@ export class RoutingMapLayers {
     MapRegistry.registerSource(STATIONS_SOURCE_ID, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 
     // 3. CI-Pin Layer für Start (grün)
-    const startPinLayerDef: LayerSpecification = {
-      id: PIN_LAYER_START,
-      type: 'symbol',
-      source: PIN_SOURCE_START,
-      layout: {
-        'icon-image': 'ci-pin',
-        'icon-size': 0.5,
-        'icon-anchor': 'bottom',
-        'icon-allow-overlap': true,
-      },
-      paint: { 'icon-color': MAP_COLORS.success, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 2 },
-    };
+    const startPinLayerDef = MapCore.createPinLayer(PIN_LAYER_START, PIN_SOURCE_START, {
+      icon: 'ci-pin',
+      size: 0.5,
+      anchor: 'bottom',
+      color: MAP_COLORS.success,
+      haloColor: MAP_COLORS.white,
+      haloWidth: 2,
+    });
     MapCore.ensureGeoJsonLayer(map, PIN_SOURCE_START, startPinLayerDef);
 
     // 4. CI-Pin Layer für Ziel (rot)
-    const targetPinLayerDef: LayerSpecification = {
-      id: PIN_LAYER_TARGET,
-      type: 'symbol',
-      source: PIN_SOURCE_TARGET,
-      layout: {
-        'icon-image': 'ci-pin',
-        'icon-size': 0.5,
-        'icon-anchor': 'bottom',
-        'icon-allow-overlap': true,
-      },
-      paint: { 'icon-color': MAP_COLORS.danger, 'icon-halo-color': MAP_COLORS.white, 'icon-halo-width': 2 },
-    };
+    const targetPinLayerDef = MapCore.createPinLayer(PIN_LAYER_TARGET, PIN_SOURCE_TARGET, {
+      icon: 'ci-pin',
+      size: 0.5,
+      anchor: 'bottom',
+      color: MAP_COLORS.danger,
+      haloColor: MAP_COLORS.white,
+      haloWidth: 2,
+    });
     MapCore.ensureGeoJsonLayer(map, PIN_SOURCE_TARGET, targetPinLayerDef);
 
     // Enforce layer order: Routen unter Stationen, Pins oben

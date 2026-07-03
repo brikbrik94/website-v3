@@ -1,4 +1,4 @@
-import maplibregl, { type StyleImageMetadata } from 'maplibre-gl';
+import maplibregl, { type LayerSpecification, type StyleImageMetadata } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { initTerrainManager, applyTerrainInfrastructure } from './TerrainManager';
 import { BasemapStore } from './BasemapStore';
@@ -142,6 +142,52 @@ export const MapCore = {
         console.warn(`[MapCore] Failed to add layer ${layerDef.id}`, e);
       }
     }
+  },
+
+  /**
+   * Baut die LayerSpecification für einen einzelnen CI-Pin/Marker (Symbol-Layer über einer
+   * Point-GeoJSON-Source). Ersetzt die zuvor an drei Stellen (Nah-/Routing-/Coords-Pins)
+   * fast identisch kopierten Layer-Definitionen.
+   */
+  createPinLayer(layerId: string, sourceId: string, opts: {
+    icon: string;
+    size?: number;
+    anchor?: 'center' | 'bottom' | 'top' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    color?: string;
+    haloColor?: string;
+    haloWidth?: number;
+  }): LayerSpecification {
+    const paint: Record<string, unknown> = {};
+    if (opts.color) paint['icon-color'] = opts.color;
+    if (opts.haloColor) paint['icon-halo-color'] = opts.haloColor;
+    if (opts.haloWidth !== undefined) paint['icon-halo-width'] = opts.haloWidth;
+
+    return {
+      id: layerId,
+      type: 'symbol',
+      source: sourceId,
+      layout: {
+        'icon-image': opts.icon,
+        'icon-size': opts.size ?? 0.5,
+        'icon-anchor': opts.anchor ?? 'bottom',
+        'icon-allow-overlap': true,
+      },
+      paint,
+    } as LayerSpecification;
+  },
+
+  /**
+   * Setzt die Point-GeoJSON-Source eines Pins auf eine Koordinate, oder leert sie (lngLat
+   * null) – z.B. um einen Pin auszublenden. Ersetzt die zuvor mehrfach kopierte
+   * getSource+setData-Logik (Nah-/Routing-/Coords-Pins).
+   */
+  setPointSource(map: maplibregl.Map, sourceId: string, lngLat: [number, number] | null) {
+    const source = map.getSource(sourceId) as maplibregl.GeoJSONSource | undefined;
+    if (!source) return;
+    const data = lngLat
+      ? { type: 'Feature' as const, geometry: { type: 'Point' as const, coordinates: lngLat }, properties: {} }
+      : { type: 'FeatureCollection' as const, features: [] };
+    source.setData(data);
   },
 
   /**

@@ -1,4 +1,4 @@
-import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
+import maplibregl from 'maplibre-gl';
 import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MAP_COLORS, MAP_ROUTE_STYLES } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
@@ -16,18 +16,12 @@ export const NahMapLayers = {
     MapRegistry.registerImage('oe5ith-markers', SPRITE_BASE);
 
     // Einsatzort-Pin (ci-symbol-location, accent-Farbe, ohne Halo)
-    const targetPinLayerDef: LayerSpecification = {
-      id: TARGET_PIN_LAYER,
-      type: 'symbol',
-      source: TARGET_PIN_SOURCE,
-      layout: {
-        'icon-image': 'ci-symbol-location',
-        'icon-size': 0.75,
-        'icon-anchor': 'center',
-        'icon-allow-overlap': true,
-      },
-      paint: { 'icon-color': MAP_COLORS.accent },
-    };
+    const targetPinLayerDef = MapCore.createPinLayer(TARGET_PIN_LAYER, TARGET_PIN_SOURCE, {
+      icon: 'ci-symbol-location',
+      size: 0.75,
+      anchor: 'center',
+      color: MAP_COLORS.accent,
+    });
     MapCore.ensureGeoJsonLayer(map, TARGET_PIN_SOURCE, targetPinLayerDef);
 
     const sourceId = 'nah-lines';
@@ -122,13 +116,11 @@ export const NahMapLayers = {
   },
 
   setTargetPin(map: maplibregl.Map, lng: number, lat: number) {
-    const source = map.getSource(TARGET_PIN_SOURCE) as GeoJSONSource | undefined;
-    source?.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [lng, lat] }, properties: {} });
+    MapCore.setPointSource(map, TARGET_PIN_SOURCE, [lng, lat]);
   },
 
   clearTargetPin(map: maplibregl.Map) {
-    const source = map.getSource(TARGET_PIN_SOURCE) as GeoJSONSource | undefined;
-    source?.setData({ type: 'FeatureCollection', features: [] });
+    MapCore.setPointSource(map, TARGET_PIN_SOURCE, null);
   },
 
   /**
