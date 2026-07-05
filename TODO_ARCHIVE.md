@@ -7,6 +7,19 @@ noch nicht getrennt) und sind entsprechend gemischt.
 
 ## Unreleased (2026-07-05)
 
+### Coords-Seite: Pin setzen auf Rechtsklick-Kontextmenü umgestellt
+- [x] Pin setzen war an Linksklick auf die Karte gebunden (`CoordsPage.ts:72`,
+  `map.on('click', ...)`) — inkonsistent zum Routing-Kontextmenü-Pattern und (laut Nutzer)
+  potenziell verwirrend, da Rechtsklick-Drag bereits für die 3D-Steuerung (Kippen/Rotieren)
+  reserviert ist. Umgestellt auf `map.on('contextmenu', ...)` mit `ContextMenu.show(...)`, exakt
+  analog zu `RoutingPage.ts:76`: Rechtsklick öffnet ein Menü mit Koordinaten-Label und der Aktion
+  „Koordinate hier setzen"; Linksklick bleibt für normales Kartenverschieben frei, `contextmenu`
+  feuert nur bei Rechtsklick ohne Drag und kollidiert nicht mit der 3D-Steuerung. Aus
+  `docs/proposals/todo.txt` übernommen (2026-07-05), noch am selben Tag umgesetzt. Live per
+  Playwright verifiziert: Linksklick öffnet kein Menü, Rechtsklick öffnet das Menü mit korrekten
+  Koordinaten, Klick auf „Koordinate hier setzen" aktualisiert Adresse/alle Koordinatenformate in
+  der Sidebar. `npx tsc --noEmit && npm test` grün (68/68).
+
 ### Routing: A→B zeigte leere Stationsliste
 - [x] `renderStationResults` (`src/components/RoutingSidebar.ts`) zeigte auch im A→B-Modus
   „0 Standorte gefunden"/„Nächste Stützpunkte" an, weil `clearAll()`

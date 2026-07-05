@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-05 15:07
+
+### Geändert
+- **Coords-Seite: Pin setzen auf Rechtsklick-Kontextmenü umgestellt** (`src/pages/CoordsPage.ts`). War bisher an Linksklick auf die Karte gebunden — inkonsistent zum Routing-Kontextmenü-Pattern und kollidierte konzeptionell mit der Rechtsklick-Drag-3D-Steuerung (Kippen/Rotieren). Jetzt analog zu `RoutingPage.ts`: Rechtsklick öffnet ein Kontextmenü mit den Koordinaten und der Aktion „Koordinate hier setzen"; Linksklick bleibt für normales Kartenverschieben frei. Live verifiziert (Linksklick ohne Effekt, Rechtsklick-Menü aktualisiert Adresse/alle Koordinatenformate in der Sidebar korrekt). `npx tsc --noEmit && npm test` grün (68/68).
+
 ## [Unreleased] - 2026-07-05 07:32
 
 ### Behoben
