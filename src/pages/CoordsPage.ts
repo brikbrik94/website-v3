@@ -10,6 +10,8 @@ import { MapRegistry } from '../lib/MapRegistry';
 import { OverlayLoader } from '../lib/OverlayLoader';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { Toast } from '../lib/Toast';
+import { ContextMenu } from '../components/ContextMenu';
+import { ContextMenuItem } from '../types/common';
 
 const COORDS_PIN_SOURCE = 'coords-pin';
 const COORDS_PIN_LAYER = 'coords-pin-layer';
@@ -69,8 +71,21 @@ export class CoordsPageController extends BasePageController {
         ]);
 
         // 7. Event Listeners
-        this.map.on('click', (e) => {
-            this.service.setWgs(e.lngLat.lat, e.lngLat.lng);
+        // Bewusst kein 'click' (blockiert sonst Linksklick als Setzen-Aktion und ist
+        // inkonsistent zum Routing-Kontextmenü-Pattern); Rechtsklick-Drag ist bereits für die
+        // 3D-Steuerung (Kippen/Rotieren) reserviert, daher Kontextmenü statt Direktbindung.
+        this.map.on('contextmenu', (e) => {
+            const { lat, lng } = e.lngLat;
+            const menuItems: (ContextMenuItem | 'sep' | { label: string, type: 'label' })[] = [
+                { label: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, type: 'label' },
+                'sep',
+                {
+                    label: 'Koordinate hier setzen',
+                    icon: 'fa-solid fa-location-dot',
+                    onClick: () => this.service.setWgs(lat, lng)
+                }
+            ];
+            ContextMenu.show(e.originalEvent.clientX, e.originalEvent.clientY, menuItems);
         });
 
         this.service.addListener((state) => {
