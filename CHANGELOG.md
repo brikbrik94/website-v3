@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-05 07:05
+
+### Geändert
+- **Fahrmodus-Anzeige in der Routing-Zusammenfassung von Text-Badge auf Icon umgestellt** (`src/components/RoutingSidebar.ts`, `updateRoutingSummary`). Live-Test des Fahrmodus-/Warn-Badge-Features zeigte eine unsaubere Anordnung: das Fahrmodus-Badge stand als eigene blaue Textzeile über der Distanz/Dauer-Box, die Warn-Badges (Maut/Zufahrtsbeschränkung) als getrennter Block danach ohne erkennbaren Bezug zur Route. Jetzt: reines Icon (Auto/Rettungswagen) links neben der unveränderten Distanz/Dauer-Kv-Zeile (Label nur noch als Tooltip), Warn-Badges direkt in derselben Karte darunter. Neue, scoped CSS-Regeln (`.result-summary-row`, `.result-mode-icon`) in `sidebar.css`, bestehende `.result-kv`/`.result-badges`-Basisklassen (auch von Stationsliste/Tracking genutzt) unverändert. Design: [docs/superpowers/specs/2026-07-05-routing-summary-layout-design.md](./docs/superpowers/specs/2026-07-05-routing-summary-layout-design.md). `npx tsc --noEmit && npm test` grün, beide Profile live gegen den Dev-Server verifiziert.
+
 ## [Unreleased] - 2026-07-05 06:08
 
 ### Hinzugefügt
