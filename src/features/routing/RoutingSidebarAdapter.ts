@@ -30,12 +30,22 @@ export class RoutingSidebarAdapter {
         if (params.mode === 'ab' && params.start) {
           await this.setCoord('start', params.start[0], params.start[1]);
           
-          const route = await RoutingService.calculateRoute(params.start, params.target, params.profile);
+          // Nur driving-car hat im ORS-Graph die way_type/tollways/roadaccessrestrictions
+          // Encoded-Values geladen; extra_info für driving-emergency liefert 500 (Fehlercode 2018).
+          const extraInfo = params.profile === 'driving-car'
+            ? ['waytype', 'tollways', 'roadaccessrestrictions']
+            : undefined;
+          const route = await RoutingService.calculateRoute(
+            params.start,
+            params.target,
+            params.profile,
+            extraInfo
+          );
           if (this.abortSignal.aborted) return;
-          
+
           if (route && route.features && route.features.length > 0) {
-            const summary = route.features[0].properties.summary;
-            updateRoutingSummary(summary.distance, summary.duration);
+            const { summary, extras } = route.features[0].properties;
+            updateRoutingSummary(summary.distance, summary.duration, 'Zusammenfassung', params.profile, extras);
             RoutingMapLayers.updateSingleRoute(this.map, route.features[0]);
 
             const bounds = new maplibregl.LngLatBounds();

@@ -31,10 +31,11 @@ export const RoutingService = {
   async calculateRoute(
     start: [number, number],
     target: [number, number],
-    profile: string = 'driving-car'
+    profile: string = 'driving-car',
+    extraInfo?: string[]
   ): Promise<RouteResult | null> {
     const url = `${ORS_BASE_URL}?path=directions/${profile}/geojson`;
-    
+
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -43,7 +44,8 @@ export const RoutingService = {
           coordinates: [
             [start[1], start[0]],
             [target[1], target[0]]
-          ]
+          ],
+          ...(extraInfo ? { extra_info: extraInfo } : {})
         })
       });
 

@@ -286,6 +286,13 @@
   font-weight: 600;
   color: var(--text);
 }
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 25px;
+  margin-bottom: 5px;
+}
 
 /* ═══ TYP 6 — STATUS-PANEL ═══ */
 .status-panel {

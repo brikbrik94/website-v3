@@ -1,8 +1,9 @@
 import { RoutingService } from '../lib/RoutingService';
 import { GeocoderService } from '../lib/GeocoderService';
-import { GeocodeResult } from '../types/common';
+import { GeocodeResult, RouteExtras } from '../types/common';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { renderGeocodeItemHtml } from '../lib/UIUtils';
+import { getProfileBadge, getRouteWarnings } from '../features/routing/RoutingDetailsFormatter';
 
 export interface RoutingParams {
   start?: [number, number];
@@ -274,16 +275,34 @@ export const renderRoutingError = (message: string) => {
   `;
 };
 
-export const updateRoutingSummary = (distance: number, duration: number, title: string = 'Zusammenfassung') => {
+export const updateRoutingSummary = (
+  distance: number,
+  duration: number,
+  title: string = 'Zusammenfassung',
+  profile?: string,
+  extras?: RouteExtras
+) => {
   const details = document.getElementById('routing-details')!;
   const distKm = (distance / 1000).toFixed(2);
   const durMin = Math.round(duration / 60);
+
+  const profileBadgeHtml = profile
+    ? (() => {
+        const badge = getProfileBadge(profile);
+        return `<span class="badge badge-blue"><i class="${badge.icon}"></i> ${badge.label}</span>`;
+      })()
+    : '';
+
+  const warningBadgesHtml = getRouteWarnings(extras)
+    .map((w) => `<span class="badge badge-yellow"><i class="${w.icon}"></i> ${w.label}</span>`)
+    .join('');
 
   details.classList.remove('hidden');
   details.innerHTML = `
     <div class="result-header">
       <span class="result-label">${title}</span>
     </div>
+    ${profileBadgeHtml ? `<div class="result-badges">${profileBadgeHtml}</div>` : ''}
     <div class="result-list">
       <div class="result-item active no-click">
         <div class="result-kv">
@@ -292,6 +311,7 @@ export const updateRoutingSummary = (distance: number, duration: number, title: 
         </div>
       </div>
     </div>
+    ${warningBadgesHtml ? `<div class="result-badges">${warningBadgesHtml}</div>` : ''}
   `;
 };
 

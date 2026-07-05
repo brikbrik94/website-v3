@@ -26,6 +26,16 @@ ebenfalls im Archiv dokumentiert.
   verwaltetes) Sprite (`https://tiles.oe5ith.at/assets/sprites/basemaps/sprite.json`) — MapLibre
   loggt beim Laden dieses Basemaps einen `AJAXError (404)`. Serverseitig (Tile-Server-Assets) oder
   im Style-JSON zu prüfen, nicht im Repo-Code; bei U3-Live-Verifikation (2026-07-03) entdeckt.
+- [ ] Im Routing-Feature zeigt `renderStationResults` (`RoutingSidebar.ts:298`) auch im A→B-Modus
+  „0 Standorte gefunden" / „Nächste Stützpunkte" an, weil `clearAll()`
+  (`RoutingSidebarAdapter.ts`) es immer mit leerem Array aufruft, unabhängig vom gewählten Modus.
+  Für A→B ist dieser Abschnitt irrelevant/verwirrend — sollte nur im SEW-/NEF-Modus sichtbar sein.
+  Entdeckt bei der Browser-Verifikation des A→B-Sidebar-Fixes (2026-07-04).
+- [ ] Turn-by-Turn-Anzeige für A→B-Routen (Phase 2 aus
+  [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md))
+  blockiert auf einer neuen generischen Single-Disclosure-Komponente im `oe5ith-ci`-Submodul —
+  Anfrage bereits hinterlegt in `oe5ith-ci/ci-routing-disclosure-request.md`. Sobald verfügbar:
+  `formatSteps(segments)`-Helper + Rendering ergänzen.
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
 

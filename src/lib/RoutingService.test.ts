@@ -1,6 +1,42 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { RoutingService } from './RoutingService';
 
+describe('RoutingService.calculateRoute extraInfo', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('includes extra_info in the request body when extraInfo is passed', async () => {
+    let capturedBody: any = null;
+    vi.stubGlobal('fetch', vi.fn((_url: string, init: any) => {
+      capturedBody = JSON.parse(init.body);
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ type: 'FeatureCollection', features: [] }),
+      });
+    }));
+
+    await RoutingService.calculateRoute([48.1, 14.1], [48.2, 14.2], 'driving-car', [
+      'waytype', 'tollways', 'roadaccessrestrictions',
+    ]);
+
+    expect(capturedBody.extra_info).toEqual(['waytype', 'tollways', 'roadaccessrestrictions']);
+  });
+
+  it('omits extra_info from the request body when extraInfo is not passed', async () => {
+    let capturedBody: any = null;
+    vi.stubGlobal('fetch', vi.fn((_url: string, init: any) => {
+      capturedBody = JSON.parse(init.body);
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ type: 'FeatureCollection', features: [] }),
+      });
+    }));
+
+    await RoutingService.calculateRoute([48.1, 14.1], [48.2, 14.2]);
+
+    expect(capturedBody.extra_info).toBeUndefined();
+  });
+});
+
 describe('RoutingService.findNearestStations (driving-emergency / Sondersignal)', () => {
   afterEach(() => vi.unstubAllGlobals());
 

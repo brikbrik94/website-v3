@@ -43,6 +43,29 @@ export interface RouteResult {
     metadata: any;
 }
 
+export interface RouteExtraSummaryEntry {
+    value: number;
+    distance: number;
+    amount: number;
+}
+
+export interface RouteExtra {
+    values: [number, number, number][];
+    summary: RouteExtraSummaryEntry[];
+}
+
+export interface RouteExtras {
+    tollways?: RouteExtra;
+    roadaccessrestrictions?: RouteExtra;
+    waytype?: RouteExtra;
+}
+
+export interface RouteFeatureProperties {
+    summary: { distance: number; duration: number };
+    extras?: RouteExtras;
+    [key: string]: any;
+}
+
 export interface RoutingStation {
     id: number;
     name: string;

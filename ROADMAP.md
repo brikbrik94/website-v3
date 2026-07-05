@@ -22,6 +22,18 @@ Hintergrund/Herleitung: [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup
   Tablet/Smartphone. Menüstruktur/Tastaturbedienung am ARIA-APG-Menu-Pattern orientieren (siehe
   CLAUDE.md → Standards-Referenzen, Accessibility).
 
+## Routing: Anschlussfeatures
+
+Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md)
+(Fahrmodus-Badge, Warn-Badges, Turn-by-Turn für A→B — Phase 1 in TODO.md/CHANGELOG.md).
+
+- [ ] **Gleiche Detailanzeige für SEW/NEF-Einzelstation** — Fahrmodus-Badge,
+  Maut-/Zufahrts-Warn-Badges und (sobald verfügbar) Turn-by-Turn-Anweisungen
+  zusätzlich für die aktuell hervorgehobene Station im SEW/NEF-Modus anzeigen
+  (`RoutingSidebarAdapter.ts`, `onHighlight`-Callback). Bewusst nicht Teil der
+  A→B-Umsetzung (2026-07-04) — dort zeigt die Liste bereits Dauer/Distanz pro
+  Station, Turn-by-Turn pro Station wäre zusätzlicher Scope.
+
 ## Repo-Pflege & Dokumentation
 
 Keine Code-Features im engeren Sinn, aber größere, planbare Initiativen — deshalb hier statt in
