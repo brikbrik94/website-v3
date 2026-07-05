@@ -14,6 +14,7 @@ export class TrackingPageController extends BasePageController {
     private dataService: TrackingDataService | null = null;
     private selectedId: string | number | null = null;
     private currentFilter = 'all';
+    private activateButtonsTimeout: ReturnType<typeof setTimeout> | null = null;
 
     public async mount(container: HTMLElement): Promise<void> {
         const invService = InventoryService.getInstance();
@@ -112,7 +113,7 @@ export class TrackingPageController extends BasePageController {
             // Ideally we store adsbItems/aisItems locally to update immediately.
         });
 
-        setTimeout(() => {
+        this.activateButtonsTimeout = setTimeout(() => {
             document.getElementById('btn-toggle-adsb')?.classList.add('active');
             document.getElementById('btn-toggle-ais')?.classList.add('active');
         }, 100);
@@ -123,6 +124,10 @@ export class TrackingPageController extends BasePageController {
 
     public destroy(): void {
         super.destroy();
+        if (this.activateButtonsTimeout !== null) {
+            clearTimeout(this.activateButtonsTimeout);
+            this.activateButtonsTimeout = null;
+        }
         if (this.dataService) {
             this.dataService.destroy();
             this.dataService = null;

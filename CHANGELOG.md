@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-05 15:46
+
+### Behoben
+- **TrackingPage-Timer nicht gecleart** (`src/features/tracking/TrackingPage.ts`). Ein `setTimeout` (Buttons „active" setzen, 100ms) wurde nirgends gespeichert und daher in `destroy()` nie gecleart — bei Seitenwechsel innerhalb der 100ms griff der Callback noch auf DOM-Elemente einer bereits verlassenen Seite zu. Timeout-ID jetzt in einer Property gespeichert und in `destroy()` gecleart.
+
 ## [Unreleased] - 2026-07-05 15:40
 
 ### Geändert
