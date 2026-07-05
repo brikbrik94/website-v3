@@ -2,30 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-05 16:00
-
-### Behoben
-- **Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt** (`src/styles/modal.css`, `.modal-backdrop`). `z-index: var(--z-backdrop)` (1040) lag unter `--z-topbar` (1100); da `position: fixed` + `z-index` einen eigenen Stacking-Context bildet, sperrte das jedes Modal unter die Topbar, unabhängig vom eigenen `z-index` des `.modal`-Elements. Root Cause per Playwright bestätigt (`elementFromPoint` am Überlappungspunkt lieferte einen Topbar-Button statt das Modal). Fix: `.modal-backdrop` nutzt jetzt direkt `z-index: var(--z-modal)`; andere `--z-backdrop`-Verwendungen (Sidebar-/Controls-Backdrop, die bewusst unter der Topbar bleiben sollen) unverändert. Live verifiziert, keine Regression am mobilen Sidebar-Backdrop.
-
-## [Unreleased] - 2026-07-05 15:46
-
-### Behoben
-- **TrackingPage-Timer nicht gecleart** (`src/features/tracking/TrackingPage.ts`). Ein `setTimeout` (Buttons „active" setzen, 100ms) wurde nirgends gespeichert und daher in `destroy()` nie gecleart — bei Seitenwechsel innerhalb der 100ms griff der Callback noch auf DOM-Elemente einer bereits verlassenen Seite zu. Timeout-ID jetzt in einer Property gespeichert und in `destroy()` gecleart.
-
-## [Unreleased] - 2026-07-05 15:40
+## [3.6.1] - 2026-07-05 16:14
 
 ### Geändert
 - **Seitentitel „Cloud Portal" → „GeoPortal".** Browser-Tab-Titel (`index.html`) und Landing-Page-Überschrift (`src/main.ts`) umbenannt; `CLAUDE.md`-Projektbeschreibung mitgezogen. Live verifiziert.
-
-## [Unreleased] - 2026-07-05 15:07
-
-### Geändert
-- **Coords-Seite: Pin setzen auf Rechtsklick-Kontextmenü umgestellt** (`src/pages/CoordsPage.ts`). War bisher an Linksklick auf die Karte gebunden — inkonsistent zum Routing-Kontextmenü-Pattern und kollidierte konzeptionell mit der Rechtsklick-Drag-3D-Steuerung (Kippen/Rotieren). Jetzt analog zu `RoutingPage.ts`: Rechtsklick öffnet ein Kontextmenü mit den Koordinaten und der Aktion „Koordinate hier setzen"; Linksklick bleibt für normales Kartenverschieben frei. Live verifiziert (Linksklick ohne Effekt, Rechtsklick-Menü aktualisiert Adresse/alle Koordinatenformate in der Sidebar korrekt). `npx tsc --noEmit && npm test` grün (68/68).
-
-## [Unreleased] - 2026-07-05 07:32
+- **Coords-Seite: Pin setzen auf Rechtsklick-Kontextmenü umgestellt** (`src/pages/CoordsPage.ts`). War bisher an Linksklick auf die Karte gebunden — inkonsistent zum Routing-Kontextmenü-Pattern und kollidierte konzeptionell mit der Rechtsklick-Drag-3D-Steuerung (Kippen/Rotieren). Jetzt analog zu `RoutingPage.ts`: Rechtsklick öffnet ein Kontextmenü mit den Koordinaten und der Aktion „Koordinate hier setzen"; Linksklick bleibt für normales Kartenverschieben frei. Live verifiziert (Linksklick ohne Effekt, Rechtsklick-Menü aktualisiert Adresse/alle Koordinatenformate in der Sidebar korrekt).
 
 ### Behoben
-- **Routing (A→B) zeigte leere Stationsliste** (`src/components/RoutingSidebar.ts`, `renderStationResults`). `clearAll()` (`RoutingSidebarAdapter.ts`) rief die Funktion beim Reset immer mit einem leeren Array auf; die Funktion rendere dafür unbedingt „0 Standorte gefunden"/„Nächste Stützpunkte", obwohl das Ergebnis für den A→B-Modus irrelevant ist. Root Cause: der Reset-Pfad ist der einzige Aufrufer mit leerem Array — eine echte Null-Treffer-Suche läuft bereits vorher über `renderRoutingError` und erreicht diese Funktion nie. `renderStationResults` blendet das Panel jetzt aus und leert es bei `stations.length === 0`, statt „0 gefunden" zu rendern — modusunabhängig, keine Sonderbehandlung für A→B nötig. Test-first (RED bestätigt), dann Fix; live per Playwright verifiziert (A→B zeigt keine Stationsliste mehr, SEW weiterhin korrekt). `npx tsc --noEmit && npm test` grün (68/68).
+- **Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt** (`src/styles/modal.css`, `.modal-backdrop`). `z-index: var(--z-backdrop)` (1040) lag unter `--z-topbar` (1100); da `position: fixed` + `z-index` einen eigenen Stacking-Context bildet, sperrte das jedes Modal unter die Topbar, unabhängig vom eigenen `z-index` des `.modal`-Elements. Root Cause per Playwright bestätigt (`elementFromPoint` am Überlappungspunkt lieferte einen Topbar-Button statt das Modal). Fix: `.modal-backdrop` nutzt jetzt direkt `z-index: var(--z-modal)`; andere `--z-backdrop`-Verwendungen (Sidebar-/Controls-Backdrop, die bewusst unter der Topbar bleiben sollen) unverändert. Live verifiziert, keine Regression am mobilen Sidebar-Backdrop. Derselbe Bug besteht noch im `oe5ith-ci`-Submodul — dort nicht gefixt (extern verwaltet), Meldung in `oe5ith-ci/ci-bug-reports.md`.
+- **TrackingPage-Timer nicht gecleart** (`src/features/tracking/TrackingPage.ts`). Ein `setTimeout` (Buttons „active" setzen, 100ms) wurde nirgends gespeichert und daher in `destroy()` nie gecleart — bei Seitenwechsel innerhalb der 100ms griff der Callback noch auf DOM-Elemente einer bereits verlassenen Seite zu. Timeout-ID jetzt in einer Property gespeichert und in `destroy()` gecleart.
+- **Routing (A→B) zeigte leere Stationsliste** (`src/components/RoutingSidebar.ts`, `renderStationResults`). `clearAll()` (`RoutingSidebarAdapter.ts`) rief die Funktion beim Reset immer mit einem leeren Array auf; die Funktion rendere dafür unbedingt „0 Standorte gefunden"/„Nächste Stützpunkte", obwohl das Ergebnis für den A→B-Modus irrelevant ist. Root Cause: der Reset-Pfad ist der einzige Aufrufer mit leerem Array — eine echte Null-Treffer-Suche läuft bereits vorher über `renderRoutingError` und erreicht diese Funktion nie. `renderStationResults` blendet das Panel jetzt aus und leert es bei `stations.length === 0`, statt „0 gefunden" zu rendern — modusunabhängig, keine Sonderbehandlung für A→B nötig. Test-first (RED bestätigt), dann Fix; live per Playwright verifiziert (A→B zeigt keine Stationsliste mehr, SEW weiterhin korrekt).
+
+`npx tsc --noEmit && npm test` grün (68/68) für den gesamten Umfang dieses Releases.
 
 ## [3.6.0] - 2026-07-05 07:16
 
