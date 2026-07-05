@@ -130,8 +130,10 @@ describe('RoutingSidebarAdapter A→B route details', () => {
     );
 
     const details = elements['routing-details'];
+    expect(details.innerHTML).toContain('result-mode-icon');
     expect(details.innerHTML).toContain('fa-car');
-    expect(details.innerHTML).toContain('Normalfahrt');
+    expect(details.innerHTML).toContain('title="Normalfahrt"');
+    expect(details.innerHTML).not.toContain('badge-blue');
     expect(details.innerHTML).toContain('badge-yellow');
     expect(details.innerHTML).toContain('Enthält Mautstraßen');
 
@@ -170,8 +172,10 @@ describe('RoutingSidebarAdapter A→B route details', () => {
     );
 
     const details = elements['routing-details'];
+    expect(details.innerHTML).toContain('result-mode-icon');
     expect(details.innerHTML).toContain('fa-truck-medical');
-    expect(details.innerHTML).toContain('Blaulichtfahrt');
+    expect(details.innerHTML).toContain('title="Blaulichtfahrt"');
+    expect(details.innerHTML).not.toContain('badge-blue');
 
     calculateRouteSpy.mockRestore();
   });
