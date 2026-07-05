@@ -182,8 +182,7 @@ export class RoutingSidebarAdapter {
     RoutingMapLayers.updateStationsLayer(this.map, this.dataService);
     renderStationResults([], () => {}, () => {});
     updateRoutingSummary(0, 0);
-    const details = document.getElementById('routing-details');
-    if (details) details.style.display = 'none';
+    document.getElementById('routing-details')?.classList.add('hidden');
   }
 }
 

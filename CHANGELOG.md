@@ -2,7 +2,10 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-03 15:49
+## [Unreleased] - 2026-07-04 11:56
+
+### Behoben
+- **A→B-Route zeigte keine Zusammenfassung in der Sidebar an** (`src/features/routing/RoutingSidebarAdapter.ts`, `clearAll`). Setzte `#routing-details` bislang per Inline-Style (`style.display = "none"`) statt über die `hidden`-Klasse; `updateRoutingSummary()` entfernte danach nur die Klasse, das nie zurückgesetzte Inline-Style hielt die Box aber weiterhin unsichtbar — Distanz/Dauer aus der ORS-Antwort wurden berechnet, aber nie sichtbar. Jetzt konsistent `classList.add('hidden')`, passend zum Rest des Moduls. Regressionstest (`RoutingSidebarAdapter.test.ts`) ergänzt (schlägt gegen den alten Code fehl); live per Playwright gegen den laufenden Dev-Server verifiziert (Bug reproduziert, Fix bestätigt, echte ORS-Route 125.36 km/84 min sichtbar). Verwandte, vorbestehende UI-Ungereimtheit (leere „Nächste Stützpunkte"-Liste erscheint auch im A→B-Modus) als TODO.md-Eintrag dokumentiert, nicht mitgefixt. `npx tsc --noEmit && npm test` grün (48/48).
 
 ### Hinzugefügt
 - **Unit-Tests für `MapCore.createPinLayer`/`MapCore.setPointSource`** (`src/lib/MapCore.test.ts`, 6 Tests): Defaults, Custom-Optionen, Halo-Paint nur bei gesetzter Farbe, Punkt setzen/leeren/No-Op bei fehlender Source. `npm test`: 47/47 grün.
