@@ -18,6 +18,12 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.6.0] - 2026-07-05</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Routing:</strong> Bei berechneten A→B-Routen zeigt die Zusammenfassung jetzt ein Symbol für den Fahrmodus (Auto bzw. Blaulichtfahrt) sowie Warnhinweise, wenn die Route Mautstraßen oder Zufahrtsbeschränkungen enthält.</li>
+          </ul>
+
           <h2>[3.5.2] - 2026-06-30</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>
