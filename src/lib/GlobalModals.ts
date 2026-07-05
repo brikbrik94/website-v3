@@ -18,6 +18,15 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.6.1] - 2026-07-05</h2>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Umrechner:</strong> Punkt auf der Karte setzen läuft jetzt über ein Rechtsklick-Menü statt über einen einfachen Klick, damit Linksklick zum Verschieben der Karte frei bleibt.</li>
+            <li><strong>Versionsinfo-/Copyright-Fenster:</strong> wurde teilweise von der oberen Leiste verdeckt — behoben.</li>
+            <li><strong>Routing:</strong> Bei einer A→B-Route erschien fälschlich eine leere Liste „Nächste Stützpunkte" — wird jetzt nicht mehr angezeigt.</li>
+            <li><strong>Allgemein:</strong> Die Anwendung heißt jetzt „GeoPortal" statt „Cloud Portal".</li>
+          </ul>
+
           <h2>[3.6.0] - 2026-07-05</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>
