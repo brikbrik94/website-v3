@@ -36,6 +36,13 @@ ebenfalls im Archiv dokumentiert.
   blockiert auf einer neuen generischen Single-Disclosure-Komponente im `oe5ith-ci`-Submodul —
   Anfrage bereits hinterlegt in `oe5ith-ci/ci-routing-disclosure-request.md`. Sobald verfügbar:
   `formatSteps(segments)`-Helper + Rendering ergänzen.
+- [ ] Lange Warn-Badge-Texte (z.B. „Zufahrtsbeschränkungen auf der Strecke") werden am rechten
+  Sidebar-Rand abgeschnitten statt umzubrechen — `.badge` (`oe5ith-ci/css/badges.css`) setzt
+  `white-space: nowrap`, `.result-badges` hat zwar `flex-wrap: wrap`, aber ein einzelnes zu
+  breites Flex-Item bricht dadurch nicht intern um. Vorbestehend (bereits vor
+  `docs/superpowers/plans/2026-07-05-routing-summary-layout.md` reproduzierbar, dort nur die
+  DOM-Position des Badges geändert, nicht das Overflow-Verhalten); entdeckt bei der
+  Browser-Verifikation dieses Plans (2026-07-05).
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
 
