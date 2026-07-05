@@ -7,6 +7,14 @@ noch nicht getrennt) und sind entsprechend gemischt.
 
 ## Unreleased (2026-07-05)
 
+### Seitentitel „Cloud Portal" → „GeoPortal"
+- [x] `<title>` in `index.html:7` (war „OE5ITH - Cloud Portal") und Landing-Page-Überschrift
+  `src/main.ts:55` (war „Willkommen im Cloud Portal") umbenannt. `CLAUDE.md`-Kopf (Zeile 5,
+  Projektbeschreibung) mitgezogen. Historische Spec `docs/superpowers/specs/2026-05-19-functional-alignment.md`
+  bewusst **nicht** angepasst — Zeitpunkt-Dokument, keine lebende Doku. Kein README vorhanden. Live
+  per Playwright verifiziert (Tab-Titel + H1 zeigen „GeoPortal"). `npx tsc --noEmit && npm test`
+  grün (68/68).
+
 ### Coords-Seite: Pin setzen auf Rechtsklick-Kontextmenü umgestellt
 - [x] Pin setzen war an Linksklick auf die Karte gebunden (`CoordsPage.ts:72`,
   `map.on('click', ...)`) — inkonsistent zum Routing-Kontextmenü-Pattern und (laut Nutzer)

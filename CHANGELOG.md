@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-05 15:40
+
+### Geändert
+- **Seitentitel „Cloud Portal" → „GeoPortal".** Browser-Tab-Titel (`index.html`) und Landing-Page-Überschrift (`src/main.ts`) umbenannt; `CLAUDE.md`-Projektbeschreibung mitgezogen. Live verifiziert.
+
 ## [Unreleased] - 2026-07-05 15:07
 
 ### Geändert
