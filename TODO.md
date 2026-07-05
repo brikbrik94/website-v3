@@ -51,14 +51,10 @@ an bereits bestehenden Features.
 - [ ] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzen.** Auf schmalen
   Viewports aktuell vermutlich beides parallel sichtbar/beengt — genaue Topbar-Struktur vor
   Umsetzung prüfen.
-- [ ] **`oe5ith-ci`-Submodul hat denselben Modal/Topbar-Stacking-Bug wie website-v3 hatte**
-  (`oe5ith-ci/css/modal.css:23`, `.modal-backdrop { z-index: var(--z-backdrop) }` —
-  `--z-backdrop` (1040) liegt unter `--z-topbar` (1100); da `position:fixed`+`z-index` einen
-  eigenen Stacking-Context bildet, sperrt das jedes `.modal` unter die Topbar, unabhängig von
-  dessen eigenem `z-index:var(--z-modal)`). website-v3-lokal in `src/styles/modal.css` bereits
-  gefixt (`z-index: var(--z-modal)` direkt am Backdrop); im Submodul selbst nicht angefasst (eigene
-  Versionierung/Release-Prozess) — dort denselben Fix nachziehen, damit andere OE5ITH-Portale den
-  Bug nicht erben. Live gefunden und gefixt (2026-07-05).
+- [ ] `oe5ith-ci` hat denselben Modal/Topbar-Stacking-Bug, den website-v3 lokal bereits gefixt hat
+  (`src/styles/modal.css`) — Meldung mit Root Cause, Repro und lokal validiertem Fix bereits
+  hinterlegt in `oe5ith-ci/ci-bug-reports.md` (Punkt 1). Kein Fix im Submodul selbst, das läuft
+  extern.
 - [ ] **Versionierungspraxis überdenken:** Mehrere kleine Features am selben Tag führen aktuell zu
   mehreren separaten Minor-Bumps (z.B. mehrfach `3.x.0` am selben Tag) — wirkt übertrieben. Da die
   Versionierungsregel in `AGENT_INSTRUCTIONS.md` (Abschnitt 4, generisch/repo-übergreifend) steht,
