@@ -38,8 +38,37 @@ ebenfalls im Archiv dokumentiert.
   `docs/superpowers/plans/2026-07-05-routing-summary-layout.md` reproduzierbar, dort nur die
   DOM-Position des Badges geändert, nicht das Overflow-Verhalten); entdeckt bei der
   Browser-Verifikation dieses Plans (2026-07-05).
+- [ ] Coords-Seite (Umrechner): Pin setzen ist an Linksklick auf die Karte gebunden
+  (`CoordsPage.ts:72`, `map.on('click', ...)`). Auf Rechtsklick umstellen (analog zum
+  Routing-Kontextmenü-Pattern, `RoutingPage.ts:76`), damit Linksklick/-Drag für normales
+  Kartenverschieben/-Kippen frei bleibt. Aus `docs/proposals/todo.txt` übernommen (2026-07-05).
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
+
+## UI/UX & Branding (Sammeltask)
+
+Aus `docs/proposals/todo.txt` übernommen (2026-07-05) — kleinere, unabhängige UI-/Text-Anpassungen
+an bereits bestehenden Features.
+
+- [ ] **Versionsinfo-Fenster wird von der Topbar abgeschnitten.** Betrifft vermutlich das
+  Changelog- oder das Copyright-Modal (`src/lib/GlobalModals.ts`) auf Kartenseiten — zuerst
+  klären, welches der beiden Modals genau gemeint ist, dann Positionierung/z-Index prüfen
+  (an Kartenausschnitt begrenzen oder über die gesamte Seite anzeigen); ggf. auch verbreitern.
+- [ ] **Credits/Copyright-Modal überarbeiten und erweitern** (`copyright-modal`,
+  `src/lib/GlobalModals.ts:134-160`). Kontakt-E-Mail `daniel@oe5ith.at` ergänzen, ggf.
+  Kontaktformular statt/zusätzlich zur E-Mail; Abschnitt allgemein inhaltlich erweitern.
+- [ ] **Seitentitel „Cloud Portal" → „GeoPortal".** Betrifft `<title>` in `index.html:7`
+  (aktuell „OE5ITH - Cloud Portal") und die Landing-Page-Überschrift `src/main.ts:55`
+  („Willkommen im Cloud Portal"). Rein textuelle Änderung, aber Auswirkung auf Branding prüfen
+  (README, CLAUDE.md-Kopf beschreiben die App ebenfalls als „Cloud Portal" — dort ggf. mitziehen).
+- [ ] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzen.** Auf schmalen
+  Viewports aktuell vermutlich beides parallel sichtbar/beengt — genaue Topbar-Struktur vor
+  Umsetzung prüfen.
+- [ ] **Versionierungspraxis überdenken:** Mehrere kleine Features am selben Tag führen aktuell zu
+  mehreren separaten Minor-Bumps (z.B. mehrfach `3.x.0` am selben Tag) — wirkt übertrieben. Da die
+  Versionierungsregel in `AGENT_INSTRUCTIONS.md` (Abschnitt 4, generisch/repo-übergreifend) steht,
+  läuft eine Änderung daran über den Proposal-Zyklus (`AGENT_INSTRUCTIONS.md` Abschnitt 5,
+  `docs/proposals/`) — nicht direkt im Live-Dokument ändern.
 
 ## Standards-Angleichung
 

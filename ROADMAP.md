@@ -33,6 +33,22 @@ Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](.
   (`RoutingSidebarAdapter.ts`, `onHighlight`-Callback). Bewusst nicht Teil der
   A→B-Umsetzung (2026-07-04) — dort zeigt die Liste bereits Dauer/Distanz pro
   Station, Turn-by-Turn pro Station wäre zusätzlicher Scope.
+- [ ] **URL-Parameter für Routing-Deep-Links** — Koordinaten (sowie Modus A→B/SEW/NEF und Profil
+  inkl. Sondersignal) sollen per URL an `/routing` übergeben werden können, damit z.B. ein Link
+  aus dem Umrechner heraus eine vorausgefüllte Route öffnet. Aktuell kein URL-Parameter-Handling
+  im Router (`src/main.ts`) vorhanden — komplett neue Fähigkeit. Aus `docs/proposals/todo.txt`
+  übernommen (2026-07-05).
+
+## Neue Seiten
+
+Aus `docs/proposals/todo.txt` übernommen (2026-07-05).
+
+- [ ] **Hilfeseite** — Übersicht/Beschreibung der App-Funktionen, Einstieg vermutlich über einen
+  neuen Topbar-Link (analog zu den bestehenden `.nav-link`-Einträgen in `src/main.ts`).
+- [ ] **Isochronen-Abfrage-Seite** — neue Karten-Seite für Erreichbarkeitsanalyse (z.B. über die
+  ORS-Isochrones-API, analog zur bestehenden ORS-Routing-Anbindung in `api/ors.php`), strukturell
+  an den bestehenden Karten-Seiten orientiert (siehe `docs/page-types.md`/`sidebar-types.md` in
+  `oe5ith-ci` für passende Sidebar-/Layout-Patterns).
 
 ## Repo-Pflege & Dokumentation
 
