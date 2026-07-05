@@ -20,7 +20,10 @@
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.65);
-  z-index: var(--z-backdrop);
+  /* Eigener Stacking-Context durch position:fixed+z-index: --z-backdrop (1040) läge unter
+     --z-topbar (1100) und würde das Modal darin einsperren, obwohl .modal selbst --z-modal
+     (1500) trägt — deshalb hier direkt --z-modal statt --z-backdrop. */
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;

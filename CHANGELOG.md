@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-05 16:00
+
+### Behoben
+- **Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt** (`src/styles/modal.css`, `.modal-backdrop`). `z-index: var(--z-backdrop)` (1040) lag unter `--z-topbar` (1100); da `position: fixed` + `z-index` einen eigenen Stacking-Context bildet, sperrte das jedes Modal unter die Topbar, unabhängig vom eigenen `z-index` des `.modal`-Elements. Root Cause per Playwright bestätigt (`elementFromPoint` am Überlappungspunkt lieferte einen Topbar-Button statt das Modal). Fix: `.modal-backdrop` nutzt jetzt direkt `z-index: var(--z-modal)`; andere `--z-backdrop`-Verwendungen (Sidebar-/Controls-Backdrop, die bewusst unter der Topbar bleiben sollen) unverändert. Live verifiziert, keine Regression am mobilen Sidebar-Backdrop.
+
 ## [Unreleased] - 2026-07-05 15:46
 
 ### Behoben

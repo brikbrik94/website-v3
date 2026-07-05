@@ -7,6 +7,20 @@ noch nicht getrennt) und sind entsprechend gemischt.
 
 ## Unreleased (2026-07-05)
 
+### Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt
+- [x] `.modal-backdrop` (`src/styles/modal.css`) setzte `z-index: var(--z-backdrop)` (1040) —
+  niedriger als `--z-topbar` (1100). Da `position: fixed` + `z-index` einen eigenen
+  Stacking-Context bildet, sperrte das jedes `.modal` (Changelog-/Copyright-Modal) unter die
+  Topbar, egal welchen `z-index` `.modal` selbst trug (`var(--z-modal)`, 1500) — die Topbar
+  überdeckte sichtbar den oberen Rand des Fensters. Root Cause per Playwright bestätigt:
+  `elementFromPoint` am Überlappungspunkt lieferte einen Topbar-Button statt das Modal. Fix:
+  `.modal-backdrop` bekommt direkt `z-index: var(--z-modal)` statt `--z-backdrop` — bestehende
+  `--z-backdrop`-Verwendungen (`sidebar-backdrop`, `controls-backdrop`), die bewusst unter der
+  Topbar bleiben sollen, bleiben unverändert. Live verifiziert: Überlappungspunkt zeigt jetzt das
+  Modal, mobiles Sidebar-Backdrop weiterhin korrekt unter der Topbar. Gleicher Bug besteht noch im
+  `oe5ith-ci`-Submodul (`css/modal.css`) — als eigener TODO.md-Punkt festgehalten, dort nicht
+  gefixt (eigene Versionierung). `npx tsc --noEmit && npm test` grün (68/68).
+
 ### TrackingPage-Timer nicht gecleart
 - [x] `setTimeout` in `TrackingPage.ts` (Buttons „active" setzen, 100ms) wurde nirgends
   gespeichert und daher in `destroy()` nie gecleart — bei Seitenwechsel innerhalb der 100ms lief
