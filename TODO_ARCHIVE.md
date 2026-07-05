@@ -18,8 +18,9 @@ noch nicht getrennt) und sind entsprechend gemischt.
   `--z-backdrop`-Verwendungen (`sidebar-backdrop`, `controls-backdrop`), die bewusst unter der
   Topbar bleiben sollen, bleiben unverändert. Live verifiziert: Überlappungspunkt zeigt jetzt das
   Modal, mobiles Sidebar-Backdrop weiterhin korrekt unter der Topbar. Gleicher Bug besteht noch im
-  `oe5ith-ci`-Submodul (`css/modal.css`) — als eigener TODO.md-Punkt festgehalten, dort nicht
-  gefixt (eigene Versionierung). `npx tsc --noEmit && npm test` grün (68/68).
+  `oe5ith-ci`-Submodul (`css/modal.css`) — dort **nicht** gefixt (wird extern verwaltet); Meldung
+  mit Root Cause/Repro/lokal validiertem Fix hinterlegt in `oe5ith-ci/ci-bug-reports.md`.
+  `npx tsc --noEmit && npm test` grün (68/68).
 
 ### TrackingPage-Timer nicht gecleart
 - [x] `setTimeout` in `TrackingPage.ts` (Buttons „active" setzen, 100ms) wurde nirgends
