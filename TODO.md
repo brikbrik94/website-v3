@@ -39,9 +39,12 @@ ebenfalls im Archiv dokumentiert.
   DOM-Position des Badges geändert, nicht das Overflow-Verhalten); entdeckt bei der
   Browser-Verifikation dieses Plans (2026-07-05).
 - [ ] Coords-Seite (Umrechner): Pin setzen ist an Linksklick auf die Karte gebunden
-  (`CoordsPage.ts:72`, `map.on('click', ...)`). Auf Rechtsklick umstellen (analog zum
-  Routing-Kontextmenü-Pattern, `RoutingPage.ts:76`), damit Linksklick/-Drag für normales
-  Kartenverschieben/-Kippen frei bleibt. Aus `docs/proposals/todo.txt` übernommen (2026-07-05).
+  (`CoordsPage.ts:72`, `map.on('click', ...)`). Auf ein Rechtsklick-Kontextmenü umstellen, exakt
+  analog zum bestehenden Routing-Pattern (`RoutingPage.ts:76`, `map.on('contextmenu', ...)` mit
+  `ContextMenuItem`-Liste) — **nicht** direkt an Rechtsklick binden, da Rechtsklick-Drag bereits
+  für die 3D-Steuerung (Kippen/Rotieren) reserviert ist; `contextmenu` feuert nur bei Rechtsklick
+  ohne Drag und kollidiert damit nicht. Linksklick bleibt für normales Verschieben frei. Aus
+  `docs/proposals/todo.txt` übernommen (2026-07-05).
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
 
