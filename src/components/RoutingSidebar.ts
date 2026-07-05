@@ -286,12 +286,26 @@ export const updateRoutingSummary = (
   const distKm = (distance / 1000).toFixed(2);
   const durMin = Math.round(duration / 60);
 
-  const profileBadgeHtml = profile
+  const kvHtml = `
+    <div class="result-kv">
+      <div class="result-kv-item"><span class="result-kv-label">Distanz</span><span class="result-kv-value">${distKm} km</span></div>
+      <div class="result-kv-item"><span class="result-kv-label">Dauer</span><span class="result-kv-value">${durMin} min</span></div>
+    </div>
+  `;
+
+  const summaryRowHtml = profile
     ? (() => {
         const badge = getProfileBadge(profile);
-        return `<span class="badge badge-blue"><i class="${badge.icon}"></i> ${badge.label}</span>`;
+        return `
+          <div class="result-summary-row">
+            <span class="result-mode-icon" title="${badge.label}" aria-label="${badge.label}" role="img">
+              <i class="${badge.icon}" aria-hidden="true"></i>
+            </span>
+            ${kvHtml}
+          </div>
+        `;
       })()
-    : '';
+    : kvHtml;
 
   const warningBadgesHtml = getRouteWarnings(extras)
     .map((w) => `<span class="badge badge-yellow"><i class="${w.icon}"></i> ${w.label}</span>`)
@@ -302,16 +316,12 @@ export const updateRoutingSummary = (
     <div class="result-header">
       <span class="result-label">${title}</span>
     </div>
-    ${profileBadgeHtml ? `<div class="result-badges">${profileBadgeHtml}</div>` : ''}
     <div class="result-list">
       <div class="result-item active no-click">
-        <div class="result-kv">
-          <div class="result-kv-item"><span class="result-kv-label">Distanz</span><span class="result-kv-value">${distKm} km</span></div>
-          <div class="result-kv-item"><span class="result-kv-label">Dauer</span><span class="result-kv-value">${durMin} min</span></div>
-        </div>
+        ${summaryRowHtml}
+        ${warningBadgesHtml ? `<div class="result-badges">${warningBadgesHtml}</div>` : ''}
       </div>
     </div>
-    ${warningBadgesHtml ? `<div class="result-badges">${warningBadgesHtml}</div>` : ''}
   `;
 };
 

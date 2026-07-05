@@ -294,6 +294,29 @@
   margin-bottom: 5px;
 }
 
+.result-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.result-summary-row .result-kv {
+  padding-left: 0;
+  margin-bottom: 0;
+}
+.result-mode-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 25px;
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+.result-summary-row + .result-badges {
+  padding-left: 0;
+}
+
 /* ═══ TYP 6 — STATUS-PANEL ═══ */
 .status-panel {
   display: flex;
