@@ -7,6 +7,14 @@ noch nicht getrennt) und sind entsprechend gemischt.
 
 ## Unreleased (2026-07-05)
 
+### TrackingPage-Timer nicht gecleart
+- [x] `setTimeout` in `TrackingPage.ts` (Buttons „active" setzen, 100ms) wurde nirgends
+  gespeichert und daher in `destroy()` nie gecleart — bei Seitenwechsel innerhalb der 100ms lief
+  der Callback nach der Navigation noch und griff auf DOM-Elemente einer bereits verlassenen
+  Seite zu. Timeout-ID jetzt in `activateButtonsTimeout` gespeichert, in `destroy()` gecleart.
+  Rein mechanischer Fix ohne sichtbares Verhalten, kein Browser-Test nötig. `npx tsc --noEmit &&
+  npm test` grün (68/68).
+
 ### Seitentitel „Cloud Portal" → „GeoPortal"
 - [x] `<title>` in `index.html:7` (war „OE5ITH - Cloud Portal") und Landing-Page-Überschrift
   `src/main.ts:55` (war „Willkommen im Cloud Portal") umbenannt. `CLAUDE.md`-Kopf (Zeile 5,
