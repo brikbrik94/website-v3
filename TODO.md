@@ -45,16 +45,20 @@ Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-T
 Aus `docs/proposals/todo.txt` übernommen (2026-07-05) — kleinere, unabhängige UI-/Text-Anpassungen
 an bereits bestehenden Features.
 
-- [ ] **Versionsinfo-Fenster wird von der Topbar abgeschnitten.** Betrifft vermutlich das
-  Changelog- oder das Copyright-Modal (`src/lib/GlobalModals.ts`) auf Kartenseiten — zuerst
-  klären, welches der beiden Modals genau gemeint ist, dann Positionierung/z-Index prüfen
-  (an Kartenausschnitt begrenzen oder über die gesamte Seite anzeigen); ggf. auch verbreitern.
 - [ ] **Credits/Copyright-Modal überarbeiten und erweitern** (`copyright-modal`,
   `src/lib/GlobalModals.ts:134-160`). Kontakt-E-Mail `daniel@oe5ith.at` ergänzen, ggf.
   Kontaktformular statt/zusätzlich zur E-Mail; Abschnitt allgemein inhaltlich erweitern.
 - [ ] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzen.** Auf schmalen
   Viewports aktuell vermutlich beides parallel sichtbar/beengt — genaue Topbar-Struktur vor
   Umsetzung prüfen.
+- [ ] **`oe5ith-ci`-Submodul hat denselben Modal/Topbar-Stacking-Bug wie website-v3 hatte**
+  (`oe5ith-ci/css/modal.css:23`, `.modal-backdrop { z-index: var(--z-backdrop) }` —
+  `--z-backdrop` (1040) liegt unter `--z-topbar` (1100); da `position:fixed`+`z-index` einen
+  eigenen Stacking-Context bildet, sperrt das jedes `.modal` unter die Topbar, unabhängig von
+  dessen eigenem `z-index:var(--z-modal)`). website-v3-lokal in `src/styles/modal.css` bereits
+  gefixt (`z-index: var(--z-modal)` direkt am Backdrop); im Submodul selbst nicht angefasst (eigene
+  Versionierung/Release-Prozess) — dort denselben Fix nachziehen, damit andere OE5ITH-Portale den
+  Bug nicht erben. Live gefunden und gefixt (2026-07-05).
 - [ ] **Versionierungspraxis überdenken:** Mehrere kleine Features am selben Tag führen aktuell zu
   mehreren separaten Minor-Bumps (z.B. mehrfach `3.x.0` am selben Tag) — wirkt übertrieben. Da die
   Versionierungsregel in `AGENT_INSTRUCTIONS.md` (Abschnitt 4, generisch/repo-übergreifend) steht,
