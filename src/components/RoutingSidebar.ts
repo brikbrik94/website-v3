@@ -334,6 +334,12 @@ export const renderStationResults = (
   const status = document.getElementById('routing-status')!;
   status.classList.add('hidden');
 
+  if (stations.length === 0) {
+    results.classList.add('hidden');
+    results.innerHTML = '';
+    return;
+  }
+
   results.classList.remove('hidden');
   results.innerHTML = `
     <div class="result-header">

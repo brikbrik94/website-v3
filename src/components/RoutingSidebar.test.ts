@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { updateRoutingSummary } from './RoutingSidebar';
+import { updateRoutingSummary, renderStationResults } from './RoutingSidebar';
 
 function createFakeElement() {
   const classes = new Set<string>();
@@ -10,6 +10,7 @@ function createFakeElement() {
       remove: (c: string) => classes.delete(c),
       contains: (c: string) => classes.has(c),
     },
+    querySelectorAll: () => [] as any[],
   };
 }
 
@@ -70,5 +71,39 @@ describe('updateRoutingSummary badges', () => {
       tollways: { values: [[0, 1, 0]], summary: [{ value: 0, distance: 1000, amount: 100 }] },
     });
     expect(details.innerHTML).not.toContain('badge-yellow');
+  });
+});
+
+describe('renderStationResults empty state', () => {
+  let results: ReturnType<typeof createFakeElement>;
+  let status: ReturnType<typeof createFakeElement>;
+
+  beforeEach(() => {
+    results = createFakeElement();
+    status = createFakeElement();
+    vi.stubGlobal('document', {
+      getElementById: (id: string) => {
+        if (id === 'routing-results') return results;
+        if (id === 'routing-status') return status;
+        return null;
+      },
+    });
+  });
+
+  it('hides the results panel instead of showing "0 Standorte gefunden" for an empty list (e.g. reset in A→B mode)', () => {
+    renderStationResults([], () => {}, () => {});
+    expect(results.classList.contains('hidden')).toBe(true);
+    expect(results.innerHTML).not.toContain('Nächste Stützpunkte');
+  });
+
+  it('still shows the results panel with real content for a non-empty station list', () => {
+    renderStationResults(
+      [{ name: 'Testort', org: 'ORG', duration: 300, distance: 4000 }],
+      () => {},
+      () => {}
+    );
+    expect(results.classList.contains('hidden')).toBe(false);
+    expect(results.innerHTML).toContain('Nächste Stützpunkte');
+    expect(results.innerHTML).toContain('Testort');
   });
 });
