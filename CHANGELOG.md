@@ -2,6 +2,11 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-05 07:32
+
+### Behoben
+- **Routing (A→B) zeigte leere Stationsliste** (`src/components/RoutingSidebar.ts`, `renderStationResults`). `clearAll()` (`RoutingSidebarAdapter.ts`) rief die Funktion beim Reset immer mit einem leeren Array auf; die Funktion rendere dafür unbedingt „0 Standorte gefunden"/„Nächste Stützpunkte", obwohl das Ergebnis für den A→B-Modus irrelevant ist. Root Cause: der Reset-Pfad ist der einzige Aufrufer mit leerem Array — eine echte Null-Treffer-Suche läuft bereits vorher über `renderRoutingError` und erreicht diese Funktion nie. `renderStationResults` blendet das Panel jetzt aus und leert es bei `stations.length === 0`, statt „0 gefunden" zu rendern — modusunabhängig, keine Sonderbehandlung für A→B nötig. Test-first (RED bestätigt), dann Fix; live per Playwright verifiziert (A→B zeigt keine Stationsliste mehr, SEW weiterhin korrekt). `npx tsc --noEmit && npm test` grün (68/68).
+
 ## [3.6.0] - 2026-07-05 07:16
 
 ### Hinzugefügt

@@ -5,6 +5,21 @@ Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./R
 Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
 noch nicht getrennt) und sind entsprechend gemischt.
 
+## Unreleased (2026-07-05)
+
+### Routing: A→B zeigte leere Stationsliste
+- [x] `renderStationResults` (`src/components/RoutingSidebar.ts`) zeigte auch im A→B-Modus
+  „0 Standorte gefunden"/„Nächste Stützpunkte" an, weil `clearAll()`
+  (`RoutingSidebarAdapter.ts`) die Funktion beim Reset unbedingt mit einem leeren Array aufrief
+  und die Funktion selbst eine leere Liste nicht von einer echten (aber leeren) Suche
+  unterschied. Root Cause: der einzige Aufrufer mit leerem Array ist der Reset-Pfad — ein echtes
+  Null-Treffer-Ergebnis läuft bereits vorher über `renderRoutingError` und erreicht
+  `renderStationResults` gar nicht. Fix: `renderStationResults` blendet das Panel jetzt aus und
+  leert es, statt „0 gefunden" zu rendern, wenn `stations.length === 0` — modusunabhängig,
+  keine Sonderbehandlung für A→B nötig. Test zuerst geschrieben (RED bestätigt), dann Fix.
+  Live per Playwright verifiziert: A→B zeigt jetzt keine Stationsliste mehr, SEW zeigt sie
+  weiterhin korrekt an. `npx tsc --noEmit && npm test` grün (68/68).
+
 ## Unreleased (2026-07-03)
 
 ### U4 Pin-/Marker-Boilerplate zusammengefasst
