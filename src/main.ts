@@ -52,7 +52,7 @@ const renderLandingPage = () => {
 
     <div class="layout">
       <main class="page-content landing-body">
-        <h1 class="landing-title">Willkommen im <span>Cloud Portal</span></h1>
+        <h1 class="landing-title">Willkommen im <span>GeoPortal</span></h1>
         
         <div class="card-grid">
           <a href="/karte" class="card card-nav nav-link">

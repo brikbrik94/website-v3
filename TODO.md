@@ -53,10 +53,6 @@ an bereits bestehenden Features.
 - [ ] **Credits/Copyright-Modal überarbeiten und erweitern** (`copyright-modal`,
   `src/lib/GlobalModals.ts:134-160`). Kontakt-E-Mail `daniel@oe5ith.at` ergänzen, ggf.
   Kontaktformular statt/zusätzlich zur E-Mail; Abschnitt allgemein inhaltlich erweitern.
-- [ ] **Seitentitel „Cloud Portal" → „GeoPortal".** Betrifft `<title>` in `index.html:7`
-  (aktuell „OE5ITH - Cloud Portal") und die Landing-Page-Überschrift `src/main.ts:55`
-  („Willkommen im Cloud Portal"). Rein textuelle Änderung, aber Auswirkung auf Branding prüfen
-  (README, CLAUDE.md-Kopf beschreiben die App ebenfalls als „Cloud Portal" — dort ggf. mitziehen).
 - [ ] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzen.** Auf schmalen
   Viewports aktuell vermutlich beides parallel sichtbar/beengt — genaue Topbar-Struktur vor
   Umsetzung prüfen.
