@@ -39,6 +39,16 @@ function attachStationHoverCursor(map: maplibregl.Map) {
   map.on('mouseleave', STATIONS_LAYER, () => { map.getCanvas().style.cursor = ''; });
 }
 
+// Ein Popup wird für alle Stationsklicks wiederverwendet (analog TrackingMapLayers),
+// statt pro Station ein eigenes Popup zu halten wie bei den früheren DOM-Markern.
+let _stationPopup: maplibregl.Popup | null = null;
+function getStationPopup(): maplibregl.Popup {
+  if (!_stationPopup) {
+    _stationPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
+  }
+  return _stationPopup;
+}
+
 // Rendert das fa-helicopter-Glyph (Font Awesome 7 Free, solid, ) einmalig auf einen
 // Canvas und registriert es als SDF-Icon. Es gibt kein einfärbbares Helikopter-Icon im
 // oe5ith-markers Sprite-Set (nur nicht-SDF Betreiber-Logos, siehe ROADMAP.md); dieser Weg
@@ -165,6 +175,20 @@ export const NahMapLayers = {
       station: feat.properties as NahStation & { status: NahStationStatus },
       coordinates
     };
+  },
+
+  /**
+   * Handles a map click against the stations layer: shows the station popup and
+   * returns true if a station was hit, false otherwise (caller falls back to its
+   * own click behaviour, e.g. NahPageController's incident calculation).
+   */
+  handleStationClick(map: maplibregl.Map, e: maplibregl.MapMouseEvent): boolean {
+    const hit = this.findClickedStation(map, [e.point.x, e.point.y]);
+    if (!hit) return false;
+
+    const html = this.buildStationPopupHtml(hit.station);
+    getStationPopup().setLngLat(hit.coordinates).setHTML(html).addTo(map);
+    return true;
   },
 
   /**
