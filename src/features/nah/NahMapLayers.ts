@@ -2,6 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MAP_COLORS, MAP_ROUTE_STYLES } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
+import { PopupManager } from '../../lib/PopupManager';
 import { NahStation, NahStationResult } from '../../types/nah';
 
 const SPRITE_BASE = MARKERS_SPRITE_BASE;
@@ -37,16 +38,6 @@ function attachStationHoverCursor(map: maplibregl.Map) {
   _stationHoverAttached.add(map);
   map.on('mouseenter', STATIONS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
   map.on('mouseleave', STATIONS_LAYER, () => { map.getCanvas().style.cursor = ''; });
-}
-
-// Ein Popup wird für alle Stationsklicks wiederverwendet (analog TrackingMapLayers),
-// statt pro Station ein eigenes Popup zu halten wie bei den früheren DOM-Markern.
-let _stationPopup: maplibregl.Popup | null = null;
-function getStationPopup(): maplibregl.Popup {
-  if (!_stationPopup) {
-    _stationPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
-  }
-  return _stationPopup;
 }
 
 // Rendert das fa-helicopter-Glyph (Font Awesome 7 Free, solid, ) einmalig auf einen
@@ -196,8 +187,7 @@ export const NahMapLayers = {
     const hit = this.findClickedStation(map, [e.point.x, e.point.y]);
     if (!hit) return false;
 
-    const html = this.buildStationPopupHtml(hit.station);
-    getStationPopup().setLngLat(hit.coordinates).setHTML(html).addTo(map);
+    PopupManager.showFeaturePopup(map, e, hit.coordinates, this.buildStationPopupHtml(hit.station));
     return true;
   },
 
