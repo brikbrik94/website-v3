@@ -29,10 +29,13 @@ ebenfalls im Archiv dokumentiert. U5 (NAH-Symbol-Layer), U6 (Hover-Cursor) und U
   unverändert/korrekt (gegen `master` verglichen). Entdeckt bei der Browser-Verifikation von
   U7+U1b (`/coords` Wanderwege-Toggle, 2026-07-06).
 - [ ] Turn-by-Turn-Anzeige für A→B-Routen (Phase 2 aus
-  [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md))
-  blockiert auf einer neuen generischen Single-Disclosure-Komponente im `oe5ith-ci`-Submodul —
-  Anfrage bereits hinterlegt in `oe5ith-ci/ci-routing-disclosure-request.md`. Sobald verfügbar:
-  `formatSteps(segments)`-Helper + Rendering ergänzen.
+  [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md)).
+  War blockiert auf einer neuen generischen Single-Disclosure-Komponente im `oe5ith-ci`-Submodul
+  (Anfrage: `oe5ith-ci/ci-routing-disclosure-request.md`) — **seit `oe5ith-ci` v1.19.0
+  (2026-07-06) verfügbar** (`css/disclosure.css`, `components/disclosure.html`), Submodul-Pointer
+  aktualisiert. Nicht mehr blockiert, aber noch nicht umgesetzt: `disclosure.css`-Pattern nach
+  `src/styles/` übernehmen + `formatSteps(segments)`-Helper + Rendering in `RoutingSidebar.ts`
+  ergänzen.
 - [ ] Lange Warn-Badge-Texte (z.B. „Zufahrtsbeschränkungen auf der Strecke") werden am rechten
   Sidebar-Rand abgeschnitten statt umzubrechen — `.badge` (`oe5ith-ci/css/badges.css`) setzt
   `white-space: nowrap`, `.result-badges` hat zwar `flex-wrap: wrap`, aber ein einzelnes zu
@@ -54,10 +57,6 @@ an bereits bestehenden Features.
 - [ ] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzen.** Auf schmalen
   Viewports aktuell vermutlich beides parallel sichtbar/beengt — genaue Topbar-Struktur vor
   Umsetzung prüfen.
-- [ ] `oe5ith-ci` hat denselben Modal/Topbar-Stacking-Bug, den website-v3 lokal bereits gefixt hat
-  (`src/styles/modal.css`) — Meldung mit Root Cause, Repro und lokal validiertem Fix bereits
-  hinterlegt in `oe5ith-ci/ci-bug-reports.md` (Punkt 1). Kein Fix im Submodul selbst, das läuft
-  extern.
 - [ ] **Versionierungspraxis überdenken:** Mehrere kleine Features am selben Tag führen aktuell zu
   mehreren separaten Minor-Bumps (z.B. mehrfach `3.x.0` am selben Tag) — wirkt übertrieben. Da die
   Versionierungsregel in `AGENT_INSTRUCTIONS.md` (Abschnitt 4, generisch/repo-übergreifend) steht,

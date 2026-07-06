@@ -77,6 +77,26 @@ noch nicht getrennt) und sind entsprechend gemischt.
   nicht mitgefixt (Code-Pfad gegen `master` verglichen, identisch). `npx tsc --noEmit && npm test`
   grün (92/92).
 
+### `oe5ith-ci`-Submodul aktualisiert (v1.18.0 → v1.19.0/c92fb77)
+- [x] Zwei zuvor gemeldete offene Punkte im `oe5ith-ci`-Submodul sind seitens des extern
+  gepflegten Design-System-Repos umgesetzt und im dortigen `CHANGELOG.md` dokumentiert:
+  - **Modal/Topbar-Stacking-Bug** (`ci-bug-reports.md`, Punkt 1): `.modal-backdrop` nutzt jetzt
+    `z-index: var(--z-modal)` statt `var(--z-backdrop)`, exakt wie im Bug-Report vorgeschlagen —
+    website-v3s eigene, bereits lokal gefixte Kopie (`src/styles/modal.css`) ist davon
+    unabhängig, aber die geteilte Quelle ist jetzt konsistent für alle Portale.
+  - **Disclosure-Komponente** (`ci-routing-disclosure-request.md`): `css/disclosure.css` +
+    `components/disclosure.html` + `docs/sidebar.md`-Abschnitt sind jetzt im Submodul vorhanden,
+    schaltet das TODO.md-Item „Turn-by-Turn-Anzeige" frei (Component-Bedarf gedeckt,
+    Integration in `RoutingSidebar.ts` steht noch aus).
+  - Der dritte offene Punkt (**Split-View**, `ci-split-view-request.md`) stellte sich bei der
+    Recherche als bereits erledigt heraus — `css/split.css` existierte schon vor `v1.18.0`
+    (Commit `1a0ebdf` u.a.), die Request-Datei war nur ein nicht aufgeräumter, aber inzwischen
+    im Submodul selbst committeter Rest der ursprünglichen Anfrage.
+  - Submodul-Pointer im Hauptrepo von `dca22e5` auf `c92fb77` (neuester `origin/main`-Commit,
+    keine passende Release-Tag vorhanden — `v1.19.0` ist einen Commit dahinter) aktualisiert.
+    Kein Fix im Submodul selbst durchgeführt (läuft extern), nur der Pointer-Bump + Verifikation
+    hier.
+
 ## Unreleased (2026-07-05)
 
 ### Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt
