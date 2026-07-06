@@ -152,6 +152,22 @@ export const NahMapLayers = {
   },
 
   /**
+   * Looks up the station (if any) hit by a map click, for use in the page's central
+   * click handler (queryRenderedFeatures, analogous to TrackingMapLayers.handleMapClick).
+   */
+  findClickedStation(map: maplibregl.Map, point: [number, number]): { station: NahStation & { status: NahStationStatus }; coordinates: [number, number] } | null {
+    const features = map.queryRenderedFeatures(point, { layers: [STATIONS_LAYER] });
+    if (features.length === 0) return null;
+
+    const feat = features[0];
+    const coordinates = (feat.geometry as any).coordinates as [number, number];
+    return {
+      station: feat.properties as NahStation & { status: NahStationStatus },
+      coordinates
+    };
+  },
+
+  /**
    * Initializes the NAH-specific map layers and sources.
    */
   initLayers(map: maplibregl.Map) {

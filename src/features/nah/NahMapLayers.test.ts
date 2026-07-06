@@ -108,3 +108,24 @@ describe('NahMapLayers.setStations', () => {
     expect(registered?.definition.data.features).toHaveLength(1);
   });
 });
+
+describe('NahMapLayers.findClickedStation', () => {
+  function mockMap(features: unknown[]) {
+    return { queryRenderedFeatures: () => features } as any;
+  }
+
+  it('returns null when no station feature is hit', () => {
+    const map = mockMap([]);
+    expect(NahMapLayers.findClickedStation(map, [10, 10])).toBeNull();
+  });
+
+  it('returns the station properties and coordinates of the first hit feature', () => {
+    const props = { name: 'Christophorus 3', callsign: 'C3', status: 'active' };
+    const map = mockMap([{ properties: props, geometry: { type: 'Point', coordinates: [14.1, 48.2] } }]);
+
+    const hit = NahMapLayers.findClickedStation(map, [10, 10]);
+
+    expect(hit?.station).toEqual(props);
+    expect(hit?.coordinates).toEqual([14.1, 48.2]);
+  });
+});
