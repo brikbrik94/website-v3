@@ -122,8 +122,8 @@ export const NahMapLayers = {
   },
 
   /**
-   * Renders the NAH stations as a data-driven symbol layer (replaces the former
-   * per-station maplibregl.Marker approach).
+   * Rendert die NAH-Stationen als daten-getriebene Symbol-Layer (ersetzt den
+   * früheren maplibregl.Marker-pro-Station-Ansatz).
    */
   setStations(map: maplibregl.Map, stations: NahStation[]) {
     if (!map.getSource(STATIONS_SOURCE)) {
@@ -153,8 +153,9 @@ export const NahMapLayers = {
   },
 
   /**
-   * Looks up the station (if any) hit by a map click, for use in the page's central
-   * click handler (queryRenderedFeatures, analogous to TrackingMapLayers.handleMapClick).
+   * Ermittelt die von einem Kartenklick getroffene Station (falls vorhanden), zur
+   * Nutzung im zentralen Klick-Handler der Seite (queryRenderedFeatures, analog zu
+   * TrackingMapLayers.handleMapClick).
    */
   findClickedStation(map: maplibregl.Map, point: [number, number]): { station: NahStation & { status: NahStationStatus }; coordinates: [number, number] } | null {
     const features = map.queryRenderedFeatures(point, { layers: [STATIONS_LAYER] });
@@ -179,9 +180,9 @@ export const NahMapLayers = {
   },
 
   /**
-   * Handles a map click against the stations layer: shows the station popup and
-   * returns true if a station was hit, false otherwise (caller falls back to its
-   * own click behaviour, e.g. NahPageController's incident calculation).
+   * Behandelt einen Kartenklick gegen die Stations-Layer: zeigt das Stations-Popup
+   * und liefert true bei Treffer, sonst false (Aufrufer fällt dann auf sein eigenes
+   * Klickverhalten zurück, z.B. NahPageControllers Incident-Berechnung).
    */
   handleStationClick(map: maplibregl.Map, e: maplibregl.MapMouseEvent): boolean {
     const hit = this.findClickedStation(map, [e.point.x, e.point.y]);
