@@ -12,7 +12,6 @@ verifiziert (6-Punkte-Checkliste, siehe TODO_ARCHIVE.md) — dabei 2 Bugs gefund
 ebenfalls im Archiv dokumentiert.
 
 ### Cleanup / Vereinheitlichung
-- [ ] U6 Hover-Cursor vereinheitlichen (`attachHoverCursor`; Routing noch inline, `RoutingPage.ts:69`; jetzt eine dritte lokale Instanz in `NahMapLayers.ts` seit U5)
 - [ ] U7 MapRegistry-Buchhaltung vereinfachen (Dreifach-Buchhaltung `activeLayers`/`overlayMetadata`/`MapRegistry`)
 - [ ] U1b `MapPage.toggleLayer` in `OverlayLoader` generalisieren (ID-Prefixing + Layer-Subset)
 

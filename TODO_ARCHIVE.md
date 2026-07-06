@@ -33,6 +33,17 @@ noch nicht getrennt) und sind entsprechend gemischt.
   Teil dieser Migration, siehe neuer ROADMAP.md-Punkt. `npx tsc --noEmit && npm test` grün
   (82/82).
 
+### U6: Hover-Cursor vereinheitlicht
+- [x] Drei unabhängige Implementierungen (`TrackingMapLayers` mit Boolean-Guard, `RoutingPage` komplett
+  inline ohne Guard/Cleanup, `NahMapLayers` mit modul-scoped WeakSet) durch einen gemeinsamen
+  `attachHoverCursor(map, layerIds)`-Helper (`src/lib/HoverCursor.ts`, WeakSet-Guard) ersetzt.
+  Dabei zwei Bugs behoben: Tracking zeigte für `ais-dots-moving`/`ais-dots-static` keinen
+  Hover-Cursor trotz Klickbarkeit; Routing meldete seine Listener nie in `destroy()` ab. In
+  `CLAUDE.md` dokumentiert. Design:
+  `docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md`. Live im Browser
+  verifiziert (`/tracking`, `/routing`, `/nah`, inkl. Seitenwechsel-Test). `npx tsc --noEmit &&
+  npm test` grün (86/86).
+
 ## Unreleased (2026-07-05)
 
 ### Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt
