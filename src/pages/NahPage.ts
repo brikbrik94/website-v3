@@ -17,7 +17,6 @@ import { NahSidebarAdapter } from '../features/nah/NahSidebarAdapter';
 
 export class NahPageController extends BasePageController {
   private dataService: NahDataService | null = null;
-  private stationMarkers: maplibregl.Marker[] = [];
   private currentResults: NahStationResult[] = [];
   private currentIncidentCoord: [number, number] | null = null;
   private map: maplibregl.Map | null = null;
@@ -70,9 +69,8 @@ export class NahPageController extends BasePageController {
       this.dataService.setCallbacks(
         (stations) => {
           if (!this.map) return;
-          this.stationMarkers.forEach(m => m.remove());
-          this.stationMarkers = NahMapLayers.renderMarkers(this.map, stations);
-          
+          NahMapLayers.setStations(this.map, stations);
+
           if (stations.length > 0) {
             Toast.success(`${stations.length} NAH-Stützpunkte geladen.`);
           }
@@ -103,9 +101,6 @@ export class NahPageController extends BasePageController {
     super.destroy();
     
     // Data service is automatically stopped via AbortSignal in its constructor
-    
-    this.stationMarkers.forEach(m => m.remove());
-    this.stationMarkers = [];
 
     if (this.map) {
       NahMapLayers.clearTargetPin(this.map);
@@ -122,9 +117,8 @@ export class NahPageController extends BasePageController {
 
   private handleMapClick = (e: maplibregl.MapMouseEvent) => {
     if (!this.map || !this.sidebarResults) return;
-    
-    // Ignore clicks on markers
-    if ((e.originalEvent.target as HTMLElement).closest('.maplibregl-marker')) {
+
+    if (NahMapLayers.handleStationClick(this.map, e)) {
       return;
     }
 
