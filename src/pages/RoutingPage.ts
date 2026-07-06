@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { MapCore } from '../lib/MapCore';
+import { attachHoverCursor } from '../lib/HoverCursor';
 import { initTopbar } from '../components/Topbar';
 import { MapLegend } from '../lib/MapLegend';
 import { LayoutHelper } from '../lib/LayoutHelper';
@@ -65,13 +66,8 @@ export class RoutingPageController extends BasePageController {
         if (!this.map || !this.sidebarAdapter) return;
 
         this.map.on('click', (e) => this.sidebarAdapter?.handleMapClick(e));
-        
-        this.map.on('mouseenter', 'routing-path', () => {
-            if (this.map) this.map.getCanvas().style.cursor = 'pointer';
-        });
-        this.map.on('mouseleave', 'routing-path', () => {
-            if (this.map) this.map.getCanvas().style.cursor = '';
-        });
+
+        attachHoverCursor(this.map, ['routing-path']);
 
         this.map.on('contextmenu', (e) => {
             const { lat, lng } = e.lngLat;
