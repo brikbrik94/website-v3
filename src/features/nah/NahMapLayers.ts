@@ -3,6 +3,7 @@ import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MAP_COLORS, MAP_ROUTE_STYLES } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { PopupManager } from '../../lib/PopupManager';
+import { attachHoverCursor } from '../../lib/HoverCursor';
 import { NahStation, NahStationResult } from '../../types/nah';
 
 const SPRITE_BASE = MARKERS_SPRITE_BASE;
@@ -26,19 +27,6 @@ const STATUS_TEXT: Record<NahStationStatus, string> = {
   inactive: 'AUSSER DIENST (Betriebszeit)',
   offseason: 'AUSSER SAISON',
 };
-
-// WeakSet statt Boolean-Flag: initLayers() läuft bei jedem Basemap-Wechsel erneut für
-// dieselbe Map-Instanz (Guard nötig), aber NahPageController erzeugt bei jedem Seitenbesuch
-// eine neue Map-Instanz (kein Guard gewünscht, sonst blieben Hover-Listener nach einem
-// Seitenwechsel für die neue Instanz fälschlich deaktiviert). Ein WeakSet trackt das korrekt
-// pro Instanz, ohne dass destroy() den Zustand manuell zurücksetzen müsste.
-const _stationHoverAttached = new WeakSet<maplibregl.Map>();
-function attachStationHoverCursor(map: maplibregl.Map) {
-  if (_stationHoverAttached.has(map)) return;
-  _stationHoverAttached.add(map);
-  map.on('mouseenter', STATIONS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-  map.on('mouseleave', STATIONS_LAYER, () => { map.getCanvas().style.cursor = ''; });
-}
 
 // Rendert das fa-helicopter-Glyph (Font Awesome 7 Free, solid, ) einmalig auf einen
 // Canvas und registriert es als SDF-Icon. Es gibt kein einfärbbares Helikopter-Icon im
@@ -233,7 +221,7 @@ export const NahMapLayers = {
       }
     };
     MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsLayerDef as any);
-    attachStationHoverCursor(map);
+    attachHoverCursor(map, [STATIONS_LAYER]);
 
     const sourceId = 'nah-lines';
     const layerId = 'nah-lines';
