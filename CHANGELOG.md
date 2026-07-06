@@ -2,15 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-06 09:26
+## [Unreleased] - 2026-07-06 10:41
 
 ### Behoben
+- **Popup schloss sich beim Wechsel zu einer anderen Station/einem anderen Flugzeug/Schiff, statt sofort das neue zu zeigen** (`src/lib/PopupManager.ts`, `src/features/nah/NahMapLayers.ts`, `src/features/tracking/TrackingMapLayers.ts`). Ursprünglich vermutete Ursache (fehlendes `e.preventDefault()` in `NahMapLayers`, analog zu einem bereits bestehenden Aufruf in `TrackingMapLayers`) war beim Nachbau als gemeinsame Mechanik nachweislich falsch — ein Live-Test mit dem vermeintlichen Fix reproduzierte den Bug weiterhin. Root Cause per MapLibre-GL-JS-Quellcode bestätigt: `Popup._onClose` prüft `e.defaultPrevented` gar nicht, `preventDefault()` hat also nie etwas bewirkt; das eigentliche Problem ist, dass `Popup.addTo()` bei einem bereits offenen Popup den `closeOnClick`-Listener zwar neu registriert, `Map.fire()` aber die Listener-Liste vor der Verteilung einmalig kopiert — der alte (persistente) Listener bleibt dadurch in der aktuellen Klick-Verteilung erhalten und schließt das gerade erst wieder geöffnete Popup trotzdem. Fix: das gemeinsame Popup nutzt jetzt `closeOnClick: false`, jede Seite schließt es bei einem Fehltreffer explizit selbst (`PopupManager.closePopup()`) — `TrackingMapLayers` tat das für seinen Fehltreffer-Fall schon, `NahMapLayers` ergänzt das jetzt. Live verifiziert (Playwright, `/nah` und `/tracking`): neues Popup erscheint jetzt sofort beim Wechsel zwischen Features, Klick auf freie Fläche schließt weiterhin korrekt.
 - **NAH-Stationsmarker: Inline-Style-Verstoß gegen CI-Konvention behoben** (`src/features/nah/NahMapLayers.ts`). Der Status-Text im Stations-Popup nutzte `style="color:…"` — jetzt über die bestehenden CI-Badge-Klassen (`badge-green`/`badge-red`/`badge-gray`), die exakt auf die drei Status-Farben passen.
 
 ### Geändert
 - **NAH-Stationsmarker von DOM-Markern auf einen MapLibre-Symbol-Layer migriert** (U5, [docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)). NAH war die letzte Karten-Funktion mit `maplibregl.Marker`-DOM-Elementen statt eines Symbol-Layers (Tracking/Coords/Routing nutzen das Muster schon). Das Helikopter-Icon wird jetzt einmalig zur Laufzeit aus dem bestehenden `fa-helicopter`-Glyph als SDF-Icon gerendert (kein neues externes Sprite nötig), Klick/Hover folgen dem in `TrackingMapLayers` etablierten `queryRenderedFeatures`-Muster. Popup-Inhalt bleibt fachlich unverändert. Betreiber-spezifische Icons (bereits im Sprite-Set vorhanden) sind bewusst nicht Teil dieser Migration — siehe neuer ROADMAP.md-Punkt.
 
-`npx tsc --noEmit && npm test` grün (82/82).
+`npx tsc --noEmit && npm test` grün (83/83).
 
 ## [3.6.1] - 2026-07-05 16:14
 
