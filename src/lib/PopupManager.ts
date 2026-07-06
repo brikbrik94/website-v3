@@ -42,7 +42,7 @@ export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
 let _sharedPopup: maplibregl.Popup | null = null;
 function getSharedPopup(): maplibregl.Popup {
     if (!_sharedPopup) {
-        _sharedPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
+        _sharedPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: false, maxWidth: '300px' });
     }
     return _sharedPopup;
 }
@@ -82,19 +82,21 @@ export class PopupManager {
 
     /**
      * Opens (or moves/updates) the one shared map-click popup at the given coordinates
-     * with the given HTML, and marks the triggering click as handled.
+     * with the given HTML.
      *
-     * MapLibre's Popup.addTo() re-registers its own closeOnClick 'click' listener on
-     * every call (removing the old one first if already open) — this happens while the
-     * current click event is still being dispatched to all listeners, so the freshly
-     * re-registered listener can fire again for this same click and immediately close
-     * the popup that was just (re)opened. Calling e.preventDefault() here prevents that
-     * self-inflicted close — without it, clicking a second feature while a popup is open
-     * closes the old popup but doesn't show the new one until a second click.
+     * The popup is constructed with closeOnClick: false (see getSharedPopup below) — not
+     * because closing-on-click is undesired, but because MapLibre's own closeOnClick
+     * listener is a single persistent listener that, once registered, stays in the click
+     * event's listener snapshot for the *current* click too. Calling addTo() again while
+     * the popup is already open (e.g. clicking a second feature) doesn't get rid of it in
+     * time: the map's click dispatch already snapshotted the listener list before this
+     * handler ran, so that stale listener still fires after us and immediately closes the
+     * popup we just reopened — the new content never gets a chance to show until a second
+     * click. Callers are responsible for calling closePopup() themselves on a miss (see
+     * NahMapLayers.handleStationClick / TrackingMapLayers.handleMapClick).
      */
-    static showFeaturePopup(map: maplibregl.Map, e: maplibregl.MapMouseEvent, coordinates: [number, number], html: string): void {
+    static showFeaturePopup(map: maplibregl.Map, coordinates: [number, number], html: string): void {
         getSharedPopup().setLngLat(coordinates).setHTML(html).addTo(map);
-        e.preventDefault();
     }
 
     /**
