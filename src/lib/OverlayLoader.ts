@@ -1,22 +1,30 @@
 import maplibregl from 'maplibre-gl';
 import { MapCore } from './MapCore';
 import { MapRegistry } from './MapRegistry';
+import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
 
 interface LoadedOverlay {
+  style: any;
+  sourceIdMap: Map<string, string>;
   sourceIds: string[];
   layerIds: string[];
   hasImage: boolean;
 }
 
-// Pro Overlay-ID die tatsächlich hinzugefügten Source-/Layer-IDs. Nötig, weil diese aus
-// dem entfernten Style stammen und nicht zwingend der Overlay-ID entsprechen – ohne dieses
-// Tracking lässt sich ein Overlay nicht zuverlässig wieder entfernen (genau das war die
-// Ursache des Contours-Bugs, der gegen die falsche ID prüfte).
+// Pro Overlay-ID das gecachte, geparste Style-JSON, die Zuordnung original-sourceId ->
+// geprefixte uniqueSourceId, und die tatsächlich hinzugefügten Source-/Layer-IDs. Nötig, weil
+// diese aus dem entfernten Style stammen und nicht zwingend der Overlay-ID entsprechen – ohne
+// dieses Tracking lässt sich ein Overlay nicht zuverlässig wieder entfernen (genau das war die
+// Ursache des Contours-Bugs, der gegen die falsche ID prüfte). layerIds ist kumulativ: mehrere
+// add()-Aufrufe mit unterschiedlichen Layer-Teilmengen für dasselbe Overlay ergänzen sich, statt
+// sich zu ersetzen.
 const loaded = new Map<string, LoadedOverlay>();
 
+const prefixed = (overlayId: string, id: string) => (id.startsWith(overlayId) ? id : `${overlayId}-${id}`);
+
 /**
- * Gemeinsamer Loader für entfernte MapLibre-Style-Overlays (z.B. Wanderwege, Höhenlinien).
- * Vereinheitlicht das zuvor an mehreren Stellen kopierte
+ * Gemeinsamer Loader für entfernte MapLibre-Style-Overlays (z.B. Wanderwege, Höhenlinien,
+ * Karten-Layer-Toggles). Vereinheitlicht das zuvor an mehreren Stellen kopierte
  * fetch → resolveSourceUrls → registerImage+loadSprites → register/add sources+layers.
  *
  * Sprites/Sources/Layer werden in der MapRegistry eingetragen und überleben so
@@ -28,81 +36,109 @@ export const OverlayLoader = {
   },
 
   /**
-   * Lädt den kompletten Style unter `styleUrl` als Overlay und fügt ihn der Karte hinzu.
-   * No-op, wenn das Overlay bereits geladen ist. Wirft bei Fetch-/Parse-Fehlern – der Aufrufer
-   * entscheidet über Fehlerbehandlung (z.B. Toast).
+   * Lädt den Style unter `styleUrl` als Overlay und fügt Layer hinzu. Ohne `opts.layerIds`:
+   * alle Layer des Styles (Default, unverändertes Verhalten). Mit `opts.layerIds`: nur die
+   * angegebene Teilmenge — mehrere Aufrufe mit unterschiedlichen Teilmengen für dasselbe Overlay
+   * ergänzen sich kumulativ, statt sich zu ersetzen. Sources werden immer vollständig beim
+   * ersten Aufruf für ein Overlay hinzugefügt (gemeinsame Infrastruktur, unabhängig von der
+   * Layer-Teilmenge). Wirft bei Fetch-/Parse-Fehlern – der Aufrufer entscheidet über
+   * Fehlerbehandlung (z.B. Toast).
    */
   async add(
     map: maplibregl.Map,
     overlayId: string,
     styleUrl: string,
-    opts?: { signal?: AbortSignal }
+    opts?: { signal?: AbortSignal; layerIds?: string[] }
   ): Promise<void> {
-    if (loaded.has(overlayId)) return;
-
-    const res = await fetch(styleUrl, opts?.signal ? { signal: opts.signal } : undefined);
-    const style = await res.json();
-
-    const entry: LoadedOverlay = { sourceIds: [], layerIds: [], hasImage: false };
-
-    if (style.sprite) {
-      MapRegistry.registerImage(overlayId, style.sprite, styleUrl);
-      await MapCore.loadSprites(map, style.sprite, styleUrl);
-      entry.hasImage = true;
+    // isStyleLoaded() wird erst true, wenn ALLE Sources ihre initialen Tiles geladen haben
+    // (nicht nur der Style-JSON geparst ist). Bei großen Basemaps (z.B. "Basemap At", ~2.4 GB
+    // PMTiles) ist das hier oft noch nicht der Fall. Auf ein erneutes 'style.load'-Event zu
+    // warten hängt für immer, da dieses Event schon gefeuert hat und ohne weiteren
+    // setStyle()-Aufruf nicht erneut feuert. Stattdessen pollen, bis der Style wirklich fertig
+    // geladen ist.
+    if (!map.isStyleLoaded()) {
+      await new Promise<void>(resolve => {
+        const check = () => {
+          if (map.isStyleLoaded()) resolve();
+          else requestAnimationFrame(check);
+        };
+        check();
+      });
     }
 
-    // Source-/Layer-IDs mit der overlayId prefixen: Overlay-Style-Dateien werden unabhängig
-    // voneinander gepflegt (Tile-Server) und können zufällig dieselbe ID wie eine Source/ein
-    // Layer des aktiven Basemap-Styles verwenden (z.B. "esri" in sowohl "Basemap At" als auch
-    // im "basemap-at-contours"-Overlay) – ohne Prefix würde addSource/removeSource dann gegen
-    // die falsche (Basemap-eigene) Source laufen, statt gegen die des Overlays.
-    const prefixed = (id: string) => (id.startsWith(overlayId) ? id : `${overlayId}-${id}`);
+    let entry = loaded.get(overlayId);
 
-    const resolvedSources = MapCore.resolveSourceUrls(style.sources || {}, styleUrl);
-    const sourceIdMap = new Map<string, string>();
-    for (const [sourceId, def] of Object.entries(resolvedSources)) {
-      const uniqueSourceId = prefixed(sourceId);
-      sourceIdMap.set(sourceId, uniqueSourceId);
-      MapRegistry.registerSource(uniqueSourceId, def);
-      if (!map.getSource(uniqueSourceId)) {
-        map.addSource(uniqueSourceId, JSON.parse(JSON.stringify(def)));
+    if (!entry) {
+      const res = await fetch(styleUrl, opts?.signal ? { signal: opts.signal } : undefined);
+      const style = await res.json();
+
+      entry = { style, sourceIdMap: new Map(), sourceIds: [], layerIds: [], hasImage: false };
+      loaded.set(overlayId, entry);
+
+      if (style.sprite) {
+        MapRegistry.registerImage(overlayId, style.sprite, styleUrl);
+        await MapCore.loadSprites(map, style.sprite, styleUrl);
+        entry.hasImage = true;
       }
-      entry.sourceIds.push(uniqueSourceId);
+
+      const resolvedSources = MapCore.resolveSourceUrls(style.sources || {}, styleUrl);
+      for (const [sourceId, def] of Object.entries(resolvedSources)) {
+        const uniqueSourceId = prefixed(overlayId, sourceId);
+        entry.sourceIdMap.set(sourceId, uniqueSourceId);
+        MapRegistry.registerSource(uniqueSourceId, def);
+        addSourceIfMissing(map, uniqueSourceId, def);
+        entry.sourceIds.push(uniqueSourceId);
+      }
     }
 
-    for (const layer of (style.layers || []) as any[]) {
-      const uniqueLayerId = prefixed(layer.id);
-      const newLayer = { ...layer, id: uniqueLayerId };
-      if (newLayer.source && sourceIdMap.has(newLayer.source)) {
-        newLayer.source = sourceIdMap.get(newLayer.source);
+    const style = entry.style;
+    const wantedLayerIds: string[] = opts?.layerIds ?? (style.layers || []).map((l: any) => l.id);
+
+    for (const layerId of wantedLayerIds) {
+      const uniqueLayerId = prefixed(overlayId, layerId);
+      if (entry.layerIds.includes(uniqueLayerId)) continue;
+
+      const layerDef = (style.layers || []).find((l: any) => l.id === layerId);
+      if (!layerDef) continue;
+
+      const newLayer = { ...layerDef, id: uniqueLayerId };
+      if (newLayer.source && entry.sourceIdMap.has(newLayer.source)) {
+        newLayer.source = entry.sourceIdMap.get(newLayer.source);
       }
       MapRegistry.registerLayer(uniqueLayerId, newLayer);
-      if (!map.getLayer(uniqueLayerId)) {
-        map.addLayer(JSON.parse(JSON.stringify(newLayer)));
-      }
+      addLayerIfMissing(map, newLayer);
       entry.layerIds.push(uniqueLayerId);
     }
-
-    loaded.set(overlayId, entry);
   },
 
-  /** Entfernt exakt die hinzugefügten Layer (zuerst) und danach die Sources eines Overlays. */
-  remove(map: maplibregl.Map, overlayId: string): void {
+  /**
+   * Entfernt Layer eines Overlays. Ohne `opts.layerIds`: alle Layer (Default, unverändertes
+   * Verhalten), danach auch Sources + Sprite-Image. Mit `opts.layerIds`: nur die angegebene
+   * Teilmenge — werden dadurch ALLE Layer des Overlays entfernt (letzte Teilmenge
+   * ausgeschaltet), werden automatisch auch Sources + Sprite-Image mit entfernt.
+   */
+  remove(map: maplibregl.Map, overlayId: string, opts?: { layerIds?: string[] }): void {
     const entry = loaded.get(overlayId);
     if (!entry) return;
 
-    // Layer vor Sources entfernen (Sources mit aktiven Layern lassen sich nicht entfernen).
-    for (const layerId of entry.layerIds) {
+    const toRemove = opts?.layerIds
+      ? opts.layerIds.map(id => prefixed(overlayId, id))
+      : entry.layerIds.slice();
+
+    for (const layerId of toRemove) {
       if (map.getLayer(layerId)) map.removeLayer(layerId);
       MapRegistry.unregisterLayer(layerId);
+      entry.layerIds = entry.layerIds.filter(id => id !== layerId);
     }
-    for (const sourceId of entry.sourceIds) {
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
-      MapRegistry.unregisterSource(sourceId);
-    }
-    if (entry.hasImage) MapRegistry.unregisterImage(overlayId);
 
-    loaded.delete(overlayId);
+    if (entry.layerIds.length === 0) {
+      for (const sourceId of entry.sourceIds) {
+        if (map.getSource(sourceId)) map.removeSource(sourceId);
+        MapRegistry.unregisterSource(sourceId);
+      }
+      if (entry.hasImage) MapRegistry.unregisterImage(overlayId);
+      loaded.delete(overlayId);
+    }
   },
 
   /**
