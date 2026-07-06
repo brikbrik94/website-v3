@@ -185,9 +185,12 @@ export const NahMapLayers = {
    */
   handleStationClick(map: maplibregl.Map, e: maplibregl.MapMouseEvent): boolean {
     const hit = this.findClickedStation(map, [e.point.x, e.point.y]);
-    if (!hit) return false;
+    if (!hit) {
+      PopupManager.closePopup();
+      return false;
+    }
 
-    PopupManager.showFeaturePopup(map, e, hit.coordinates, this.buildStationPopupHtml(hit.station));
+    PopupManager.showFeaturePopup(map, hit.coordinates, this.buildStationPopupHtml(hit.station));
     return true;
   },
 
