@@ -7,6 +7,10 @@ import { NahStation, NahStationResult } from '../../types/nah';
 const SPRITE_BASE = MARKERS_SPRITE_BASE;
 const TARGET_PIN_SOURCE = 'nah-target-pin';
 const TARGET_PIN_LAYER = 'nah-target-pin-layer';
+const STATIONS_SOURCE = 'nah-stations';
+const STATIONS_LAYER = 'nah-stations-layer';
+const HELI_ICON_ID = 'nah-heli-icon';
+const HELI_ICON_SIZE = 64;
 
 export type NahStationStatus = 'active' | 'inactive' | 'offseason';
 
@@ -21,6 +25,56 @@ const STATUS_TEXT: Record<NahStationStatus, string> = {
   inactive: 'AUSSER DIENST (Betriebszeit)',
   offseason: 'AUSSER SAISON',
 };
+
+// WeakSet statt Boolean-Flag: initLayers() läuft bei jedem Basemap-Wechsel erneut für
+// dieselbe Map-Instanz (Guard nötig), aber NahPageController erzeugt bei jedem Seitenbesuch
+// eine neue Map-Instanz (kein Guard gewünscht, sonst blieben Hover-Listener nach einem
+// Seitenwechsel für die neue Instanz fälschlich deaktiviert). Ein WeakSet trackt das korrekt
+// pro Instanz, ohne dass destroy() den Zustand manuell zurücksetzen müsste.
+const _stationHoverAttached = new WeakSet<maplibregl.Map>();
+function attachStationHoverCursor(map: maplibregl.Map) {
+  if (_stationHoverAttached.has(map)) return;
+  _stationHoverAttached.add(map);
+  map.on('mouseenter', STATIONS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', STATIONS_LAYER, () => { map.getCanvas().style.cursor = ''; });
+}
+
+// Rendert das fa-helicopter-Glyph (Font Awesome 7 Free, solid, ) einmalig auf einen
+// Canvas und registriert es als SDF-Icon. Es gibt kein einfärbbares Helikopter-Icon im
+// oe5ith-markers Sprite-Set (nur nicht-SDF Betreiber-Logos, siehe ROADMAP.md); dieser Weg
+// vermeidet eine externe Sprite-Server-Abhängigkeit für ein einzelnes generisches Icon.
+async function ensureHeliIcon(map: maplibregl.Map): Promise<void> {
+  if (map.hasImage(HELI_ICON_ID)) return;
+
+  try {
+    await document.fonts.load(`900 ${HELI_ICON_SIZE}px "Font Awesome 7 Free"`);
+  } catch (e) {
+    console.warn('[NahMapLayers] Font Awesome Font konnte nicht vorab geladen werden', e);
+  }
+
+  if (map.hasImage(HELI_ICON_ID)) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = HELI_ICON_SIZE;
+  canvas.height = HELI_ICON_SIZE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  ctx.font = `900 ${Math.round(HELI_ICON_SIZE * 0.85)}px "Font Awesome 7 Free"`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#000000';
+  ctx.fillText('', HELI_ICON_SIZE / 2, HELI_ICON_SIZE / 2 + HELI_ICON_SIZE * 0.03);
+
+  try {
+    const imageData = ctx.getImageData(0, 0, HELI_ICON_SIZE, HELI_ICON_SIZE);
+    if (!map.hasImage(HELI_ICON_ID)) {
+      map.addImage(HELI_ICON_ID, imageData, { sdf: true });
+    }
+  } catch (e) {
+    console.error('[NahMapLayers] Konnte Helikopter-Icon nicht registrieren', e);
+  }
+}
 
 export const NahMapLayers = {
   computeStationStatus(station: NahStation): NahStationStatus {
@@ -71,6 +125,7 @@ export const NahMapLayers = {
    */
   initLayers(map: maplibregl.Map) {
     MapRegistry.registerImage('oe5ith-markers', SPRITE_BASE);
+    void ensureHeliIcon(map);
 
     // Einsatzort-Pin (ci-symbol-location, accent-Farbe, ohne Halo)
     const targetPinLayerDef = MapCore.createPinLayer(TARGET_PIN_LAYER, TARGET_PIN_SOURCE, {
@@ -80,6 +135,30 @@ export const NahMapLayers = {
       color: MAP_COLORS.accent,
     });
     MapCore.ensureGeoJsonLayer(map, TARGET_PIN_SOURCE, targetPinLayerDef);
+
+    // NAH-Stationen (Symbol-Layer statt DOM-Marker; siehe
+    // docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)
+    const stationsLayerDef = {
+      id: STATIONS_LAYER,
+      type: 'symbol',
+      source: STATIONS_SOURCE,
+      layout: {
+        'icon-image': HELI_ICON_ID,
+        'icon-size': 0.5,
+        'icon-allow-overlap': true,
+      },
+      paint: {
+        'icon-color': [
+          'match', ['get', 'status'],
+          'active', MAP_COLORS.success,
+          'inactive', MAP_COLORS.danger,
+          'offseason', MAP_COLORS.muted,
+          MAP_COLORS.success
+        ]
+      }
+    };
+    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsLayerDef as any);
+    attachStationHoverCursor(map);
 
     const sourceId = 'nah-lines';
     const layerId = 'nah-lines';
