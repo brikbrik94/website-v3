@@ -8,7 +8,14 @@ const SPRITE_BASE = MARKERS_SPRITE_BASE;
 const TARGET_PIN_SOURCE = 'nah-target-pin';
 const TARGET_PIN_LAYER = 'nah-target-pin-layer';
 
+export type NahStationStatus = 'active' | 'inactive' | 'offseason';
+
 export const NahMapLayers = {
+  computeStationStatus(station: NahStation): NahStationStatus {
+    if (!station.in_season) return 'offseason';
+    if (!station.is_active) return 'inactive';
+    return 'active';
+  },
   /**
    * Initializes the NAH-specific map layers and sources.
    */
