@@ -1,3 +1,5 @@
+import maplibregl from 'maplibre-gl';
+
 export interface PopupField {
     key: string;
     label: string;
@@ -37,6 +39,14 @@ export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
     }
 };
 
+let _sharedPopup: maplibregl.Popup | null = null;
+function getSharedPopup(): maplibregl.Popup {
+    if (!_sharedPopup) {
+        _sharedPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
+    }
+    return _sharedPopup;
+}
+
 export class PopupManager {
     static buildHtml(layerId: string, props: Record<string, unknown>): string {
         const config = POPUP_CONFIGS[layerId] || POPUP_CONFIGS['ais-icons']; // Fallback
@@ -68,5 +78,29 @@ export class PopupManager {
                 </table>
             </div>
         `.trim();
+    }
+
+    /**
+     * Opens (or moves/updates) the one shared map-click popup at the given coordinates
+     * with the given HTML, and marks the triggering click as handled.
+     *
+     * MapLibre's Popup.addTo() re-registers its own closeOnClick 'click' listener on
+     * every call (removing the old one first if already open) — this happens while the
+     * current click event is still being dispatched to all listeners, so the freshly
+     * re-registered listener can fire again for this same click and immediately close
+     * the popup that was just (re)opened. Calling e.preventDefault() here prevents that
+     * self-inflicted close — without it, clicking a second feature while a popup is open
+     * closes the old popup but doesn't show the new one until a second click.
+     */
+    static showFeaturePopup(map: maplibregl.Map, e: maplibregl.MapMouseEvent, coordinates: [number, number], html: string): void {
+        getSharedPopup().setLngLat(coordinates).setHTML(html).addTo(map);
+        e.preventDefault();
+    }
+
+    /**
+     * Closes the shared map-click popup (e.g. when a click misses every feature).
+     */
+    static closePopup(): void {
+        getSharedPopup().remove();
     }
 }
