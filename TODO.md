@@ -17,6 +17,7 @@ ebenfalls im Archiv dokumentiert.
 - [ ] U1b `MapPage.toggleLayer` in `OverlayLoader` generalisieren (ID-Prefixing + Layer-Subset)
 
 ### Kleinere Map-Bugs (Sammeltask)
+- [ ] `NahPageController.destroy()` ruft `PopupManager.closePopup()` nicht explizit auf (`src/pages/NahPage.ts`) — anders als `TrackingMapLayers.destroy()`. Kein aktueller Bug (der Kartenwechsel entfernt das Popup ohnehin via `map.remove()`), aber inkonsistent zur Schwesterseite; Symmetrie herstellen. Gefunden bei der finalen Review der gemeinsamen Klick-Popup-Mechanik (2026-07-06).
 - [ ] Width-Desync `TrackingMapLayers.ts` — `ensureLayers` setzt Track-Breite 5/3, `highlightItem` 4/1.5
 - [ ] TerrainManager Double-Add-Race bei „warmem" Init prüfen (un-awaited `applyTerrainInfrastructure` + paralleler Restore)
 - [ ] NAH-Feature-State-Reset hardcoded `for (i<5)` (`NahMapLayers.ts:148`) → stale `selected` bei >5 Ergebnissen
