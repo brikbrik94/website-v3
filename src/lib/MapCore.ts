@@ -3,6 +3,7 @@ import { Protocol } from 'pmtiles';
 import { initTerrainManager, applyTerrainInfrastructure } from './TerrainManager';
 import { BasemapStore } from './BasemapStore';
 import { MapRegistry } from './MapRegistry';
+import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
 
 // Modul-lokale Variable um die Protokoll-Instanz am Leben zu halten
 let _pmtilesProtocol: Protocol | null = null;
@@ -125,23 +126,11 @@ export const MapCore = {
     }
 
     // 2. Add to current map instance if missing
-    if (!map.getSource(sourceId)) {
-      const regSource = MapRegistry.getSource(sourceId);
-      if (regSource) {
-        try {
-          map.addSource(sourceId, JSON.parse(JSON.stringify(regSource.definition)));
-        } catch (e) {
-          console.warn(`[MapCore] Failed to add source ${sourceId}`, e);
-        }
-      }
+    const regSource = MapRegistry.getSource(sourceId);
+    if (regSource) {
+      addSourceIfMissing(map, sourceId, regSource.definition);
     }
-    if (!map.getLayer(layerDef.id)) {
-      try {
-        map.addLayer(JSON.parse(JSON.stringify(layerDef)));
-      } catch (e) {
-        console.warn(`[MapCore] Failed to add layer ${layerDef.id}`, e);
-      }
-    }
+    addLayerIfMissing(map, layerDef);
   },
 
   /**
