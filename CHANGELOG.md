@@ -6,6 +6,13 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ### Behoben
 - **Popup schloss sich beim Wechsel zu einer anderen Station/einem anderen Flugzeug/Schiff, statt sofort das neue zu zeigen** (`src/lib/PopupManager.ts`, `src/features/nah/NahMapLayers.ts`, `src/features/tracking/TrackingMapLayers.ts`). Ursprünglich vermutete Ursache (fehlendes `e.preventDefault()` in `NahMapLayers`, analog zu einem bereits bestehenden Aufruf in `TrackingMapLayers`) war beim Nachbau als gemeinsame Mechanik nachweislich falsch — ein Live-Test mit dem vermeintlichen Fix reproduzierte den Bug weiterhin. Root Cause per MapLibre-GL-JS-Quellcode bestätigt: `Popup._onClose` prüft `e.defaultPrevented` gar nicht, `preventDefault()` hat also nie etwas bewirkt; das eigentliche Problem ist, dass `Popup.addTo()` bei einem bereits offenen Popup den `closeOnClick`-Listener zwar neu registriert, `Map.fire()` aber die Listener-Liste vor der Verteilung einmalig kopiert — der alte (persistente) Listener bleibt dadurch in der aktuellen Klick-Verteilung erhalten und schließt das gerade erst wieder geöffnete Popup trotzdem. Fix: das gemeinsame Popup nutzt jetzt `closeOnClick: false`, jede Seite schließt es bei einem Fehltreffer explizit selbst (`PopupManager.closePopup()`) — `TrackingMapLayers` tat das für seinen Fehltreffer-Fall schon, `NahMapLayers` ergänzt das jetzt. Live verifiziert (Playwright, `/nah` und `/tracking`): neues Popup erscheint jetzt sofort beim Wechsel zwischen Features, Klick auf freie Fläche schließt weiterhin korrekt.
+
+`npx tsc --noEmit && npm test` grün (83/83).
+
+## [Unreleased] - 2026-07-06 09:26
+
+### Behoben
+- **Klick auf eine Außer-Saison-NAH-Station warf einen TypeError, Popup blieb leer** (`src/features/nah/NahMapLayers.ts`, `findClickedStation`). MapLibre GL JS serialisiert nicht-primitive GeoJSON-Feature-Properties (Arrays) intern als JSON-String; `months_active` kam dadurch beim Klick als String `"[4,5,6]"` statt als echtes Array zurück, `.join(', ')` in der Saison-Zeile schlug fehl. `findClickedStation` parst `months_active` jetzt zurück in ein echtes Array. Bei der finalen Review der U5-Migration gefunden (Regressionstest deckt den MapLibre-Serialisierungs-Fall jetzt ab), live verifiziert (Playwright).
 - **NAH-Stationsmarker: Inline-Style-Verstoß gegen CI-Konvention behoben** (`src/features/nah/NahMapLayers.ts`). Der Status-Text im Stations-Popup nutzte `style="color:…"` — jetzt über die bestehenden CI-Badge-Klassen (`badge-green`/`badge-red`/`badge-gray`), die exakt auf die drei Status-Farben passen.
 
 ### Geändert
