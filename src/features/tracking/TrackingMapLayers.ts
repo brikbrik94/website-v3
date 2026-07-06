@@ -256,7 +256,7 @@ export class TrackingMapLayers {
 
         const coordinates = (feat.geometry as any).coordinates as [number, number];
         const html = PopupManager.buildHtml(layerId, props);
-        PopupManager.showFeaturePopup(this.map, e, coordinates, html);
+        PopupManager.showFeaturePopup(this.map, coordinates, html);
     }
 
     public updateData(sourceId: string, data: any) {
