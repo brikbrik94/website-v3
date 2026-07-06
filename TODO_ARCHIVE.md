@@ -44,6 +44,39 @@ noch nicht getrennt) und sind entsprechend gemischt.
   verifiziert (`/tracking`, `/routing`, `/nah`, inkl. Seitenwechsel-Test). `npx tsc --noEmit &&
   npm test` grün (86/86).
 
+### U7 + U1b: MapRegistry-Dreifach-Buchhaltung vereinfacht
+- [x] Recherche ergab: Die in U7 kritisierte Dreifach-Buchhaltung (`activeLayers` +
+  `overlayMetadata` + `MapRegistry`) existierte ausschließlich in `MapPage.toggleLayer`/
+  `reapplyActiveOverlays` — `OverlayLoader.ts` (bereits genutzt von `CoordsPage` für das
+  Wanderwege-Overlay) hatte dasselbe Grundproblem längst mit einer einzigen, schlankeren
+  `loaded`-Map gelöst. U1b („`MapPage.toggleLayer` in `OverlayLoader` generalisieren") und U7
+  stellten sich damit als derselbe Umbau heraus und wurden zusammengelegt. Umsetzung: (1) neuer
+  gemeinsamer Helper `src/lib/MapDefinitionOps.ts` (`addSourceIfMissing`/`addLayerIfMissing`,
+  Guard+Klon+Add), ersetzt die 4x duplizierte Stelle in `MapRegistry.restore`, `OverlayLoader.add`,
+  `MapCore.ensureGeoJsonLayer`; (2) `OverlayLoader` generalisiert: optionale Layer-Untermenge pro
+  `add()`/`remove()`-Aufruf, kumulative Buchhaltung über mehrere Aufrufe für dasselbe Overlay,
+  Style-JSON-Cache pro Overlay, `isStyleLoaded()`-Polling aus `MapPage.toggleLayer` übernommen
+  (behebt den früher gefundenen „Basemap At"-Bug jetzt auch zentral für alle `OverlayLoader`-
+  Nutzer); (3) `MapPage.toggleLayer` auf einen dünnen `OverlayLoader`-Wrapper reduziert —
+  `activeLayers`, `overlayMetadata`, `cachedStyles`, `styleFetchPromises`, `getStyle()`,
+  `reapplyActiveOverlays()` entfallen vollständig. `CoordsPage.ts`s bestehende Aufrufe (ohne
+  Layer-Untermenge) bleiben unverändert kompatibel — bewusst nicht Teil der Migration: die dabei
+  gefundene, harmlose No-op-Reapply-Redundanz in `CoordsPage`s `onRestore`-Callback (Overlay gilt
+  nach Basemap-Wechsel weiter als „loaded", der erneute `toggleHikingOverlay(true)`-Aufruf ist
+  faktisch wirkungslos; die eigentliche Wiederherstellung läuft über `MapRegistry.restore()`).
+  Design: `docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md`. Live im Browser
+  verifiziert (Playwright): `/karte` „Autobahnen"-Overlay — A1 an (Layer sichtbar, Source
+  gefetcht), A10 an (kumulativ, `style.json` nur einmal gefetcht statt pro Checkbox), A1 aus
+  (A10 bleibt sichtbar, Source bleibt bestehen), A10 aus (letzter Layer → Overlay fällt komplett
+  auf „NICHT GELADEN" zurück, Source+Sprite entfernt); Basemap-Wechsel auf „Basemap At" bei
+  aktivem Overlay — Checkbox-Zustand und Overlay überleben den Wechsel (Regression des früher
+  gefixten Bugs), keine Konsolenfehler; `/coords` Wanderwege-Toggle an/aus/an — Verhalten
+  unverändert (Style-JSON wird nach vollständigem Entfernen erneut gefetcht, wie schon vor der
+  Migration, da Coords ohne Layer-Untermenge arbeitet). Dabei einen vorbestehenden, unabhängigen
+  404 entdeckt (Wanderwege-Overlay-Sprite, serverseitig) — als eigener TODO.md-Punkt erfasst,
+  nicht mitgefixt (Code-Pfad gegen `master` verglichen, identisch). `npx tsc --noEmit && npm test`
+  grün (92/92).
+
 ## Unreleased (2026-07-05)
 
 ### Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt
