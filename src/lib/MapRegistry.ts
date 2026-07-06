@@ -1,4 +1,5 @@
 import maplibregl from 'maplibre-gl';
+import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
 
 interface ManagedSource {
   id: string;
@@ -80,32 +81,14 @@ export const MapRegistry = {
       );
     }
 
-    // 2. Add Sources - Use deep cloning to prevent MapLibre from corrupting our registry state
+    // 2. Add Sources
     for (const src of sources.values()) {
-      if (!map.getSource(src.id)) {
-        try {
-          // Deep clone the definition to ensure we always have a clean copy for future restorations
-          const definition = JSON.parse(JSON.stringify(src.definition));
-          map.addSource(src.id, definition);
-          console.debug(`[MapRegistry] Restored source: ${src.id}`);
-        } catch (e) {
-          console.warn(`[MapRegistry] Failed to restore source ${src.id}`, e);
-        }
-      }
+      addSourceIfMissing(map, src.id, src.definition);
     }
 
     // 3. Add Layers
     for (const layer of layers.values()) {
-      if (!map.getLayer(layer.id)) {
-        try {
-          // Deep clone the definition
-          const definition = JSON.parse(JSON.stringify(layer.definition));
-          map.addLayer(definition, layer.beforeId);
-          console.debug(`[MapRegistry] Restored layer: ${layer.id}`);
-        } catch (e) {
-          console.warn(`[MapRegistry] Failed to restore layer ${layer.id}`, e);
-        }
-      }
+      addLayerIfMissing(map, layer.definition, layer.beforeId);
     }
     
     console.log(`[MapRegistry] Restoration completed.`);
