@@ -121,6 +121,37 @@ export const NahMapLayers = {
   },
 
   /**
+   * Renders the NAH stations as a data-driven symbol layer (replaces the former
+   * per-station maplibregl.Marker approach).
+   */
+  setStations(map: maplibregl.Map, stations: NahStation[]) {
+    if (!map.getSource(STATIONS_SOURCE)) {
+      this.initLayers(map);
+    }
+
+    const features = stations.map((station) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [station.lon, station.lat] },
+      properties: { ...station, status: this.computeStationStatus(station) }
+    }));
+
+    const data = {
+      type: 'FeatureCollection',
+      features: features as any
+    };
+
+    const source = map.getSource(STATIONS_SOURCE) as maplibregl.GeoJSONSource;
+    if (source) {
+      source.setData(data as any);
+    }
+
+    MapRegistry.registerSource(STATIONS_SOURCE, {
+      type: 'geojson',
+      data: data
+    });
+  },
+
+  /**
    * Initializes the NAH-specific map layers and sources.
    */
   initLayers(map: maplibregl.Map) {
