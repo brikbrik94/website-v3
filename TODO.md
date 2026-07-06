@@ -9,11 +9,8 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 Kontext & Details: [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md](./docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md).
 U1 (OverlayLoader) + U2 (Restore-Pfade) sind seit v3.5.2 erledigt und seit 2026-07-03 visuell
 verifiziert (6-Punkte-Checkliste, siehe TODO_ARCHIVE.md) — dabei 2 Bugs gefunden und behoben,
-ebenfalls im Archiv dokumentiert.
-
-### Cleanup / Vereinheitlichung
-- [ ] U7 MapRegistry-Buchhaltung vereinfachen (Dreifach-Buchhaltung `activeLayers`/`overlayMetadata`/`MapRegistry`)
-- [ ] U1b `MapPage.toggleLayer` in `OverlayLoader` generalisieren (ID-Prefixing + Layer-Subset)
+ebenfalls im Archiv dokumentiert. U5 (NAH-Symbol-Layer), U6 (Hover-Cursor) und U7+U1b
+(MapRegistry-Buchhaltung, mit U1b zusammengelegt) sind ebenfalls erledigt, Details im Archiv.
 
 ### Kleinere Map-Bugs (Sammeltask)
 - [ ] `NahPageController.destroy()` ruft `PopupManager.closePopup()` nicht explizit auf (`src/pages/NahPage.ts`) — anders als `TrackingMapLayers.destroy()`. Kein aktueller Bug (der Kartenwechsel entfernt das Popup ohnehin via `map.remove()`), aber inkonsistent zur Schwesterseite; Symmetrie herstellen. Gefunden bei der finalen Review der gemeinsamen Klick-Popup-Mechanik (2026-07-06).
@@ -24,6 +21,13 @@ ebenfalls im Archiv dokumentiert.
   verwaltetes) Sprite (`https://tiles.oe5ith.at/assets/sprites/basemaps/sprite.json`) — MapLibre
   loggt beim Laden dieses Basemaps einen `AJAXError (404)`. Serverseitig (Tile-Server-Assets) oder
   im Style-JSON zu prüfen, nicht im Repo-Code; bei U3-Live-Verifikation (2026-07-03) entdeckt.
+- [ ] Overlay „Wanderwege" (`hiking`) referenziert in seinem Style-JSON ein Sprite
+  (`sprite: "https://tiles.oe5ith.at/assets/sprites/overlays/sprite"`), das serverseitig nicht
+  existiert — `sprite.json`/`sprite.png` liefern 404. Analog zum „At Plus"-Sprite-404 oben,
+  aber für einen anderen Pfad (`overlays/` statt `basemaps/`); ebenfalls serverseitig (Tile-Server-
+  Assets) oder im Style-JSON zu prüfen, nicht im Repo-Code. `MapCore.loadSprites`-Aufrufpfad selbst
+  unverändert/korrekt (gegen `master` verglichen). Entdeckt bei der Browser-Verifikation von
+  U7+U1b (`/coords` Wanderwege-Toggle, 2026-07-06).
 - [ ] Turn-by-Turn-Anzeige für A→B-Routen (Phase 2 aus
   [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md))
   blockiert auf einer neuen generischen Single-Disclosure-Komponente im `oe5ith-ci`-Submodul —

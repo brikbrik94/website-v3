@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-06 15:30
+
+### Geändert
+- **`MapRegistry`-Dreifach-Buchhaltung vereinfacht** (U7 + U1b, [docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md](./docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md)). `MapPage.toggleLayer` führte bisher eine eigene, parallele Buchhaltung (`activeLayers` + `overlayMetadata` + `cachedStyles` + `styleFetchPromises`) neben `MapRegistry` — Recherche ergab, dass das exakt dasselbe Problem ist, das `OverlayLoader` (genutzt von `CoordsPage`) bereits mit einer einzigen, schlankeren `loaded`-Map löst. `OverlayLoader` generalisiert: optionale Layer-Untermenge pro `add()`/`remove()`-Aufruf, kumulative Buchhaltung über mehrere Aufrufe für dasselbe Overlay, Style-JSON-Cache pro Overlay. `MapPage.toggleLayer` ist jetzt ein dünner Wrapper um `OverlayLoader`; `activeLayers`, `overlayMetadata`, `cachedStyles`, `styleFetchPromises`, `getStyle()`, `reapplyActiveOverlays()` entfallen vollständig. Neuer gemeinsamer Helper `src/lib/MapDefinitionOps.ts` (`addSourceIfMissing`/`addLayerIfMissing`) ersetzt die 4x duplizierte Guard+Klon+Add-Stelle in `MapRegistry.restore`, `OverlayLoader.add` und `MapCore.ensureGeoJsonLayer`. `CoordsPage.ts`s bestehende `OverlayLoader`-Nutzung (Wanderwege-Overlay, ohne Layer-Untermenge) bleibt unverändert kompatibel. Live verifiziert (Playwright, `/karte`: Mehrfach-Layer-Toggle innerhalb eines Overlays inkl. Source-Cleanup nur beim letzten Abschalten, Basemap-Wechsel-Regression gegen „Basemap At"; `/coords`: Wanderwege-Toggle unverändert).
+
+`npx tsc --noEmit && npm test` grün (92/92).
+
 ## [Unreleased] - 2026-07-06 14:13
 
 ### Geändert
