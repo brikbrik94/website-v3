@@ -3,15 +3,12 @@ import { MapCore } from '../../lib/MapCore';
 import { MAP_COLORS } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { PopupManager } from '../../lib/PopupManager';
+import { attachHoverCursor } from '../../lib/HoverCursor';
 
 export class TrackingMapLayers {
     private map: maplibregl.Map;
     private adsbVisible = true;
     private aisVisible = true;
-    private cursorListenersAttached = false;
-    private readonly hoverLayerIds = ['adsb-icons', 'ais-icons'];
-    private readonly onHoverEnter = () => { this.map.getCanvas().style.cursor = 'pointer'; };
-    private readonly onHoverLeave = () => { this.map.getCanvas().style.cursor = ''; };
 
     constructor(map: maplibregl.Map) {
         this.map = map;
@@ -214,15 +211,7 @@ export class TrackingMapLayers {
             }
         });
 
-        // Cursor-Listener nur einmal registrieren (ensureLayers läuft bei jedem
-        // Style-/Basemap-Wechsel erneut, sonst stapeln sich die Handler).
-        if (!this.cursorListenersAttached) {
-            this.cursorListenersAttached = true;
-            for (const id of this.hoverLayerIds) {
-                m.on('mouseenter', id, this.onHoverEnter);
-                m.on('mouseleave', id, this.onHoverLeave);
-            }
-        }
+        attachHoverCursor(m, ['adsb-icons', 'ais-icons', 'ais-dots-moving', 'ais-dots-static']);
     }
 
     public highlightItem(selectedId: string | number | null) {
@@ -267,13 +256,5 @@ export class TrackingMapLayers {
 
     public destroy() {
         PopupManager.closePopup();
-        // Cursor-Listener wieder abmelden (die Karte selbst wird von MapCore zerstört).
-        if (this.cursorListenersAttached) {
-            for (const id of this.hoverLayerIds) {
-                this.map.off('mouseenter', id, this.onHoverEnter);
-                this.map.off('mouseleave', id, this.onHoverLeave);
-            }
-            this.cursorListenersAttached = false;
-        }
     }
 }
