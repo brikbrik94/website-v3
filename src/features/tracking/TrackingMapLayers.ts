@@ -6,7 +6,6 @@ import { PopupManager } from '../../lib/PopupManager';
 
 export class TrackingMapLayers {
     private map: maplibregl.Map;
-    private popup: maplibregl.Popup;
     private adsbVisible = true;
     private aisVisible = true;
     private cursorListenersAttached = false;
@@ -16,7 +15,6 @@ export class TrackingMapLayers {
 
     constructor(map: maplibregl.Map) {
         this.map = map;
-        this.popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
     }
 
     public setVisibility(type: 'adsb' | 'ais', visible: boolean) {
@@ -240,7 +238,7 @@ export class TrackingMapLayers {
         const features = this.map.queryRenderedFeatures(e.point, { layers: ['adsb-icons', 'ais-icons', 'ais-dots-moving', 'ais-dots-static'] });
         
         if (features.length === 0) {
-            this.popup.remove();
+            PopupManager.closePopup();
             this.highlightItem(null);
             onSelect(null);
             return;
@@ -250,15 +248,15 @@ export class TrackingMapLayers {
         const props = feat.properties || {};
         const layerId = feat.layer.id;
         const isAdsb = layerId.includes('adsb');
-        
+
         const selectedId = isAdsb ? props.hex : props.mmsi;
-        
+
         this.highlightItem(selectedId);
         onSelect(selectedId);
 
+        const coordinates = (feat.geometry as any).coordinates as [number, number];
         const html = PopupManager.buildHtml(layerId, props);
-        this.popup.setLngLat(e.lngLat).setHTML(html).addTo(this.map);
-        e.preventDefault();
+        PopupManager.showFeaturePopup(this.map, e, coordinates, html);
     }
 
     public updateData(sourceId: string, data: any) {
@@ -268,7 +266,7 @@ export class TrackingMapLayers {
     }
 
     public destroy() {
-        this.popup.remove();
+        PopupManager.closePopup();
         // Cursor-Listener wieder abmelden (die Karte selbst wird von MapCore zerstört).
         if (this.cursorListenersAttached) {
             for (const id of this.hoverLayerIds) {
