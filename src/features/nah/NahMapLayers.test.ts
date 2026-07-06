@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NahMapLayers } from './NahMapLayers';
 import { NahStation } from '../../types/nah';
+import { MapRegistry } from '../../lib/MapRegistry';
 
 function makeStation(overrides: Partial<NahStation> = {}): NahStation {
   return {
@@ -72,5 +73,38 @@ describe('NahMapLayers.buildStationPopupHtml', () => {
   it('renders 24/7 hours', () => {
     const html = NahMapLayers.buildStationPopupHtml(makeStation({ op_type: '24/7' }));
     expect(html).toContain('24 Stunden / 7 Tage');
+  });
+});
+
+describe('NahMapLayers.setStations', () => {
+  function mockMapWithSource() {
+    const calls: unknown[] = [];
+    const map = {
+      getSource: () => ({ setData: (data: unknown) => calls.push(data) }),
+    } as any;
+    return { map, calls };
+  }
+
+  it('writes a FeatureCollection with a computed status property per station', () => {
+    const { map, calls } = mockMapWithSource();
+    const station = makeStation({ lon: 14.28, lat: 48.3 });
+
+    NahMapLayers.setStations(map, [station]);
+
+    expect(calls).toHaveLength(1);
+    const data = calls[0] as any;
+    expect(data.type).toBe('FeatureCollection');
+    expect(data.features).toHaveLength(1);
+    expect(data.features[0].geometry).toEqual({ type: 'Point', coordinates: [14.28, 48.3] });
+    expect(data.features[0].properties.status).toBe('active');
+    expect(data.features[0].properties.callsign).toBe(station.callsign);
+  });
+
+  it('registers the data in MapRegistry for restore-after-basemap-switch', () => {
+    const { map } = mockMapWithSource();
+    NahMapLayers.setStations(map, [makeStation()]);
+
+    const registered = MapRegistry.getSource('nah-stations');
+    expect(registered?.definition.data.features).toHaveLength(1);
   });
 });
