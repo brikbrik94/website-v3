@@ -5,6 +5,34 @@ Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./R
 Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
 noch nicht getrennt) und sind entsprechend gemischt.
 
+## Unreleased (2026-07-06)
+
+### U5: NAH DOM-Marker → Symbol-Layer migriert
+- [x] `NahMapLayers.ts` nutzte als letzte Karten-Funktion noch `maplibregl.Marker`-DOM-Elemente
+  statt eines MapLibre-Symbol-Layers, inkl. zweier Inline-`style="color:…"`-CI-Verstöße
+  (Icon-Farbe, Popup-Status-Text). Migriert auf einen daten-getriebenen `nah-stations`-Symbol-Layer:
+  Helikopter-Icon wird einmalig zur Laufzeit aus dem bestehenden `fa-helicopter`-Glyph als SDF-Icon
+  gerendert (kein neues externes Sprite-Asset nötig, da das Sprite-Set kein einfärbbares
+  Helikopter-Icon enthält), Status-Farbe läuft über eine `icon-color`-Match-Expression. Klick/Hover
+  folgen dem in `TrackingMapLayers` etablierten `queryRenderedFeatures`-Muster. Popup-Status-Text
+  nutzt jetzt die bestehenden CI-Badge-Klassen (`badge-green`/`badge-red`/`badge-gray`) statt
+  Inline-Style. Popup-Inhalt sonst fachlich unverändert. Design:
+  `docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md`. Live im Browser
+  verifiziert (Playwright/Chromium headless): Icon-Farben (grün/grau live in echten Daten
+  unterscheidbar), Popup-Inhalt für zwei reale Stationen in unterschiedlichen `op_type`-Zweigen
+  (daylight, fixed) korrekt inkl. Badge-Klassen statt Inline-Style, Klick auf Station löst
+  **nicht** die Incident-Berechnung aus (Sidebar bleibt unverändert), Klick auf freie Fläche löst
+  sie weiterhin aus (Sidebar füllt sich mit 5 nächsten Stationen), Hover zeigt Pointer-Cursor
+  (vs. „grab" abseits), Symbol-Layer + Popup-Funktion überleben einen Basemap-Wechsel
+  unverändert. Der Offseason/`badge-gray`-Zweig ist visuell als abweichende Icon-Farbe in den
+  Live-Daten bestätigt, aber nicht per Klick pixelgenau nachgestellt (Koordinaten-Targeting im
+  Headless-Run zu unpräzise für dieses eine Icon) — dieser Zweig ist durch die
+  `buildStationPopupHtml`-Unit-Tests (badge-gray, „AUSSER SAISON", Monate-Zeile) bereits
+  abgedeckt. Keine Konsolenfehler während der Verifikation (bis auf den vorbestehenden,
+  separat dokumentierten Sprite-404 von „At Plus"). Betreiber-spezifische Icons bewusst nicht
+  Teil dieser Migration, siehe neuer ROADMAP.md-Punkt. `npx tsc --noEmit && npm test` grün
+  (82/82).
+
 ## Unreleased (2026-07-05)
 
 ### Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt
