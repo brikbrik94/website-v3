@@ -128,4 +128,15 @@ describe('NahMapLayers.findClickedStation', () => {
     expect(hit?.station).toEqual(props);
     expect(hit?.coordinates).toEqual([14.1, 48.2]);
   });
+
+  it('parses months_active back into a real array when MapLibre round-tripped it as a JSON string', () => {
+    // MapLibre GL JS speichert nicht-primitive GeoJSON-Properties (Arrays) intern
+    // als JSON-String; queryRenderedFeatures liefert sie so zurück statt als Array.
+    const props = { name: 'Christophorus 3', callsign: 'C3', status: 'offseason', months_active: '[4,5,6]' };
+    const map = mockMap([{ properties: props, geometry: { type: 'Point', coordinates: [14.1, 48.2] } }]);
+
+    const hit = NahMapLayers.findClickedStation(map, [10, 10]);
+
+    expect(hit?.station.months_active).toEqual([4, 5, 6]);
+  });
 });

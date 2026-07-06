@@ -171,8 +171,18 @@ export const NahMapLayers = {
 
     const feat = features[0];
     const coordinates = (feat.geometry as any).coordinates as [number, number];
+    const rawProps = feat.properties as NahStation & { status: NahStationStatus };
+    // MapLibre GL JS JSON-stringifies non-primitive GeoJSON feature properties
+    // (z.B. Arrays) intern; months_active muss hier wieder in ein echtes Array
+    // geparst werden, damit buildStationPopupHtml eine echte NahStation sieht.
+    const station = {
+      ...rawProps,
+      months_active: typeof rawProps.months_active === 'string'
+        ? JSON.parse(rawProps.months_active)
+        : rawProps.months_active
+    };
     return {
-      station: feat.properties as NahStation & { status: NahStationStatus },
+      station,
       coordinates
     };
   },
