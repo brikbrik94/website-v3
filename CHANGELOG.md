@@ -14,9 +14,12 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   1:1 übernommen), `RoutingDetailsFormatter.formatSteps()` wandelt ORS' `segments[].steps[]`
   (kommt standardmäßig ohne Zusatzparameter mit) in Anzeige-Steps um (Icon + Instruction-Text +
   adaptiv formatierte Distanz). `RoutingSidebar.ts` rendert die Steps als eingeklapptes
-  `oe5ith-ci`-Disclosure-Panel „Wegbeschreibung" unterhalb der Zusammenfassungs-Karte. Live
-  verifiziert (Playwright, `/routing`, A→B-Route: Panel eingeklappt beim Laden, klappt auf/zu,
-  verschwindet beim Zurücksetzen).
+  `oe5ith-ci`-Disclosure-Panel „Wegbeschreibung" unterhalb der Zusammenfassungs-Karte.
+  `RoutingService.calculateRoute()` fragt jetzt `language: 'de'` an ORS an, damit die
+  Anweisungstexte auf Deutsch statt Englisch erscheinen (Follow-up aus dem finalen
+  Whole-Branch-Review). Live verifiziert (Playwright, `/routing`, A→B-Route: Panel eingeklappt
+  beim Laden, klappt auf/zu, verschwindet beim Zurücksetzen; deutsche Anweisungstexte gegen den
+  laufenden ORS-Server bestätigt).
 
 `npx tsc --noEmit && npm test` grün.
 
