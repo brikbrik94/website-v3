@@ -76,13 +76,26 @@ html, body {
    ═══════════════════════════════════════ */
 /* ═══════════════════════════════════════
    TOPBAR MOBILE OVERRIDES
-   Erlaubt spezifische Navigations-Links auf Mobile
+   Auf Mobile zeigt das "Mehr"-Dropdown alle 5 Nav-Ziele
+   statt nur Karte/Umrechner/Tracking; die zwei Desktop/
+   Tablet-Quicklinks (Routing/Luftrettung) werden dafür
+   ausgeblendet (CI-Standardverhalten für .topbar-nav-link
+   greift dann wieder unverändert).
    ═══════════════════════════════════════ */
+
+/* Desktop/Tablet (Default): die zusätzlichen Mobile-Einträge im Dropdown
+   ausblenden (dort bleiben Routing/Luftrettung als eigenständige Quicklinks) */
+.topbar-nav-dropdown-item--mobile-only {
+  display: none;
+}
+
 @media (max-width: 768px) {
-  .topbar-nav-link--mobile {
-    display: flex !important;
-    font-size: 0.75rem;
-    padding: 4px 8px;
+  .topbar-nav-dropdown {
+    display: block !important;
+  }
+
+  .topbar-nav-dropdown-item--mobile-only {
+    display: flex;
   }
 }
 
