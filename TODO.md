@@ -59,6 +59,20 @@ an bereits bestehenden Features.
   (Landing-Page nutzt `Topbar.ts` nicht, hat eine eigene Kopie derselben Nav-Struktur) —
   gefunden beim Mobile-Topbar-Nav-Fix (2026-07-07). Mögliches künftiges Refactoring: gemeinsame
   Komponente/Helper für beide Stellen, bisher aber nur als Fund dokumentiert, nicht umgesetzt.
+- [ ] **Nur 1 von 2 Quicklinks auf Tablet-Breite bei Kartenseiten sichtbar** (`/nah` u.a., 900px
+  Breite) — „Luftrettung" fehlt, „Routing" bleibt sichtbar. Root Cause: `Topbar.ts`s
+  `.topbar-right`-Container hat bei Kartenseiten (`hasMap`) einen `<button
+  class="controls-toggle mobile-only" id="controls-toggle-mobile">` als *erstes* Kind vor den
+  beiden `.topbar-nav-link`-Elementen; die Tablet-Regel `.topbar-nav-link:nth-child(n+3) {
+  display: none; }` (`oe5ith-ci/css/topbar.css:595`) zählt die Position unter *allen*
+  Geschwister-Elementen, nicht nur unter `.topbar-nav-link`s — der zusätzliche Button schiebt
+  „Luftrettung" dadurch auf Platz 3 und blendet es aus. Betrifft nur Kartenseiten (`Topbar.ts`),
+  nicht die Landing-Page (`main.ts` hat keinen solchen zusätzlichen Button). Vorbestehend,
+  unabhängig vom Mobile-Topbar-Nav-Fix — beim Live-Test dieses Fixes entdeckt (2026-07-07,
+  `.topbar-right`-Kartenseiten-Variante nie zuvor auf Tablet-Breite verifiziert). Fix vermutlich
+  in `Topbar.ts` (z.B. Reihenfolge der Elemente in `.topbar-right` ändern), nicht im
+  `oe5ith-ci`-Submodul — die CI-Regel selbst ist in Ordnung, das Problem ist die zusätzliche,
+  website-v3-eigene Markup-Reihenfolge.
 - [ ] **Versionierungspraxis überdenken:** Mehrere kleine Features am selben Tag führen aktuell zu
   mehreren separaten Minor-Bumps (z.B. mehrfach `3.x.0` am selben Tag) — wirkt übertrieben. Da die
   Versionierungsregel in `AGENT_INSTRUCTIONS.md` (Abschnitt 4, generisch/repo-übergreifend) steht,
