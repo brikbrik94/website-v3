@@ -95,7 +95,7 @@ const renderLandingPage = () => {
           <span class="page-footer-version">v${APP_VERSION}</span>
           <span class="page-footer-copy">© 2026 OE5ITH</span>
           <div class="page-footer-links">
-            <a href="#">Lizenzen & Impressum</a>
+            <a href="#" onclick="window.dispatchEvent(new CustomEvent('open-copyright'))">Lizenzen & Impressum</a>
             <a href="https://github.com/brikbrik94/website-v3" target="_blank">GitHub</a>
           </div>
         </footer>
