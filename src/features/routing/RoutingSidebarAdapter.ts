@@ -44,8 +44,8 @@ export class RoutingSidebarAdapter {
           if (this.abortSignal.aborted) return;
 
           if (route && route.features && route.features.length > 0) {
-            const { summary, extras } = route.features[0].properties;
-            updateRoutingSummary(summary.distance, summary.duration, 'Zusammenfassung', params.profile, extras);
+            const { summary, extras, segments } = route.features[0].properties;
+            updateRoutingSummary(summary.distance, summary.duration, 'Zusammenfassung', params.profile, extras, segments);
             RoutingMapLayers.updateSingleRoute(this.map, route.features[0]);
 
             const bounds = new maplibregl.LngLatBounds();
