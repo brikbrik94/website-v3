@@ -84,7 +84,10 @@ html, body {
    ═══════════════════════════════════════ */
 
 /* Desktop/Tablet (Default): die zusätzlichen Mobile-Einträge im Dropdown
-   ausblenden (dort bleiben Routing/Luftrettung als eigenständige Quicklinks) */
+   ausblenden (dort bleiben Routing/Luftrettung als eigenständige Quicklinks).
+   WICHTIG: muss vor der @media-Regel unten stehen — beide Selektoren haben
+   dieselbe Spezifität, bei gleicher Spezifität gewinnt die später im
+   Quelltext stehende Regel unabhängig vom Media-Query. */
 .topbar-nav-dropdown-item--mobile-only {
   display: none;
 }
