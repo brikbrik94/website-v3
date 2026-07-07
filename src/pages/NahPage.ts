@@ -5,6 +5,7 @@ import { Toast } from '../lib/Toast';
 import { initNahSidebar, updateNahServerStatus } from '../components/NahSidebar';
 import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { MapLegend } from '../lib/MapLegend';
+import { PopupManager } from '../lib/PopupManager';
 import { NahStationResult } from '../types/nah';
 import { InventoryService } from '../services/InventoryService';
 import { LayoutHelper } from '../lib/LayoutHelper';
@@ -99,8 +100,10 @@ export class NahPageController extends BasePageController {
 
   public destroy(): void {
     super.destroy();
-    
+
     // Data service is automatically stopped via AbortSignal in its constructor
+
+    PopupManager.closePopup();
 
     if (this.map) {
       NahMapLayers.clearTargetPin(this.map);

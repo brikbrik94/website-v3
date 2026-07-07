@@ -2,6 +2,20 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-07 07:04
+
+### Behoben
+- **„Kleinere Map-Bugs"-Sammeltask (TODO.md) abgearbeitet.** Fünf kleine, unabhängige Fixes:
+  - `NahPageController.destroy()` ruft jetzt `PopupManager.closePopup()` auf (`src/pages/NahPage.ts`), analog zu `TrackingMapLayers.destroy()`. Kein aktueller Bug (Kartenwechsel entfernt das Popup ohnehin via `map.remove()`), aber Symmetrie zur Schwesterseite hergestellt.
+  - Width-Desync in `TrackingMapLayers.ts` behoben: `ensureLayers` setzte für ADS-B-Tracks 5/3, `highlightItem` 4/1.5 — beim initialen Laden/Restore mit bereits gesetztem `selectedId` zeigte die Linie kurz 5/3, bis der nächste Klick auf 4/1.5 wechselte. Neue gemeinsame Konstante `ADSB_TRACK_WIDTH` an beiden Stellen referenziert (AIS-Track-Width war bereits konsistent, dort keine Änderung nötig).
+  - `NahMapLayers.updateFlightPaths`s hardcodierter `for (i<5)`-Reset-Loop (stale `selected`-Feature-State bei einer künftigen Änderung des Ergebnis-Limits) durch `map.removeFeatureState({source: sourceId})` ersetzt — löscht den State für alle Features der Source, unabhängig von der Anzahl.
+  - `TerrainManager.initTerrainManager()`s redundanter, un-awaited Direktaufruf von `applyTerrainInfrastructure()` entfernt — lief unkoordiniert parallel zum `isRestoring`-Lock in `MapCore.ts`s `restore()`, die diesen Aufruf ohnehin garantiert übernimmt (kalt via `style.load`, warm via `setTimeout`-Fallback). Race-Risiko ohne funktionalen Nutzen.
+  - Lange Warn-Badge-Texte (z.B. „Zufahrtsbeschränkungen auf der Strecke") wurden am rechten Sidebar-Rand abgeschnitten statt umzubrechen — Root Cause `.badge { white-space: nowrap }` im `oe5ith-ci`-Submodul, dort nicht gefixt (siehe `oe5ith-ci/ci-bug-reports.md`, Eintrag 2). Lokaler Override `.result-badges .badge { white-space: normal }` in `src/styles/sidebar.css`.
+
+  Live verifiziert (Playwright): `/nah` Kartenklick → Berechnung inkl. Feature-State-Reset ohne Fehler, Seitenwechsel (destroy) ohne Fehler; `/tracking` lädt fehlerfrei; `/routing` Badge-Umbruch visuell bestätigt (Testbadge bricht jetzt in 3 Zeilen um statt abgeschnitten zu werden).
+
+`npx tsc --noEmit && npm test` grün (92/92).
+
 ## [Unreleased] - 2026-07-06 15:30
 
 ### Geändert

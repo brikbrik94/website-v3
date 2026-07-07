@@ -13,10 +13,11 @@ ebenfalls im Archiv dokumentiert. U5 (NAH-Symbol-Layer), U6 (Hover-Cursor) und U
 (MapRegistry-Buchhaltung, mit U1b zusammengelegt) sind ebenfalls erledigt, Details im Archiv.
 
 ### Kleinere Map-Bugs (Sammeltask)
-- [ ] `NahPageController.destroy()` ruft `PopupManager.closePopup()` nicht explizit auf (`src/pages/NahPage.ts`) — anders als `TrackingMapLayers.destroy()`. Kein aktueller Bug (der Kartenwechsel entfernt das Popup ohnehin via `map.remove()`), aber inkonsistent zur Schwesterseite; Symmetrie herstellen. Gefunden bei der finalen Review der gemeinsamen Klick-Popup-Mechanik (2026-07-06).
-- [ ] Width-Desync `TrackingMapLayers.ts` — `ensureLayers` setzt Track-Breite 5/3, `highlightItem` 4/1.5
-- [ ] TerrainManager Double-Add-Race bei „warmem" Init prüfen (un-awaited `applyTerrainInfrastructure` + paralleler Restore)
-- [ ] NAH-Feature-State-Reset hardcoded `for (i<5)` (`NahMapLayers.ts:148`) → stale `selected` bei >5 Ergebnissen
+- [x] `NahPageController.destroy()` ruft jetzt `PopupManager.closePopup()` auf, analog zu `TrackingMapLayers.destroy()` (2026-07-07).
+- [x] Width-Desync `TrackingMapLayers.ts` behoben — gemeinsame `ADSB_TRACK_WIDTH`-Konstante für `ensureLayers`/`highlightItem` (2026-07-07).
+- [x] TerrainManager Double-Add-Race geprüft und behoben (2026-07-07) — redundanter un-awaited `applyTerrainInfrastructure()`-Direktaufruf aus `initTerrainManager()` entfernt; `MapCore.init()`s `restore()` deckt sowohl kalten (`style.load`) als auch warmen (`setTimeout`-Fallback) Fall bereits ab.
+- [x] NAH-Feature-State-Reset hardcoded `for (i<5)` (`NahMapLayers.ts`) behoben — `map.removeFeatureState({source})` statt fixer Index-Schleife (2026-07-07).
+- [x] Badge-Text-Umbruch behoben — lokaler CSS-Override (`.result-badges .badge { white-space: normal }`) in `src/styles/sidebar.css`; Root Cause liegt in `oe5ith-ci` (`css/badges.css` `.badge` erzwingt `white-space: nowrap`), dokumentiert in `oe5ith-ci/ci-bug-reports.md` (Eintrag 2, nicht im Submodul gefixt) (2026-07-07).
 - [ ] Basemap-Style „At Plus" liefert 404 für sein eigenes (natives, nicht von `MapCore.loadSprites`
   verwaltetes) Sprite (`https://tiles.oe5ith.at/assets/sprites/basemaps/sprite.json`) — MapLibre
   loggt beim Laden dieses Basemaps einen `AJAXError (404)`. Serverseitig (Tile-Server-Assets) oder
@@ -36,13 +37,6 @@ ebenfalls im Archiv dokumentiert. U5 (NAH-Symbol-Layer), U6 (Hover-Cursor) und U
   aktualisiert. Nicht mehr blockiert, aber noch nicht umgesetzt: `disclosure.css`-Pattern nach
   `src/styles/` übernehmen + `formatSteps(segments)`-Helper + Rendering in `RoutingSidebar.ts`
   ergänzen.
-- [ ] Lange Warn-Badge-Texte (z.B. „Zufahrtsbeschränkungen auf der Strecke") werden am rechten
-  Sidebar-Rand abgeschnitten statt umzubrechen — `.badge` (`oe5ith-ci/css/badges.css`) setzt
-  `white-space: nowrap`, `.result-badges` hat zwar `flex-wrap: wrap`, aber ein einzelnes zu
-  breites Flex-Item bricht dadurch nicht intern um. Vorbestehend (bereits vor
-  `docs/superpowers/plans/2026-07-05-routing-summary-layout.md` reproduzierbar, dort nur die
-  DOM-Position des Badges geändert, nicht das Overflow-Verhalten); entdeckt bei der
-  Browser-Verifikation dieses Plans (2026-07-05).
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
 
