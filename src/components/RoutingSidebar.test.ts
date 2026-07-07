@@ -14,6 +14,22 @@ function createFakeElement() {
   };
 }
 
+function findMatchingDivClose(html: string, openTagIndex: number): number {
+  let depth = 0;
+  const divRegex = /<div\b[^>]*>|<\/div>/g;
+  divRegex.lastIndex = openTagIndex;
+  let match: RegExpExecArray | null;
+  while ((match = divRegex.exec(html))) {
+    if (match[0].startsWith('</')) {
+      depth--;
+      if (depth === 0) return match.index + match[0].length;
+    } else {
+      depth++;
+    }
+  }
+  return -1;
+}
+
 describe('updateRoutingSummary badges', () => {
   let details: ReturnType<typeof createFakeElement>;
 
@@ -118,19 +134,18 @@ describe('updateRoutingSummary turn-by-turn disclosure', () => {
     expect(details.innerHTML).toContain('disclosure-item-icon');
   });
 
-  it('places the disclosure block outside the result-item, after the result-list', () => {
+  it('places the disclosure block at or after the point where .result-list closes, not nested inside it', () => {
     updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
       { distance: 100, duration: 10, steps: [{ distance: 100, duration: 10, type: 6, instruction: 'Continue straight', name: '', way_points: [0, 1] }] },
     ]);
 
-    const resultItemIdx = details.innerHTML.indexOf('result-item active no-click');
+    const resultListOpenIdx = details.innerHTML.indexOf('<div class="result-list">');
+    const resultListCloseIdx = findMatchingDivClose(details.innerHTML, resultListOpenIdx);
     const disclosureIdx = details.innerHTML.indexOf('<details class="disclosure">');
-    const divsBetween = (details.innerHTML.slice(resultItemIdx, disclosureIdx).match(/<\/div>/g) || []).length;
 
-    expect(resultItemIdx).toBeGreaterThanOrEqual(0);
-    expect(disclosureIdx).toBeGreaterThan(resultItemIdx);
-    // Mindestens 2 schließende </div> (.result-item + .result-list) vor der Disclosure
-    expect(divsBetween).toBeGreaterThanOrEqual(2);
+    expect(resultListOpenIdx).toBeGreaterThanOrEqual(0);
+    expect(resultListCloseIdx).toBeGreaterThan(0);
+    expect(disclosureIdx).toBeGreaterThanOrEqual(resultListCloseIdx);
   });
 });
 
