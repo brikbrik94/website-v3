@@ -74,6 +74,66 @@ describe('updateRoutingSummary badges', () => {
   });
 });
 
+describe('updateRoutingSummary turn-by-turn disclosure', () => {
+  let details: ReturnType<typeof createFakeElement>;
+
+  beforeEach(() => {
+    details = createFakeElement();
+    vi.stubGlobal('document', {
+      getElementById: (id: string) => (id === 'routing-details' ? details : null),
+    });
+  });
+
+  it('renders no disclosure block when segments is undefined', () => {
+    updateRoutingSummary(1000, 60);
+    expect(details.innerHTML).not.toContain('disclosure-header');
+  });
+
+  it('renders no disclosure block when segments has no steps', () => {
+    updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
+      { distance: 0, duration: 0, steps: [] },
+    ]);
+    expect(details.innerHTML).not.toContain('disclosure-header');
+  });
+
+  it('renders the Wegbeschreibung disclosure collapsed by default with one item per step', () => {
+    updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
+      {
+        distance: 1176.2,
+        duration: 144.3,
+        steps: [
+          { distance: 176.2, duration: 63.4, type: 11, instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
+          { distance: 1000, duration: 80.9, type: 6, instruction: 'Continue straight onto Hauptstraße', name: 'Hauptstraße', way_points: [10, 20] },
+        ],
+      },
+    ]);
+
+    expect(details.innerHTML).toContain('disclosure-header');
+    expect(details.innerHTML).not.toContain('<details class="disclosure" open>');
+    expect(details.innerHTML).toContain('2 Schritte');
+    expect(details.innerHTML).toContain('Head south on Hauptplatz');
+    expect(details.innerHTML).toContain('176 m');
+    expect(details.innerHTML).toContain('Continue straight onto Hauptstraße');
+    expect(details.innerHTML).toContain('1.0 km');
+    expect(details.innerHTML).toContain('disclosure-item-icon');
+  });
+
+  it('places the disclosure block outside the result-item, after the result-list', () => {
+    updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
+      { distance: 100, duration: 10, steps: [{ distance: 100, duration: 10, type: 6, instruction: 'Continue straight', name: '', way_points: [0, 1] }] },
+    ]);
+
+    const resultItemIdx = details.innerHTML.indexOf('result-item active no-click');
+    const disclosureIdx = details.innerHTML.indexOf('<details class="disclosure">');
+    const divsBetween = (details.innerHTML.slice(resultItemIdx, disclosureIdx).match(/<\/div>/g) || []).length;
+
+    expect(resultItemIdx).toBeGreaterThanOrEqual(0);
+    expect(disclosureIdx).toBeGreaterThan(resultItemIdx);
+    // Mindestens 2 schließende </div> (.result-item + .result-list) vor der Disclosure
+    expect(divsBetween).toBeGreaterThanOrEqual(2);
+  });
+});
+
 describe('renderStationResults empty state', () => {
   let results: ReturnType<typeof createFakeElement>;
   let status: ReturnType<typeof createFakeElement>;
