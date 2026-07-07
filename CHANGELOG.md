@@ -2,44 +2,7 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-07 13:19
-
-### Behoben
-- **Mobile Topbar: Karte/Umrechner/Tracking waren nicht erreichbar** (`src/components/Topbar.ts`,
-  `src/main.ts`, Design:
-  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md)).
-  Die CI-Basis blendet `.topbar-nav-dropdown` auf Mobile (≤768px) komplett aus; ein bestehender
-  website-v3-Override zeigte zwar die zwei Quicklinks (Routing/Luftrettung) wieder an, aber
-  das „Mehr"-Dropdown blieb unsichtbar — die drei darin enthaltenen Seiten waren über die
-  Topbar auf Mobile nicht erreichbar. Alle 5 Ziele erscheinen jetzt auf Mobile im „Mehr"-Dropdown
-  (Routing, Luftrettung, Karte, Umrechner, Tracking); Desktop/Tablet unverändert (2 Quicklinks +
-  3er-Dropdown). Betraf zwei Stellen (`Topbar.ts` für Kartenseiten, `main.ts` für die
-  Landing-Page — beide haben eine eigene, unabhängige Kopie derselben Nav-Struktur, als
-  TODO.md-Punkt dokumentiert). Live verifiziert (Playwright, Mobile/Tablet/Desktop-Viewports auf
-  `/` und `/nah`).
-
-`npx tsc --noEmit && npm test` grün.
-
-## [Unreleased] - 2026-07-07 12:39
-
-### Geändert
-- **Copyright-Modal überarbeitet und erweitert** (`src/lib/GlobalModals.ts`, Design:
-  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./docs/superpowers/specs/2026-07-07-copyright-modal-design.md)).
-  Sechs statt drei Abschnitte: „Karten & Daten" (Leaflet-Angabe entfernt — keine
-  Projekt-Abhängigkeit), neuer Abschnitt „Bibliotheken" mit den tatsächlichen
-  Runtime-Dependencies (MapLibre GL JS, proj4, mgrs, open-location-code, pmtiles, je mit
-  korrekter Lizenz), „Design & Ressourcen" (präzisierte FontAwesome-Lizenzangabe, Versionslabel
-  auf „Font Awesome 7" korrigiert), neue Abschnitte „Kontakt & Impressum" (Name + Mail) und
-  „Datenschutz" (faktenbasiert: kein Tracking/Cookies/Analytics). Zusätzlich der bisher tote
-  Landing-Page-Footer-Link „Lizenzen & Impressum" repariert (`src/main.ts`) — öffnet jetzt das
-  Modal über das bestehende `open-copyright`-Event, analog zum Sidebar-Footer-Muster. Live
-  verifiziert (Playwright): Modal öffnet sich sowohl von der Landing-Page als auch vom
-  Sidebar-Footer (`/nah`), alle sechs Abschnitte korrekt, `mailto:`-Link korrekt gesetzt, keine
-  Konsolenfehler.
-
-`npx tsc --noEmit && npm test` grün (106/106).
-
-## [Unreleased] - 2026-07-07 10:11
+## [3.7.0] - 2026-07-07 13:19
 
 ### Hinzugefügt
 - **Turn-by-Turn-Wegbeschreibung für A→B-Routen** (Phase 2 von
@@ -58,11 +21,37 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   beim Laden, klappt auf/zu, verschwindet beim Zurücksetzen; deutsche Anweisungstexte gegen den
   laufenden ORS-Server bestätigt).
 
-`npx tsc --noEmit && npm test` grün.
-
-## [Unreleased] - 2026-07-07 07:04
+### Geändert
+- **Copyright-Modal überarbeitet und erweitert** (`src/lib/GlobalModals.ts`, Design:
+  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./docs/superpowers/specs/2026-07-07-copyright-modal-design.md)).
+  Sechs statt drei Abschnitte: „Karten & Daten" (Leaflet-Angabe entfernt — keine
+  Projekt-Abhängigkeit), neuer Abschnitt „Bibliotheken" mit den tatsächlichen
+  Runtime-Dependencies (MapLibre GL JS, proj4, mgrs, open-location-code, pmtiles, je mit
+  korrekter Lizenz), „Design & Ressourcen" (präzisierte FontAwesome-Lizenzangabe, Versionslabel
+  auf „Font Awesome 7" korrigiert), neue Abschnitte „Kontakt & Impressum" (Name + Mail) und
+  „Datenschutz" (faktenbasiert: kein Tracking/Cookies/Analytics). Zusätzlich der bisher tote
+  Landing-Page-Footer-Link „Lizenzen & Impressum" repariert (`src/main.ts`) — öffnet jetzt das
+  Modal über das bestehende `open-copyright`-Event, analog zum Sidebar-Footer-Muster. Live
+  verifiziert (Playwright): Modal öffnet sich sowohl von der Landing-Page als auch vom
+  Sidebar-Footer (`/nah`), alle sechs Abschnitte korrekt, `mailto:`-Link korrekt gesetzt, keine
+  Konsolenfehler.
+- **`MapRegistry`-Dreifach-Buchhaltung vereinfacht** (U7 + U1b, [docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md](./docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md)). `MapPage.toggleLayer` führte bisher eine eigene, parallele Buchhaltung (`activeLayers` + `overlayMetadata` + `cachedStyles` + `styleFetchPromises`) neben `MapRegistry` — Recherche ergab, dass das exakt dasselbe Problem ist, das `OverlayLoader` (genutzt von `CoordsPage`) bereits mit einer einzigen, schlankeren `loaded`-Map löst. `OverlayLoader` generalisiert: optionale Layer-Untermenge pro `add()`/`remove()`-Aufruf, kumulative Buchhaltung über mehrere Aufrufe für dasselbe Overlay, Style-JSON-Cache pro Overlay. `MapPage.toggleLayer` ist jetzt ein dünner Wrapper um `OverlayLoader`; `activeLayers`, `overlayMetadata`, `cachedStyles`, `styleFetchPromises`, `getStyle()`, `reapplyActiveOverlays()` entfallen vollständig. Neuer gemeinsamer Helper `src/lib/MapDefinitionOps.ts` (`addSourceIfMissing`/`addLayerIfMissing`) ersetzt die 4x duplizierte Guard+Klon+Add-Stelle in `MapRegistry.restore`, `OverlayLoader.add` und `MapCore.ensureGeoJsonLayer`. `CoordsPage.ts`s bestehende `OverlayLoader`-Nutzung (Wanderwege-Overlay, ohne Layer-Untermenge) bleibt unverändert kompatibel. Live verifiziert (Playwright, `/karte`: Mehrfach-Layer-Toggle innerhalb eines Overlays inkl. Source-Cleanup nur beim letzten Abschalten, Basemap-Wechsel-Regression gegen „Basemap At"; `/coords`: Wanderwege-Toggle unverändert).
+- **Hover-Cursor-Logik vereinheitlicht** (U6, [docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md](./docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md)). Drei unabhängige, duplizierte Implementierungen (`TrackingMapLayers`, `RoutingPage`, `NahMapLayers`) durch einen gemeinsamen Helper `attachHoverCursor` (`src/lib/HoverCursor.ts`) ersetzt. Dabei zwei Bugs behoben: `ais-dots-moving`/`ais-dots-static` (Tracking) waren klickbar, zeigten aber keinen Hover-Cursor; `RoutingPage` meldete seine Hover-Listener nie in `destroy()` ab (Leak-Risiko bei Seitenwechsel). Beide verschwinden automatisch durch die vereinheitlichte Implementierung. In `CLAUDE.md` dokumentiert für künftige neue Seiten. Live verifiziert (Playwright, `/tracking`, `/routing`, `/nah`, inkl. Seitenwechsel-Test).
+- **NAH-Stationsmarker von DOM-Markern auf einen MapLibre-Symbol-Layer migriert** (U5, [docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)). NAH war die letzte Karten-Funktion mit `maplibregl.Marker`-DOM-Elementen statt eines Symbol-Layers (Tracking/Coords/Routing nutzen das Muster schon). Das Helikopter-Icon wird jetzt einmalig zur Laufzeit aus dem bestehenden `fa-helicopter`-Glyph als SDF-Icon gerendert (kein neues externes Sprite nötig), Klick/Hover folgen dem in `TrackingMapLayers` etablierten `queryRenderedFeatures`-Muster. Popup-Inhalt bleibt fachlich unverändert. Betreiber-spezifische Icons (bereits im Sprite-Set vorhanden) sind bewusst nicht Teil dieser Migration — siehe neuer ROADMAP.md-Punkt.
 
 ### Behoben
+- **Mobile Topbar: Karte/Umrechner/Tracking waren nicht erreichbar** (`src/components/Topbar.ts`,
+  `src/main.ts`, Design:
+  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md)).
+  Die CI-Basis blendet `.topbar-nav-dropdown` auf Mobile (≤768px) komplett aus; ein bestehender
+  website-v3-Override zeigte zwar die zwei Quicklinks (Routing/Luftrettung) wieder an, aber
+  das „Mehr"-Dropdown blieb unsichtbar — die drei darin enthaltenen Seiten waren über die
+  Topbar auf Mobile nicht erreichbar. Alle 5 Ziele erscheinen jetzt auf Mobile im „Mehr"-Dropdown
+  (Routing, Luftrettung, Karte, Umrechner, Tracking); Desktop/Tablet unverändert (2 Quicklinks +
+  3er-Dropdown). Betraf zwei Stellen (`Topbar.ts` für Kartenseiten, `main.ts` für die
+  Landing-Page — beide haben eine eigene, unabhängige Kopie derselben Nav-Struktur, als
+  TODO.md-Punkt dokumentiert). Live verifiziert (Playwright, Mobile/Tablet/Desktop-Viewports auf
+  `/` und `/nah`).
 - **„Kleinere Map-Bugs"-Sammeltask (TODO.md) abgearbeitet.** Fünf kleine, unabhängige Fixes:
   - `NahPageController.destroy()` ruft jetzt `PopupManager.closePopup()` auf (`src/pages/NahPage.ts`), analog zu `TrackingMapLayers.destroy()`. Kein aktueller Bug (Kartenwechsel entfernt das Popup ohnehin via `map.remove()`), aber Symmetrie zur Schwesterseite hergestellt.
   - Width-Desync in `TrackingMapLayers.ts` behoben: `ensureLayers` setzte für ADS-B-Tracks 5/3, `highlightItem` 4/1.5 — beim initialen Laden/Restore mit bereits gesetztem `selectedId` zeigte die Linie kurz 5/3, bis der nächste Klick auf 4/1.5 wechselte. Neue gemeinsame Konstante `ADSB_TRACK_WIDTH` an beiden Stellen referenziert (AIS-Track-Width war bereits konsistent, dort keine Änderung nötig).
@@ -71,40 +60,11 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   - Lange Warn-Badge-Texte (z.B. „Zufahrtsbeschränkungen auf der Strecke") wurden am rechten Sidebar-Rand abgeschnitten statt umzubrechen — Root Cause `.badge { white-space: nowrap }` im `oe5ith-ci`-Submodul, dort nicht gefixt (siehe `oe5ith-ci/ci-bug-reports.md`, Eintrag 2). Lokaler Override `.result-badges .badge { white-space: normal }` in `src/styles/sidebar.css`.
 
   Live verifiziert (Playwright): `/nah` Kartenklick → Berechnung inkl. Feature-State-Reset ohne Fehler, Seitenwechsel (destroy) ohne Fehler; `/tracking` lädt fehlerfrei; `/routing` Badge-Umbruch visuell bestätigt (Testbadge bricht jetzt in 3 Zeilen um statt abgeschnitten zu werden).
-
-`npx tsc --noEmit && npm test` grün (92/92).
-
-## [Unreleased] - 2026-07-06 15:30
-
-### Geändert
-- **`MapRegistry`-Dreifach-Buchhaltung vereinfacht** (U7 + U1b, [docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md](./docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md)). `MapPage.toggleLayer` führte bisher eine eigene, parallele Buchhaltung (`activeLayers` + `overlayMetadata` + `cachedStyles` + `styleFetchPromises`) neben `MapRegistry` — Recherche ergab, dass das exakt dasselbe Problem ist, das `OverlayLoader` (genutzt von `CoordsPage`) bereits mit einer einzigen, schlankeren `loaded`-Map löst. `OverlayLoader` generalisiert: optionale Layer-Untermenge pro `add()`/`remove()`-Aufruf, kumulative Buchhaltung über mehrere Aufrufe für dasselbe Overlay, Style-JSON-Cache pro Overlay. `MapPage.toggleLayer` ist jetzt ein dünner Wrapper um `OverlayLoader`; `activeLayers`, `overlayMetadata`, `cachedStyles`, `styleFetchPromises`, `getStyle()`, `reapplyActiveOverlays()` entfallen vollständig. Neuer gemeinsamer Helper `src/lib/MapDefinitionOps.ts` (`addSourceIfMissing`/`addLayerIfMissing`) ersetzt die 4x duplizierte Guard+Klon+Add-Stelle in `MapRegistry.restore`, `OverlayLoader.add` und `MapCore.ensureGeoJsonLayer`. `CoordsPage.ts`s bestehende `OverlayLoader`-Nutzung (Wanderwege-Overlay, ohne Layer-Untermenge) bleibt unverändert kompatibel. Live verifiziert (Playwright, `/karte`: Mehrfach-Layer-Toggle innerhalb eines Overlays inkl. Source-Cleanup nur beim letzten Abschalten, Basemap-Wechsel-Regression gegen „Basemap At"; `/coords`: Wanderwege-Toggle unverändert).
-
-`npx tsc --noEmit && npm test` grün (92/92).
-
-## [Unreleased] - 2026-07-06 14:13
-
-### Geändert
-- **Hover-Cursor-Logik vereinheitlicht** (U6, [docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md](./docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md)). Drei unabhängige, duplizierte Implementierungen (`TrackingMapLayers`, `RoutingPage`, `NahMapLayers`) durch einen gemeinsamen Helper `attachHoverCursor` (`src/lib/HoverCursor.ts`) ersetzt. Dabei zwei Bugs behoben: `ais-dots-moving`/`ais-dots-static` (Tracking) waren klickbar, zeigten aber keinen Hover-Cursor; `RoutingPage` meldete seine Hover-Listener nie in `destroy()` ab (Leak-Risiko bei Seitenwechsel). Beide verschwinden automatisch durch die vereinheitlichte Implementierung. In `CLAUDE.md` dokumentiert für künftige neue Seiten. Live verifiziert (Playwright, `/tracking`, `/routing`, `/nah`, inkl. Seitenwechsel-Test).
-
-`npx tsc --noEmit && npm test` grün (86/86).
-
-## [Unreleased] - 2026-07-06 10:41
-
-### Behoben
 - **Popup schloss sich beim Wechsel zu einer anderen Station/einem anderen Flugzeug/Schiff, statt sofort das neue zu zeigen** (`src/lib/PopupManager.ts`, `src/features/nah/NahMapLayers.ts`, `src/features/tracking/TrackingMapLayers.ts`). Ursprünglich vermutete Ursache (fehlendes `e.preventDefault()` in `NahMapLayers`, analog zu einem bereits bestehenden Aufruf in `TrackingMapLayers`) war beim Nachbau als gemeinsame Mechanik nachweislich falsch — ein Live-Test mit dem vermeintlichen Fix reproduzierte den Bug weiterhin. Root Cause per MapLibre-GL-JS-Quellcode bestätigt: `Popup._onClose` prüft `e.defaultPrevented` gar nicht, `preventDefault()` hat also nie etwas bewirkt; das eigentliche Problem ist, dass `Popup.addTo()` bei einem bereits offenen Popup den `closeOnClick`-Listener zwar neu registriert, `Map.fire()` aber die Listener-Liste vor der Verteilung einmalig kopiert — der alte (persistente) Listener bleibt dadurch in der aktuellen Klick-Verteilung erhalten und schließt das gerade erst wieder geöffnete Popup trotzdem. Fix: das gemeinsame Popup nutzt jetzt `closeOnClick: false`, jede Seite schließt es bei einem Fehltreffer explizit selbst (`PopupManager.closePopup()`) — `TrackingMapLayers` tat das für seinen Fehltreffer-Fall schon, `NahMapLayers` ergänzt das jetzt. Live verifiziert (Playwright, `/nah` und `/tracking`): neues Popup erscheint jetzt sofort beim Wechsel zwischen Features, Klick auf freie Fläche schließt weiterhin korrekt.
-
-`npx tsc --noEmit && npm test` grün (83/83).
-
-## [Unreleased] - 2026-07-06 09:26
-
-### Behoben
 - **Klick auf eine Außer-Saison-NAH-Station warf einen TypeError, Popup blieb leer** (`src/features/nah/NahMapLayers.ts`, `findClickedStation`). MapLibre GL JS serialisiert nicht-primitive GeoJSON-Feature-Properties (Arrays) intern als JSON-String; `months_active` kam dadurch beim Klick als String `"[4,5,6]"` statt als echtes Array zurück, `.join(', ')` in der Saison-Zeile schlug fehl. `findClickedStation` parst `months_active` jetzt zurück in ein echtes Array. Bei der finalen Review der U5-Migration gefunden (Regressionstest deckt den MapLibre-Serialisierungs-Fall jetzt ab), live verifiziert (Playwright).
 - **NAH-Stationsmarker: Inline-Style-Verstoß gegen CI-Konvention behoben** (`src/features/nah/NahMapLayers.ts`). Der Status-Text im Stations-Popup nutzte `style="color:…"` — jetzt über die bestehenden CI-Badge-Klassen (`badge-green`/`badge-red`/`badge-gray`), die exakt auf die drei Status-Farben passen.
 
-### Geändert
-- **NAH-Stationsmarker von DOM-Markern auf einen MapLibre-Symbol-Layer migriert** (U5, [docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)). NAH war die letzte Karten-Funktion mit `maplibregl.Marker`-DOM-Elementen statt eines Symbol-Layers (Tracking/Coords/Routing nutzen das Muster schon). Das Helikopter-Icon wird jetzt einmalig zur Laufzeit aus dem bestehenden `fa-helicopter`-Glyph als SDF-Icon gerendert (kein neues externes Sprite nötig), Klick/Hover folgen dem in `TrackingMapLayers` etablierten `queryRenderedFeatures`-Muster. Popup-Inhalt bleibt fachlich unverändert. Betreiber-spezifische Icons (bereits im Sprite-Set vorhanden) sind bewusst nicht Teil dieser Migration — siehe neuer ROADMAP.md-Punkt.
-
-`npx tsc --noEmit && npm test` grün (83/83).
+`npx tsc --noEmit && npm test` grün (106/106) für den gesamten Umfang dieses Releases.
 
 ## [3.6.1] - 2026-07-05 16:14
 
