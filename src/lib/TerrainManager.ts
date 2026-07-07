@@ -25,8 +25,10 @@ export function initTerrainManager(map: Map, elevationUrl: string) {
     terrainEnabled = false;
     hillshadeEnabled = false;
     contoursEnabled = false;
-    // Sofort anwenden falls bereits aktiviert
-    applyTerrainInfrastructure();
+    // Kein Direktaufruf von applyTerrainInfrastructure() hier: MapCore.init()s restore()
+    // ruft sie ohnehin garantiert auf (kalt via 'style.load', warm via setTimeout-Fallback) —
+    // ein zusätzlicher, un-awaited Aufruf hier würde nur unkoordiniert parallel dazu laufen
+    // (am isRestoring-Lock vorbei) und wäre ein Race-Risiko ohne Nutzen.
 }
 
 /**

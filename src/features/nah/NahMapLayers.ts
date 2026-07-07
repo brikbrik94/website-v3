@@ -277,10 +277,8 @@ export const NahMapLayers = {
 
     const [lng, lat] = incidentCoord;
 
-    // Reset feature states
-    for (let i = 0; i < 5; i++) {
-      map.setFeatureState({ source: sourceId, id: i }, { selected: false });
-    }
+    // Reset feature states für alle Features der Source (unabhängig von der Ergebnisanzahl)
+    map.removeFeatureState({ source: sourceId });
 
     const lineFeatures = results.map((s, index) => ({
       type: 'Feature',

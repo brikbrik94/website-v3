@@ -5,6 +5,10 @@ import { MapRegistry } from '../../lib/MapRegistry';
 import { PopupManager } from '../../lib/PopupManager';
 import { attachHoverCursor } from '../../lib/HoverCursor';
 
+// Track-Breite ADS-B (Auswahl/Standard) — ein Ort, damit ensureLayers (Initial-/Restore-Paint)
+// und highlightItem (Auswahl-Update) nie wieder auseinanderlaufen.
+const ADSB_TRACK_WIDTH = { selected: 4, unselected: 1.5 };
+
 export class TrackingMapLayers {
     private map: maplibregl.Map;
     private adsbVisible = true;
@@ -65,7 +69,7 @@ export class TrackingMapLayers {
                     15000, MAP_COLORS.alt15k,
                     35000, MAP_COLORS.alt35k
                 ], 
-                'line-width': ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], 5, 3],
+                'line-width': ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], ADSB_TRACK_WIDTH.selected, ADSB_TRACK_WIDTH.unselected],
                 'line-opacity': 0.8 
             },
             layout: { 
@@ -216,7 +220,7 @@ export class TrackingMapLayers {
 
     public highlightItem(selectedId: string | number | null) {
         if (this.map.getLayer('adsb-tracks')) {
-            this.map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], 4, 1.5]);
+            this.map.setPaintProperty('adsb-tracks', 'line-width', ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], ADSB_TRACK_WIDTH.selected, ADSB_TRACK_WIDTH.unselected]);
         }
         if (this.map.getLayer('ais-track-lines')) {
             this.map.setPaintProperty('ais-track-lines', 'line-width', ['case', ['==', ['get', 'mmsi'], typeof selectedId === 'number' ? selectedId : Number(selectedId) || -1], 4, 2]);
