@@ -1,4 +1,5 @@
-import { RouteExtras } from '../../types/common';
+import { RouteExtras, RouteSegment } from '../../types/common';
+import { getManeuverIconMarkup } from '../../lib/ManeuverIcons';
 
 export interface ProfileBadge {
   icon: string;
@@ -37,4 +38,28 @@ export function getRouteWarnings(extras: RouteExtras | undefined): RouteWarning[
   }
 
   return warnings;
+}
+
+export interface FormattedStep {
+  iconMarkup: string;
+  text: string;
+  meta: string;
+}
+
+function formatStepDistance(meters: number): string {
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`;
+  }
+  return `${(meters / 1000).toFixed(1)} km`;
+}
+
+export function formatSteps(segments: RouteSegment[] | undefined): FormattedStep[] {
+  if (!segments) return [];
+  return segments.flatMap((segment) =>
+    segment.steps.map((step) => ({
+      iconMarkup: getManeuverIconMarkup(step.type),
+      text: step.instruction,
+      meta: formatStepDistance(step.distance),
+    }))
+  );
 }
