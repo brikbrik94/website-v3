@@ -18,6 +18,21 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.7.0] - 2026-07-07</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Routing:</strong> Bei berechneten A→B-Routen gibt es jetzt eine ausklappbare Wegbeschreibung mit Schritt-für-Schritt-Anweisungen auf Deutsch inklusive Abbiege-Symbolen.</li>
+            <li><strong>Rechtliches:</strong> Das Lizenz-/Copyright-Fenster wurde erweitert um Kontaktdaten/Impressum, Datenschutzhinweise und eine vollständige Auflistung der verwendeten Bibliotheken.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Mobile Navigation:</strong> Auf kleinen Bildschirmen sind jetzt wieder alle 5 Hauptbereiche (Routing, Luftrettung, Karte, Umrechner, Tracking) über die obere Leiste erreichbar.</li>
+            <li><strong>Luftrettung (NAH):</strong> Beim Wechsel auf eine andere Station/ein anderes Flugzeug erscheint das neue Popup jetzt sofort, statt sich erst zu schließen.</li>
+            <li><strong>Luftrettung (NAH):</strong> Klick auf eine außerhalb der Saison inaktive Station führte zu einem Fehler statt einer korrekten Anzeige — behoben.</li>
+            <li><strong>Karte:</strong> Lange Warnhinweis-Texte in der Seitenleiste (z.B. Zufahrtsbeschränkungen) werden jetzt korrekt umgebrochen statt abgeschnitten.</li>
+            <li><strong>Karte:</strong> Diverse kleinere Darstellungs- und Stabilitätskorrekturen (Track-Linienbreite, Terrain-Laden, Hover-Cursor bei Schiffs-/Flugzeugsymbolen).</li>
+          </ul>
+
           <h2>[3.6.1] - 2026-07-05</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>
