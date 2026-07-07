@@ -31,6 +31,14 @@ ebenfalls im Archiv dokumentiert. U5 (NAH-Symbol-Layer), U6 (Hover-Cursor) und U
   U7+U1b (`/coords` Wanderwege-Toggle, 2026-07-06).
 - [x] Turn-by-Turn-Anzeige für A→B-Routen (Phase 2) umgesetzt (2026-07-07) — siehe
   [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./docs/superpowers/specs/2026-07-07-turn-by-turn-design.md).
+- [ ] **NAH: Mehrfach-Stationen (z.B. C14/C99, Martin 1/10) — Marker-Stacking-Reihenfolge
+  überdenken.** Bei Stützpunkten mit mehreren Hubschraubern an (nahezu) derselben Position wird
+  aktuell strikt nach Daten-/Renderreihenfolge gestapelt: liegt eine Außer-Dienst-Station (rot)
+  datenseitig über einer aktiven 24/7-Station (grün), verdeckt der rote Marker den grünen —
+  unabhängig vom tatsächlichen Dienststatus. Ziel: Stacking-Priorität am Status ausrichten
+  (aktive/24-7-Station immer sichtbar/oben) statt an Datenreihenfolge. Betrifft
+  `NahMapLayers.ts` (Symbol-Layer aus der U5-Migration). Aus `docs/proposals/improvments.txt`
+  übernommen (2026-07-07).
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
 
