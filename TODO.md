@@ -39,9 +39,18 @@ Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-T
 Aus `docs/proposals/todo.txt` übernommen (2026-07-05) — kleinere, unabhängige UI-/Text-Anpassungen
 an bereits bestehenden Features.
 
-- [ ] **Credits/Copyright-Modal überarbeiten und erweitern** (`copyright-modal`,
-  `src/lib/GlobalModals.ts:134-160`). Kontakt-E-Mail `daniel@oe5ith.at` ergänzen, ggf.
-  Kontaktformular statt/zusätzlich zur E-Mail; Abschnitt allgemein inhaltlich erweitern.
+- [x] **Credits/Copyright-Modal überarbeitet und erweitert** (2026-07-07) — siehe
+  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./docs/superpowers/specs/2026-07-07-copyright-modal-design.md).
+  Kontakt-Mail + Impressum, Datenschutz-Hinweis, vollständige/korrigierte Lizenzangaben ergänzt;
+  toter Landing-Page-Link zum Modal repariert. Kontaktformular bewusst nicht umgesetzt (kein
+  Mail-Versand-Backend vorhanden) — bei Bedarf eigener ROADMAP.md-Punkt.
+- [ ] **`.leaflet-popup-*`-CSS-Regeln in `src/styles/modal.css` prüfen/entfernen** — beim
+  Copyright-Modal-Audit (2026-07-07) gefunden: Das Projekt hat keine `leaflet`-Abhängigkeit
+  mehr (fehlt in `package.json`, kein Import im Code), aber `modal.css:294-314` enthält noch
+  `.leaflet-popup-content-wrapper`/`.leaflet-popup-content`/`.leaflet-popup-tip-container`/
+  `.leaflet-popup-close-button`-Regeln — vermutlich Altlast aus einer Zeit vor der Migration
+  auf MapLibre GL JS. Zu prüfen, ob diese Klassen irgendwo (z.B. von MapLibre-Plugins) noch
+  greifen, oder ob sie komplett toter Code sind.
 - [ ] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzen.** Auf schmalen
   Viewports aktuell vermutlich beides parallel sichtbar/beengt — genaue Topbar-Struktur vor
   Umsetzung prüfen.
