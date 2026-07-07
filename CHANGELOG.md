@@ -2,6 +2,25 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-07 12:39
+
+### Geändert
+- **Copyright-Modal überarbeitet und erweitert** (`src/lib/GlobalModals.ts`, Design:
+  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./docs/superpowers/specs/2026-07-07-copyright-modal-design.md)).
+  Sechs statt drei Abschnitte: „Karten & Daten" (Leaflet-Angabe entfernt — keine
+  Projekt-Abhängigkeit), neuer Abschnitt „Bibliotheken" mit den tatsächlichen
+  Runtime-Dependencies (MapLibre GL JS, proj4, mgrs, open-location-code, pmtiles, je mit
+  korrekter Lizenz), „Design & Ressourcen" (präzisierte FontAwesome-Lizenzangabe, Versionslabel
+  auf „Font Awesome 7" korrigiert), neue Abschnitte „Kontakt & Impressum" (Name + Mail) und
+  „Datenschutz" (faktenbasiert: kein Tracking/Cookies/Analytics). Zusätzlich der bisher tote
+  Landing-Page-Footer-Link „Lizenzen & Impressum" repariert (`src/main.ts`) — öffnet jetzt das
+  Modal über das bestehende `open-copyright`-Event, analog zum Sidebar-Footer-Muster. Live
+  verifiziert (Playwright): Modal öffnet sich sowohl von der Landing-Page als auch vom
+  Sidebar-Footer (`/nah`), alle sechs Abschnitte korrekt, `mailto:`-Link korrekt gesetzt, keine
+  Konsolenfehler.
+
+`npx tsc --noEmit && npm test` grün (106/106).
+
 ## [Unreleased] - 2026-07-07 10:11
 
 ### Hinzugefügt

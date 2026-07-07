@@ -166,7 +166,7 @@ export const initGlobalModals = () => {
           <h2>Design & Ressourcen</h2>
           <ul>
             <li><strong>Schriftart:</strong> <a href="https://www.jetbrains.com/lp/mono/" target="_blank">JetBrains Mono</a> (OFL 1.1)</li>
-            <li><strong>Icons:</strong> <a href="https://fontawesome.com" target="_blank">Font Awesome 6 Free</a> (Icons CC BY 4.0, Schrift OFL 1.1, Code MIT)</li>
+            <li><strong>Icons:</strong> <a href="https://fontawesome.com" target="_blank">Font Awesome 7 Free</a> (Icons CC BY 4.0, Schrift OFL 1.1, Code MIT)</li>
           </ul>
 
           <h2>Kontakt & Impressum</h2>
