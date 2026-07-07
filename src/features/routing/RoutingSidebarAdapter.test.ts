@@ -179,4 +179,47 @@ describe('RoutingSidebarAdapter A→B route details', () => {
 
     calculateRouteSpy.mockRestore();
   });
+
+  it('passes segments through so the sidebar renders the turn-by-turn disclosure', async () => {
+    const dataService = new RoutingDataService();
+    const map = { fitBounds: vi.fn() } as any;
+    const adapter = new RoutingSidebarAdapter(dataService, map, new AbortController().signal);
+    adapter.init({} as any);
+
+    const routeResult = {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: {
+          summary: { distance: 1176.2, duration: 144.3 },
+          segments: [
+            {
+              distance: 1176.2,
+              duration: 144.3,
+              steps: [
+                { distance: 176.2, duration: 63.4, type: 11, instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
+              ],
+            },
+          ],
+        },
+        geometry: { type: 'LineString', coordinates: [[14.1, 48.1], [14.2, 48.2]] },
+      }],
+    };
+    const calculateRouteSpy = vi.spyOn(RoutingService, 'calculateRoute').mockResolvedValue(routeResult as any);
+
+    expect(capturedOnRouteStart).not.toBeNull();
+    await capturedOnRouteStart!({
+      mode: 'ab',
+      start: [48.1, 14.1],
+      target: [48.2, 14.2],
+      profile: 'driving-car',
+    });
+
+    const details = elements['routing-details'];
+    expect(details.innerHTML).toContain('disclosure-header');
+    expect(details.innerHTML).toContain('1 Schritte');
+    expect(details.innerHTML).toContain('Head south on Hauptplatz');
+
+    calculateRouteSpy.mockRestore();
+  });
 });
