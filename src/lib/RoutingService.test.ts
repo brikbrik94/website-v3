@@ -35,6 +35,21 @@ describe('RoutingService.calculateRoute extraInfo', () => {
 
     expect(capturedBody.extra_info).toBeUndefined();
   });
+
+  it('always requests German turn-by-turn instructions via language: de', async () => {
+    let capturedBody: any = null;
+    vi.stubGlobal('fetch', vi.fn((_url: string, init: any) => {
+      capturedBody = JSON.parse(init.body);
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ type: 'FeatureCollection', features: [] }),
+      });
+    }));
+
+    await RoutingService.calculateRoute([48.1, 14.1], [48.2, 14.2], 'driving-emergency');
+
+    expect(capturedBody.language).toBe('de');
+  });
 });
 
 describe('RoutingService.findNearestStations (driving-emergency / Sondersignal)', () => {
