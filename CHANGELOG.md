@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-07 10:11
+
+### Hinzugefügt
+- **Turn-by-Turn-Wegbeschreibung für A→B-Routen** (Phase 2 von
+  [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md),
+  Design: [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./docs/superpowers/specs/2026-07-07-turn-by-turn-design.md)).
+  War blockiert auf einer generischen Disclosure-Komponente + Abbiege-Icons im `oe5ith-ci`-Submodul —
+  beides seit `oe5ith-ci` v1.20.0 verfügbar (Submodul-Pointer aktualisiert). Neues Modul
+  `src/lib/ManeuverIcons.ts` (ORS-Manöver-Code 0-13 → SVG-Icon-Markup, 14 `ci-maneuver-*`-Icons
+  1:1 übernommen), `RoutingDetailsFormatter.formatSteps()` wandelt ORS' `segments[].steps[]`
+  (kommt standardmäßig ohne Zusatzparameter mit) in Anzeige-Steps um (Icon + Instruction-Text +
+  adaptiv formatierte Distanz). `RoutingSidebar.ts` rendert die Steps als eingeklapptes
+  `oe5ith-ci`-Disclosure-Panel „Wegbeschreibung" unterhalb der Zusammenfassungs-Karte. Live
+  verifiziert (Playwright, `/routing`, A→B-Route: Panel eingeklappt beim Laden, klappt auf/zu,
+  verschwindet beim Zurücksetzen).
+
+`npx tsc --noEmit && npm test` grün.
+
 ## [Unreleased] - 2026-07-06 15:30
 
 ### Geändert
