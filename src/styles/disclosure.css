@@ -1,0 +1,114 @@
+/*
+ * OE5ITH CI — disclosure.css
+ * Disclosure (Single-Panel): ein einzelnes auf-/zuklappbares Panel
+ * ohne Auswahlzustand, nativ auf <details>/<summary> aufgebaut.
+ * Kein JS für Auf-/Zu nötig (Unterschied zu .accordion in sidebar.css).
+ *
+ * Voraussetzung: css/common.css, css/badges.css (für .disclosure-count)
+ */
+
+/* ═══════════════════════════════════════
+   WRAPPER
+   ═══════════════════════════════════════ */
+.disclosure {
+  /* Kein eigener Rahmen zwingend — fügt sich in .panel/.panel-body ein */
+}
+
+/* ═══════════════════════════════════════
+   HEADER (<summary>)
+   ═══════════════════════════════════════ */
+.disclosure-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: background var(--transition-base);
+}
+.disclosure-header::-webkit-details-marker {
+  display: none;
+}
+.disclosure-header:hover {
+  background: var(--surface-hover);
+}
+.disclosure-header:focus-visible {
+  outline: 2px solid var(--accent-border);
+  outline-offset: -2px;
+}
+
+.disclosure-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* .disclosure-count erbt Optik vollständig von .badge (badges.css) */
+
+.disclosure-chevron {
+  font-size: 0.65rem;
+  color: var(--muted);
+  transition: transform var(--transition-base);
+  flex-shrink: 0;
+}
+details.disclosure[open] .disclosure-chevron {
+  transform: rotate(180deg);
+}
+
+/* ═══════════════════════════════════════
+   BODY
+   Kein max-height-Hack: <details> übernimmt
+   Ein-/Ausblenden nativ.
+   ═══════════════════════════════════════ */
+.disclosure-body {
+  padding: 4px 10px 8px;
+}
+
+/* ═══════════════════════════════════════
+   ITEM
+   ═══════════════════════════════════════ */
+.disclosure-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.disclosure-item:last-child {
+  border-bottom: none;
+}
+
+.disclosure-item-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--text);
+}
+
+.disclosure-item-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.disclosure-item-meta {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+/* ═══════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .disclosure-header,
+  .disclosure-chevron {
+    transition: none;
+  }
+}
