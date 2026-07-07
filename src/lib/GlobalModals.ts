@@ -156,11 +156,11 @@ export const initGlobalModals = () => {
 
           <h2>Bibliotheken</h2>
           <ul>
-            <li><strong>MapLibre GL JS</strong> (BSD-3-Clause)</li>
-            <li><strong>proj4</strong> (MIT)</li>
-            <li><strong>mgrs</strong> (MIT)</li>
-            <li><strong>open-location-code</strong> (Apache-2.0)</li>
-            <li><strong>pmtiles</strong> (BSD-3-Clause)</li>
+            <li><strong><a href="https://maplibre.org/" target="_blank">MapLibre GL JS</a></strong> (BSD-3-Clause)</li>
+            <li><strong><a href="https://proj4js.github.io/proj4js/" target="_blank">proj4</a></strong> (MIT)</li>
+            <li><strong><a href="https://github.com/proj4js/mgrs" target="_blank">mgrs</a></strong> (MIT)</li>
+            <li><strong><a href="https://github.com/google/open-location-code" target="_blank">open-location-code</a></strong> (Apache-2.0)</li>
+            <li><strong><a href="https://github.com/protomaps/pmtiles" target="_blank">pmtiles</a></strong> (BSD-3-Clause)</li>
           </ul>
 
           <h2>Design & Ressourcen</h2>
