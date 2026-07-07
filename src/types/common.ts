@@ -60,9 +60,25 @@ export interface RouteExtras {
     waytype?: RouteExtra;
 }
 
+export interface RouteStep {
+    distance: number;
+    duration: number;
+    type: number;
+    instruction: string;
+    name: string;
+    way_points: [number, number];
+}
+
+export interface RouteSegment {
+    distance: number;
+    duration: number;
+    steps: RouteStep[];
+}
+
 export interface RouteFeatureProperties {
     summary: { distance: number; duration: number };
     extras?: RouteExtras;
+    segments?: RouteSegment[];
     [key: string]: any;
 }
 
