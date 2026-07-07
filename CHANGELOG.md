@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-07 13:19
+
+### Behoben
+- **Mobile Topbar: Karte/Umrechner/Tracking waren nicht erreichbar** (`src/components/Topbar.ts`,
+  `src/main.ts`, Design:
+  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md)).
+  Die CI-Basis blendet `.topbar-nav-dropdown` auf Mobile (≤768px) komplett aus; ein bestehender
+  website-v3-Override zeigte zwar die zwei Quicklinks (Routing/Luftrettung) wieder an, aber
+  das „Mehr"-Dropdown blieb unsichtbar — die drei darin enthaltenen Seiten waren über die
+  Topbar auf Mobile nicht erreichbar. Alle 5 Ziele erscheinen jetzt auf Mobile im „Mehr"-Dropdown
+  (Routing, Luftrettung, Karte, Umrechner, Tracking); Desktop/Tablet unverändert (2 Quicklinks +
+  3er-Dropdown). Betraf zwei Stellen (`Topbar.ts` für Kartenseiten, `main.ts` für die
+  Landing-Page — beide haben eine eigene, unabhängige Kopie derselben Nav-Struktur, als
+  TODO.md-Punkt dokumentiert). Live verifiziert (Playwright, Mobile/Tablet/Desktop-Viewports auf
+  `/` und `/nah`).
+
+`npx tsc --noEmit && npm test` grün.
+
 ## [Unreleased] - 2026-07-07 12:39
 
 ### Geändert

@@ -51,9 +51,14 @@ an bereits bestehenden Features.
   `.leaflet-popup-close-button`-Regeln — vermutlich Altlast aus einer Zeit vor der Migration
   auf MapLibre GL JS. Zu prüfen, ob diese Klassen irgendwo (z.B. von MapLibre-Plugins) noch
   greifen, oder ob sie komplett toter Code sind.
-- [ ] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzen.** Auf schmalen
-  Viewports aktuell vermutlich beides parallel sichtbar/beengt — genaue Topbar-Struktur vor
-  Umsetzung prüfen.
+- [x] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzt** (2026-07-07) — siehe
+  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md).
+  War tatsächlich kein „beengt"-Problem, sondern ein Reachability-Bug: Karte/Umrechner/Tracking
+  waren auf Mobile über die Topbar gar nicht erreichbar (Dropdown komplett ausgeblendet).
+- [ ] **Topbar-Nav-Markup ist zwischen `src/components/Topbar.ts` und `src/main.ts` dupliziert**
+  (Landing-Page nutzt `Topbar.ts` nicht, hat eine eigene Kopie derselben Nav-Struktur) —
+  gefunden beim Mobile-Topbar-Nav-Fix (2026-07-07). Mögliches künftiges Refactoring: gemeinsame
+  Komponente/Helper für beide Stellen, bisher aber nur als Fund dokumentiert, nicht umgesetzt.
 - [ ] **Versionierungspraxis überdenken:** Mehrere kleine Features am selben Tag führen aktuell zu
   mehreren separaten Minor-Bumps (z.B. mehrfach `3.x.0` am selben Tag) — wirkt übertrieben. Da die
   Versionierungsregel in `AGENT_INSTRUCTIONS.md` (Abschnitt 4, generisch/repo-übergreifend) steht,
