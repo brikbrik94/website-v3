@@ -152,14 +152,36 @@ export const initGlobalModals = () => {
           <ul>
             <li><strong>OpenStreetMap:</strong> © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a> (ODbL)</li>
             <li><strong>basemap.at:</strong> © <a href="https://basemap.at" target="_blank">basemap.at</a> (CC BY 4.0)</li>
-            <li><strong>Bibliotheken:</strong> Leaflet (BSD-2), MapLibre GL JS (BSD-3)</li>
+          </ul>
+
+          <h2>Bibliotheken</h2>
+          <ul>
+            <li><strong>MapLibre GL JS</strong> (BSD-3-Clause)</li>
+            <li><strong>proj4</strong> (MIT)</li>
+            <li><strong>mgrs</strong> (MIT)</li>
+            <li><strong>open-location-code</strong> (Apache-2.0)</li>
+            <li><strong>pmtiles</strong> (BSD-3-Clause)</li>
           </ul>
 
           <h2>Design & Ressourcen</h2>
           <ul>
             <li><strong>Schriftart:</strong> <a href="https://www.jetbrains.com/lp/mono/" target="_blank">JetBrains Mono</a> (OFL 1.1)</li>
-            <li><strong>Icons:</strong> <a href="https://fontawesome.com" target="_blank">Font Awesome 6 Free</a> (CC BY 4.0 / MIT)</li>
+            <li><strong>Icons:</strong> <a href="https://fontawesome.com" target="_blank">Font Awesome 6 Free</a> (Icons CC BY 4.0, Schrift OFL 1.1, Code MIT)</li>
           </ul>
+
+          <h2>Kontakt & Impressum</h2>
+          <ul>
+            <li><strong>Daniel Herbrik</strong></li>
+            <li><a href="mailto:daniel@oe5ith.at">daniel@oe5ith.at</a></li>
+          </ul>
+
+          <h2>Datenschutz</h2>
+          <p>Diese Anwendung verwendet kein Tracking, keine Cookies und keine Analyse-Dienste.
+          <code>localStorage</code> wird ausschließlich genutzt, um die zuletzt gewählte
+          Basiskarte zu merken — rein lokal im Browser, ohne Übertragung an den Server.
+          Anfragen an Routing-, Geocoding- und Tracking-Funktionen laufen über den eigenen
+          Server-Proxy und erscheinen dort nur in den Standard-Zugriffslogs, wie bei jedem
+          Webserver üblich.</p>
 
           <h2>Software</h2>
           <p>© 2026 OE5ITH Cloud Services. Alle Rechte vorbehalten.</p>
