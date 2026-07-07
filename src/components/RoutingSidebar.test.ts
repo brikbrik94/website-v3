@@ -14,6 +14,22 @@ function createFakeElement() {
   };
 }
 
+function findMatchingDivClose(html: string, openTagIndex: number): number {
+  let depth = 0;
+  const divRegex = /<div\b[^>]*>|<\/div>/g;
+  divRegex.lastIndex = openTagIndex;
+  let match: RegExpExecArray | null;
+  while ((match = divRegex.exec(html))) {
+    if (match[0].startsWith('</')) {
+      depth--;
+      if (depth === 0) return match.index + match[0].length;
+    } else {
+      depth++;
+    }
+  }
+  return -1;
+}
+
 describe('updateRoutingSummary badges', () => {
   let details: ReturnType<typeof createFakeElement>;
 
@@ -71,6 +87,65 @@ describe('updateRoutingSummary badges', () => {
       tollways: { values: [[0, 1, 0]], summary: [{ value: 0, distance: 1000, amount: 100 }] },
     });
     expect(details.innerHTML).not.toContain('badge-yellow');
+  });
+});
+
+describe('updateRoutingSummary turn-by-turn disclosure', () => {
+  let details: ReturnType<typeof createFakeElement>;
+
+  beforeEach(() => {
+    details = createFakeElement();
+    vi.stubGlobal('document', {
+      getElementById: (id: string) => (id === 'routing-details' ? details : null),
+    });
+  });
+
+  it('renders no disclosure block when segments is undefined', () => {
+    updateRoutingSummary(1000, 60);
+    expect(details.innerHTML).not.toContain('disclosure-header');
+  });
+
+  it('renders no disclosure block when segments has no steps', () => {
+    updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
+      { distance: 0, duration: 0, steps: [] },
+    ]);
+    expect(details.innerHTML).not.toContain('disclosure-header');
+  });
+
+  it('renders the Wegbeschreibung disclosure collapsed by default with one item per step', () => {
+    updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
+      {
+        distance: 1176.2,
+        duration: 144.3,
+        steps: [
+          { distance: 176.2, duration: 63.4, type: 11, instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
+          { distance: 1000, duration: 80.9, type: 6, instruction: 'Continue straight onto Hauptstraße', name: 'Hauptstraße', way_points: [10, 20] },
+        ],
+      },
+    ]);
+
+    expect(details.innerHTML).toContain('disclosure-header');
+    expect(details.innerHTML).not.toContain('<details class="disclosure" open>');
+    expect(details.innerHTML).toContain('2 Schritte');
+    expect(details.innerHTML).toContain('Head south on Hauptplatz');
+    expect(details.innerHTML).toContain('176 m');
+    expect(details.innerHTML).toContain('Continue straight onto Hauptstraße');
+    expect(details.innerHTML).toContain('1.0 km');
+    expect(details.innerHTML).toContain('disclosure-item-icon');
+  });
+
+  it('places the disclosure block at or after the point where .result-list closes, not nested inside it', () => {
+    updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
+      { distance: 100, duration: 10, steps: [{ distance: 100, duration: 10, type: 6, instruction: 'Continue straight', name: '', way_points: [0, 1] }] },
+    ]);
+
+    const resultListOpenIdx = details.innerHTML.indexOf('<div class="result-list">');
+    const resultListCloseIdx = findMatchingDivClose(details.innerHTML, resultListOpenIdx);
+    const disclosureIdx = details.innerHTML.indexOf('<details class="disclosure">');
+
+    expect(resultListOpenIdx).toBeGreaterThanOrEqual(0);
+    expect(resultListCloseIdx).toBeGreaterThan(0);
+    expect(disclosureIdx).toBeGreaterThanOrEqual(resultListCloseIdx);
   });
 });
 

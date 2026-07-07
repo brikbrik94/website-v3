@@ -1,9 +1,9 @@
 import { RoutingService } from '../lib/RoutingService';
 import { GeocoderService } from '../lib/GeocoderService';
-import { GeocodeResult, RouteExtras } from '../types/common';
+import { GeocodeResult, RouteExtras, RouteSegment } from '../types/common';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { renderGeocodeItemHtml } from '../lib/UIUtils';
-import { getProfileBadge, getRouteWarnings } from '../features/routing/RoutingDetailsFormatter';
+import { getProfileBadge, getRouteWarnings, formatSteps } from '../features/routing/RoutingDetailsFormatter';
 
 export interface RoutingParams {
   start?: [number, number];
@@ -280,7 +280,8 @@ export const updateRoutingSummary = (
   duration: number,
   title: string = 'Zusammenfassung',
   profile?: string,
-  extras?: RouteExtras
+  extras?: RouteExtras,
+  segments?: RouteSegment[]
 ) => {
   const details = document.getElementById('routing-details')!;
   const distKm = (distance / 1000).toFixed(2);
@@ -311,6 +312,28 @@ export const updateRoutingSummary = (
     .map((w) => `<span class="badge badge-yellow"><i class="${w.icon}"></i> ${w.label}</span>`)
     .join('');
 
+  const steps = formatSteps(segments);
+  const disclosureHtml = steps.length > 0
+    ? `
+      <details class="disclosure">
+        <summary class="disclosure-header">
+          <span class="disclosure-title">Wegbeschreibung</span>
+          <span class="disclosure-count badge badge-gray">${steps.length} Schritte</span>
+          <i class="fa-solid fa-chevron-down disclosure-chevron"></i>
+        </summary>
+        <div class="disclosure-body">
+          ${steps.map((s) => `
+            <div class="disclosure-item">
+              ${s.iconMarkup}
+              <span class="disclosure-item-text">${s.text}</span>
+              <span class="disclosure-item-meta mono">${s.meta}</span>
+            </div>
+          `).join('')}
+        </div>
+      </details>
+    `
+    : '';
+
   details.classList.remove('hidden');
   details.innerHTML = `
     <div class="result-header">
@@ -322,6 +345,7 @@ export const updateRoutingSummary = (
         ${warningBadgesHtml ? `<div class="result-badges">${warningBadgesHtml}</div>` : ''}
       </div>
     </div>
+    ${disclosureHtml}
   `;
 };
 

@@ -45,6 +45,9 @@ export const RoutingService = {
             [start[1], start[0]],
             [target[1], target[0]]
           ],
+          // Turn-by-Turn-Anweisungen (segments[].steps[].instruction) sonst auf Englisch,
+          // obwohl der Rest der UI Deutsch ist.
+          language: 'de',
           ...(extraInfo ? { extra_info: extraInfo } : {})
         })
       });
