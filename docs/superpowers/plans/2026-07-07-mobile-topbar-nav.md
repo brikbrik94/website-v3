@@ -102,6 +102,13 @@ Ersetzen durch:
    ausgeblendet (CI-Standardverhalten für .topbar-nav-link
    greift dann wieder unverändert).
    ═══════════════════════════════════════ */
+
+/* Desktop/Tablet (Default): die zusätzlichen Mobile-Einträge im Dropdown
+   ausblenden (dort bleiben Routing/Luftrettung als eigenständige Quicklinks) */
+.topbar-nav-dropdown-item--mobile-only {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .topbar-nav-dropdown {
     display: block !important;
@@ -111,13 +118,14 @@ Ersetzen durch:
     display: flex;
   }
 }
-
-/* Desktop/Tablet: die zusätzlichen Mobile-Einträge im Dropdown ausblenden
-   (dort bleiben Routing/Luftrettung als eigenständige Quicklinks) */
-.topbar-nav-dropdown-item--mobile-only {
-  display: none;
-}
 ```
+
+**Wichtig zur Reihenfolge (im Betrieb per Task-1-Implementer gefunden und korrigiert):** Die
+unbedingte `display: none`-Default-Regel muss **vor** dem `@media`-Block stehen — beide
+Selektoren haben dieselbe Spezifität, bei gleicher Spezifität gewinnt die später im Quelltext
+stehende Regel unabhängig vom Media-Query. Stünde die `display: none`-Regel danach (wie in
+einer früheren Version dieses Plans), würde sie auf allen Breiten (auch Mobile) gewinnen und
+die Mobile-Einträge blieben immer versteckt.
 
 - [ ] **Step 3: Typecheck**
 
