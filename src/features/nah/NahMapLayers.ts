@@ -58,7 +58,7 @@ async function ensureHeliIcon(map: maplibregl.Map): Promise<void> {
   ctx.font = `900 ${Math.round(HELI_ICON_SIZE * 0.85)}px "Font Awesome 7 Free"`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = MAP_COLORS.black;
   ctx.fillText('', HELI_ICON_SIZE / 2, HELI_ICON_SIZE / 2 + HELI_ICON_SIZE * 0.03);
 
   try {
@@ -328,7 +328,7 @@ export const NahMapLayers = {
         'text-allow-overlap': true,
       },
       paint: {
-        'text-color': '#ffffff',
+        'text-color': MAP_COLORS.white,
         'text-halo-color': [
           'match', ['get', 'status'],
           'active', MAP_COLORS.success,
