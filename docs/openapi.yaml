@@ -1,0 +1,361 @@
+openapi: 3.0.3
+info:
+  title: OE5ITH GeoPortal API
+  description: >
+    Read-only Proxy/Aggregator-API über die Backend-DB und externe Services
+    (ORS Routing, Nominatim Geocoder, ADS-B/AIS Live-Tracking). Kein
+    Authentifizierungsmechanismus (öffentliches GeoPortal ohne Login-Konzept).
+  version: "1.0.0"
+  license:
+    name: Proprietary
+servers:
+  - url: https://map.oe5ith.at/api
+    description: Produktion
+  - url: http://127.0.0.1:8081
+    description: Lokale Entwicklung (npm run dev:api)
+
+paths:
+  /ping.php:
+    get:
+      summary: Health-Check
+      operationId: getPing
+      responses:
+        "200":
+          description: API ist erreichbar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  time:
+                    type: integer
+                    description: Unix-Timestamp
+              example:
+                status: ok
+                time: 1751234567
+
+  /db.php:
+    get:
+      summary: Datenbank-Health-Check (Version + Latenz)
+      operationId: getDbHealth
+      responses:
+        "200":
+          description: DB-Verbindung erfolgreich
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  version: { type: string, description: "PostgreSQL-Versionsstring" }
+                  uptime: { type: string, description: "Postmaster-Startzeit" }
+                  latency_ms: { type: number }
+        "500":
+          description: DB-Verbindung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: error }
+                  message: { type: string }
+
+  /nah.php:
+    get:
+      summary: Alle NAH-Luftrettungsstationen mit berechnetem Aktiv-Status
+      operationId: getNahStations
+      responses:
+        "200":
+          description: Liste aller Stationen mit Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refresh_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Zeitpunkt des nächsten Status-Wechsels (ISO 8601), falls bekannt
+                  stations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        osm_id: { type: string }
+                        name: { type: string }
+                        callsign: { type: string }
+                        region: { type: string }
+                        op_type: { type: string, enum: ["24/7", "daylight", "fixed"] }
+                        is_night_ready: { type: boolean }
+                        fixed_start: { type: string, nullable: true, example: "07:00" }
+                        fixed_end: { type: string, nullable: true, example: "19:00" }
+                        lat: { type: number }
+                        lon: { type: number }
+                        is_active: { type: boolean }
+                        in_season: { type: boolean }
+                        months_active:
+                          type: array
+                          items: { type: integer }
+                        calculated_start: { type: string, format: date-time, nullable: true }
+                        calculated_end: { type: string, format: date-time, nullable: true }
+
+  /stations.php:
+    get:
+      summary: Nächstgelegene RD/NEF-Stationen zu einem Zielpunkt (mit ORS-Matrix-Fahrzeiten)
+      operationId: getNearestStations
+      parameters:
+        - name: target
+          in: query
+          required: true
+          schema: { type: string }
+          description: "Koordinate als 'lat,lon'"
+          example: "47.2692,11.4041"
+        - name: type
+          in: query
+          required: false
+          schema: { type: string, enum: [sew, nef], default: sew }
+        - name: profile
+          in: query
+          required: false
+          schema: { type: string, default: driving-car }
+          description: ORS-Routing-Profil (z.B. driving-car, driving-emergency)
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 5 }
+      responses:
+        "200":
+          description: Nach Fahrzeit sortierte Stationsliste
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    name: { type: string }
+                    short_name: { type: string }
+                    org: { type: string }
+                    lat: { type: number }
+                    lon: { type: number }
+                    duration: { type: number, description: "Sekunden" }
+                    distance: { type: number, description: "Meter" }
+                    icon: { type: string }
+        "400":
+          description: "Parameter target fehlt"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
+  /region_stations.php:
+    get:
+      summary: RD/NEF-Stationen eines Bundeslands
+      operationId: getRegionStations
+      parameters:
+        - name: state
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Liste der Stationen im Bundesland
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    type: { type: string, enum: [RD, NEF] }
+                    name: { type: string }
+                    short_name: { type: string }
+                    org: { type: string }
+        "400":
+          description: "Parameter state fehlt"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+        "500":
+          description: "Datenbankfehler"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
+  /stats.php:
+    get:
+      summary: Aggregierte Statistiken (NAH aktiv/gesamt pro Region, RD/NEF-Anzahl pro Bundesland)
+      operationId: getStats
+      responses:
+        "200":
+          description: Statistik-Aggregation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  generated_at: { type: string, format: date-time }
+                  nah:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        total: { type: integer }
+                        active: { type: integer }
+                  rd:
+                    type: object
+                    additionalProperties: { type: integer }
+                  nef:
+                    type: object
+                    additionalProperties: { type: integer }
+
+  /geocoder.php:
+    get:
+      summary: Adress-Suche oder Reverse-Geocoding (Nominatim-Proxy)
+      operationId: geocode
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+          description: "Suchbegriff (für Vorwärtssuche)"
+        - name: lat
+          in: query
+          required: false
+          schema: { type: string }
+        - name: lon
+          in: query
+          required: false
+          schema: { type: string }
+        - name: reverse
+          in: query
+          required: false
+          schema: { type: boolean }
+          description: "Flag für Reverse-Geocoding (mit lat/lon)"
+      responses:
+        "200":
+          description: "Nominatim-Response (durchgereicht), leeres Array wenn kein Parameter gesetzt"
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { type: object }
+
+  /ors.php:
+    get:
+      summary: Proxy zu OpenRouteService (GET, z.B. Health-Check)
+      operationId: proxyOrsGet
+      parameters:
+        - name: path
+          in: query
+          required: false
+          schema: { type: string, default: health }
+          description: "Pfad-Suffix, wird an die feste ORS-Basis-URL angehängt (kein Host-Override möglich)"
+      responses:
+        "200":
+          description: "ORS-Response (durchgereicht)"
+          content:
+            application/json:
+              schema: { type: object }
+    post:
+      summary: Proxy zu OpenRouteService (POST, z.B. Routing/Matrix/Isochrones mit Body)
+      operationId: proxyOrsPost
+      parameters:
+        - name: path
+          in: query
+          required: false
+          schema: { type: string, default: health }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200":
+          description: "ORS-Response (durchgereicht)"
+          content:
+            application/json:
+              schema: { type: object }
+
+  /adsb.php:
+    get:
+      summary: Live ADS-B-Flugzeugdaten (Proxy)
+      operationId: getAdsb
+      responses:
+        "200":
+          description: "Aircraft-Daten (durchgereicht von adsb.oe5ith.at)"
+          content:
+            application/json:
+              schema: { type: object }
+        "502":
+          description: "Upstream nicht erreichbar"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+                  code: { type: integer }
+                  aircraft: { type: array, items: {} }
+
+  /ais.php:
+    get:
+      summary: Live AIS-Schiffsdaten (Proxy)
+      operationId: getAis
+      responses:
+        "200":
+          description: "Ship-Daten (durchgereicht von ais.oe5ith.at)"
+          content:
+            application/json:
+              schema: { type: object }
+        "502":
+          description: "Upstream nicht erreichbar"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
+  /test.php:
+    get:
+      summary: Trivialer PHP-Interpreter-Check
+      operationId: getTest
+      x-internal: true
+      description: "Interner Diagnose-Endpoint — kein stabiler Vertrag, nicht für Frontend-Konsum gedacht."
+      responses:
+        "200":
+          description: "Plaintext PHP_IS_WORKING"
+          content:
+            text/plain:
+              schema: { type: string, example: "PHP_IS_WORKING" }
+
+  /diag.php:
+    get:
+      summary: Erweiterter Diagnose-Endpoint (PHP/DB/ORS-Konnektivität)
+      operationId: getDiag
+      x-internal: true
+      description: >
+        Interner Diagnose-Endpoint — kein stabiler Vertrag, nicht für Frontend-Konsum gedacht.
+        BEKANNTES SECURITY-FINDING (siehe docs/security/owasp-top10-checklist.md, A01/A05): aktuell
+        ohne Zugriffsschutz erreichbar, exponiert Infrastruktur-Details. Fix als TODO.md-Punkt erfasst.
+      responses:
+        "200":
+          description: "Plaintext Diagnose-Report"
+          content:
+            text/plain:
+              schema: { type: string }
