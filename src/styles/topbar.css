@@ -601,8 +601,7 @@
   /* Topbar kompakter */
   .topbar { height: var(--topbar-height-mobile); padding: 0 14px; }
 
-  /* Brand: kein Logo, kleinere Schrift */
-  .brand-logo { display: none; }
+  /* Brand: Logo sichtbar, kleinere Schrift */
   .brand      { font-size: 1.1rem; letter-spacing: 1px; }
 
   /* Topbar-Center (Desktop-Controls) komplett ausblenden */
