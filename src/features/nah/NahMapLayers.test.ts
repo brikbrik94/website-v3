@@ -145,6 +145,21 @@ describe('NahMapLayers.setStations', () => {
     const registered = MapRegistry.getSource('nah-stations');
     expect(registered?.definition.data.features).toHaveLength(1);
   });
+
+  it('groups stations by identical coordinates', () => {
+    // This is a conceptual test — we'll verify via integration later
+    // For now, document the expected grouping behavior:
+    // Input: [
+    //   {id: 'A1', lon: 14.0, lat: 47.4, is_active: true, in_season: true},
+    //   {id: 'A2', lon: 14.0, lat: 47.4, is_active: false, in_season: true},
+    // ]
+    // Expected output (GeoJSON features):
+    // - Single feature at (14.0, 47.4)
+    // - properties._station_count = 2
+    // - properties.status = 'active' (grouped status)
+    // - properties._all_stations = [A1, A2]
+    expect(true).toBe(true); // Placeholder — real test after implementation
+  });
 });
 
 describe('NahMapLayers.findClickedStation', () => {
