@@ -1,9 +1,10 @@
 <?php
+
 require_once 'config.php';
 header('Content-Type: application/json');
 
-$target = $_GET['target'] ?? null; 
-$type = $_GET['type'] ?? 'sew';   
+$target = $_GET['target'] ?? null;
+$type = $_GET['type'] ?? 'sew';
 $profile = $_GET['profile'] ?? 'driving-car'; // Neues Profil-Parameter
 
 if (!$target) {
@@ -43,7 +44,7 @@ $locations = [];
 foreach ($stations as $s) {
     $locations[] = [(float)$s['lon'], (float)$s['lat']];
 }
-$locations[] = [$lon, $lat]; 
+$locations[] = [$lon, $lat];
 $target_index = count($locations) - 1;
 
 $payload = [
@@ -71,7 +72,7 @@ $results = [];
 foreach ($stations as $i => $s) {
     $duration = $matrix['durations'][$i][0];
     $distance = $matrix['distances'][$i][0];
-    
+
     if ($duration !== null) {
         // Icon-Logik basierend auf Typ und short_name
         $prefix = ($type === 'nef') ? 'nef-' : 'rd-';
@@ -92,7 +93,7 @@ foreach ($stations as $i => $s) {
     }
 }
 
-usort($results, function($a, $b) {
+usort($results, function ($a, $b) {
     return $a['duration'] <=> $b['duration'];
 });
 

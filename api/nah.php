@@ -1,4 +1,5 @@
 <?php
+
 require_once 'config.php';
 date_default_timezone_set('Europe/Vienna');
 header('Content-Type: application/json');
@@ -27,22 +28,23 @@ foreach ($stations as $s) {
     $stationNextEvent = null;
     $start = null;
     $end = null;
-    
+
     // Parse months array (e.g. "{1,2,3,4,11,12}")
     $monthsStr = trim($s['months_active'], '{}');
     $months = $monthsStr === '' ? [] : explode(',', $monthsStr);
-    
+
     // BACK TO ORIGINAL SIMPLE LOGIC
     $inSeason = empty($months) || in_array($currentMonth, $months);
-    
+
     if ($inSeason) {
         if ($s['op_type'] === '24/7') {
             $isActive = true;
         } elseif ($s['op_type'] === 'daylight') {
             $sunInfo = date_sun_info($now, (float)$s['lat'], (float)$s['lon']);
-            if (isset($sunInfo['civil_twilight_begin']) && isset($sunInfo['civil_twilight_end']) && 
-                $sunInfo['civil_twilight_begin'] !== false && $sunInfo['civil_twilight_end'] !== false) {
-                
+            if (
+                isset($sunInfo['civil_twilight_begin']) && isset($sunInfo['civil_twilight_end']) &&
+                $sunInfo['civil_twilight_begin'] !== false && $sunInfo['civil_twilight_end'] !== false
+            ) {
                 $start = $sunInfo['civil_twilight_begin'];
                 $end = $sunInfo['civil_twilight_end'];
 
@@ -74,7 +76,7 @@ foreach ($stations as $s) {
         } elseif ($s['op_type'] === 'fixed' && !empty($s['fixed_start']) && !empty($s['fixed_end'])) {
             $start = strtotime(date('Y-m-d ') . $s['fixed_start']);
             $end = strtotime(date('Y-m-d ') . $s['fixed_end']);
-            
+
             $isActive = ($now >= $start && $now <= $end);
 
             if ($now < $start) {
@@ -92,7 +94,7 @@ foreach ($stations as $s) {
             $nextRefresh = $stationNextEvent;
         }
     }
-    
+
     $results[] = [
         "osm_id" => $s['osm_id'],
         "name" => $s['name'],

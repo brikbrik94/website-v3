@@ -1,4 +1,5 @@
 <?php
+
 // PHP Dev-Server Router
 // Simuliert das Nginx-Verhalten für lokale Entwicklung
 
