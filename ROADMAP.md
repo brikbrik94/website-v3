@@ -32,6 +32,19 @@ Hintergrund/Herleitung: [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup
   ([docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md))
   herausgehalten, die auf ein generisches Status-Icon setzt.
 
+## Karten-Interaktion & Such-Features
+
+Neue Funktionen für bessere Karten-Bedienung und Suche.
+
+- [ ] **Geocoder-Widget auf Kartenseiten** — Adressensuche/Koordinatensuche (analog zur bestehenden
+  `/coords`-Seite) auf die Map-Seiten (`/nah`, `/routing`, `/tracking` etc.) als kleines
+  Overlay-Widget integrieren, um schnelle Ortssuche ohne Seitenwechsel zu ermöglichen. Übernommen
+  aus `docs/proposals/todo.txt` (2026-07-08).
+- [ ] **MapLibre GL Geolocation-Button** — Benutzer-Position mittels Browser-Geolocation-API
+  abfragen und Karte dorthin verschieben (mit Zoom-Level passend zur Genauigkeit). MapLibre GL hat
+  ein natives `GeolocateControl`, das man anbinden könnte. Übernommen aus `docs/proposals/todo.txt`
+  (2026-07-08).
+
 ## Routing: Anschlussfeatures
 
 Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md)
@@ -74,3 +87,12 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   Conventional Commits abgleichen (kein offizieller Typ — entweder dokumentieren warum bewusst
   abweichend, oder auf `chore(release):` umstellen). Danach `TODO_ARCHIVE.md`/`ROADMAP_ARCHIVE.md`
   auf einheitliche, selbstständig lesbare Darstellung prüfen.
+- [ ] **Continuous-Integration-Pipeline (Build-Automatisierung, z.B. GitHub Actions)** — aktuell
+  läuft `npx tsc --noEmit && npm test` (sowie die neuen `composer run lint` /
+  `bash scripts/security-audit.sh` / `npm run validate:openapi` aus der Standards-Angleichung,
+  siehe [docs/superpowers/specs/2026-07-08-standards-angleichung-design.md](../docs/superpowers/specs/2026-07-08-standards-angleichung-design.md))
+  nur lokal/manuell vor jedem Commit. Ziel: bei jedem Push/PR automatisch ausführen. Nicht zu
+  verwechseln mit dem `oe5ith-ci`-Submodul (Corporate Identity) — hier geht es um eine
+  Build-/Test-Pipeline. Bewusst als eigener ROADMAP-Punkt (nicht Teil der Standards-Angleichung
+  selbst), da eine neue Infrastruktur-Entscheidung (welcher CI-Anbieter, Secrets-Handling für
+  DB-Zugriff in der Pipeline etc.) nötig ist.
