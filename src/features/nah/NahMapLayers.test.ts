@@ -33,6 +33,44 @@ describe('NahMapLayers.computeStationStatus', () => {
   });
 });
 
+describe('NahMapLayers.computeGroupStatus', () => {
+  it('returns "active" when at least one station is active and in season', () => {
+    const stations: NahStation[] = [
+      makeStation({ name: 'Station A', is_active: false, in_season: true }),
+      makeStation({ name: 'Station B', is_active: true, in_season: true }),
+      makeStation({ name: 'Station C', is_active: false, in_season: false })
+    ];
+    expect(NahMapLayers.computeGroupStatus(stations)).toBe('active');
+  });
+
+  it('returns "offseason" when no stations are active, but at least one is in offseason', () => {
+    const stations: NahStation[] = [
+      makeStation({ name: 'Station A', is_active: false, in_season: true }),
+      makeStation({ name: 'Station B', is_active: false, in_season: false })
+    ];
+    expect(NahMapLayers.computeGroupStatus(stations)).toBe('offseason');
+  });
+
+  it('returns "inactive" when all stations are inactive and all are in season', () => {
+    const stations: NahStation[] = [
+      makeStation({ name: 'Station A', is_active: false, in_season: true }),
+      makeStation({ name: 'Station B', is_active: false, in_season: true })
+    ];
+    expect(NahMapLayers.computeGroupStatus(stations)).toBe('inactive');
+  });
+
+  it('returns the status of a single station', () => {
+    const activeStation = [makeStation({ is_active: true, in_season: true })];
+    expect(NahMapLayers.computeGroupStatus(activeStation)).toBe('active');
+
+    const inactiveStation = [makeStation({ is_active: false, in_season: true })];
+    expect(NahMapLayers.computeGroupStatus(inactiveStation)).toBe('inactive');
+
+    const offseasonStation = [makeStation({ is_active: true, in_season: false })];
+    expect(NahMapLayers.computeGroupStatus(offseasonStation)).toBe('offseason');
+  });
+});
+
 describe('NahMapLayers.buildStationPopupHtml', () => {
   it('renders the active badge and station header', () => {
     const html = NahMapLayers.buildStationPopupHtml(makeStation({ callsign: 'Christophorus 3', name: 'ÖAMTC Flugrettung' }));
