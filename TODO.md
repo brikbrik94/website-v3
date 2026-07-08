@@ -88,8 +88,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
 
 - [x] **PHP (`api/*.php`) gegen PSR-12 prüfen** (2026-07-08) — PHP_CodeSniffer mit PSR-12-Ruleset
   eingerichtet (`phpcs.xml` + `composer.json` `lint`-Script), bestehende Verstöße gefixt.
-  Siehe `composer run lint` zur Verifikation und `docs/security/openapi.yaml` sowie
-  `phpcs.xml` in der Codebase.
+  Siehe `composer run lint` zur Verifikation sowie `phpcs.xml`/`composer.json` in der Codebase.
 - [x] **Security-Praxis gegen OWASP Top 10 gegenchecken** (2026-07-08) — Hybrid-Audit mit
   automatisiertem Security-Script (`bash scripts/security-audit.sh`) für Secret-/Injection-Heuristiken
   sowie umfassende manuelle Bewertung aller 10 Kategorien in `docs/security/owasp-top10-checklist.md`.
