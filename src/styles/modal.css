@@ -287,6 +287,41 @@
 .popup-kv td:last-child { color: var(--text); }
 
 /* ═══════════════════════════════════════
+   STATION-LISTE (mehrere Stationen am Ort)
+   ═══════════════════════════════════════ */
+.popup-stations-list {
+  font-size: 0.78rem;
+}
+.popup-station-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.popup-station-item:last-child {
+  border-bottom: none;
+}
+.popup-station-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.popup-station-header strong {
+  color: #fff;
+  font-weight: 600;
+}
+.popup-station-details {
+  margin-top: 6px;
+}
+.popup-station-details .popup-kv {
+  font-size: 0.75rem;
+  margin: 0;
+}
+.popup-station-details .popup-kv td {
+  padding: 3px 8px;
+}
+
+/* ═══════════════════════════════════════
    LEAFLET CSS OVERRIDES
    Überschreibt Leaflet-Default-Styles
    auf die CI-Popup-Struktur.
