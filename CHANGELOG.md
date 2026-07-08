@@ -2,6 +2,17 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased]
+
+### Hinzugefügt
+- **NAH: Mehrfach-Stationen mit Status-Aggregation und Badge** (2026-07-08) — 
+  Stationen mit identischen Koordinaten (z.B. Christophorus 14/99, Martin 1/10) 
+  werden jetzt aggregiert: ein gemeinsamer Marker mit Nummern-Badge zeigt an, 
+  dass mehrere Stationen am Standort sind. Die Icon-Farbe widerspiegelt den 
+  besten Status aller Stationen (aktiv > außer Saison > außer Dienst). 
+  Klick auf den Marker zeigt alle Stationen mit vollständigen Details 
+  (Betriebstyp, Zeiten, Nachtbereitschaft).
+
 ## [3.7.0] - 2026-07-07 13:19
 
 ### Hinzugefügt
