@@ -1,7 +1,9 @@
 <?php
+
 /**
  * AIS Data Proxy
  */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
@@ -22,7 +24,7 @@ if ($http_code === 200) {
     // If external source fails (e.g. 502), return an empty structure so the frontend doesn't crash
     http_response_code($http_code ?: 502);
     echo json_encode([
-        'error' => 'Failed to fetch AIS data', 
+        'error' => 'Failed to fetch AIS data',
         'code' => $http_code,
         'ships' => []
     ]);

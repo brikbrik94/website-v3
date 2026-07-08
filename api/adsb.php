@@ -1,7 +1,9 @@
 <?php
+
 /**
  * ADS-B Data Proxy
  */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
@@ -21,7 +23,7 @@ if ($http_code === 200) {
 } else {
     http_response_code($http_code ?: 502);
     echo json_encode([
-        'error' => 'Failed to fetch ADS-B data', 
+        'error' => 'Failed to fetch ADS-B data',
         'code' => $http_code,
         'aircraft' => []
     ]);

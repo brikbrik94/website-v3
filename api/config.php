@@ -1,4 +1,5 @@
-<?php
+<?php // phpcs:ignore PSR1.Files.SideEffects.FoundWithSymbols -- mischt bewusst define()-Konstanten mit Side Effects (config.local.php-Require, fail-closed Secret-Check aus 87accec); Aufsplitten in reine Deklarations-/Side-Effect-Dateien wäre größerer Umbau, hier bewusst nicht gemacht
+
 /**
  * OE5ITH Central API Configuration
  */
@@ -33,10 +34,15 @@ if (!defined('DB_PASS') || !defined('ORS_API_KEY')) {
 /**
  * Hilfsfunktion für die Datenbankverbindung
  */
-function get_db_conn() {
+function get_db_conn()
+{
     $conn_str = sprintf(
         "host=%s port=%s dbname=%s user=%s password=%s",
-        DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
+        DB_HOST,
+        DB_PORT,
+        DB_NAME,
+        DB_USER,
+        DB_PASS
     );
     $db = @pg_connect($conn_str);
     if (!$db) {
@@ -50,26 +56,29 @@ function get_db_conn() {
 /**
  * Hilfsfunktion für CURL Requests (Proxy)
  */
-function curl_request($url, $method = 'GET', $body = null, $headers = []) {
+function curl_request($url, $method = 'GET', $body = null, $headers = [])
+{
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_ENCODING, ''); // Enable all supported encodings (gzip, etc.)
-    
+
     if ($method === 'POST') {
         curl_setopt($ch, CURLOPT_POST, true);
-        if ($body) curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+        if ($body) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+        }
     }
-    
+
     $default_headers = [
         "X-API-KEY: " . ORS_API_KEY,
         "Content-Type: application/json"
     ];
-    
+
     curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge($default_headers, $headers));
-    
+
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    
+
     return ['code' => $http_code, 'data' => $response];
 }

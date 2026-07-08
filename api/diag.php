@@ -1,4 +1,5 @@
 <?php
+
 header('Content-Type: text/plain');
 echo "=== OE5ITH API Diagnostic ===\n\n";
 
@@ -15,7 +16,11 @@ require_once 'config.php';
 
 $conn_str = sprintf(
     "host=%s port=%s dbname=%s user=%s password=%s",
-    DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
+    DB_HOST,
+    DB_PORT,
+    DB_NAME,
+    DB_USER,
+    DB_PASS
 );
 
 echo "Conn String (masked): " . preg_replace('/password=([^ ]+)/', 'password=****', $conn_str) . "\n";

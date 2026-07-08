@@ -1,4 +1,5 @@
 <?php
+
 require_once 'config.php';
 
 header('Content-Type: application/json');
@@ -41,4 +42,3 @@ while ($row = pg_fetch_assoc($result)) {
 echo json_encode($stations);
 
 pg_close($db);
-?>

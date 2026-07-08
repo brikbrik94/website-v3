@@ -1,4 +1,5 @@
 <?php
+
 require_once 'config.php';
 date_default_timezone_set('Europe/Vienna');
 header('Content-Type: application/json');
@@ -19,19 +20,20 @@ $now = time();
 $nah_stats = [];
 foreach ($nah_raw as $s) {
     $isActive = false;
-    
+
     $monthsStr = trim($s['months_active'], '{}');
     $months = $monthsStr === '' ? [] : explode(',', $monthsStr);
     $inSeason = empty($months) || in_array($currentMonth, $months);
-    
+
     if ($inSeason) {
         if ($s['op_type'] === '24/7') {
             $isActive = true;
         } elseif ($s['op_type'] === 'daylight') {
             $sunInfo = date_sun_info($now, (float)$s['lat'], (float)$s['lon']);
-            if (isset($sunInfo['civil_twilight_begin']) && isset($sunInfo['civil_twilight_end']) && 
-                $sunInfo['civil_twilight_begin'] !== false && $sunInfo['civil_twilight_end'] !== false) {
-                
+            if (
+                isset($sunInfo['civil_twilight_begin']) && isset($sunInfo['civil_twilight_end']) &&
+                $sunInfo['civil_twilight_begin'] !== false && $sunInfo['civil_twilight_end'] !== false
+            ) {
                 $start = $sunInfo['civil_twilight_begin'];
                 $end = $sunInfo['civil_twilight_end'];
                 if (!empty($s['fixed_start'])) {
@@ -50,9 +52,13 @@ foreach ($nah_raw as $s) {
     }
 
     $reg = $s['region'];
-    if (!isset($nah_stats[$reg])) $nah_stats[$reg] = ['total' => 0, 'active' => 0];
+    if (!isset($nah_stats[$reg])) {
+        $nah_stats[$reg] = ['total' => 0, 'active' => 0];
+    }
     $nah_stats[$reg]['total']++;
-    if ($isActive) $nah_stats[$reg]['active']++;
+    if ($isActive) {
+        $nah_stats[$reg]['active']++;
+    }
 }
 
 // 2. RD Stats (Rettungsdienst)
