@@ -61,8 +61,10 @@ gewünscht (User-Entscheidung).
 - Bei nicht automatisierbaren Kategorien (A01 Broken Access Control, A04 Insecure Design, A08
   Software/Data Integrity Failures, A09 Logging/Monitoring, A10 SSRF): reines manuelles Urteil
 
-**Ausführung:** Kein CI vorhanden — Script wird manuell bei Bedarf mit `bash scripts/security-audit.sh`
-laufen gelassen, ist aber wiederholbar/scriptbar für eine spätere CI-Anbindung.
+**Ausführung:** Keine Continuous-Integration-Pipeline (Build-Automatisierung, z.B. GitHub Actions —
+nicht zu verwechseln mit dem `oe5ith-ci`-Submodul/Corporate Identity) vorhanden — Script wird
+manuell bei Bedarf mit `bash scripts/security-audit.sh` laufen gelassen, ist aber wiederholbar/
+scriptbar für eine spätere Anbindung an eine Build-Pipeline.
 
 ## 3. OpenAPI-Spec
 
@@ -82,7 +84,9 @@ Contract-Testing — bewusst außerhalb dieses Scopes, ggf. als eigener ROADMAP-
 ## Out of Scope (bewusst nicht Teil dieses Plans)
 
 - Rotation der DB/API-Credentials (User-Entscheidung, Repo ist privat)
-- CI-Pipeline-Integration der neuen Scripts (es gibt noch keine CI in diesem Projekt)
+- Anbindung der neuen Scripts an eine Continuous-Integration-Pipeline (Build-Automatisierung wie
+  z.B. GitHub Actions — nicht zu verwechseln mit dem `oe5ith-ci`-Submodul; es gibt noch keine
+  solche Build-Pipeline in diesem Projekt)
 - Automatischer Abgleich OpenAPI-Spec ↔ tatsächlicher Code (Contract-Testing)
 - `phpcbf`-Autofix (manuelles Review stattdessen)
 - Vollständiges Security-Scanning-Tool (z.B. dedizierter PHP-Security-Linter) — Hybrid-Script reicht
