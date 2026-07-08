@@ -322,33 +322,6 @@
 }
 
 /* ═══════════════════════════════════════
-   LEAFLET CSS OVERRIDES
-   Überschreibt Leaflet-Default-Styles
-   auf die CI-Popup-Struktur.
-   ═══════════════════════════════════════ */
-.leaflet-popup-content-wrapper {
-  background: var(--card-bg) !important;
-  border: 1px solid var(--border-strong) !important;
-  border-radius: 8px !important;
-  box-shadow: var(--shadow-dropdown) !important;
-  padding: 0 !important;
-  color: var(--text) !important;
-}
-.leaflet-popup-content {
-  margin: 0 !important;
-  min-width: 200px !important;
-  max-width: 300px !important;
-}
-.leaflet-popup-tip-container { display: none !important; }
-.leaflet-popup-close-button {
-  color: var(--subtle) !important;
-  font-size: 16px !important;
-  padding: 6px 8px !important;
-  top: 4px !important; right: 4px !important;
-}
-.leaflet-popup-close-button:hover { color: var(--text) !important; }
-
-/* ═══════════════════════════════════════
    MAPLIBRE CSS OVERRIDES
    ═══════════════════════════════════════ */
 .maplibregl-popup-content {
