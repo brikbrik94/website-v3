@@ -1,0 +1,15 @@
+{
+    "name": "oe5ith/website-v3-api",
+    "description": "PHP API backend for OE5ITH GeoPortal — dev tooling only",
+    "type": "project",
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.9"
+    },
+    "scripts": {
+        "lint": "phpcs",
+        "lint-fix": "phpcbf"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
