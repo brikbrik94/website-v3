@@ -124,17 +124,36 @@ export const NahMapLayers = {
   /**
    * Rendert die NAH-Stationen als daten-getriebene Symbol-Layer (ersetzt den
    * früheren maplibregl.Marker-pro-Station-Ansatz).
+   * Gruppiert Stationen bei identischen Koordinaten und aggregiert deren Status.
    */
   setStations(map: maplibregl.Map, stations: NahStation[]) {
     if (!map.getSource(STATIONS_SOURCE)) {
       this.initLayers(map);
     }
 
-    const features = stations.map((station) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [station.lon, station.lat] },
-      properties: { ...station, status: this.computeStationStatus(station) }
-    }));
+    // Group stations by coordinates
+    const grouped = new Map<string, NahStation[]>();
+    stations.forEach(station => {
+      const key = `${station.lon},${station.lat}`;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(station);
+    });
+
+    // Create one feature per group
+    const features = Array.from(grouped.values()).map(group => {
+      const representative = group[0];
+      const groupStatus = this.computeGroupStatus(group);
+      return {
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [representative.lon, representative.lat] },
+        properties: {
+          ...representative,
+          status: groupStatus,
+          _station_count: group.length,
+          _all_stations: group
+        }
+      };
+    });
 
     const data = {
       type: 'FeatureCollection',
