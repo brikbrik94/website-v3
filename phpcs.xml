@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ruleset name="OE5ITH-API">
+    <description>PSR-12 Ruleset für api/*.php — OE5ITH GeoPortal Backend</description>
+
+    <rule ref="PSR12"/>
+
+    <file>api</file>
+
+    <exclude-pattern>api/router.log</exclude-pattern>
+    <exclude-pattern>api/config.local.php</exclude-pattern>
+    <exclude-pattern>api/config.local.php.example</exclude-pattern>
+
+    <arg name="colors"/>
+    <arg value="p"/>
+</ruleset>
