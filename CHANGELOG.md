@@ -13,6 +13,16 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   Klick auf den Marker zeigt alle Stationen mit vollständigen Details 
   (Betriebstyp, Zeiten, Nachtbereitschaft).
 
+### Behoben
+- **Logo auf Mobile-Bildschirmen sichtbar** — `.brand-logo` hatte auf Mobile (`@media max-width: 768px`) ein `display: none` in `topbar.css`; entfernt, Logo zeigt jetzt auf allen Breakpoints.
+- **Tablet-Quicklinks-Bug behoben** — Auf Kartenseiten (`/nah` u.a.) bei ~900px Breite war nur 1 von 2 Quicklinks sichtbar; Root Cause war eine `nth-child`-Zählung der CI-Regel, die durch den Mobile-Toggle-Button vor den Nav-Links verschoben wurde. Fix: Reihenfolge in `.topbar-right` (`Topbar.ts`) getauscht, Nav-Links jetzt vor dem Button.
+
+### Entfernt
+- **Tote Leaflet-CSS-Regeln entfernt** — `.leaflet-popup-*`-Overrides in `modal.css` waren Altlast aus der Zeit vor der MapLibre-GL-Migration (Leaflet-Dependency längst entfernt); 27 Zeilen toter Code gelöscht.
+
+### Geändert
+- **Topbar-Nav-Markup dedupliziert** — Identisches Nav-HTML war in `Topbar.ts` und `main.ts` dupliziert; in eine gemeinsame `src/components/TopbarNav.ts` (`renderTopbarNav()`) extrahiert.
+
 ## [3.7.0] - 2026-07-07 13:19
 
 ### Hinzugefügt
