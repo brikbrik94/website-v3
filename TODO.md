@@ -31,14 +31,12 @@ ebenfalls im Archiv dokumentiert. U5 (NAH-Symbol-Layer), U6 (Hover-Cursor) und U
   U7+U1b (`/coords` Wanderwege-Toggle, 2026-07-06).
 - [x] Turn-by-Turn-Anzeige für A→B-Routen (Phase 2) umgesetzt (2026-07-07) — siehe
   [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./docs/superpowers/specs/2026-07-07-turn-by-turn-design.md).
-- [ ] **NAH: Mehrfach-Stationen (z.B. C14/C99, Martin 1/10) — Marker-Stacking-Reihenfolge
-  überdenken.** Bei Stützpunkten mit mehreren Hubschraubern an (nahezu) derselben Position wird
-  aktuell strikt nach Daten-/Renderreihenfolge gestapelt: liegt eine Außer-Dienst-Station (rot)
-  datenseitig über einer aktiven 24/7-Station (grün), verdeckt der rote Marker den grünen —
-  unabhängig vom tatsächlichen Dienststatus. Ziel: Stacking-Priorität am Status ausrichten
-  (aktive/24-7-Station immer sichtbar/oben) statt an Datenreihenfolge. Betrifft
-  `NahMapLayers.ts` (Symbol-Layer aus der U5-Migration). Aus `docs/proposals/improvments.txt`
-  übernommen (2026-07-07).
+- [x] **NAH: Mehrfach-Stationen mit Status-Aggregation und Badge** (2026-07-08) — ✅ ERLEDIGT
+  Stationen mit identischen Koordinaten (z.B. C14/C99, Martin 1/10) werden jetzt aggregiert:
+  ein gemeinsamer Marker mit Nummern-Badge zeigt an, dass mehrere Stationen am Standort sind.
+  Die Icon-Farbe widerspiegelt den besten Status aller Stationen (aktiv > außer Saison > außer Dienst).
+  Klick zeigt alle Stationen mit vollständigen Details. 11 Commits, 112 Tests grün.
+  Siehe [CHANGELOG.md](./CHANGELOG.md) für Details.
 
 Anschlussfeatures nach dem Cleanup (Legende, generischer Karten-Klick, Routing-Touch-Kontextmenü) stehen in [ROADMAP.md](./ROADMAP.md).
 
@@ -52,35 +50,31 @@ an bereits bestehenden Features.
   Kontakt-Mail + Impressum, Datenschutz-Hinweis, vollständige/korrigierte Lizenzangaben ergänzt;
   toter Landing-Page-Link zum Modal repariert. Kontaktformular bewusst nicht umgesetzt (kein
   Mail-Versand-Backend vorhanden) — bei Bedarf eigener ROADMAP.md-Punkt.
-- [ ] **`.leaflet-popup-*`-CSS-Regeln in `src/styles/modal.css` prüfen/entfernen** — beim
+- [x] **`.leaflet-popup-*`-CSS-Regeln in `src/styles/modal.css` entfernt** (2026-07-08, commit ff62695) — beim
   Copyright-Modal-Audit (2026-07-07) gefunden: Das Projekt hat keine `leaflet`-Abhängigkeit
-  mehr (fehlt in `package.json`, kein Import im Code), aber `modal.css:294-314` enthält noch
+  mehr (fehlt in `package.json`, kein Import im Code), aber `modal.css:294-314` enthielt noch
   `.leaflet-popup-content-wrapper`/`.leaflet-popup-content`/`.leaflet-popup-tip-container`/
   `.leaflet-popup-close-button`-Regeln — vermutlich Altlast aus einer Zeit vor der Migration
-  auf MapLibre GL JS. Zu prüfen, ob diese Klassen irgendwo (z.B. von MapLibre-Plugins) noch
-  greifen, oder ob sie komplett toter Code sind.
+  auf MapLibre GL JS. 27 Zeilen toter Code gelöscht.
 - [x] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzt** (2026-07-07) — siehe
   [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md).
   War tatsächlich kein „beengt"-Problem, sondern ein Reachability-Bug: Karte/Umrechner/Tracking
   waren auf Mobile über die Topbar gar nicht erreichbar (Dropdown komplett ausgeblendet).
-- [ ] **Topbar-Nav-Markup ist zwischen `src/components/Topbar.ts` und `src/main.ts` dupliziert**
-  (Landing-Page nutzt `Topbar.ts` nicht, hat eine eigene Kopie derselben Nav-Struktur) —
-  gefunden beim Mobile-Topbar-Nav-Fix (2026-07-07). Mögliches künftiges Refactoring: gemeinsame
-  Komponente/Helper für beide Stellen, bisher aber nur als Fund dokumentiert, nicht umgesetzt.
-- [ ] **Nur 1 von 2 Quicklinks auf Tablet-Breite bei Kartenseiten sichtbar** (`/nah` u.a., 900px
-  Breite) — „Luftrettung" fehlt, „Routing" bleibt sichtbar. Root Cause: `Topbar.ts`s
-  `.topbar-right`-Container hat bei Kartenseiten (`hasMap`) einen `<button
-  class="controls-toggle mobile-only" id="controls-toggle-mobile">` als *erstes* Kind vor den
-  beiden `.topbar-nav-link`-Elementen; die Tablet-Regel `.topbar-nav-link:nth-child(n+3) {
-  display: none; }` (`oe5ith-ci/css/topbar.css:595`) zählt die Position unter *allen*
-  Geschwister-Elementen, nicht nur unter `.topbar-nav-link`s — der zusätzliche Button schiebt
-  „Luftrettung" dadurch auf Platz 3 und blendet es aus. Betrifft nur Kartenseiten (`Topbar.ts`),
-  nicht die Landing-Page (`main.ts` hat keinen solchen zusätzlichen Button). Vorbestehend,
-  unabhängig vom Mobile-Topbar-Nav-Fix — beim Live-Test dieses Fixes entdeckt (2026-07-07,
-  `.topbar-right`-Kartenseiten-Variante nie zuvor auf Tablet-Breite verifiziert). Fix vermutlich
-  in `Topbar.ts` (z.B. Reihenfolge der Elemente in `.topbar-right` ändern), nicht im
-  `oe5ith-ci`-Submodul — die CI-Regel selbst ist in Ordnung, das Problem ist die zusätzliche,
-  website-v3-eigene Markup-Reihenfolge.
+- [x] **Logo bei Mobile auch anzeigen** (2026-07-08, commit 82fcf5e) — auf der Landing-Page ist das Logo/OE5ITH-Wort-Zeichen
+  auf Mobile nicht sichtbar war (hatte `display: none` in einer Breakpoint-Regel in `topbar.css`); entfernt, Logo zeigt jetzt auf allen Breakpoints. Übernommen aus `docs/proposals/todo.txt` (2026-07-08).
+- [x] **Topbar-Nav-Markup dedupliziert** (2026-07-08, commit 92fe3b1) — War dupliziert zwischen
+  `src/components/Topbar.ts` und `src/main.ts` (Landing-Page nutzt `Topbar.ts` nicht, hat eine
+  eigene Kopie derselben Nav-Struktur) — gefunden beim Mobile-Topbar-Nav-Fix (2026-07-07). In eine
+  gemeinsame `src/components/TopbarNav.ts` (`renderTopbarNav()`) extrahiert, beide Stellen nutzen
+  die Komponente jetzt.
+- [x] **Tablet-Quicklinks-Bug behoben** (2026-07-08, commit 6fc60d6) — Auf Tablet-Breite bei
+  Kartenseiten (`/nah` u.a., 900px) war nur 1 von 2 Quicklinks sichtbar („Luftrettung" fehlte,
+  „Routing" blieb sichtbar). Root Cause: `Topbar.ts`s `.topbar-right`-Container hatte bei
+  Kartenseiten (`hasMap`) einen `<button class="controls-toggle mobile-only">` als *erstes* Kind
+  vor den beiden `.topbar-nav-link`-Elementen; die Tablet-Regel `.topbar-nav-link:nth-child(n+3)`
+  (`oe5ith-ci/css/topbar.css`) zählt die Position unter *allen* Geschwister-Elementen — der Button
+  schob „Luftrettung" auf Platz 3 und blendete es aus. Fix: Reihenfolge in `.topbar-right` getauscht
+  (Nav-Links vor Button). Entdeckt beim Live-Test des Mobile-Topbar-Nav-Fixes (2026-07-07).
 - [ ] **Versionierungspraxis überdenken:** Mehrere kleine Features am selben Tag führen aktuell zu
   mehreren separaten Minor-Bumps (z.B. mehrfach `3.x.0` am selben Tag) — wirkt übertrieben. Da die
   Versionierungsregel in `AGENT_INSTRUCTIONS.md` (Abschnitt 4, generisch/repo-übergreifend) steht,
