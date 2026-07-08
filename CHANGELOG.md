@@ -11,7 +11,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   Script (`bash scripts/security-audit.sh`) für Secret-/Injection-Heuristik-Checks plus vollständige
   manuelle Bewertung aller 10 Kategorien in `docs/security/owasp-top10-checklist.md`; dabei einen
   Info-Disclosure-Fund in `diag.php` entdeckt und als eigenen TODO.md-Punkt erfasst (nicht in diesem
-  Rahmen gefixt); (3) OpenAPI-3.x-Spec für alle 11 API-Endpoints (`docs/openapi.yaml`), validiert via
+  Rahmen gefixt); (3) OpenAPI-3.x-Spec für alle 12 API-Endpoints (`docs/openapi.yaml`), validiert via
   `npm run validate:openapi`. Zusätzlich während der Recherche gefunden und sofort behoben: hardcoded
   DB-Passwort/API-Key in `api/config.php` (Commit `87accec`, vor diesem Plan).
 - **NAH: Mehrfach-Stationen mit Status-Aggregation und Badge** (2026-07-08) — 

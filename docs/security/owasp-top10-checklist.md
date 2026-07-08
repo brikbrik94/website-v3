@@ -51,8 +51,7 @@ Teilautomatisiert via `security-audit.sh` Check 1–3 (Secret-Literale, `.gitign
 - `geocoder.php` nutzt `urlencode()` für alle User-Inputs, die in die Nominatim-URL eingebettet
   werden — korrekt für URL-Kontext (kein SQL involviert).
 
-Teilautomatisiert via `security-audit.sh` Check 4 (Heuristik, informativ — kein Hard-Fail wegen
-False-Positive-Risiko bei sicheren Interpolationen wie in `stations.php`).
+Manuell identifiziert; `security-audit.sh` Check 4 erfasst direkte String-Interpolation in `pg_query()`-Aufrufen (Heuristik), nicht aber variable-gestützte Query-Zusammenbau wie in `stations.php`.
 
 ## A04:2021 — Insecure Design
 
