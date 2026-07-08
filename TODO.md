@@ -92,6 +92,13 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
 - [ ] **Security-Praxis gegen OWASP Top 10 gegenchecken** — kurzer Self-Check der bestehenden
   Regeln (Read-only `web_api_user`, Secrets nur in `api/config.local.php`, keine Secrets im Repo)
   gegen die zehn Kategorien; keine Vollzertifizierung, nur Lückenprüfung.
+- [ ] **`diag.php`-Info-Disclosure beheben** — beim OWASP-Top-10-Audit (2026-07-08, siehe
+  [docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md), Kategorien
+  A01/A05) gefunden: `api/diag.php` ist ohne Zugriffsschutz öffentlich erreichbar und exponiert
+  PHP-Version, geladene Extensions, DB-Host/Port/Name/User (Passwort maskiert) sowie den internen
+  ORS-Health-Status. Fix-Optionen: Endpoint entfernen (falls nicht mehr gebraucht) oder mit einem
+  einfachen Shared-Secret/Header-Check absichern. Bewusst nicht Teil des Standards-Angleichung-Plans
+  (2026-07-08) — dort nur dokumentiert, um den Scope nicht zu sprengen.
 - [ ] **OpenAPI-Spec für `api/*.php` erstellen** — aktuell keine formale Beschreibung der Endpoints
   (Pfade, Query-Parameter, Response-Schemas). Je Endpoint (`nah.php`, `stations.php`, `ors.php`,
   `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, …) Request/Response gegen den Ist-Code
