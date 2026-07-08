@@ -9,7 +9,8 @@
     "dev": "concurrently --kill-others \"npm run dev:vite\" \"npm run dev:api\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "validate:openapi": "node -e \"require('@apidevtools/swagger-parser').validate('docs/openapi.yaml').then(() => console.log('✅ OpenAPI-Spec ist valide')).catch(e => { console.error('❌', e.message); process.exit(1); })\""
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.0.0",
@@ -21,6 +22,7 @@
     "proj4": "^2.20.8"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
     "@types/geojson": "^7946.0.16",
     "concurrently": "^9.2.1",
     "typescript": "^6.0.3",
