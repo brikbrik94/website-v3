@@ -100,7 +100,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   ORS-Health-Status. Fix-Optionen: Endpoint entfernen (falls nicht mehr gebraucht) oder mit einem
   einfachen Shared-Secret/Header-Check absichern. Bewusst nicht Teil des Standards-Angleichung-Plans
   (2026-07-08) — dort nur dokumentiert, um den Scope nicht zu sprengen.
-- [x] **OpenAPI-Spec für `api/*.php` erstellen** (2026-07-08) — OpenAPI-3.x-Spec für alle 11
+- [x] **OpenAPI-Spec für `api/*.php` erstellen** (2026-07-08) — OpenAPI-3.x-Spec für alle 12
   API-Endpoints in `docs/openapi.yaml` angelegt, validiert via `npm run validate:openapi`.
   Umfasst Request/Response-Schemas, Query-Parameter und Status-Codes für alle Endpoints
   (`nah.php`, `stations.php`, `ors.php`, `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, etc.).
