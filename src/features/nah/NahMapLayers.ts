@@ -16,6 +16,12 @@ const HELI_ICON_SIZE = 64;
 
 export type NahStationStatus = 'active' | 'inactive' | 'offseason';
 
+const STATUS_PRIORITY: Record<NahStationStatus, number> = {
+  active: 3,
+  offseason: 2,
+  inactive: 1
+};
+
 const STATUS_BADGE_CLASS: Record<NahStationStatus, string> = {
   active: 'badge-green',
   inactive: 'badge-red',
@@ -70,6 +76,12 @@ export const NahMapLayers = {
     if (!station.in_season) return 'offseason';
     if (!station.is_active) return 'inactive';
     return 'active';
+  },
+
+  computeGroupStatus(stations: NahStation[]): NahStationStatus {
+    return stations
+      .map(s => this.computeStationStatus(s))
+      .sort((a, b) => (STATUS_PRIORITY[b] || 0) - (STATUS_PRIORITY[a] || 0))[0] || 'inactive';
   },
 
   buildStationPopupHtml(station: NahStation): string {
