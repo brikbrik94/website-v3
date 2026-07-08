@@ -91,14 +91,14 @@ export const initTopbar = (
       </div>
 
       <div class="topbar-right">
+        ${renderTopbarNav(currentPath)}
+
         ${hasMap ? `
           <!-- Mobile Toggle -->
           <button class="controls-toggle mobile-only" id="controls-toggle-mobile">
             <div class="slider-icon"><span></span><span></span><span></span></div>
           </button>
         ` : ''}
-        
-        ${renderTopbarNav(currentPath)}
       </div>
 
       ${hasMap ? `
