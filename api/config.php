@@ -11,19 +11,24 @@ if (file_exists($local_config_file)) {
 
 // 2. Define defaults (Production) ONLY IF not already defined by config.local.php
 
-// Datenbank (PostGIS)
+// Datenbank (PostGIS) — Host/Port/Name/User sind unkritische Defaults, DB_PASS
+// und ORS_API_KEY haben bewusst KEINEN Default (Secrets dürfen nicht im Repo
+// stehen); sie müssen über config.local.php (gitignored) gesetzt werden.
 defined('DB_HOST') || define('DB_HOST', '127.0.0.1');
 defined('DB_PORT') || define('DB_PORT', '5432');
 defined('DB_NAME') || define('DB_NAME', 'emergency_db');
 defined('DB_USER') || define('DB_USER', 'web_api_user');
-defined('DB_PASS') || define('DB_PASS', '9bYC%60I#wMsba');
-
-// API Keys
-defined('ORS_API_KEY') || define('ORS_API_KEY', 'pmMmvsCrpjIi67TGzDbATzQ6kY50O4EN');
 
 // Endpunkte
 defined('ORS_URL') || define('ORS_URL', 'https://ors.oe5ith.at');
 defined('NOMINATIM_URL') || define('NOMINATIM_URL', 'https://geocoder.oe5ith.at');
+
+// Secrets müssen aus config.local.php kommen — kein Fallback-Wert im Repo.
+if (!defined('DB_PASS') || !defined('ORS_API_KEY')) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Server misconfigured: missing config.local.php with required secrets']);
+    exit;
+}
 
 /**
  * Hilfsfunktion für die Datenbankverbindung
