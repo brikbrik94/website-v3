@@ -254,6 +254,31 @@ export const NahMapLayers = {
     MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsLayerDef as any);
     attachHoverCursor(map, [STATIONS_LAYER]);
 
+    // Text-Label für Station-Count (nur sichtbar wenn > 1)
+    const stationsCountLayer = {
+      id: 'nah-stations-count-label',
+      type: 'symbol',
+      source: STATIONS_SOURCE,
+      layout: {
+        'text-field': ['case', ['>', ['get', '_station_count'], 1], ['get', '_station_count'], ''],
+        'text-size': 12,
+        'text-offset': [0, 1.2],
+        'text-allow-overlap': true,
+      },
+      paint: {
+        'text-color': '#ffffff',
+        'text-halo-color': [
+          'match', ['get', 'status'],
+          'active', MAP_COLORS.success,
+          'inactive', MAP_COLORS.danger,
+          'offseason', MAP_COLORS.muted,
+          MAP_COLORS.success
+        ],
+        'text-halo-width': 1.5,
+      }
+    };
+    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsCountLayer as any);
+
     const sourceId = 'nah-lines';
     const layerId = 'nah-lines';
 
