@@ -151,7 +151,8 @@ export const NahMapLayers = {
             return `
             <div class="popup-station-item">
               <div class="popup-station-header">
-                <strong>${station.callsign}</strong> — ${station.name}
+                <div class="popup-header-title">${station.callsign}</div>
+                <div class="popup-header-org">${station.name}</div>
               </div>
               <div class="popup-station-details">
                 <table class="popup-kv">
