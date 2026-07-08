@@ -86,12 +86,14 @@ an bereits bestehenden Features.
 Bestehenden Code/bestehende Praxis an die in [CLAUDE.md](./CLAUDE.md#standards-referenzen) referenzierten
 Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
 
-- [ ] **PHP (`api/*.php`) gegen PSR-12 prüfen** — aktuell keine durchgesetzte Stilkonvention fürs
-  Backend. Audit (Einrückung — schon 4 Spaces, aber Namespaces/Dateistruktur/Klammersetzung
-  ungeprüft) + Angleichung wo nötig.
-- [ ] **Security-Praxis gegen OWASP Top 10 gegenchecken** — kurzer Self-Check der bestehenden
-  Regeln (Read-only `web_api_user`, Secrets nur in `api/config.local.php`, keine Secrets im Repo)
-  gegen die zehn Kategorien; keine Vollzertifizierung, nur Lückenprüfung.
+- [x] **PHP (`api/*.php`) gegen PSR-12 prüfen** (2026-07-08) — PHP_CodeSniffer mit PSR-12-Ruleset
+  eingerichtet (`phpcs.xml` + `composer.json` `lint`-Script), bestehende Verstöße gefixt.
+  Siehe `composer run lint` zur Verifikation und `docs/security/openapi.yaml` sowie
+  `phpcs.xml` in der Codebase.
+- [x] **Security-Praxis gegen OWASP Top 10 gegenchecken** (2026-07-08) — Hybrid-Audit mit
+  automatisiertem Security-Script (`bash scripts/security-audit.sh`) für Secret-/Injection-Heuristiken
+  sowie umfassende manuelle Bewertung aller 10 Kategorien in `docs/security/owasp-top10-checklist.md`.
+  Dabei Info-Disclosure in `diag.php` gefunden (siehe separater TODO.md-Punkt unten).
 - [ ] **`diag.php`-Info-Disclosure beheben** — beim OWASP-Top-10-Audit (2026-07-08, siehe
   [docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md), Kategorien
   A01/A05) gefunden: `api/diag.php` ist ohne Zugriffsschutz öffentlich erreichbar und exponiert
@@ -99,7 +101,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   ORS-Health-Status. Fix-Optionen: Endpoint entfernen (falls nicht mehr gebraucht) oder mit einem
   einfachen Shared-Secret/Header-Check absichern. Bewusst nicht Teil des Standards-Angleichung-Plans
   (2026-07-08) — dort nur dokumentiert, um den Scope nicht zu sprengen.
-- [ ] **OpenAPI-Spec für `api/*.php` erstellen** — aktuell keine formale Beschreibung der Endpoints
-  (Pfade, Query-Parameter, Response-Schemas). Je Endpoint (`nah.php`, `stations.php`, `ors.php`,
-  `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, …) Request/Response gegen den Ist-Code
-  dokumentieren, als eine `openapi.yaml`/`openapi.json` im Repo.
+- [x] **OpenAPI-Spec für `api/*.php` erstellen** (2026-07-08) — OpenAPI-3.x-Spec für alle 11
+  API-Endpoints in `docs/openapi.yaml` angelegt, validiert via `npm run validate:openapi`.
+  Umfasst Request/Response-Schemas, Query-Parameter und Status-Codes für alle Endpoints
+  (`nah.php`, `stations.php`, `ors.php`, `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, etc.).

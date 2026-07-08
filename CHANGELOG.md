@@ -5,6 +5,15 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 ## [Unreleased]
 
 ### Hinzugefügt
+- **Standards-Angleichung: PSR-12, OWASP Top 10, OpenAPI** (2026-07-08) — Drei bisher offene
+  TODO.md-Punkte umgesetzt: (1) PHP_CodeSniffer mit PSR-12-Ruleset für `api/*.php` eingerichtet
+  (`composer run lint`), bestehende Verstöße gefixt; (2) hybrides OWASP-Top-10-Audit — automatisiertes
+  Script (`bash scripts/security-audit.sh`) für Secret-/Injection-Heuristik-Checks plus vollständige
+  manuelle Bewertung aller 10 Kategorien in `docs/security/owasp-top10-checklist.md`; dabei einen
+  Info-Disclosure-Fund in `diag.php` entdeckt und als eigenen TODO.md-Punkt erfasst (nicht in diesem
+  Rahmen gefixt); (3) OpenAPI-3.x-Spec für alle 11 API-Endpoints (`docs/openapi.yaml`), validiert via
+  `npm run validate:openapi`. Zusätzlich während der Recherche gefunden und sofort behoben: hardcoded
+  DB-Passwort/API-Key in `api/config.php` (Commit `87accec`, vor diesem Plan).
 - **NAH: Mehrfach-Stationen mit Status-Aggregation und Badge** (2026-07-08) — 
   Stationen mit identischen Koordinaten (z.B. Christophorus 14/99, Martin 1/10) 
   werden jetzt aggregiert: ein gemeinsamer Marker mit Nummern-Badge zeigt an, 
