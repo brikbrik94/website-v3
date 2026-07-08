@@ -190,7 +190,10 @@ export const NahMapLayers = {
       ...rawProps,
       months_active: typeof rawProps.months_active === 'string'
         ? JSON.parse(rawProps.months_active)
-        : rawProps.months_active
+        : rawProps.months_active,
+      _all_stations: typeof (rawProps as any)._all_stations === 'string'
+        ? JSON.parse((rawProps as any)._all_stations)
+        : (rawProps as any)._all_stations
     };
     return {
       station,
