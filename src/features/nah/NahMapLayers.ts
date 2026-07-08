@@ -121,6 +121,55 @@ export const NahMapLayers = {
     `;
   },
 
+  buildMultiStationPopupHtml(stations: NahStation[]): string {
+    return `
+      <div class="map-popup-detail">
+        <div class="popup-header">
+          <div class="popup-header-title">${stations.length} Stationen am Standort</div>
+        </div>
+        <div class="popup-stations-list">
+          ${stations.map(station => {
+            const status = this.computeStationStatus(station);
+            const badgeClass = STATUS_BADGE_CLASS[status];
+            const statusText = STATUS_TEXT[status];
+
+            let hoursHtml = '';
+            if (station.op_type === 'fixed' && station.fixed_start && station.fixed_end) {
+              hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end}</td></tr>`;
+            } else if (station.op_type === 'daylight') {
+              if (station.fixed_start && station.fixed_end) {
+                hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end} (max. ECET)</td></tr>`;
+              } else if (station.fixed_start) {
+                hoursHtml = `<tr><td>Zeiten</td><td>Ab ${station.fixed_start} bis ECET</td></tr>`;
+              } else {
+                hoursHtml = `<tr><td>Zeiten</td><td>BCET bis ECET</td></tr>`;
+              }
+            } else if (station.op_type === '24/7') {
+              hoursHtml = `<tr><td>Zeiten</td><td>24 Stunden / 7 Tage</td></tr>`;
+            }
+
+            return `
+            <div class="popup-station-item">
+              <div class="popup-station-header">
+                <strong>${station.callsign}</strong> — ${station.name}
+              </div>
+              <div class="popup-station-details">
+                <table class="popup-kv">
+                  <tr><td>Status</td><td><span class="badge ${badgeClass}">${statusText}</span></td></tr>
+                  <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
+                  ${hoursHtml}
+                  <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>
+                  ${status === 'offseason' ? `<tr><td>Saison</td><td>Monate: ${station.months_active?.join(', ') || '-'}</td></tr>` : ''}
+                </table>
+              </div>
+            </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  },
+
   /**
    * Rendert die NAH-Stationen als daten-getriebene Symbol-Layer (ersetzt den
    * früheren maplibregl.Marker-pro-Station-Ansatz).
@@ -213,7 +262,16 @@ export const NahMapLayers = {
       return false;
     }
 
-    PopupManager.showFeaturePopup(map, hit.coordinates, this.buildStationPopupHtml(hit.station));
+    const allStations = (hit.station as any)._all_stations as NahStation[] | undefined;
+    let popupHtml: string;
+
+    if (allStations && allStations.length > 1) {
+      popupHtml = this.buildMultiStationPopupHtml(allStations);
+    } else {
+      popupHtml = this.buildStationPopupHtml(hit.station);
+    }
+
+    PopupManager.showFeaturePopup(map, hit.coordinates, popupHtml);
     return true;
   },
 

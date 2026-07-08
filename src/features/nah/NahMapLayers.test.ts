@@ -120,25 +120,31 @@ describe('NahMapLayers.buildMultiStationPopupHtml', () => {
       {
         callsign: 'Martin 1',
         name: 'Martin Luftrettungsstation',
+        region: 'OÖ',
         is_active: false,
         in_season: true,
         op_type: 'daylight',
         fixed_start: '07:00',
         fixed_end: '18:00',
         is_night_ready: false,
+        lat: 48.1,
+        lon: 14.2,
         months_active: [5,6,7,8,9]
-      } as NahStation,
+      },
       {
         callsign: 'Martin 10',
         name: 'Martin Luftrettungsstation',
+        region: 'OÖ',
         is_active: false,
         in_season: false,
         op_type: 'fixed',
         fixed_start: '08:00',
         fixed_end: '17:00',
         is_night_ready: false,
+        lat: 48.1,
+        lon: 14.2,
         months_active: []
-      } as NahStation,
+      },
     ];
     const html = NahMapLayers.buildMultiStationPopupHtml(stations);
 
