@@ -114,6 +114,47 @@ describe('NahMapLayers.buildStationPopupHtml', () => {
   });
 });
 
+describe('NahMapLayers.buildMultiStationPopupHtml', () => {
+  it('displays all stations with full details', () => {
+    const stations: NahStation[] = [
+      {
+        callsign: 'Martin 1',
+        name: 'Martin Luftrettungsstation',
+        is_active: false,
+        in_season: true,
+        op_type: 'daylight',
+        fixed_start: '07:00',
+        fixed_end: '18:00',
+        is_night_ready: false,
+        months_active: [5,6,7,8,9]
+      } as NahStation,
+      {
+        callsign: 'Martin 10',
+        name: 'Martin Luftrettungsstation',
+        is_active: false,
+        in_season: false,
+        op_type: 'fixed',
+        fixed_start: '08:00',
+        fixed_end: '17:00',
+        is_night_ready: false,
+        months_active: []
+      } as NahStation,
+    ];
+    const html = NahMapLayers.buildMultiStationPopupHtml(stations);
+
+    // Verify both stations appear with callsigns
+    expect(html).toContain('Martin 1');
+    expect(html).toContain('Martin 10');
+    // Verify details are included
+    expect(html).toContain('Betrieb');
+    expect(html).toContain('daylight');
+    expect(html).toContain('fixed');
+    // Verify status badges
+    expect(html).toContain('badge-red');
+    expect(html).toContain('badge-gray');
+  });
+});
+
 describe('NahMapLayers.setStations', () => {
   function mockMapWithSource() {
     const calls: unknown[] = [];
