@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-09 23:45
+
+### Hinzugefügt
+- **Klick-Popups für Overlay-Layer auf `/karte`** (TODO.md → Map-Subsystem: Anschlussfeatures)
+  — Klick auf ein Feature eines aktiven Overlays (Autobahnen, Gemeinden, Höhenlinien, RD/NEF, …)
+  zeigt ein Popup mit dessen Eigenschaften. Neue `OverlayLoader.getActiveLayerIds()` liefert alle
+  aktuell aktiven Overlay-Layer-IDs für `queryRenderedFeatures`. Neues
+  `src/lib/GenericFeaturePopup.ts` baut den Popup-Inhalt generisch aus den rohen
+  GeoJSON-`properties` (Titel-Heuristik: erste vorhandene Property aus `name`/`title`/`ref`/`id`,
+  Rest als Key-Value-Liste; interne `_`-Felder und sehr lange Werte gefiltert; HTML-escaped gegen
+  XSS aus Fremddaten) — bewusst **keine** Kuratierung pro Layer (wie bei Trackings
+  `POPUP_CONFIGS`), da `/karte`s Overlays zu heterogen/zahlreich dafür sind (z.B. 109 einzelne
+  Autobahn-Layer). Popup-Anker ist die tatsächliche Klick-Position (`e.lngLat`), nicht von der
+  Feature-Geometrie abgeleitet — nötig, weil `/karte`-Overlays gemischte Geometrietypen haben
+  (Linien, Polygone), anders als die reinen Punkt-Layer bei Tracking/NAH. `/nah`s bestehender,
+  eigenständiger Popup-Builder bleibt unverändert (bewusst nicht Teil dieses Punkts). Verifiziert:
+  `npx tsc --noEmit` 0 Fehler, `npm test` 145/145.
+
 ## [Unreleased] - 2026-07-09 22:57
 
 ### Behoben
