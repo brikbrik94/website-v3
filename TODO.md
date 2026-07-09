@@ -93,13 +93,20 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   automatisiertem Security-Script (`bash scripts/security-audit.sh`) für Secret-/Injection-Heuristiken
   sowie umfassende manuelle Bewertung aller 10 Kategorien in `docs/security/owasp-top10-checklist.md`.
   Dabei Info-Disclosure in `diag.php` gefunden (siehe separater TODO.md-Punkt unten).
-- [ ] **`diag.php`-Info-Disclosure beheben** — beim OWASP-Top-10-Audit (2026-07-08, siehe
+- [x] **`diag.php`-Info-Disclosure in Produktion blockiert** (2026-07-08) — beim
+  OWASP-Top-10-Audit gefunden (siehe
   [docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md), Kategorien
-  A01/A05) gefunden: `api/diag.php` ist ohne Zugriffsschutz öffentlich erreichbar und exponiert
+  A01/A05): `api/diag.php` war ohne Zugriffsschutz öffentlich erreichbar und exponierte
   PHP-Version, geladene Extensions, DB-Host/Port/Name/User (Passwort maskiert) sowie den internen
-  ORS-Health-Status. Fix-Optionen: Endpoint entfernen (falls nicht mehr gebraucht) oder mit einem
-  einfachen Shared-Secret/Header-Check absichern. Bewusst nicht Teil des Standards-Angleichung-Plans
-  (2026-07-08) — dort nur dokumentiert, um den Scope nicht zu sprengen.
+  ORS-Health-Status. Fix: `location = /api/diag.php { deny all; return 403; }` in `nginx.conf`
+  ergänzt — nur im Produktions-Server-Block (`map.oe5ith.at`, HTTPS), der lokale Dev-Block bleibt
+  bewusst unverändert (dort ist der Endpoint zum Debuggen nützlich). **Wichtig:** Diese
+  Repo-Änderung wird von `deploy-website.sh` nicht automatisch auf den Server übertragen (das
+  Script synced nur `dist/` und `api/`, nicht `nginx.conf`) — die Config muss manuell auf den
+  Server kopiert und `nginx -t && systemctl reload nginx` ausgeführt werden, bevor der Block
+  live wirkt. `api/diag.php` selbst bleibt im Code bestehen (kein Entfernen/Absichern auf
+  Code-Ebene) — die nginx-Sperre ist bewusst der gewählte Fix (Defense-in-Depth auf Code-Ebene
+  bliebe ein möglicher Folgepunkt, aktuell nicht nötig).
 - [x] **OpenAPI-Spec für `api/*.php` erstellen** (2026-07-08) — OpenAPI-3.x-Spec für alle 12
   API-Endpoints in `docs/openapi.yaml` angelegt, validiert via `npm run validate:openapi`.
   Umfasst Request/Response-Schemas, Query-Parameter und Status-Codes für alle Endpoints
