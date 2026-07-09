@@ -150,4 +150,14 @@ html, body {
   padding: 2rem;
 }
 
+.map-legend-remove {
+  margin-left: auto;
+}
+
+.map-legend-unknown {
+  width: 10px;
+  text-align: center;
+  color: var(--muted);
+  flex-shrink: 0;
+}
 

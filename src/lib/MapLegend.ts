@@ -1,9 +1,14 @@
 import { LegendEntry } from '../types/common';
 
+export interface AddLegendEntryOptions extends LegendEntry {
+  onRemove?: () => void;
+}
+
 export class MapLegend {
   private _el: HTMLElement;
   private _titleEl: HTMLElement;
   private _entriesEl: HTMLElement;
+  private _entryNodes = new Map<string, HTMLElement>();
 
   constructor(selectorOrEl: string | HTMLElement) {
     const el = typeof selectorOrEl === 'string' ? document.querySelector(selectorOrEl) : selectorOrEl;
@@ -25,26 +30,59 @@ export class MapLegend {
     }
   }
 
-  addEntry(entry: LegendEntry): void {
+  addEntry(entry: AddLegendEntryOptions): void {
+    // Erneutes addEntry mit bereits vorhandener id ersetzt den bestehenden Eintrag (idempotent).
+    if (entry.id && this._entryNodes.has(entry.id)) {
+      this.removeEntry(entry.id);
+    }
+
     const div = document.createElement('div');
     div.className = 'map-legend-entry';
 
     const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', area: 'map-legend-area' }[entry.type];
-    const marker = document.createElement('div');
-    marker.className = typeClass;
-    marker.style.background = entry.color;
+
+    if (entry.color === null) {
+      const unknown = document.createElement('i');
+      unknown.className = 'fa-solid fa-circle-question map-legend-unknown';
+      unknown.title = 'Farbe nicht auflösbar';
+      div.appendChild(unknown);
+    } else {
+      const marker = document.createElement('div');
+      marker.className = typeClass;
+      marker.style.background = entry.color;
+      div.appendChild(marker);
+    }
 
     const label = document.createElement('span');
     label.className = 'map-legend-label';
     label.textContent = entry.label;
-
-    div.appendChild(marker);
     div.appendChild(label);
+
+    if (entry.onRemove) {
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'toast-close map-legend-remove';
+      removeBtn.setAttribute('aria-label', `${entry.label} entfernen`);
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', entry.onRemove);
+      div.appendChild(removeBtn);
+    }
+
     this._entriesEl.appendChild(div);
+    if (entry.id) this._entryNodes.set(entry.id, div);
+  }
+
+  removeEntry(id: string): void {
+    const node = this._entryNodes.get(id);
+    if (node) {
+      node.remove();
+      this._entryNodes.delete(id);
+    }
   }
 
   clearEntries(): void {
     this._entriesEl.innerHTML = '';
+    this._entryNodes.clear();
   }
 
   show(): void { this._el.classList.remove('hidden'); }
