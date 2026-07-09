@@ -1,5 +1,17 @@
 import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
+import type { LayerSpecification } from 'maplibre-gl';
+
+export interface LayerMetaGroup {
+  name: string;
+  style_layers: string[];
+  template: string;
+}
+
+export interface LayerMetaEntry {
+  id: string;
+  groups: LayerMetaGroup[];
+}
 
 export type LayerToggleCallback = (
   overlayId: string, 
@@ -21,9 +33,9 @@ export const initSidebar = (
   onLayerToggle: LayerToggleCallback,
   onBulkToggle?: BulkToggleCallback,
   onGroupExpand?: (overlayId: string) => Promise<void>,
-  layersMeta: any[] = []
+  layersMeta: LayerMetaEntry[] = []
 ) => {
-  const loadedLayers = new Map<string, any[]>();
+  const loadedLayers = new Map<string, LayerMetaGroup[] | LayerSpecification[]>();
 
   const renderOverlayGroup = (m: MapItem) => {
     const id = m.name.toLowerCase().replace(/\s+/g, '-');
@@ -87,7 +99,7 @@ export const initSidebar = (
 
     if (meta) {
       loadedLayers.set(id, meta.groups);
-      listEl.innerHTML = meta.groups.map((g: any) => `
+      listEl.innerHTML = meta.groups.map((g) => `
         <div class="acc-item" tabindex="0" role="checkbox" aria-checked="false" data-layer-ids='${JSON.stringify(g.style_layers)}' data-layer-type="${g.template}">
           <span class="acc-checkbox"></span>
           <span class="acc-item-label">${g.name}</span>
@@ -98,10 +110,10 @@ export const initSidebar = (
       try {
         const res = await fetch(url);
         const style = await res.json();
-        const layers = style.layers.filter((l: any) => l.type !== 'background');
+        const layers = (style.layers as LayerSpecification[]).filter((l) => l.type !== 'background');
         loadedLayers.set(id, layers);
 
-        listEl.innerHTML = layers.map((l: any) => `
+        listEl.innerHTML = layers.map((l) => `
           <div class="acc-item" tabindex="0" role="checkbox" aria-checked="false" data-layer-ids='${JSON.stringify([l.id])}' data-layer-type="${l.type}">
             <span class="acc-checkbox"></span>
             <span class="acc-item-label">${l.id}</span>
