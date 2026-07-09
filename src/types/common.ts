@@ -1,3 +1,5 @@
+import type { Feature, LineString } from 'geojson';
+
 export type ToastType = 'success' | 'warning' | 'danger' | 'info';
 
 export interface ToastOptions {
@@ -39,8 +41,8 @@ export interface GeocodeResult {
 
 export interface RouteResult {
     type: 'FeatureCollection';
-    features: any[];
-    metadata: any;
+    features: Feature<LineString, RouteFeatureProperties>[];
+    metadata: unknown;
 }
 
 export interface RouteExtraSummaryEntry {
@@ -79,7 +81,7 @@ export interface RouteFeatureProperties {
     summary: { distance: number; duration: number };
     extras?: RouteExtras;
     segments?: RouteSegment[];
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface RoutingStation {
@@ -90,7 +92,7 @@ export interface RoutingStation {
     lon: number;
     distance: number;
     duration: number;
-    route?: any;
+    route?: RouteResult;
 }
 
 export interface StatsResponse {
