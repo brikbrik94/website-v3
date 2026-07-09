@@ -1,4 +1,4 @@
-import maplibregl, { type LayerSpecification, type StyleImageMetadata } from 'maplibre-gl';
+import maplibregl, { type LayerSpecification, type SourceSpecification, type StyleImageMetadata } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { initTerrainManager, applyTerrainInfrastructure } from './TerrainManager';
 import { BasemapStore } from './BasemapStore';
@@ -110,7 +110,7 @@ export const MapCore = {
    * NOTE: This function now also registers the source/layer in the MapRegistry
    * to ensure they are restored automatically on style changes.
    */
-  ensureGeoJsonLayer(map: maplibregl.Map, sourceId: string, layerDef: any) {
+  ensureGeoJsonLayer(map: maplibregl.Map, sourceId: string, layerDef: LayerSpecification) {
     // 1. Register for persistence (ONLY if not already registered to avoid overwriting actual data)
     if (!MapRegistry.getSource(sourceId)) {
       const sourceDef = {
@@ -183,7 +183,7 @@ export const MapCore = {
    * Resolves relative URLs in map source definitions (url and tiles) against a base URL.
    * Also ensures 'pmtiles://' identifiers don't get unwanted trailing slashes from URL().
    */
-  resolveSourceUrls(sources: any, baseUrl: string): any {
+  resolveSourceUrls(sources: Record<string, SourceSpecification>, baseUrl: string): Record<string, SourceSpecification> {
     const resolvedSources = JSON.parse(JSON.stringify(sources));
     
     const resolveUrl = (u: string) => {
@@ -215,7 +215,10 @@ export const MapCore = {
       }
     };
 
-    for (const src of Object.values(resolvedSources) as any) {
+    for (const rawSrc of Object.values(resolvedSources)) {
+      // Nicht alle SourceSpecification-Varianten haben url/tiles (z.B. GeoJSON-Sources nicht) —
+      // dieser Cast bildet exakt das bereits vorher per any erlaubte, duck-typed Zugreifen ab.
+      const src = rawSrc as { url?: string; tiles?: string[] };
       if (src.url) src.url = resolveUrl(src.url);
       if (Array.isArray(src.tiles)) {
         src.tiles = src.tiles.map((u: string) => resolveUrl(u));

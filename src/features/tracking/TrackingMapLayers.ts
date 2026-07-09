@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { type ExpressionSpecification } from 'maplibre-gl';
 import { MapCore } from '../../lib/MapCore';
 import { MAP_COLORS } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
@@ -153,7 +153,7 @@ export class TrackingMapLayers {
         });
 
         // --- AIS DOTS & ICONS ---
-        const shipColorProp = ['get', 'ui_color'];
+        const shipColorProp: ExpressionSpecification = ['get', 'ui_color'];
 
         MapCore.ensureGeoJsonLayer(m, 'ais', {
             id: 'ais-dots-moving',
