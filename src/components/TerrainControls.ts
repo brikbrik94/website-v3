@@ -27,7 +27,7 @@ export const TerrainControls = {
   _listenersInitialized: false,
 
   initListeners() {
-    if ((this as any)._listenersInitialized) return;
+    if (this._listenersInitialized) return;
 
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
@@ -54,7 +54,7 @@ export const TerrainControls = {
       }
     });
 
-    (this as any)._listenersInitialized = true;
+    this._listenersInitialized = true;
   },
 
   syncButtons(className: string, active: boolean) {

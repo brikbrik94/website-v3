@@ -1,5 +1,12 @@
 import { StatsResponse } from '../../types/common';
 
+interface RegionStation {
+  type: string;
+  org: string;
+  short_name: string;
+  name: string;
+}
+
 /**
  * Renders the Regions Analysis module.
  */
@@ -28,7 +35,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
   let content = document.getElementById('regions-content')!;
   let meta = document.getElementById('regions-meta')!;
   let refreshBtn = document.getElementById('regions-refresh-btn') as HTMLButtonElement;
-  let refreshTimeout: any = null;
+  let refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const renderData = (data: StatsResponse) => {
     let html = '';
@@ -180,7 +187,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
             <tbody>
       `;
 
-      data.forEach((station: any) => {
+      data.forEach((station: RegionStation) => {
         const badgeClass = station.type === 'RD' ? 'badge-gray' : 'badge-red';
         tableHtml += `
           <tr>
@@ -200,8 +207,8 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
 
       body.innerHTML = tableHtml;
 
-    } catch (error: any) {
-      if (error.name === 'AbortError') return;
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') return;
       const body = container.querySelector('.content-body')!;
       if (body) {
          body.innerHTML = `<div class="t-danger text-center p-2rem">
@@ -227,8 +234,8 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
       meta.innerHTML = `Stand: ${new Date(data.generated_at).toLocaleTimeString()}`;
       
       scheduleNext();
-    } catch (error: any) {
-      if (error.name === 'AbortError') return;
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') return;
 
       content.innerHTML = `<div class="t-danger text-center p-2rem">
         <i class="fa-solid fa-triangle-exclamation"></i> Fehler beim Laden der Regionaldaten.

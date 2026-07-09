@@ -100,7 +100,7 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
   const metaContainer = document.getElementById('nah-meta')!;
   const refreshBtn = document.getElementById('nah-refresh-btn') as HTMLButtonElement;
   const headers = container.querySelectorAll('th.sortable');
-  let refreshTimeout: any = null;
+  let refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const scheduleNextRefresh = (refreshAt: string | number) => {
     if (refreshTimeout) clearTimeout(refreshTimeout);
@@ -264,9 +264,9 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
       if (data.refresh_at) {
         scheduleNextRefresh(data.refresh_at);
       }
-    } catch (error: any) {
-      if (error.name === 'AbortError') return;
-      
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') return;
+
       tableBodyActive.innerHTML = `
         <tr>
           <td colspan="6" class="text-center tbl-cell-pad-2rem t-danger">

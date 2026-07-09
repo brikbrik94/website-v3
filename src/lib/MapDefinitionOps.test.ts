@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
 
 describe('addSourceIfMissing', () => {
   it('adds a cloned copy of the definition when the source does not exist', () => {
     const calls: { id: string; definition: any }[] = [];
-    const definition = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } };
+    const definition = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } as SourceSpecification;
     const map = {
       getSource: () => undefined,
       addSource: (id: string, def: any) => calls.push({ id, definition: def }),
@@ -25,7 +26,7 @@ describe('addSourceIfMissing', () => {
       addSource: (...args: unknown[]) => calls.push(args),
     } as any;
 
-    addSourceIfMissing(map, 'my-source', { type: 'geojson' });
+    addSourceIfMissing(map, 'my-source', { type: 'geojson' } as SourceSpecification);
 
     expect(calls).toHaveLength(0);
   });
@@ -36,14 +37,14 @@ describe('addSourceIfMissing', () => {
       addSource: () => { throw new Error('boom'); },
     } as any;
 
-    expect(() => addSourceIfMissing(map, 'my-source', { type: 'geojson' })).not.toThrow();
+    expect(() => addSourceIfMissing(map, 'my-source', { type: 'geojson' } as SourceSpecification)).not.toThrow();
   });
 });
 
 describe('addLayerIfMissing', () => {
   it('adds a cloned copy of the definition when the layer does not exist', () => {
     const calls: { definition: any; beforeId: string | undefined }[] = [];
-    const definition = { id: 'my-layer', type: 'line', source: 'my-source' };
+    const definition = { id: 'my-layer', type: 'line', source: 'my-source' } as LayerSpecification;
     const map = {
       getLayer: () => undefined,
       addLayer: (def: any, beforeId?: string) => calls.push({ definition: def, beforeId }),
@@ -64,7 +65,7 @@ describe('addLayerIfMissing', () => {
       addLayer: (...args: unknown[]) => calls.push(args),
     } as any;
 
-    addLayerIfMissing(map, { id: 'my-layer', type: 'line' });
+    addLayerIfMissing(map, { id: 'my-layer', type: 'line' } as LayerSpecification);
 
     expect(calls).toHaveLength(0);
   });
@@ -75,6 +76,6 @@ describe('addLayerIfMissing', () => {
       addLayer: () => { throw new Error('boom'); },
     } as any;
 
-    expect(() => addLayerIfMissing(map, { id: 'my-layer', type: 'line' })).not.toThrow();
+    expect(() => addLayerIfMissing(map, { id: 'my-layer', type: 'line' } as LayerSpecification)).not.toThrow();
   });
 });

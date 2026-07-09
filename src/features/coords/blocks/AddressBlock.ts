@@ -4,7 +4,7 @@ import { GeocoderService } from '../../../lib/GeocoderService';
 import { renderGeocodeItemHtml } from '../../../lib/UIUtils';
 
 export class AddressBlock extends CoordSystemBlock {
-  private geocodeTimeout: any;
+  private geocodeTimeout: ReturnType<typeof setTimeout> | undefined;
 
   public render(): string {
     return `

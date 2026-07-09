@@ -1,10 +1,10 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { type StyleSpecification } from 'maplibre-gl';
 import { MapCore } from './MapCore';
 import { MapRegistry } from './MapRegistry';
 import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
 
 interface LoadedOverlay {
-  style: any;
+  style: StyleSpecification;
   sourceIdMap: Map<string, string>;
   sourceIds: string[];
   layerIds: string[];
@@ -76,8 +76,9 @@ export const OverlayLoader = {
       loaded.set(overlayId, entry);
 
       if (style.sprite) {
-        MapRegistry.registerImage(overlayId, style.sprite, styleUrl);
-        await MapCore.loadSprites(map, style.sprite, styleUrl);
+        const spriteUrl = style.sprite as string;
+        MapRegistry.registerImage(overlayId, spriteUrl, styleUrl);
+        await MapCore.loadSprites(map, spriteUrl, styleUrl);
         entry.hasImage = true;
       }
 
@@ -92,18 +93,18 @@ export const OverlayLoader = {
     }
 
     const style = entry.style;
-    const wantedLayerIds: string[] = opts?.layerIds ?? (style.layers || []).map((l: any) => l.id);
+    const wantedLayerIds: string[] = opts?.layerIds ?? (style.layers || []).map((l) => l.id);
 
     for (const layerId of wantedLayerIds) {
       const uniqueLayerId = prefixed(overlayId, layerId);
       if (entry.layerIds.includes(uniqueLayerId)) continue;
 
-      const layerDef = (style.layers || []).find((l: any) => l.id === layerId);
+      const layerDef = (style.layers || []).find((l) => l.id === layerId);
       if (!layerDef) continue;
 
       const newLayer = { ...layerDef, id: uniqueLayerId };
-      if (newLayer.source && entry.sourceIdMap.has(newLayer.source)) {
-        newLayer.source = entry.sourceIdMap.get(newLayer.source);
+      if ('source' in newLayer && newLayer.source && entry.sourceIdMap.has(newLayer.source)) {
+        newLayer.source = entry.sourceIdMap.get(newLayer.source) ?? newLayer.source;
       }
       MapRegistry.registerLayer(uniqueLayerId, newLayer);
       addLayerIfMissing(map, newLayer);

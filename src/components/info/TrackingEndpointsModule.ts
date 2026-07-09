@@ -67,7 +67,7 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
             ${renderStatsPanel(stats)}
             ${renderSourcesPanel(health)}
         `;
-    } catch (e: any) {
+    } catch (e) {
         if (signal.aborted) return;
         body.innerHTML = `
             <div class="panel error-panel">
@@ -76,7 +76,7 @@ export async function renderTrackingEndpointsModule(container: HTMLElement, sign
                 </div>
                 <div class="panel-body">
                     <p>Die Tracking-Endpunkte konnten nicht geladen werden.</p>
-                    <p class="error-text">${e.message}</p>
+                    <p class="error-text">${(e as Error).message}</p>
                 </div>
             </div>
         `;
@@ -175,7 +175,7 @@ function renderSourcesPanel(health: TrackingHealth) {
         `;
     }
 
-    const sourceGrids = sources.map((s: any) => `
+    const sourceGrids = sources.map((s) => `
         <div class="svc-data-cell">
             <span class="svc-data-label">Typ</span>
             <span class="svc-data-value">${(s.kind || 'unknown').toUpperCase()}</span>

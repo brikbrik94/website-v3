@@ -1,21 +1,22 @@
-import { 
-    TrackingItem, 
-    AircraftEntity, 
-    VesselEntity, 
-    ServerMessage, 
-    SnapshotMessage, 
+import {
+    TrackingItem,
+    AircraftEntity,
+    VesselEntity,
+    ServerMessage,
+    SnapshotMessage,
     UpdateMessage,
     SourceStatus,
-    SystemTelemetry
+    SystemTelemetry,
+    AircraftTrackPoint
 } from '../../types/tracking';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { ShipTypeMapper } from '../../lib/ShipTypeMapper';
 
 export type TrackingDataCallback = (data: {
-    adsbData: any;
-    adsbTracks: any;
-    aisData: any;
-    aisTracks: any;
+    adsbData: GeoJSON.FeatureCollection;
+    adsbTracks: GeoJSON.FeatureCollection;
+    aisData: GeoJSON.FeatureCollection;
+    aisTracks: GeoJSON.FeatureCollection;
     adsbItems: TrackingItem[];
     aisItems: TrackingItem[];
 }) => void;
@@ -73,7 +74,7 @@ export class TrackingDataService {
         }, 10000);
     }
 
-    private mergeTrack(existingTrack: any[] | undefined, newPoints: any[] | undefined): any[] | undefined {
+    private mergeTrack(existingTrack: AircraftTrackPoint[] | undefined, newPoints: AircraftTrackPoint[] | undefined): AircraftTrackPoint[] | undefined {
         const track = existingTrack ? [...existingTrack] : [];
         if (newPoints && newPoints.length > 0) {
             track.push(...newPoints);
@@ -244,8 +245,8 @@ export class TrackingDataService {
         this.emitData();
     }
 
-    private getAdsbTracksGeoJson() {
-        const features: any[] = [];
+    private getAdsbTracksGeoJson(): GeoJSON.FeatureCollection<GeoJSON.LineString> {
+        const features: GeoJSON.Feature<GeoJSON.LineString>[] = [];
         
         for (const a of this.aircraftState.values()) {
             if (!a.track || a.track.length < 2) continue;
@@ -272,8 +273,8 @@ export class TrackingDataService {
         return { type: 'FeatureCollection', features };
     }
 
-    private getAisTracksGeoJson() {
-        const features: any[] = [];
+    private getAisTracksGeoJson(): GeoJSON.FeatureCollection<GeoJSON.LineString> {
+        const features: GeoJSON.Feature<GeoJSON.LineString>[] = [];
         for (const v of this.vesselState.values()) {
             if (!v.track || v.track.length < 2) continue;
             const coords = v.track
@@ -301,15 +302,15 @@ export class TrackingDataService {
 
         // Update Registry for persistent storage across page switches/style changes
         const adsbReg = MapRegistry.getSource('adsb');
-        if (adsbReg) adsbReg.definition.data = adsbData;
+        if (adsbReg && adsbReg.definition.type === 'geojson') adsbReg.definition.data = adsbData;
         const aisReg = MapRegistry.getSource('ais');
-        if (aisReg) aisReg.definition.data = aisData;
-        
+        if (aisReg && aisReg.definition.type === 'geojson') aisReg.definition.data = aisData;
+
         // Update tracks in registry
         const adsbTracksReg = MapRegistry.getSource('adsb-tracks');
-        if (adsbTracksReg) adsbTracksReg.definition.data = adsbTracks;
+        if (adsbTracksReg && adsbTracksReg.definition.type === 'geojson') adsbTracksReg.definition.data = adsbTracks;
         const aisTracksReg = MapRegistry.getSource('ais-tracks');
-        if (aisTracksReg) aisTracksReg.definition.data = aisTracks;
+        if (aisTracksReg && aisTracksReg.definition.type === 'geojson') aisTracksReg.definition.data = aisTracks;
 
         const adsbItems: TrackingItem[] = Array.from(this.aircraftState.values()).map(a => {
             const label = a.registration || a.callsign || a.id;
@@ -380,7 +381,7 @@ export class TrackingDataService {
         );
     }
 
-    private getAdsbGeoJson() {
+    private getAdsbGeoJson(): GeoJSON.FeatureCollection<GeoJSON.Point> {
         return {
             type: 'FeatureCollection',
             features: Array.from(this.aircraftState.values())
@@ -435,7 +436,7 @@ export class TrackingDataService {
         return 'A3';
     }
 
-    private getAisGeoJson() {
+    private getAisGeoJson(): GeoJSON.FeatureCollection<GeoJSON.Point> {
         return {
             type: 'FeatureCollection',
             features: Array.from(this.vesselState.values())
