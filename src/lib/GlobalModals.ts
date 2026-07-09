@@ -18,6 +18,12 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.8.1] - 2026-07-09</h2>
+          <h3>Technische Verbesserungen</h3>
+          <ul>
+            <li><strong>Codequalität:</strong> Umfangreiche interne Aufräumarbeiten an der Code-Basis (Typsicherheit, Code-Organisation) — keine sichtbaren Änderungen für Nutzer:innen.</li>
+          </ul>
+
           <h2>[3.8.0] - 2026-07-09</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>

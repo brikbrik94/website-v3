@@ -2,7 +2,7 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-09 14:51
+## [3.8.1] - 2026-07-09
 
 ### Geändert
 - **Type-Safety: `any`-Escapes systematisch reduziert** (ROADMAP.md → Codebase-Qualität) — alle 78
@@ -20,8 +20,31 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   (subagent-driven-development, je mit Task-Review + finalem Whole-Branch-Review). Verifiziert:
   `npx tsc --noEmit` 0 Fehler, `npm test` 112/112, keine `any`/`as any`-Stellen mehr in
   Nicht-Test-`.ts`-Dateien (projektweit).
-
-## [Unreleased] - 2026-07-09 09:32
+- **`NahMapLayers.ts` — Popup-HTML-Building nach `NahPopupBuilder.ts` ausgelagert**
+  (ROADMAP.md → Codebase-Qualität) — `buildStationPopupHtml()`/`buildMultiStationPopupHtml()`
+  (inkl. `computeStationStatus()` und der nur dafür gebrauchten Badge-Class/Text-Mappings) in eine
+  eigene Datei verschoben (429→329 Zeilen). Dabei einen identischen Copy-Paste-Block
+  (Öffnungszeiten-HTML) zu `buildHoursHtml()` zusammengefasst. Live verifiziert (Playwright, echter
+  Mehrfach-Stationen-Klick).
+- **`NahStatusModule.ts` — in benannte Funktionen zerlegt** (ROADMAP.md → Codebase-Qualität) —
+  statisches Seiten-HTML nach `buildNahStatusPageHtml()`, Event-Wiring nach `wireEvents()`
+  ausgelagert; die übrigen Teilfunktionen waren bereits benannt. Live verifiziert (Playwright
+  gegen `/info/nah`): Sortierung inkl. Richtungs-Umkehr, Refresh-Button.
+- **Gemeinsamer `BadgeClass`-Typ für Status-Badges** (ROADMAP.md → Codebase-Qualität) — neuer
+  `src/lib/BadgeStyles.ts` exportiert die 6 kanonischen Badge-Klassen aus
+  `oe5ith-ci/docs/badges.md` als geschlossene Union statt verstreuter Literal-Strings.
+  Angewendet auf 6 Dateien (`NahPopupBuilder.ts`, `NahStatusModule.ts`, `TrackingSidebar.ts`,
+  `RoutingSidebar.ts`, `DebugModule.ts`, `RegionsModule.ts`) — mehr als ursprünglich in der
+  ROADMAP genannt, für volle Konsistenz. Live verifiziert (Playwright): `/routing`-Warnbadges,
+  `/info/debug`-Statusbadge.
+- **Release-Trigger in `AGENT_INSTRUCTIONS.md` §4 formalisiert** — über den Proposal-Zyklus
+  ([docs/proposals/archive/2026-07-09-release-batching-draft.md](./docs/proposals/archive/2026-07-09-release-batching-draft.md)):
+  Die Release-Checkliste (Version/Changelogs/Build/Tag/Deploy) läuft nicht mehr automatisch nach
+  jedem abgeschlossenen TODO-/ROADMAP-Punkt, sondern wird vom Agenten an natürlichen
+  Arbeitsblock-Enden vorgeschlagen und erst nach Bestätigung ausgeführt (Ausnahme:
+  akute/sicherheitsrelevante Fixes weiterhin sofort). Anlass: mehrere separate Same-Day-Releases
+  (`3.5.0`/`3.5.1`/`3.5.2` am 2026-06-30, `3.6.0`/`3.6.1` am 2026-07-05) empfanden als Overhead.
+  Verifikation (`tsc`/`test`) bleibt unverändert Pflicht pro Änderung.
 
 ### Entfernt
 - **Zwei Tile-Server-Sprite-404-Punkte aus `TODO.md` entfernt** — betreffen `tiles.oe5ith.at`
@@ -31,17 +54,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   Tile-Server-Zugriff nicht aus diesem Repo heraus behoben werden können; erneut gegengetestet
   (2026-07-09), beide weiterhin 404.
 
-## [Unreleased] - 2026-07-09 09:29
-
-### Geändert
-- **Release-Trigger in `AGENT_INSTRUCTIONS.md` §4 formalisiert** — über den Proposal-Zyklus
-  ([docs/proposals/archive/2026-07-09-release-batching-draft.md](./docs/proposals/archive/2026-07-09-release-batching-draft.md)):
-  Die Release-Checkliste (Version/Changelogs/Build/Tag/Deploy) läuft nicht mehr automatisch nach
-  jedem abgeschlossenen TODO-/ROADMAP-Punkt, sondern wird vom Agenten an natürlichen
-  Arbeitsblock-Enden vorgeschlagen und erst nach Bestätigung ausgeführt (Ausnahme:
-  akute/sicherheitsrelevante Fixes weiterhin sofort). Anlass: mehrere separate Same-Day-Releases
-  (`3.5.0`/`3.5.1`/`3.5.2` am 2026-06-30, `3.6.0`/`3.6.1` am 2026-07-05) empfanden als Overhead.
-  Verifikation (`tsc`/`test`) bleibt unverändert Pflicht pro Änderung.
+`npx tsc --noEmit && npm test` grün (112/112) für den gesamten Umfang dieses Releases.
 
 ## [3.8.0] - 2026-07-09 00:08
 
