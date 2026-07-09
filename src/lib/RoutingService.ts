@@ -65,7 +65,7 @@ export const RoutingService = {
     target: [number, number],
     type: 'sew' | 'nef',
     profile: string = 'driving-car'
-  ): Promise<any[]> {
+  ): Promise<{ lat: number; lon: number; [key: string]: unknown }[]> {
     try {
       // SONDERFALL: driving-emergency
       // Matrix-Abfrage für driving-emergency ist unzuverlässig.
