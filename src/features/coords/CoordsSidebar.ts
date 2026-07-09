@@ -63,8 +63,8 @@ export class CoordsSidebar {
     setupSidebarToggle(sidebar, sidebarTab, sidebarBackdrop);
 
     // Listen for block activation
-    blocksContainer.addEventListener('block-activated', (e: any) => {
-      this.setActiveBlock(e.detail.systemId);
+    blocksContainer.addEventListener('block-activated', (e: Event) => {
+      this.setActiveBlock((e as CustomEvent<{ systemId: string }>).detail.systemId);
     });
 
     // Subscribe to service updates
