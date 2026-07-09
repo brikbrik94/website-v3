@@ -4,6 +4,14 @@ import { GeocodeResult, RouteExtras, RouteSegment, RoutingStation } from '../typ
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { renderGeocodeItemHtml } from '../lib/UIUtils';
 import { getProfileBadge, getRouteWarnings, formatSteps } from '../features/routing/RoutingDetailsFormatter';
+import type { BadgeClass } from '../lib/BadgeStyles';
+
+// Feste Badge-Farben je UI-Zweck (kein Status-Enum dahinter, anders als z.B.
+// NahPopupBuilder.STATUS_BADGE_CLASS — hier gibt's nur einen einzigen Anwendungsfall pro Zweck).
+const LOADING_BADGE: BadgeClass = 'badge-yellow';
+const ERROR_BADGE: BadgeClass = 'badge-red';
+const WARNING_BADGE: BadgeClass = 'badge-yellow';
+const STEP_COUNT_BADGE: BadgeClass = 'badge-gray';
 
 export interface RoutingParams {
   start?: [number, number];
@@ -254,7 +262,7 @@ export const renderRoutingLoading = (message: string) => {
   status.classList.remove('hidden');
   status.innerHTML = `
     <div class="result-header">
-      <span class="badge badge-yellow">
+      <span class="badge ${LOADING_BADGE}">
         <i class="fa-solid fa-spinner fa-spin"></i> ${message}
       </span>
     </div>
@@ -268,7 +276,7 @@ export const renderRoutingError = (message: string) => {
   status.classList.remove('hidden');
   status.innerHTML = `
     <div class="result-header">
-      <span class="badge badge-red">
+      <span class="badge ${ERROR_BADGE}">
         <i class="fa-solid fa-triangle-exclamation"></i> ${message}
       </span>
     </div>
@@ -309,7 +317,7 @@ export const updateRoutingSummary = (
     : kvHtml;
 
   const warningBadgesHtml = getRouteWarnings(extras)
-    .map((w) => `<span class="badge badge-yellow"><i class="${w.icon}"></i> ${w.label}</span>`)
+    .map((w) => `<span class="badge ${WARNING_BADGE}"><i class="${w.icon}"></i> ${w.label}</span>`)
     .join('');
 
   const steps = formatSteps(segments);
@@ -318,7 +326,7 @@ export const updateRoutingSummary = (
       <details class="disclosure">
         <summary class="disclosure-header">
           <span class="disclosure-title">Wegbeschreibung</span>
-          <span class="disclosure-count badge badge-gray">${steps.length} Schritte</span>
+          <span class="disclosure-count badge ${STEP_COUNT_BADGE}">${steps.length} Schritte</span>
           <i class="fa-solid fa-chevron-down disclosure-chevron"></i>
         </summary>
         <div class="disclosure-body">

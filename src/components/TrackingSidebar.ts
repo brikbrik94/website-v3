@@ -1,8 +1,14 @@
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { TrackingItem, SourceStatus, SystemTelemetry } from '../types/tracking';
+import type { BadgeClass } from '../lib/BadgeStyles';
 
 // Internal state to support interaction logic
 let lastItems: TrackingItem[] = [];
+
+const ENTITY_TYPE_BADGE_CLASS: Record<TrackingItem['type'], BadgeClass> = {
+  adsb: 'badge-blue',
+  ais: 'badge-gray',
+};
 
 export const initTrackingSidebar = (
   container: HTMLElement,
@@ -220,7 +226,7 @@ export const updateTrackingList = (items: TrackingItem[], currentFilter: string)
 
   listEl.innerHTML = filteredItems.map(item => {
     const icon = item.type === 'adsb' ? 'fa-plane' : 'fa-ship';
-    const badgeClass = item.type === 'adsb' ? 'badge-blue' : 'badge-gray';
+    const badgeClass = ENTITY_TYPE_BADGE_CLASS[item.type];
     const badgeLabel = item.type === 'adsb' ? 'ADS-B' : 'AIS';
     
     let kvHtml = '';
