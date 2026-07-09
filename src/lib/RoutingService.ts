@@ -76,7 +76,7 @@ export const RoutingService = {
         const top7Base = await fetch(`/api/stations.php?target=${target[0]},${target[1]}&type=${type}&profile=driving-car&limit=7`);
         const stations7 = await top7Base.json();
 
-        const detailedResults = await Promise.all(stations7.map(async (s: any) => {
+        const detailedResults = await Promise.all(stations7.map(async (s: { lat: number; lon: number; [key: string]: unknown }) => {
           const route = await this.calculateRoute([s.lat, s.lon], target, 'driving-emergency');
           if (route && route.features && route.features.length > 0) {
             const summary = route.features[0].properties.summary;
