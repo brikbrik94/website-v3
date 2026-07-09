@@ -4,6 +4,48 @@ Neue Features/Funktionen, die es im Code noch nicht gibt — keine Fixes oder Er
 bereits bestehenden Features (die gehören in [TODO.md](./TODO.md)). Umgesetzte Punkte wandern
 ins [ROADMAP_ARCHIVE.md](./ROADMAP_ARCHIVE.md).
 
+## Codebase-Qualität: Type-Safety & Modularität (Priorität: zuerst)
+
+Bewusst vor allen anderen Roadmap-Punkten eingeordnet — Ziel ist eine saubere Codebasis als
+Grundlage für alle weiteren Features unten. Ausgangsfrage war ein möglicher ES6/ESNext-Umbau;
+Recherche vom 2026-07-09 hat ergeben, dass `tsconfig.json` bereits durchgängig `ESNext`/`strict`
+verwendet und der Code praktisch keine Legacy-JS-Patterns enthält (0× `var`, 0× alte
+`function()`-Expressions, 0× `require()`, async/await bereits dominantes Pattern in 86 von
+89 Dateien) — ein Syntax-Umbau entfällt damit. Die Recherche hat stattdessen zwei echte,
+quantifizierte Hebel gefunden:
+
+- [ ] **Type-Safety: `any`-Escapes systematisch reduzieren** — 121 Stellen im Code umgehen
+  striktes Typing trotz `strict: true` in `tsconfig.json`: 73× `: any`-Annotationen, 48×
+  `as any`-Casts (Stand 2026-07-09). Beispiele: `let lastResponse: any = null`
+  (`DebugModule.ts:88`), wiederkehrendes `catch (error: any)`-Muster in den Info-Modulen. Ein Teil
+  davon in `.test.ts`-Dateien fürs Mocking ist vertretbar und muss nicht zwingend mit angefasst
+  werden. Ziel: Datei für Datei durchgehen, wo möglich echte Typen einführen. **Danach** prüfen,
+  ob eine Linting-Regel (z.B. ESLint mit `@typescript-eslint/no-explicit-any` — aktuell ist kein
+  ESLint im Projekt installiert, das wäre eine neue Abhängigkeit) sinnvoll ist, damit neue
+  `any`-Nutzung künftig auffällt statt sich unbemerkt einzuschleichen.
+- [ ] **`NahMapLayers.ts` (427 Zeilen) — Popup-HTML-Building auslagern** — die Datei bündelt
+  aktuell Canvas-Icon-Rendering, Status-Berechnung, Single- und Multi-Station-Popup-HTML-Building,
+  Layer-Init und Flugpfad-Updates. `buildStationPopupHtml()`/`buildMultiStationPopupHtml()` sind
+  ein plausibler Kandidat für eine eigene Datei (z.B. `NahPopupBuilder.ts`), um die Kopplung beim
+  Arbeiten an der Datei zu reduzieren.
+- [ ] **`NahStatusModule.ts` (309 Zeilen) — eine große Funktion aufteilen** — kein
+  Datei-übergreifendes Problem, sondern eine einzelne ~300-Zeilen-`async`-Funktion (Fetch +
+  DOM-Aufbau + Event-Wiring inline). In kleinere, benannte Funktionen zerlegen.
+- [ ] **Optional/niedrige Priorität: gemeinsames Status-Badge-Color-Mapping** — Badge-CSS-Klassen
+  (`badge-green`/`badge-red`/`badge-gray`/…) werden aktuell in 3 Dateien (`TrackingSidebar.ts`,
+  `RoutingSidebar.ts`, `NahMapLayers.ts`) als Literal-Strings verwendet, allerdings für 3
+  unterschiedliche Status-Vokabulare (NAH-Stationsstatus, Tracking-Entity-Typ,
+  Routing-Warnungstyp) — kein echtes Duplikat, aber ein gemeinsames typsicheres Enum/Mapping
+  könnte die Konsistenz erhöhen. Explizit niedrigste Priorität der vier Punkte hier, kein
+  akutes Problem.
+
+**Nicht gefunden / kein Handlungsbedarf laut Recherche:** Datei-Duplikate/redundante
+Utility-Implementierungen sind praktisch nicht vorhanden — die `lib/`-Konvention wird konsequent
+eingehalten, `PopupManager.ts` wird korrekt geteilt statt dupliziert, `computeStationStatus`
+existiert nur einmal. Die großen Feature-Dateien (`TrackingDataService.ts` 486 Zeilen,
+`MapCore.ts` 318 Zeilen) sind laut CLAUDE.md-Konvention (`*DataService`/`*MapLayers`/
+`*SidebarAdapter`) erwartungsgemäß groß, keine "God-File"-Verletzung.
+
 ## Map-Subsystem: Anschlussfeatures (nach dem Cleanup)
 
 Voraussetzung: [Map-Subsystem Cleanup](./TODO.md#map-subsystem-cleanup) abgeschlossen (U1–U7).
