@@ -2,9 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-09 19:12
+## [Unreleased] - 2026-07-09 20:44
 
 ### Hinzugefügt
+- **Interaktive Legende auf `/karte`** (TODO.md → Map-Subsystem: Anschlussfeatures) — Legendeneinträge
+  sind jetzt klickbar (×-Button zum Ausblenden einzelner Layer). Neue Farb-Resolver-Infrastruktur
+  (`resolveLegendSwatch()` in `src/lib/MapLegend.ts`) extrahiert MapLibre Paint-Expressions und zeigt
+  passende Farben in der Legende; fallback auf „?" für nicht aufgelöste Farben. Live-Sync zwischen
+  Legende und Sidebar-Accordion (`LayerToggleEvent`, beide Richtungen bidirektional). Alle 5
+  Overlay-Gruppen (`Contours`, `Hiking`, `RD/NEF`, `POI`, `Zusätzlich`) mit vollständiger Dynamik.
+  Spec: [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
+  **Hinweis:** Browser-Verifikation der interaktiven UI-Flows noch ausstehend (keine Playwright-Umgebung
+  im Developmentprozess). Verifiziert: `npx tsc --noEmit` 0 Fehler, `npm test` 129/129.
 - **Geocoder-Suchfeld auf `/karte`-Sidebar** (ROADMAP.md → Karten-Interaktion & Such-Features) —
   neuer Suchbereich oberhalb der Layer-Accordions (`src/components/Sidebar.ts`); Auswahl fliegt
   die Karte zum Ergebnis (`flyTo`) und setzt einen temporären Pin (`src/pages/MapPage.ts`, analog
