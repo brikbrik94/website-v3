@@ -17,20 +17,25 @@ zuerst Infrastruktur + `/karte` als Machbarkeitsnachweis, danach erst die übrig
 alle vier auf einmal anfassen.
 
 - [x] **Schritt 1: MapLegend interaktiv + Registry-Metadata** (2026-07-09) — ✅ ERLEDIGT
-  `MapRegistry.registerLayer()` um optionale `legendMeta`-Struktur erweitert; `MapLegend.addEntry()`
-  Einträge sind jetzt klickbar (×-Button zum Ausblenden). Farb-Resolver für MapLibre Paint-Expressions
-  (`resolveLegendSwatch()`) in `src/lib/MapLegend.ts` implementiert, mit „?"-Fallback für nicht
-  aufgelöste Farben. Reine Infrastruktur, alle Komponenten (3 neue Typen, 1 neue Resolver-Funktion)
-  dokumentiert in [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
+  `MapLegend.addEntry()`-Einträge sind jetzt klickbar (×-Button zum Ausblenden). Neuer Farb-Resolver
+  für MapLibre-Paint-Expressions (`resolveLegendSwatch()` + `swatchTypeForLayerType()` in
+  `src/lib/resolveLegendSwatch.ts`), mit „?"-Fallback für nicht aufgelöste Farben. Bewusst
+  **keine** `MapRegistry`-Legend-Metadata-Abstraktion gebaut (Entscheidung 4 im Spec-Doc) —
+  `MapRegistry.ts` selbst wurde nicht angefasst. Reine Infrastruktur, dokumentiert in
+  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
   129 Tests grün, 0 TypeScript-Fehler.
 - [x] **Schritt 2: Anwendung auf `/karte`** (2026-07-09) — ✅ ERLEDIGT
-  Legende auf `/karte` mit Live-Sync zur Sidebar-Accordion (Layer-Toggles via `.click()`-Vermittler,
-  geht bidirektional: Checkbox aus → Legende aktualisiert, Legende ×-Button → Checkbox-Zustand synced).
-  Alle 5 Overlay-Gruppen (Contours, Hiking, RD/NEF, POI, Zusätzlich) mit vollständiger Dynamik.
-  Spec-Abdeckung: 7 Entscheidungen validiert (nur `/karte`, nur aktive Layer, Klick=Ausblenden,
-  Sync via `.click()`, Farb-Resolver mit Fallback). 129 Tests grün.
-  **Hinweis: Browser-Verifikation ausstehend** (keine Playwright/Headless-Browser in dieser Umgebung)
-  — interaktive UI-Verifikation sollte vom Nutzer durchgeführt werden.
+  Legende auf `/karte` zeigt nur aktive Layer (Sidebar-Accordion → Legende automatisch bei
+  Ein-/Ausschalten). Klick auf „×" in der Legende löst einen echten `.click()` auf das zugehörige
+  Accordion-Item aus (derselbe bestehende Toggle-Pfad, keine zweite Implementierung) — die Legende
+  kann Layer nur ausblenden, nicht einschalten, das bleibt Sache der Sidebar. Angewendet auf die
+  vorhandenen Overlay-Gruppen aus `layers.json`; Farbe wird gezeigt wenn eine echte
+  Layer-Definition verfügbar ist (Fallback-Style-Parsing-Pfad in `Sidebar.ts`), sonst „?"
+  (`layersMeta`-Pfad, keine echte `paint`-Definition verfügbar). Spec-Abdeckung: alle 7
+  Entscheidungen umgesetzt. 129 Tests grün, 0 TypeScript-Fehler.
+  **Hinweis: Browser-Verifikation ausstehend** (keine Playwright/Headless-Browser in dieser
+  Umgebung) — interaktive UI-Verifikation (Klick-Interaktion, visuelle Farben/„?", Sidebar-Sync)
+  sollte vom Nutzer durchgeführt werden, bevor dieser Punkt als vollständig abgeschlossen gilt.
 - [ ] **Schritt 3: Anwendung auf `/nah`** — migriert die 5 bestehenden, hardcodierten
   `legend.addEntry()`-Aufrufe (`NahPage.ts:39-43`) auf das neue System. Sonderfall: der
   Stationen-Symbol-Layer hat eine `match`-Expression auf `status` (`NahMapLayers.ts:209-215`) —
