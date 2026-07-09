@@ -14,15 +14,24 @@ verwendet und der Code praktisch keine Legacy-JS-Patterns enthält (0× `var`, 0
 89 Dateien) — ein Syntax-Umbau entfällt damit. Die Recherche hat stattdessen zwei echte,
 quantifizierte Hebel gefunden:
 
-- [ ] **Type-Safety: `any`-Escapes systematisch reduzieren** — 121 Stellen im Code umgehen
-  striktes Typing trotz `strict: true` in `tsconfig.json`: 73× `: any`-Annotationen, 48×
-  `as any`-Casts (Stand 2026-07-09). Beispiele: `let lastResponse: any = null`
-  (`DebugModule.ts:88`), wiederkehrendes `catch (error: any)`-Muster in den Info-Modulen. Ein Teil
-  davon in `.test.ts`-Dateien fürs Mocking ist vertretbar und muss nicht zwingend mit angefasst
-  werden. Ziel: Datei für Datei durchgehen, wo möglich echte Typen einführen. **Danach** prüfen,
-  ob eine Linting-Regel (z.B. ESLint mit `@typescript-eslint/no-explicit-any` — aktuell ist kein
-  ESLint im Projekt installiert, das wäre eine neue Abhängigkeit) sinnvoll ist, damit neue
-  `any`-Nutzung künftig auffällt statt sich unbemerkt einzuschleichen.
+- [x] **Type-Safety: `any`-Escapes systematisch reduzieren** (2026-07-09) — ✅ ERLEDIGT.
+  Alle 78 explizit annotierten `any`-Escapes (`: any`/`as any`) in Nicht-Test-`.ts`-Dateien durch
+  präzise Typen ersetzt (v.a. `SourceSpecification`/`LayerSpecification`/`ExpressionSpecification`
+  aus `maplibre-gl` sowie `Feature`/`FeatureCollection`/`Point`/`LineString`/`Position` aus
+  `geojson` — beide bereits Projektabhängigkeiten). 20 Tasks, subagent-driven-development mit
+  Task-Review + finalem Whole-Branch-Review (Ready to merge: Yes). Dabei drei echte Bugs gefunden
+  und mit sauberer Discriminated-Union-Narrowing behoben (kein Cast): `OverlayLoader.ts`
+  (`'source' in newLayer`), `TrackingDataService.ts` (`definition.type === 'geojson'`),
+  `TrackingMapLayers.ts` (`shipColorProp`-Typisierung). Zwei neue lokale Interfaces eingeführt für
+  bisher ungetypte externe API-Responses (`Sidebar.ts`: `LayerMetaEntry`/`LayerMetaGroup` für den
+  Tile-Server; `RegionsModule.ts`: `RegionStation`). Verifiziert: `npx tsc --noEmit` 0 Fehler,
+  `npm test` 112/112, `grep -rln ": any\b\|as any\b" src/ --include="*.ts" | grep -v ".test.ts"`
+  leer — projektweit.
+  **Bekannte Restarbeit (bewusst außerhalb dieses Punkts, siehe Recherche-Scope oben):** `any`
+  *innerhalb* generischer Typen (z.B. `Record<string, any>` in `PopupManager.ts`/`MapCore.ts`) war
+  nie Teil des Grep-Patterns (`: any`/`as any`) und bleibt offen — kleiner Folge-Scope, kein
+  Blocker. Linting-Regel (`@typescript-eslint/no-explicit-any`) weiterhin nicht eingerichtet (kein
+  ESLint im Projekt) — eigener Folgepunkt falls gewünscht.
 - [ ] **`NahMapLayers.ts` (427 Zeilen) — Popup-HTML-Building auslagern** — die Datei bündelt
   aktuell Canvas-Icon-Rendering, Status-Berechnung, Single- und Multi-Station-Popup-HTML-Building,
   Layer-Init und Flugpfad-Updates. `buildStationPopupHtml()`/`buildMultiStationPopupHtml()` sind

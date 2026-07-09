@@ -2,6 +2,47 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-09 14:51
+
+### Geändert
+- **Type-Safety: `any`-Escapes systematisch reduziert** (ROADMAP.md → Codebase-Qualität) — alle 78
+  explizit annotierten `any`-Escapes (`: any`/`as any`) in Nicht-Test-`.ts`-Dateien durch präzise
+  Typen ersetzt, kein Verhaltensunterschied. Vor allem `SourceSpecification`/`LayerSpecification`/
+  `ExpressionSpecification` (`maplibre-gl`) und `Feature`/`FeatureCollection`/`Point`/`LineString`/
+  `Position` (`geojson`) statt `any` für Map-Definitionen/GeoJSON — beide Pakete waren bereits
+  Projektabhängigkeiten (`RoutingMapLayers.ts` nutzte das Muster schon). Dabei drei echte,
+  vorbestehende Typ-Lücken gefunden und mit Discriminated-Union-Narrowing (kein Cast) behoben:
+  `OverlayLoader.ts` (`newLayer.source` nicht auf allen `LayerSpecification`-Varianten vorhanden),
+  `TrackingDataService.ts` (`.definition.data` nicht auf allen `SourceSpecification`-Varianten
+  vorhanden), `TrackingMapLayers.ts` (`shipColorProp`-Ausdruck). Zwei neue lokale Interfaces für
+  bisher ungetypte externe API-Responses ergänzt (`Sidebar.ts`: `LayerMetaEntry`/`LayerMetaGroup`
+  für den Tile-Server; `RegionsModule.ts`: `RegionStation`). Umgesetzt in 20 Tasks
+  (subagent-driven-development, je mit Task-Review + finalem Whole-Branch-Review). Verifiziert:
+  `npx tsc --noEmit` 0 Fehler, `npm test` 112/112, keine `any`/`as any`-Stellen mehr in
+  Nicht-Test-`.ts`-Dateien (projektweit).
+
+## [Unreleased] - 2026-07-09 09:32
+
+### Entfernt
+- **Zwei Tile-Server-Sprite-404-Punkte aus `TODO.md` entfernt** — betreffen `tiles.oe5ith.at`
+  (Basemap „At Plus" und Overlay „Wanderwege"), das ist separate Server-Infrastruktur außerhalb
+  dieses Repos (`nginx.conf` hier deckt nur `map.oe5ith.at` ab). Nach neuem
+  [docs/external-blockers.md](./docs/external-blockers.md) verschoben, da sie ohne
+  Tile-Server-Zugriff nicht aus diesem Repo heraus behoben werden können; erneut gegengetestet
+  (2026-07-09), beide weiterhin 404.
+
+## [Unreleased] - 2026-07-09 09:29
+
+### Geändert
+- **Release-Trigger in `AGENT_INSTRUCTIONS.md` §4 formalisiert** — über den Proposal-Zyklus
+  ([docs/proposals/archive/2026-07-09-release-batching-draft.md](./docs/proposals/archive/2026-07-09-release-batching-draft.md)):
+  Die Release-Checkliste (Version/Changelogs/Build/Tag/Deploy) läuft nicht mehr automatisch nach
+  jedem abgeschlossenen TODO-/ROADMAP-Punkt, sondern wird vom Agenten an natürlichen
+  Arbeitsblock-Enden vorgeschlagen und erst nach Bestätigung ausgeführt (Ausnahme:
+  akute/sicherheitsrelevante Fixes weiterhin sofort). Anlass: mehrere separate Same-Day-Releases
+  (`3.5.0`/`3.5.1`/`3.5.2` am 2026-06-30, `3.6.0`/`3.6.1` am 2026-07-05) empfanden als Overhead.
+  Verifikation (`tsc`/`test`) bleibt unverändert Pflicht pro Änderung.
+
 ## [3.8.0] - 2026-07-09 00:08
 
 ### Hinzugefügt
