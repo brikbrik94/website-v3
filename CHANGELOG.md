@@ -25,6 +25,12 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 ### Behoben
 - **Logo auf Mobile-Bildschirmen sichtbar** — `.brand-logo` hatte auf Mobile (`@media max-width: 768px`) ein `display: none` in `topbar.css`; entfernt, Logo zeigt jetzt auf allen Breakpoints.
 - **Tablet-Quicklinks-Bug behoben** — Auf Kartenseiten (`/nah` u.a.) bei ~900px Breite war nur 1 von 2 Quicklinks sichtbar; Root Cause war eine `nth-child`-Zählung der CI-Regel, die durch den Mobile-Toggle-Button vor den Nav-Links verschoben wurde. Fix: Reihenfolge in `.topbar-right` (`Topbar.ts`) getauscht, Nav-Links jetzt vor dem Button.
+- **`diag.php`-Info-Disclosure in Produktion blockiert** — beim OWASP-Top-10-Audit gefunden:
+  `api/diag.php` exponierte ohne Zugriffsschutz PHP-Version, DB-Host/Port/Name/User und
+  ORS-Health-Status. Fix: `nginx.conf` blockt den Endpoint jetzt mit `location = /api/diag.php
+  { deny all; }` im Produktions-Server-Block; der lokale Dev-Block bleibt bewusst offen (dort
+  zum Debuggen nützlich). Muss noch manuell auf den Server deployt werden — `deploy-website.sh`
+  synced `nginx.conf` nicht automatisch.
 
 ### Entfernt
 - **Tote Leaflet-CSS-Regeln entfernt** — `.leaflet-popup-*`-Overrides in `modal.css` waren Altlast aus der Zeit vor der MapLibre-GL-Migration (Leaflet-Dependency längst entfernt); 27 Zeilen toter Code gelöscht.
