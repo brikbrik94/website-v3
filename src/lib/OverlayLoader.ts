@@ -149,4 +149,13 @@ export const OverlayLoader = {
   reset(): void {
     loaded.clear();
   },
+
+  /**
+   * Alle aktuell aktiven Layer-IDs über alle geladenen Overlays hinweg (flach) — für generisches
+   * Klick-Handling gegen "irgendein aktives Overlay-Feature" (z.B. MapPageController), ohne
+   * Nicht-Overlay-Layer (Such-Pin, Basemap, Terrain) mit einzuschließen.
+   */
+  getActiveLayerIds(): string[] {
+    return Array.from(loaded.values()).flatMap(entry => entry.layerIds);
+  },
 };

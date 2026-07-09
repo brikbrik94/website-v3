@@ -10,6 +10,8 @@ import { OverlayLoader } from '../lib/OverlayLoader';
 import { MapRegistry } from '../lib/MapRegistry';
 import { MAP_COLORS } from '../lib/MapStyles';
 import type { GeocoderSelection } from '../lib/GeocoderSearchField';
+import { PopupManager } from '../lib/PopupManager';
+import { buildGenericFeaturePopupHtml } from '../lib/GenericFeaturePopup';
 
 const SEARCH_PIN_SOURCE = 'map-search-pin';
 const SEARCH_PIN_LAYER = 'map-search-pin-layer';
@@ -77,6 +79,9 @@ export class MapPageController extends BasePageController {
                 this.signal
             );
 
+            // 7. Klick-Popups für aktive Overlay-Layer (generisch, keine Kuratierung pro Layer)
+            this.map.on('click', this.handleOverlayClick);
+
             console.debug('[MapPageController] Mounted successfully');
         } catch (err) {
             console.error('[MapPageController] Initialization failed:', err);
@@ -109,6 +114,31 @@ export class MapPageController extends BasePageController {
     }
 
     /**
+     * Generisches Klick-Handling gegen alle aktuell aktiven Overlay-Layer (Autobahnen, Gemeinden,
+     * Höhenlinien, …) — zeigt ein Popup mit den rohen Feature-properties, keine Kuratierung pro
+     * Layer nötig (siehe docs/superpowers/plans, Klick+Popup-Logik-Feature).
+     */
+    private handleOverlayClick = (e: maplibregl.MapMouseEvent) => {
+        if (!this.map) return;
+        const activeLayerIds = OverlayLoader.getActiveLayerIds();
+        const features = this.map.queryRenderedFeatures(e.point, { layers: activeLayerIds });
+
+        if (features.length === 0) {
+            PopupManager.closePopup();
+            return;
+        }
+
+        const feat = features[0];
+        // Anders als bei Tracking/NAH (reine Point-Geometrien, Symbol-/Circle-Layer) sind
+        // /karte-Overlays gemischt (Linien: Autobahnen/Höhenlinien; Polygone: Gemeinden/Bezirke/
+        // Ski-Flächen) — die tatsächliche Klick-Position (e.lngLat) ist deshalb der einzige
+        // Anker, der für jede Geometrieart funktioniert, statt aus feat.geometry abzuleiten.
+        const coordinates: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+        const html = buildGenericFeaturePopupHtml(feat.layer.id, feat.properties);
+        PopupManager.showFeaturePopup(this.map, coordinates, html);
+    };
+
+    /**
      * Schaltet einzelne Layer oder Gruppen ein/aus über den gemeinsamen OverlayLoader und hält
      * die Legende synchron (nur aktive Layer werden dort gelistet, siehe
      * docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
@@ -138,6 +168,8 @@ export class MapPageController extends BasePageController {
 
     public destroy(): void {
         super.destroy();
+        PopupManager.closePopup();
+        this.map?.off('click', this.handleOverlayClick);
         this.map?.remove();
         console.debug('[MapPageController] Destroyed');
     }

@@ -60,9 +60,16 @@ alle vier auf einmal anfassen.
 - [ ] **Schritt 5: Anwendung auf `/tracking`** — hat aktuell noch gar keine `MapLegend`-Instanz,
   muss zuerst ergänzt werden (`LayoutHelper.renderBaseLayout(..., { withLegend: true })` fehlt in
   `TrackingPage.ts`).
-- [ ] **Karten-Klick + Overlay-Infos seitenübergreifend** — Klick-auf-Feature-Popups gibt es aktuell
-  nur auf der Tracking-Seite (`PopupManager` dort verdrahtet). Ziel: generisches Klick-Handling für
-  alle Overlay-Layer (NAH, RD/NEF, Contours/Hiking) mit Popup-Infos, nicht Tracking-spezifisch.
+- [x] **Karten-Klick + Overlay-Infos auf `/karte`** (2026-07-09) — ✅ ERLEDIGT (Scope beim
+  Brainstorming korrigiert: `/nah` hatte bereits einen eigenen, funktionierenden Popup-Builder
+  — der ursprüngliche TODO-Text war hier veraltet — die echte Lücke war ausschließlich `/karte`,
+  wo es noch gar kein Klick-Handling für Overlay-Layer gab). Klick auf ein Feature eines aktiven
+  Overlays zeigt ein generisches Popup mit dessen rohen `properties` (`GenericFeaturePopup.ts`),
+  keine Kuratierung pro Layer nötig — praktikabel bei den z.T. hunderten Sub-Layern (109 allein
+  bei Autobahnen). `OverlayLoader.getActiveLayerIds()` neu ergänzt. Details: CHANGELOG.md,
+  2026-07-09 23:45. 145 Tests grün, 0 TypeScript-Fehler. `/nah`s bestehender Popup-Builder bewusst
+  unangetastet. **Hinweis:** interaktive Browser-Verifikation noch ausstehend (keine
+  Playwright-Umgebung).
 - [ ] **Routing-Kontextmenü: Touchsteuerung** — Das Zielwahl-Kontextmenü in `RoutingPage.ts:76`
   reagiert nur auf Rechtsklick (Desktop). Ziel: Long-Press-Geste als Touch-Äquivalent für
   Tablet/Smartphone. Menüstruktur/Tastaturbedienung am ARIA-APG-Menu-Pattern orientieren (siehe
