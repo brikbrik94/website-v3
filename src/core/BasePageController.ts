@@ -3,7 +3,7 @@ import { PageController } from './PageController';
 export abstract class BasePageController implements PageController {
     protected abortController = new AbortController();
 
-    public abstract mount(container: HTMLElement, ...args: any[]): Promise<void> | void;
+    public abstract mount(container: HTMLElement, ...args: unknown[]): Promise<void> | void;
 
     public destroy(): void {
         this.abortController.abort();
