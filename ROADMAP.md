@@ -32,21 +32,44 @@ quantifizierte Hebel gefunden:
   nie Teil des Grep-Patterns (`: any`/`as any`) und bleibt offen — kleiner Folge-Scope, kein
   Blocker. Linting-Regel (`@typescript-eslint/no-explicit-any`) weiterhin nicht eingerichtet (kein
   ESLint im Projekt) — eigener Folgepunkt falls gewünscht.
-- [ ] **`NahMapLayers.ts` (427 Zeilen) — Popup-HTML-Building auslagern** — die Datei bündelt
-  aktuell Canvas-Icon-Rendering, Status-Berechnung, Single- und Multi-Station-Popup-HTML-Building,
-  Layer-Init und Flugpfad-Updates. `buildStationPopupHtml()`/`buildMultiStationPopupHtml()` sind
-  ein plausibler Kandidat für eine eigene Datei (z.B. `NahPopupBuilder.ts`), um die Kopplung beim
-  Arbeiten an der Datei zu reduzieren.
-- [ ] **`NahStatusModule.ts` (309 Zeilen) — eine große Funktion aufteilen** — kein
-  Datei-übergreifendes Problem, sondern eine einzelne ~300-Zeilen-`async`-Funktion (Fetch +
-  DOM-Aufbau + Event-Wiring inline). In kleinere, benannte Funktionen zerlegen.
-- [ ] **Optional/niedrige Priorität: gemeinsames Status-Badge-Color-Mapping** — Badge-CSS-Klassen
-  (`badge-green`/`badge-red`/`badge-gray`/…) werden aktuell in 3 Dateien (`TrackingSidebar.ts`,
-  `RoutingSidebar.ts`, `NahMapLayers.ts`) als Literal-Strings verwendet, allerdings für 3
-  unterschiedliche Status-Vokabulare (NAH-Stationsstatus, Tracking-Entity-Typ,
-  Routing-Warnungstyp) — kein echtes Duplikat, aber ein gemeinsames typsicheres Enum/Mapping
-  könnte die Konsistenz erhöhen. Explizit niedrigste Priorität der vier Punkte hier, kein
-  akutes Problem.
+- [x] **`NahMapLayers.ts` (427 Zeilen) — Popup-HTML-Building auslagern** (2026-07-09) — ✅ ERLEDIGT.
+  `buildStationPopupHtml()`/`buildMultiStationPopupHtml()` (inkl. `computeStationStatus()` und der
+  Badge-Class/Text-Mappings, die nur dafür gebraucht werden) nach `NahPopupBuilder.ts` ausgelagert;
+  `NahMapLayers.ts` 429→329 Zeilen. Zugehörige Tests nach `NahPopupBuilder.test.ts` mitverschoben
+  (`NahMapLayers.computeGroupStatus` bleibt in `NahMapLayers.test.ts`, da `computeGroupStatus`
+  selbst nicht verschoben wurde — reine Layer-/Gruppierungs-Logik, kein Popup-Building). Dabei
+  einen kleinen, identischen Copy-Paste-Block (Öffnungszeiten-HTML) in beiden Popup-Funktionen zu
+  `buildHoursHtml()` zusammengefasst. Live verifiziert (Playwright gegen echte NAH-Stationsdaten,
+  `map.fire('click', …)` auf einen echten Mehrfach-Stationen-Standort): Multi-Popup rendert
+  korrekt (Badges, Betriebszeiten, Callsigns). `npx tsc --noEmit` 0 Fehler, `npm test` 112/112.
+- [x] **`NahStatusModule.ts` (309 Zeilen) — eine große Funktion aufteilen** (2026-07-09) — ✅
+  ERLEDIGT. Die beiden bisher inline in `renderNahStatusModule` steckenden Blöcke ausgelagert:
+  statisches Seiten-HTML (Header, Stats-Card-Slot, drei Tabellen-Panels — keine Interpolation, war
+  1:1 als reine Funktion extrahierbar) nach `buildNahStatusPageHtml()`; Event-Wiring
+  (Sort-Header-Klicks, Refresh-Button, Abort-Listener) nach `wireEvents()` (bleibt als benannte
+  Funktion innerhalb des Closures, da sie auf `sortColumn`/`sortDir`/`refreshTimeout` zugreift —
+  kein Datei-übergreifendes Splitting nötig, wie im Rechercheergebnis vorgesehen).
+  `scheduleNextRefresh`/`renderStatsCards`/`renderTable`/`fetchData` waren bereits benannt und
+  blieben unverändert. Live verifiziert (Playwright gegen `/info/nah` mit echten Stationsdaten):
+  Stats-Cards rendern korrekt, Sortierung per Spalten-Klick (inkl. Richtungs-Umkehr bei
+  Zweitklick) funktioniert, Refresh-Button triggert `fetchData` erneut. `npx tsc --noEmit`
+  0 Fehler, `npm test` 112/112.
+- [x] **Gemeinsames Status-Badge-Color-Mapping** (2026-07-09) — ✅ ERLEDIGT, Scope beim Umsetzen
+  erweitert: Recherche ergab, dass mehr als die 3 ursprünglich genannten Dateien betroffen waren
+  (auch `NahStatusModule.ts`, `DebugModule.ts`, `RegionsModule.ts` hatten Badge-Klassen als
+  Literal-Strings), und dass `RoutingSidebar.ts` gar kein echtes Status→Farbe-Vokabular hat
+  (nur feste Badges pro UI-Zweck: Laden/Fehler/Warnung/Schritt-Anzahl). Nutzer-Entscheidung:
+  trotzdem alle Stellen vereinheitlichen, damit alle Seiten denselben Helfer/Typ verwenden statt
+  mehrerer Varianten. Neuer `src/lib/BadgeStyles.ts` exportiert `BadgeClass` (die 6 kanonischen
+  Klassen aus `oe5ith-ci/docs/badges.md`); alle 6 betroffenen Dateien nutzen jetzt entweder ein
+  `Record<Status, BadgeClass>` (echte Vokabulare: NAH-Stationsstatus, Tracking-Entity-Typ,
+  RD/NEF-Stationstyp) oder benannte `BadgeClass`-Konstanten (feste Einzelfall-Badges:
+  Loading/Error/Warnung/Schritt-Anzahl in Routing, HTTP-OK/Error in Debug, Betriebstyp/
+  Standby/Offseason/Aktiv in NahStatus) statt Inline-Literal-Strings. Live verifiziert
+  (Playwright): `/routing` zeigt Mautstraßen-Warnbadge (gelb) + Schritt-Anzahl-Badge (grau)
+  korrekt; `/info/debug` zeigt HTTP-Status-Badge korrekt grün. `npx tsc --noEmit` 0 Fehler,
+  `npm test` 112/112. Damit sind alle vier ursprünglichen Codebase-Qualität-Teilpunkte
+  abgeschlossen.
 
 **Nicht gefunden / kein Handlungsbedarf laut Recherche:** Datei-Duplikate/redundante
 Utility-Implementierungen sind praktisch nicht vorhanden — die `lib/`-Konvention wird konsequent
@@ -147,3 +170,16 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   Build-/Test-Pipeline. Bewusst als eigener ROADMAP-Punkt (nicht Teil der Standards-Angleichung
   selbst), da eine neue Infrastruktur-Entscheidung (welcher CI-Anbieter, Secrets-Handling für
   DB-Zugriff in der Pipeline etc.) nötig ist.
+- [ ] **Vite-/PHP-Dev-Server: Robustheit & Health-Check** — bei der Live-Verifikation der
+  `NahMapLayers.ts`-Popup-Extraktion (2026-07-09) mehrfach beobachtet: ein von einer früheren
+  Session zurückgelassener `npm run dev`-Prozess lief teilweise "halb tot" weiter — der
+  PHP-API-Server (`api/router.php`, Port 8081) war bereits abgestürzt (kein laufender Prozess
+  mehr), während der Vite-Server (Port 8000/100.64.0.1) noch lief, aber mit veraltetem
+  Dependency-Optimize-Cache (`node_modules/.vite`), was zu `504 Outdated Optimize Dep`-Fehlern im
+  Browser führte, bis der Vite-Prozess manuell gekillt und mit geleertem `.vite`-Cache neu
+  gestartet wurde. Kein Health-Check/Auto-Restart vorhanden, der das erkennen und melden würde.
+  Ziel: robusteres `npm run dev`-Setup — z.B. PHP-Server-Health-Check vor dem Vite-Start, klarer
+  Fehler statt stillem Absturz, und/oder Dokumentation eines Standard-Verfahrens ("bei
+  Dev-Server-Problemen: `pkill -f 'vite|php -S'`, `.vite`-Cache leeren, neu starten") in
+  CLAUDE.md/AGENT_INSTRUCTIONS.md, damit das nicht bei jeder Live-Verifikation neu diagnostiziert
+  werden muss.
