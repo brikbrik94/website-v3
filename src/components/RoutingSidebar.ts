@@ -1,6 +1,6 @@
 import { RoutingService } from '../lib/RoutingService';
 import { GeocoderService } from '../lib/GeocoderService';
-import { GeocodeResult, RouteExtras, RouteSegment } from '../types/common';
+import { GeocodeResult, RouteExtras, RouteSegment, RoutingStation } from '../types/common';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
 import { renderGeocodeItemHtml } from '../lib/UIUtils';
 import { getProfileBadge, getRouteWarnings, formatSteps } from '../features/routing/RoutingDetailsFormatter';
@@ -183,7 +183,7 @@ export const initRoutingSidebar = async (
   };
 
   const setupGeocoder = (input: HTMLInputElement, resultsContainer: HTMLElement) => {
-    let timeout: any;
+    let timeout: ReturnType<typeof setTimeout>;
     input.addEventListener('input', () => {
       delete input.dataset.lat;
       delete input.dataset.lon;
@@ -350,9 +350,9 @@ export const updateRoutingSummary = (
 };
 
 export const renderStationResults = (
-  stations: any[],
-  onToggle: (station: any, active: boolean) => void,
-  onHighlight: (station: any) => void
+  stations: RoutingStation[],
+  onToggle: (station: RoutingStation, active: boolean) => void,
+  onHighlight: (station: RoutingStation) => void
 ) => {
   const results = document.getElementById('routing-results')!;
   const status = document.getElementById('routing-status')!;
