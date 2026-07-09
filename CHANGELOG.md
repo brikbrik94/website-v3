@@ -2,6 +2,32 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-09 19:12
+
+### Hinzugefügt
+- **Geocoder-Suchfeld auf `/karte`-Sidebar** (ROADMAP.md → Karten-Interaktion & Such-Features) —
+  neuer Suchbereich oberhalb der Layer-Accordions (`src/components/Sidebar.ts`); Auswahl fliegt
+  die Karte zum Ergebnis (`flyTo`) und setzt einen temporären Pin (`src/pages/MapPage.ts`, analog
+  zum bestehenden Coords-Pin-Pattern).
+- **`GeolocateControl` auf allen 5 Kartenseiten** (ROADMAP.md → Karten-Interaktion &
+  Such-Features) — zentral in `MapCore.init()` neben dem bestehenden `NavigationControl`
+  ergänzt (`src/lib/MapCore.ts`), kein einmaliges Positions-Tracking (`trackUserLocation: false`).
+
+### Geändert
+- **Geocoder-Suche in ein gemeinsames Modul extrahiert** — neues `src/lib/GeocoderSearchField.ts`
+  kapselt Debounce/Fetch/Dropdown-Rendering/Outside-Click-Dismiss, bisher dreifach fast identisch
+  in `AddressBlock.ts` (Coords), `RoutingSidebar.ts` (Start/Ziel) und jetzt neu auf `/karte`
+  dupliziert. Alle internen Listener sind an ein `AbortSignal` gebunden (behebt dabei einen
+  bisherigen Listener-Leak beim Seitenwechsel in `AddressBlock.ts`/`RoutingSidebar.ts`, die
+  ihre `document`-Click-Listener nie entfernt hatten). `RoutingSidebar.ts` nutzte zudem die nirgends
+  definierte CSS-Klasse `form-field-relative` (Dropdown dadurch am falschen Element positioniert)
+  — ersetzt durch die bereits vorhandene lokale Utility `.pos-relative` (schon in `AddressBlock.ts`
+  fürs selbe Problem im Einsatz). Kein Verhaltensunterschied bei Coords/Routing, nur DRY-Refactor.
+  Verifiziert: `npx tsc --noEmit` 0 Fehler, `npm test` 112/112. **Bekannte Restarbeit:** kein
+  automatisierter Test für `GeocoderSearchField` selbst — Projekt hat kein jsdom/happy-dom
+  eingerichtet (bestehende DOM-Tests nutzen handgebaute Fake-Elemente statt echtem DOM), neue
+  Test-Dependency wäre eigene Infrastruktur-Entscheidung außerhalb dieses Scopes.
+
 ## [3.8.1] - 2026-07-09
 
 ### Geändert
