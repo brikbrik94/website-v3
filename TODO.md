@@ -100,11 +100,11 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   PHP-Version, geladene Extensions, DB-Host/Port/Name/User (Passwort maskiert) sowie den internen
   ORS-Health-Status. Fix: `location = /api/diag.php { deny all; return 403; }` in `nginx.conf`
   ergänzt — nur im Produktions-Server-Block (`map.oe5ith.at`, HTTPS), der lokale Dev-Block bleibt
-  bewusst unverändert (dort ist der Endpoint zum Debuggen nützlich). **Wichtig:** Diese
-  Repo-Änderung wird von `deploy-website.sh` nicht automatisch auf den Server übertragen (das
-  Script synced nur `dist/` und `api/`, nicht `nginx.conf`) — die Config muss manuell auf den
-  Server kopiert und `nginx -t && systemctl reload nginx` ausgeführt werden, bevor der Block
-  live wirkt. `api/diag.php` selbst bleibt im Code bestehen (kein Entfernen/Absichern auf
+  bewusst unverändert (dort ist der Endpoint zum Debuggen nützlich). Manuell auf dem Server
+  angewendet und verifiziert (`https://map.oe5ith.at/api/diag.php` → 403, 2026-07-09). Hinweis:
+  `deploy-website.sh` synced `nginx.conf` weiterhin nicht automatisch — bei künftigen
+  nginx.conf-Änderungen erneut manuell deployen. `api/diag.php` selbst bleibt im Code bestehen
+  (kein Entfernen/Absichern auf
   Code-Ebene) — die nginx-Sperre ist bewusst der gewählte Fix (Defense-in-Depth auf Code-Ebene
   bliebe ein möglicher Folgepunkt, aktuell nicht nötig).
 - [x] **OpenAPI-Spec für `api/*.php` erstellen** (2026-07-08) — OpenAPI-3.x-Spec für alle 12
