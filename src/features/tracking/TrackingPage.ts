@@ -107,8 +107,8 @@ export class TrackingPageController extends BasePageController {
             this.mapLayers?.highlightItem(this.selectedId);
         });
 
-        mounts.sidebar.addEventListener('tracking-filter-change', (e: any) => {
-            this.currentFilter = e.detail;
+        mounts.sidebar.addEventListener('tracking-filter-change', (e: Event) => {
+            this.currentFilter = (e as CustomEvent<string>).detail;
             // The list update depends on data. For now, rely on next refresh.
             // Ideally we store adsbItems/aisItems locally to update immediately.
         });
