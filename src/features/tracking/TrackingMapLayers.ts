@@ -227,7 +227,7 @@ export class TrackingMapLayers {
         }
     }
 
-    public handleMapClick(e: any, onSelect: (id: string | number | null) => void) {
+    public handleMapClick(e: maplibregl.MapMouseEvent, onSelect: (id: string | number | null) => void) {
         const features = this.map.queryRenderedFeatures(e.point, { layers: ['adsb-icons', 'ais-icons', 'ais-dots-moving', 'ais-dots-static'] });
         
         if (features.length === 0) {
@@ -247,12 +247,12 @@ export class TrackingMapLayers {
         this.highlightItem(selectedId);
         onSelect(selectedId);
 
-        const coordinates = (feat.geometry as any).coordinates as [number, number];
+        const coordinates = (feat.geometry as GeoJSON.Point).coordinates as [number, number];
         const html = PopupManager.buildHtml(layerId, props);
         PopupManager.showFeaturePopup(this.map, coordinates, html);
     }
 
-    public updateData(sourceId: string, data: any) {
+    public updateData(sourceId: string, data: GeoJSON.GeoJSON) {
         if (this.map.getSource(sourceId)) {
             (this.map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(data);
         }
