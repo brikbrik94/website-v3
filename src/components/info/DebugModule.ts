@@ -85,7 +85,7 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
   const latencyEl = document.getElementById('debug-latency')!;
   const copyBtn = document.getElementById('debug-copy-btn')!;
 
-  let lastResponse: any = null;
+  let lastResponse: unknown = null;
 
   const runRequest = async () => {
     const url = endpointSelect.value + paramsInput.value;
@@ -119,11 +119,11 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
 
       lastResponse = sanitized;
       jsonViewer.textContent = JSON.stringify(sanitized, null, 2);
-    } catch (error: any) {
+    } catch (error) {
       statusBadge.textContent = 'ERROR';
       statusBadge.className = 'badge badge-red';
       latencyEl.textContent = '-- ms';
-      jsonViewer.textContent = `Error: ${error.message}`;
+      jsonViewer.textContent = `Error: ${(error as Error).message}`;
     } finally {
       sendBtn.classList.remove('loading');
       sendBtn.disabled = false;
