@@ -11,15 +11,29 @@ duplizieren** und nur noch das jeweils Repo-Spezifische ergänzen (Architektur, 
 Domänen-Standards, konkrete Dateipfade). Wird eine Regel hier geändert, zieht das automatisch
 alle referenzierenden Einstiegspunkte nach — es gibt nur eine Quelle der Wahrheit.
 
+**Wichtig für den Agenten:** Ein Verweis auf diese Datei lädt ihren Inhalt nicht automatisch in
+den Kontext — nur der Einstiegspunkt selbst (z.B. `CLAUDE.md`) wird von manchen Tools automatisch
+injiziert, diese Datei i. d. R. nicht. Jeder referenzierende Einstiegspunkt sollte deshalb eine
+explizite Leseanweisung enthalten (Beispieltext zum Übernehmen):
+
+> Bevor du nach den hier ergänzten, repo-spezifischen Angaben handelst: lies zuerst
+> `AGENT_INSTRUCTIONS.md` vollständig — die dortigen Mandate sind verbindlich und werden hier
+> nicht wiederholt.
+
 ## 1. Core Mandates
 
 1. **Keine eigenständige Interpretation:** Aufgaben exakt so ausführen, wie gestellt. Scope nicht
-   ungefragt erweitern, nicht ungefragt refactorn.
+   ungefragt erweitern, nicht ungefragt refactorn. Im Code vorgefundene Altlasten-Hinweise
+   („Known debt", TODO-Kommentare, „bei Gelegenheit nachziehen") sind keine implizite Einladung,
+   das jetzt mitzuerledigen — Mandat 2 gilt auch für sie.
 2. **Out-of-Scope-Funde dokumentieren, nicht fixen:** Werden während einer Aufgabe Bugs oder
    Cleanup-Bedarf außerhalb des Scopes entdeckt, werden diese als `TODO.md`-Eintrag festgehalten
    (mit `Datei:Zeile`), nicht nebenbei mitgefixt.
 3. **Bei Unklarheit nachfragen:** Ist eine Anforderung mehrdeutig, nachfragen statt raten. Ist
-   Nachfragen nicht möglich (non-interaktiver Lauf, CI, Background-Task), die minimalinvasivste
+   Nachfragen nicht möglich (non-interaktiver Lauf, CI, Background-Task): Betrifft die
+   Unklarheit eine schwer reversible oder folgenreiche Aktion (Löschen, Force-Push,
+   Schema-/Datenmigration, sicherheitsrelevantes Verhalten, Deploy/Publish) → Lauf abbrechen,
+   Unklarheit als `TODO.md`-Eintrag festhalten, nicht raten. Andernfalls die minimalinvasivste
    Interpretation wählen und die getroffene Annahme explizit im Ergebnis/Commit dokumentieren.
 4. **Erst verstehen, dann ändern:** Vor einem Fix Abhängigkeiten kartieren und den Bug
    reproduzieren; Fixes bekommen Tests.
@@ -47,11 +61,40 @@ den referenzierenden Einstiegspunkt (z.B. `CLAUDE.md`), nicht hierher.
 | ARIA Authoring Practices Guide | https://www.w3.org/WAI/ARIA/apg/ | Pattern-Referenz für interaktive Widgets (Menüs, Modals, Listboxen, Kontextmenüs) |
 | OWASP Top 10 | https://owasp.org/www-project-top-ten/ | Begründungsrahmen für Security-Grundregeln (Secrets-Handling, Rechteminimierung, Input-Validierung) |
 | The Twelve-Factor App — Faktor III „Config" | https://12factor.net/config | Begründung für „Secrets/Config nie hardcoded/committed, nur in gitignorten lokalen Config-Dateien" |
+| BEM (Block Element Modifier) | https://getbem.com/ | CSS-Klassennamen-Konvention (Block__Element--Modifier); konkrete Anwendung kann an ein projekteigenes Design-System-Artefakt delegiert sein — dort nachsehen, siehe repo-spezifischer Einstiegspunkt |
 
-**Pflege:** Vor Einführung einer neuen Sprache/eines neuen Formats/Tools prüfen, ob ein
-etablierter Community-Standard existiert. Wenn ja: hier (falls generisch) oder im
-repo-spezifischen Einstiegspunkt (falls domänen-/repo-gebunden) mit Quelle eintragen, statt eine
-eigene Ad-hoc-Regel zu erfinden. Wenn nein: explizit vermerken, dass es bewusste Eigenregel ist.
+**Einordnung: hier oder repo-spezifisch?** Zwei Fragen entscheiden, nicht Bauchgefühl:
+
+1. **Ist der Standard selbst allgemein bekannt und sprach-/ökosystemweit gültig** (nicht an
+   dieses eine Projekt gebunden)? Wenn nein → repo-spezifisch, fertig.
+2. **Reicht der Standard allein aus, um ihn korrekt anzuwenden — oder ist dafür ein
+   projekteigenes Artefakt nötig** (ein Submodul, eine Token-Datei, ein Schema, das erst die
+   konkrete Ausprägung festlegt)? Wenn ein solches Artefakt nötig ist → der Standard *kann*
+   trotzdem als generische Zeile hier stehen (er bleibt ja allgemein bekannt), **muss aber** im
+   repo-spezifischen Einstiegspunkt auf das Artefakt verweisen, das die kanonische Anwendung
+   definiert — nie eine eigene, parallele Anwendungsregel erfinden.
+
+**Beispiel A — PSR-12 (klarer generischer Fall):** Standard ist bekannt und für sich
+anwendbar → generische Zeile hier reicht, repo-spezifisch nur noch Umsetzungsstand/Abweichung
+vermerken (siehe `CLAUDE.md`-Beispiel).
+
+**Beispiel B — BEM (Standard braucht projekteigenes Artefakt):** BEM als Namenskonvention ist
+generisch bekannt, aber die *konkrete* Klassen-Benennung in einem Multi-Repo-Setup mit
+gemeinsamem Design-System wird nicht von BEM selbst festgelegt, sondern vom Design-System-
+Submodul. Hier gilt: BEM als Zeile in die generische Tabelle aufnehmen (siehe oben), aber der
+repo-spezifische Einstiegspunkt muss explizit auf das Submodul als kanonische Quelle verweisen
+— nicht auf BEM alleine.
+
+**Pflege (Prüfliste vor Eintragung eines neuen Standards):**
+
+1. Existiert ein etablierter Community-Standard für diesen Fall? Wenn nein → als bewusste
+   Eigenregel im repo-spezifischen Einstiegspunkt vermerken, hier nichts eintragen.
+2. Wenn ja: Test oben anwenden (Frage 1) → generisch oder repo-spezifisch?
+3. Bei „generisch, aber mit projekteigenem Anwendungsartefakt" (Test Frage 2): Zeile hier
+   eintragen **und** im repo-spezifischen Einstiegspunkt einen Verweis auf das Artefakt
+   ergänzen — beides, nicht nur eines von beiden.
+4. Quelle (URL) und „Wofür generisch" so knapp wie möglich, keine repo-spezifischen Details in
+   dieser Datei.
 
 ## 3. TODO vs. Roadmap
 
@@ -70,6 +113,10 @@ Roadmap-Punkt Folge-Cleanup aus, wird das ein neuer `TODO.md`-Eintrag, nicht am 
 Roadmap-Punkt hängend. Ist die Zuordnung strittig (Erweiterung vs. neues Feature), gilt:
 **im Zweifel `TODO.md`**.
 
+**Kontext-Hygiene:** `*_ARCHIVE.md`-Dateien sind Historie, kein Nachschlagewerk für die laufende
+Aufgabe — nicht prophylaktisch komplett laden, sondern nur gezielt lesen, wenn die Aufgabe
+selbst historischen Kontext braucht (z.B. „warum wurde X damals so entschieden").
+
 ## 4. Releases, Versionierung & Git
 
 Basis-Standards: SemVer + Keep a Changelog + Conventional Commits (Quellen siehe oben).
@@ -82,7 +129,9 @@ Basis-Standards: SemVer + Keep a Changelog + Conventional Commits (Quellen siehe
   konsolidiert (Uhrzeit entfällt dann). *Datum/Uhrzeit am `[Unreleased]`-Block ist eine bewusste
   Eigenregel — Keep a Changelog kennt nur einen einzelnen, undatierten `[Unreleased]`-Block; das
   Journal-Format macht parallele Änderungen nachvollziehbar.* Merge-Konflikte in `CHANGELOG.md`
-  werden **immer durch Zusammenführen beider Blöcke** gelöst, nie durch Verwerfen einer Seite.
+  werden **immer durch Zusammenführen beider Blöcke** gelöst, nie durch Verwerfen einer Seite:
+  Konfliktmarker (`<<<<<<<`, `=======`, `>>>>>>>`) entfernen, betroffene Journal-Einträge beider
+  Seiten chronologisch zusammenführen, danach erst stagen.
 - **Existiert zusätzlich ein user-facing Changelog** (z.B. ein In-App-Modal, eine Landingpage-
   Sektion), ist das eine **kuratierte, separat gepflegte** Sicht — nicht aus `CHANGELOG.md`
   generiert. Es muss bei jedem Release **ebenfalls** aktualisiert werden; sonst driftet es
@@ -91,12 +140,25 @@ Basis-Standards: SemVer + Keep a Changelog + Conventional Commits (Quellen siehe
   zwischen Releases (nur für einen expliziten Pre-Release). Die nächste Version deckt **alle**
   unveröffentlichten Commits seit dem letzten Tag ab: **patch** = nur Bugfixes, **minor** =
   mindestens ein neues user-facing Feature seit dem letzten Tag, **major** = Breaking Changes.
+- **Release-Trigger:** Die Release-Checkliste (Punkte 2–7 unten) läuft nicht automatisch nach
+  jedem abgeschlossenen TODO-/ROADMAP-Punkt. Änderungen sammeln sich wie gehabt als
+  `[Unreleased]`-Journal-Blöcke in `CHANGELOG.md`; nach Abschluss eines größeren, in sich
+  geschlossenen Arbeitsblocks (z.B. ein kompletter Sammeltask, mehrere thematisch verwandte
+  Punkte) schlägt der Agent aktiv ein Release vor, ausgeführt wird es erst nach Bestätigung.
+  **Ausnahme:** akute oder sicherheitsrelevante Fixes können weiterhin sofort einzeln released
+  werden, wenn sie nicht bis zum nächsten Batch warten sollten.
 - **Commits & Tags:** Conventional-Commits-Prefixe; Tags **annotiert**, Format `vX.Y.Z`, auf dem
   Release-Commit. Dateien **immer explizit** stagen, nie `git add -A` — das gilt generell, nicht
   nur bei Releases.
-- **Release-Checkliste (generisch):** (1) Tests/Typecheck/Lint grün → (2) Versionskonstante bumpen
-  → (3) `CHANGELOG.md` konsolidieren → (4) user-facing Changelog nachziehen (falls vorhanden) →
-  (5) Build → (6) Release-Commit + annotierter Tag + Push → (7) Deploy.
+- **Release-Checkliste (generisch):** (1) Tests/Typecheck/Lint ausführen — schlägt das fehl:
+  Release abbrechen, Fehler als `TODO.md`-Eintrag festhalten, nicht durchdrücken → (2)
+  Versionskonstante bumpen → (3) `CHANGELOG.md` konsolidieren → (4) user-facing Changelog
+  nachziehen (falls vorhanden) → (5) Build → (6) Release-Commit + annotierter Tag + Push →
+  (7) Deploy.
+- **Fremde/vendorte Pfade (Submodule, Vendor-Verzeichnisse):** Notizen oder Dateien innerhalb
+  eines Pfads, der nicht diesem Repo gehört, dürfen nie versehentlich mit committet werden.
+  Explizites Stagen (siehe oben) reicht hier nicht als alleinige Absicherung — vor jedem Commit
+  gezielt `git status` auf genau diesen Pfad prüfen, wenn dort geschrieben wurde.
 - **Scratch/Hygiene:** Wegwerfskripte, Probes und Notizen nicht committen — gitignorter
   `scratch/`-Ordner oder `*.local.*`-Namenskonvention statt versehentlich versionierter
   Ad-hoc-Dateien.
@@ -107,6 +169,12 @@ Basis-Standards: SemVer + Keep a Changelog + Conventional Commits (Quellen siehe
 o.ä.) laufen über einen eigenen Draft-Review-Merge-Zyklus statt direkt im Live-Dokument diskutiert
 zu werden — Ziel: Diskussion und Ergebnis bleiben nachvollziehbar, das Live-Dokument bleibt
 Endzustand ohne Revisionsrauschen.
+
+**Geltungsbereich:** Der Zyklus gilt für inhaltliche Regeländerungen (neue/geänderte Mandate,
+Standards, Prozesse) — sowohl hier als auch im repo-spezifischen Einstiegspunkt. Er gilt
+**nicht** für rein technisches Nachtragen bereits an anderer Stelle vorgeschriebener Angaben
+(z.B. einen laut Mandat 5 fehlenden Verifikationsbefehl ergänzen, einen toten Link korrigieren) —
+das direkt erledigen. Im Zweifel (neue Regel oder nur fehlende Angabe?): gilt der Proposal-Zyklus.
 
 - **Ablage:** `docs/proposals/` (Repo-Root-Ebene, parallel zu evtl. vorhandenen
   Feature-Plan-/Spec-Ordnern — Proposals sind Meta-Dokument-Änderungen, keine Feature-Artefakte).
