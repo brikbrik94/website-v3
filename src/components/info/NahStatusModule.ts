@@ -1,15 +1,22 @@
 import { NahStation, NahResponse } from '../../types/nah';
 import { formatTime } from '../../lib/UIUtils';
+import type { BadgeClass } from '../../lib/BadgeStyles';
+
+// Feste Badge-Farben je Tabellen-Spalte/Zweck (nicht dasselbe Vokabular wie
+// NahPopupBuilder.NahStationStatus — diese Tabellenzeilen sind bereits nach
+// aktiv/standby/offseason auf drei Tabellen verteilt, die Badges hier markieren nur
+// Betriebstyp bzw. den Standby-/Offseason-Teilzustand innerhalb einer Zeile).
+const OP_TYPE_BADGE: BadgeClass = 'badge-gray';
+const OFFSEASON_BADGE: BadgeClass = 'badge-gray';
+const STANDBY_BADGE: BadgeClass = 'badge-red';
+const ACTIVE_BADGE: BadgeClass = 'badge-green';
 
 /**
- * Renders the NAH Status UI module.
+ * Static page shell (header, stats-card slot, three table panels). Contains no
+ * interpolated state, so it's a pure function independent of renderNahStatusModule's closure.
  */
-export const renderNahStatusModule = async (container: HTMLElement, signal?: AbortSignal) => {
-  let stations: NahStation[] = [];
-  let sortColumn: keyof NahStation = 'callsign';
-  let sortDir: 'asc' | 'desc' = 'asc';
-
-  container.innerHTML = `
+function buildNahStatusPageHtml(): string {
+  return `
     <header class="page-header">
       <div class="page-header-left">
         <h1 class="page-title">NAH <span>Status</span></h1>
@@ -25,7 +32,7 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
 
     <div class="content-body">
       <div class="card-grid mb-gap" id="nah-stats-cards"></div>
-      
+
       <div id="nah-tables-container" class="flex-col gap-24">
         <!-- 1. Active Table -->
         <div class="panel">
@@ -93,6 +100,17 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
       </div>
     </div>
   `;
+}
+
+/**
+ * Renders the NAH Status UI module.
+ */
+export const renderNahStatusModule = async (container: HTMLElement, signal?: AbortSignal) => {
+  let stations: NahStation[] = [];
+  let sortColumn: keyof NahStation = 'callsign';
+  let sortDir: 'asc' | 'desc' = 'asc';
+
+  container.innerHTML = buildNahStatusPageHtml();
 
   const tableBodyActive = document.getElementById('nah-table-body-active')!;
   const tableBodyStandby = document.getElementById('nah-table-body-standby')!;
@@ -216,11 +234,11 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
               <div class="t-small t-subtle">${s.name}</div>
             </td>
             <td>${s.region}</td>
-            <td><span class="badge badge-gray">${s.op_type}</span></td>
+            <td><span class="badge ${OP_TYPE_BADGE}">${s.op_type}</span></td>
             <td>
-              ${!s.in_season 
-                ? '<span class="badge badge-gray">SAISONPAUSE</span>' 
-                : `<span class="badge badge-red">AB ${formatTime(s.calculated_start || null)}</span>`}
+              ${!s.in_season
+                ? `<span class="badge ${OFFSEASON_BADGE}">SAISONPAUSE</span>`
+                : `<span class="badge ${STANDBY_BADGE}">AB ${formatTime(s.calculated_start || null)}</span>`}
             </td>
           </tr>
         `;
@@ -232,10 +250,10 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
             <div class="t-small t-subtle">${s.name}</div>
           </td>
           <td>${s.region}</td>
-          <td><span class="badge badge-gray">${s.op_type}</span></td>
+          <td><span class="badge ${OP_TYPE_BADGE}">${s.op_type}</span></td>
           <td class="mono">${formatTime(s.calculated_start || null)}</td>
           <td class="mono">${formatTime(s.calculated_end || null)}</td>
-          <td><span class="badge badge-green">EINSATZBEREIT</span></td>
+          <td><span class="badge ${ACTIVE_BADGE}">EINSATZBEREIT</span></td>
         </tr>
       `;
     };
@@ -284,26 +302,29 @@ export const renderNahStatusModule = async (container: HTMLElement, signal?: Abo
     }
   };
 
-  headers.forEach(th => {
-    th.addEventListener('click', () => {
-      const col = th.getAttribute('data-sort') as keyof NahStation;
-      if (sortColumn === col) {
-        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-      } else {
-        sortColumn = col;
-        sortDir = 'asc';
-      }
-      renderTable();
+  const wireEvents = () => {
+    headers.forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort') as keyof NahStation;
+        if (sortColumn === col) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortColumn = col;
+          sortDir = 'asc';
+        }
+        renderTable();
+      });
     });
-  });
 
-  refreshBtn.addEventListener('click', fetchData);
-  
-  if (signal) {
-    signal.addEventListener('abort', () => {
-      if (refreshTimeout) clearTimeout(refreshTimeout);
-    });
-  }
+    refreshBtn.addEventListener('click', fetchData);
 
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        if (refreshTimeout) clearTimeout(refreshTimeout);
+      });
+    }
+  };
+
+  wireEvents();
   fetchData();
 };
