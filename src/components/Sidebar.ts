@@ -1,5 +1,6 @@
 import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
+import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
 
 export interface LayerMetaGroup {
@@ -33,7 +34,9 @@ export const initSidebar = (
   onLayerToggle: LayerToggleCallback,
   onBulkToggle?: BulkToggleCallback,
   onGroupExpand?: (overlayId: string) => Promise<void>,
-  layersMeta: LayerMetaEntry[] = []
+  layersMeta: LayerMetaEntry[] = [],
+  onSearchSelect?: (selection: GeocoderSelection) => void,
+  signal?: AbortSignal
 ) => {
   const loadedLayers = new Map<string, LayerMetaGroup[] | LayerSpecification[]>();
 
@@ -66,6 +69,14 @@ export const initSidebar = (
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-inner">
+        <div class="sidebar-section-label">Suche</div>
+        <div class="form-field pos-relative" style="margin-bottom:12px">
+          <div class="form-input-wrap">
+            <i class="fa-solid fa-search form-input-icon"></i>
+            <input type="text" class="form-input" id="map-search-input" placeholder="Ort oder Adresse..." autocomplete="off">
+          </div>
+          <div id="map-search-results" class="geocoder-results hidden"></div>
+        </div>
         <div class="sidebar-section-label">Overlays</div>
         <div class="accordion">
           ${overlays.map(renderOverlayGroup).join('')}
@@ -75,6 +86,12 @@ export const initSidebar = (
       <div class="sidebar-tab" id="sidebar-tab" role="button" tabindex="0">‹</div>
     </nav>
   `;
+
+  if (onSearchSelect && signal) {
+    const searchInput = document.getElementById('map-search-input') as HTMLInputElement;
+    const searchResults = document.getElementById('map-search-results')!;
+    new GeocoderSearchField(searchInput, searchResults, { signal, onSelect: onSearchSelect });
+  }
 
   const sidebar = document.getElementById('sidebar')!;
   const sidebarTab = document.getElementById('sidebar-tab')!;

@@ -131,7 +131,7 @@ export class RoutingSidebarAdapter {
       } finally {
         if (btn) btn.classList.remove('loading');
       }
-    });
+    }, this.abortSignal);
   }
 
   public async setCoord(type: 'start' | 'target', lat: number, lon: number) {

@@ -40,7 +40,7 @@ export class CoordsPageController extends BasePageController {
         const mounts = LayoutHelper.renderBaseLayout(container);
 
         // 3. Sidebar initialisieren
-        this.sidebar = new CoordsSidebar(mounts.sidebar, this.service);
+        this.sidebar = new CoordsSidebar(mounts.sidebar, this.service, this.signal);
         this.sidebar.init();
 
         // 4. Sprite registrieren (wird von MapRegistry.restore geladen)
