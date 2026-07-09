@@ -1,9 +1,9 @@
-import { RoutingStation } from '../../types/common';
+import { RoutingStation, RouteResult } from '../../types/common';
 
 export class RoutingDataService {
   private startCoord: [number, number] | null = null;
   private targetCoord: [number, number] | null = null;
-  private stationRoutes = new Map<number, any>();
+  private stationRoutes = new Map<number, RouteResult>();
   private eyeActiveStates = new Set<number>();
   private currentHighlightedId: number | null = null;
   private nearestStations: RoutingStation[] = [];
@@ -17,7 +17,7 @@ export class RoutingDataService {
   }
 
   public getStationRoutes() { return this.stationRoutes; }
-  public setStationRoute(id: number, route: any) { this.stationRoutes.set(id, route); }
+  public setStationRoute(id: number, route: RouteResult) { this.stationRoutes.set(id, route); }
 
   public getEyeActiveStates() { return this.eyeActiveStates; }
   public isEyeActive(id: number) { return this.eyeActiveStates.has(id); }
