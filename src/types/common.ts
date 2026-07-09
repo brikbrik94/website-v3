@@ -17,8 +17,9 @@ export interface ContextMenuItem {
 }
 
 export interface LegendEntry {
+    id?: string;
     type: 'dot' | 'line' | 'area';
-    color: string;
+    color: string | null;
     label: string;
 }
 
