@@ -24,18 +24,22 @@ alle vier auf einmal anfassen.
   `MapRegistry.ts` selbst wurde nicht angefasst. Reine Infrastruktur, dokumentiert in
   [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
   129 Tests grün, 0 TypeScript-Fehler.
-- [x] **Schritt 2: Anwendung auf `/karte`** (2026-07-09) — ✅ ERLEDIGT
-  Legende auf `/karte` zeigt nur aktive Layer (Sidebar-Accordion → Legende automatisch bei
-  Ein-/Ausschalten). Klick auf „×" in der Legende löst einen echten `.click()` auf das zugehörige
-  Accordion-Item aus (derselbe bestehende Toggle-Pfad, keine zweite Implementierung) — die Legende
-  kann Layer nur ausblenden, nicht einschalten, das bleibt Sache der Sidebar. Angewendet auf die
-  vorhandenen Overlay-Gruppen aus `layers.json`; Farbe wird gezeigt wenn eine echte
-  Layer-Definition verfügbar ist (Fallback-Style-Parsing-Pfad in `Sidebar.ts`), sonst „?"
-  (`layersMeta`-Pfad, keine echte `paint`-Definition verfügbar). Spec-Abdeckung: alle 7
-  Entscheidungen umgesetzt. 129 Tests grün, 0 TypeScript-Fehler.
-  **Hinweis: Browser-Verifikation ausstehend** (keine Playwright/Headless-Browser in dieser
-  Umgebung) — interaktive UI-Verifikation (Klick-Interaktion, visuelle Farben/„?", Sidebar-Sync)
-  sollte vom Nutzer durchgeführt werden, bevor dieser Punkt als vollständig abgeschlossen gilt.
+- [x] **Schritt 2: Anwendung auf `/karte`** (2026-07-09, Nachbesserung nach Live-Test 2026-07-09) —
+  ✅ ERLEDIGT. Legende auf `/karte` zeigt nur aktive Layer (Sidebar-Accordion → Legende automatisch
+  bei Ein-/Ausschalten). Klick auf „×" in der Legende löst einen echten `.click()` auf das
+  zugehörige Accordion-Item aus (derselbe bestehende Toggle-Pfad, keine zweite Implementierung) —
+  die Legende kann Layer nur ausblenden, nicht einschalten, das bleibt Sache der Sidebar. **Nach
+  Live-Test durch den Nutzer (echte Overlays: Autobahnen, OpenSkiMap, Contours) drei reale Lücken
+  gefunden und behoben** (Details: CHANGELOG.md, 2026-07-09 22:57) — u.a. fehlten für alle
+  `layers.json`-kuratierten Overlays (14 Stück) komplett die Legenden-Einträge, da deren
+  `template`-Feld keine echten MapLibre-Typen enthält; behoben durch bedarfsweises Nachladen des
+  echten `style.json` (gecacht) für die Farbauflösung, `layers.json` bleibt weiter für die
+  Gruppierung zuständig. Spec-Abdeckung: alle 7 Entscheidungen umgesetzt. Alle Fixes gegen echte,
+  live abgerufene Overlay-Style-Daten verifiziert (nicht nur synthetische Testfälle). 133 Tests
+  grün, 0 TypeScript-Fehler.
+  **Hinweis: vollständige interaktive Browser-Verifikation weiterhin ausstehend** (keine
+  Playwright/Headless-Browser in dieser Umgebung) — die drei jetzt behobenen Lücken wurden vom
+  Nutzer manuell im Browser gefunden; ein erneuter Durchlauf nach diesem Fix steht noch aus.
 - [ ] **Schritt 3: Anwendung auf `/nah`** — migriert die 5 bestehenden, hardcodierten
   `legend.addEntry()`-Aufrufe (`NahPage.ts:39-43`) auf das neue System. Sonderfall: der
   Stationen-Symbol-Layer hat eine `match`-Expression auf `status` (`NahMapLayers.ts:209-215`) —
