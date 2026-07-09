@@ -10,6 +10,7 @@ import {
   setRoutingCoord
 } from '../../components/RoutingSidebar';
 import { RoutingStation } from '../../types/common';
+import type { Position } from 'geojson';
 
 export class RoutingSidebarAdapter {
   constructor(
@@ -49,11 +50,14 @@ export class RoutingSidebarAdapter {
             RoutingMapLayers.updateSingleRoute(this.map, route.features[0]);
 
             const bounds = new maplibregl.LngLatBounds();
-            route.features[0].geometry.coordinates.forEach((c: any) => bounds.extend(c));
+            route.features[0].geometry.coordinates.forEach((c: Position) => bounds.extend(c as [number, number]));
             this.map.fitBounds(bounds, { padding: 50 });
           }
         } else {
-          const results: RoutingStation[] = await RoutingService.findNearestStations(params.target, params.mode as any, params.profile);
+          // params.mode ist hier 'ab' | 'sew' | 'nef' (durch das zusammengesetzte if oben nicht auf
+          // 'sew' | 'nef' engbar, falls mode === 'ab' und params.start fehlt). Cast bildet exakt das
+          // vorher durch any stillschweigend erlaubte Verhalten ab — keine Verhaltensänderung.
+          const results: RoutingStation[] = await RoutingService.findNearestStations(params.target, params.mode as 'sew' | 'nef', params.profile);
           if (this.abortSignal.aborted) return;
           
           if (results.length === 0) {
@@ -102,7 +106,7 @@ export class RoutingSidebarAdapter {
               const route = this.dataService.getStationRoutes().get(station.id);
               if (route && route.features[0].geometry) {
                 const bounds = new maplibregl.LngLatBounds();
-                route.features[0].geometry.coordinates.forEach((c: any) => bounds.extend(c));
+                route.features[0].geometry.coordinates.forEach((c: Position) => bounds.extend(c as [number, number]));
                 this.map.fitBounds(bounds, { padding: 50 });
               }
             }
@@ -112,7 +116,7 @@ export class RoutingSidebarAdapter {
           
           const bounds = new maplibregl.LngLatBounds();
           bounds.extend([params.target[1], params.target[0]]);
-          results.forEach((r: any) => {
+          results.forEach((r) => {
              bounds.extend([r.lon, r.lat]);
           });
           this.map.fitBounds(bounds, { padding: 80 });

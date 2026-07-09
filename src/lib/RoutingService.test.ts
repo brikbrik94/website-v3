@@ -77,10 +77,11 @@ describe('RoutingService.findNearestStations (driving-emergency / Sondersignal)'
 
     expect(result).toHaveLength(1);
     // Contract consumed by RoutingMapLayers.updateRoutesLayer: route.features[0].geometry
-    expect(result[0].route?.features?.[0]?.geometry).toBeDefined();
-    expect(result[0].route.features[0].geometry.type).toBe('LineString');
+    const station = result[0];
+    expect(station.route?.features?.[0]?.geometry).toBeDefined();
+    expect(station.route!.features[0].geometry.type).toBe('LineString');
     // Summary still surfaced for the result list
-    expect(result[0].duration).toBe(120);
-    expect(result[0].distance).toBe(1000);
+    expect(station.duration).toBe(120);
+    expect(station.distance).toBe(1000);
   });
 });

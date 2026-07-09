@@ -1,14 +1,14 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { type SourceSpecification, type LayerSpecification } from 'maplibre-gl';
 import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
 
 interface ManagedSource {
   id: string;
-  definition: any;
+  definition: SourceSpecification;
 }
 
 interface ManagedLayer {
   id: string;
-  definition: any;
+  definition: LayerSpecification;
   beforeId?: string;
 }
 
@@ -23,12 +23,12 @@ const layers = new Map<string, ManagedLayer>();
 const images = new Map<string, ManagedImage>();
 
 export const MapRegistry = {
-  registerSource(id: string, definition: any) {
+  registerSource(id: string, definition: SourceSpecification) {
     console.debug(`[MapRegistry] Registering source: ${id}`);
     sources.set(id, { id, definition });
   },
   
-  registerLayer(id: string, definition: any, beforeId?: string) {
+  registerLayer(id: string, definition: LayerSpecification, beforeId?: string) {
     console.debug(`[MapRegistry] Registering layer: ${id} (before: ${beforeId || 'top'})`);
     layers.set(id, { id, definition, beforeId });
   },

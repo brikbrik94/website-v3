@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl';
 export interface PopupField {
     key: string;
     label: string;
-    format?: (val: any) => string | null;
+    format?: (val: number | null | undefined) => string | null;
 }
 
 export interface LayerPopupConfig {
@@ -33,7 +33,7 @@ export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
             { key: 'mmsi', label: 'MMSI' },
             { key: 'ui_class', label: 'Klasse' },
             { key: 'speed', label: 'Speed', format: (v) => v != null ? `${v} kn` : null },
-            { key: 'cog', label: 'Course', format: (v) => v != null ? `${Math.round(v as number)}°` : null },
+            { key: 'cog', label: 'Course', format: (v) => v != null ? `${Math.round(v)}°` : null },
             { key: 'destination', label: 'Destination' }
         ]
     }
@@ -55,7 +55,7 @@ export class PopupManager {
         const rows = config.fields.map(f => {
             let val = props[f.key];
             if (val == null || val === '' || val === 'null') return '';
-            if (f.format) val = f.format(val);
+            if (f.format) val = f.format(val as number | null | undefined);
             if (val == null) return '';
             
             return `

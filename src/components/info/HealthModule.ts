@@ -45,7 +45,7 @@ export const renderHealthModule = async (container: HTMLElement, signal: AbortSi
 
   const meta = container.querySelector('#health-meta')!;
   const refreshBtn = container.querySelector('#health-refresh-btn') as HTMLButtonElement;
-  let refreshTimeout: any = null;
+  let refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const pingService = async (service: typeof services[0]) => {
     if (signal.aborted) return;
@@ -101,8 +101,8 @@ export const renderHealthModule = async (container: HTMLElement, signal: AbortSi
         dot.classList.add('offline');
         latencyEl.classList.add('offline');
       }
-    } catch (e: any) {
-      if (e.name === 'AbortError' && signal.aborted) return;
+    } catch (e) {
+      if ((e as Error).name === 'AbortError' && signal.aborted) return;
       
       latencyEl.textContent = 'Error';
       dot.classList.remove('online', 'unknown', 'offline');

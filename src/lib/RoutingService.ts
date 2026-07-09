@@ -1,4 +1,4 @@
-import { RouteResult } from '../types/common';
+import { RouteResult, RoutingStation } from '../types/common';
 
 const ORS_BASE_URL = '/api/ors.php';
 
@@ -65,7 +65,7 @@ export const RoutingService = {
     target: [number, number],
     type: 'sew' | 'nef',
     profile: string = 'driving-car'
-  ): Promise<any[]> {
+  ): Promise<RoutingStation[]> {
     try {
       // SONDERFALL: driving-emergency
       // Matrix-Abfrage für driving-emergency ist unzuverlässig.
@@ -76,7 +76,7 @@ export const RoutingService = {
         const top7Base = await fetch(`/api/stations.php?target=${target[0]},${target[1]}&type=${type}&profile=driving-car&limit=7`);
         const stations7 = await top7Base.json();
 
-        const detailedResults = await Promise.all(stations7.map(async (s: any) => {
+        const detailedResults = await Promise.all(stations7.map(async (s: RoutingStation) => {
           const route = await this.calculateRoute([s.lat, s.lon], target, 'driving-emergency');
           if (route && route.features && route.features.length > 0) {
             const summary = route.features[0].properties.summary;

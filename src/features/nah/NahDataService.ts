@@ -10,8 +10,8 @@ export type NahStatusCallback = (online: boolean) => void;
  */
 export class NahDataService {
   private stations: NahStation[] = [];
-  private refreshTimeout: any = null;
-  private connectionInterval: any = null;
+  private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+  private connectionInterval: ReturnType<typeof setInterval> | null = null;
   private onDataUpdated: NahDataCallback | null = null;
   private onStatusUpdated: NahStatusCallback | null = null;
   private signal: AbortSignal;
@@ -109,8 +109,8 @@ export class NahDataService {
         this.scheduleNextRefresh(1800000);
       }
 
-    } catch (err: any) {
-      if (err.name === 'AbortError') return;
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
       console.error('[NahDataService] Refresh failed', err);
       // Retry in 60 seconds on network/server error
       this.scheduleNextRefresh(60000);
@@ -131,8 +131,8 @@ export class NahDataService {
       if (this.onStatusUpdated) {
         this.onStatusUpdated(res.ok);
       }
-    } catch (e: any) {
-      if (e.name === 'AbortError') return;
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return;
       if (this.onStatusUpdated) {
         this.onStatusUpdated(false);
       }

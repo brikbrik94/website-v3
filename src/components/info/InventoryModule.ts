@@ -44,8 +44,8 @@ export const renderInventoryModule = async (container: HTMLElement, signal?: Abo
 
       meta.textContent = `Stand: ${new Date(data.generated_at).toLocaleString()}`;
       renderData(data);
-    } catch (error: any) {
-      if (error.name === 'AbortError') return;
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') return;
 
       Toast.error('Fehler beim Laden des Karten-Inventars');
       content.innerHTML = `

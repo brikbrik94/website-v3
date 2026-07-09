@@ -190,7 +190,8 @@ describe('NahMapLayers.setStations', () => {
     NahMapLayers.setStations(map, [makeStation()]);
 
     const registered = MapRegistry.getSource('nah-stations');
-    expect(registered?.definition.data.features).toHaveLength(1);
+    const definition = registered?.definition as { data: GeoJSON.FeatureCollection } | undefined;
+    expect(definition?.data.features).toHaveLength(1);
   });
 
   it('groups stations by identical coordinates', () => {
