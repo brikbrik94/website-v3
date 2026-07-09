@@ -2,7 +2,7 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased]
+## [3.8.0] - 2026-07-09 00:08
 
 ### Hinzugefügt
 - **Standards-Angleichung: PSR-12, OWASP Top 10, OpenAPI** (2026-07-08) — Drei bisher offene
@@ -29,8 +29,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   `api/diag.php` exponierte ohne Zugriffsschutz PHP-Version, DB-Host/Port/Name/User und
   ORS-Health-Status. Fix: `nginx.conf` blockt den Endpoint jetzt mit `location = /api/diag.php
   { deny all; }` im Produktions-Server-Block; der lokale Dev-Block bleibt bewusst offen (dort
-  zum Debuggen nützlich). Muss noch manuell auf den Server deployt werden — `deploy-website.sh`
-  synced `nginx.conf` nicht automatisch.
+  zum Debuggen nützlich). Auf dem Server angewendet und verifiziert (`https://map.oe5ith.at/api/diag.php` → 403).
 
 ### Entfernt
 - **Tote Leaflet-CSS-Regeln entfernt** — `.leaflet-popup-*`-Overrides in `modal.css` waren Altlast aus der Zeit vor der MapLibre-GL-Migration (Leaflet-Dependency längst entfernt); 27 Zeilen toter Code gelöscht.

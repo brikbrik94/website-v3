@@ -18,6 +18,17 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.8.0] - 2026-07-09</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Luftrettung (NAH):</strong> Stützpunkte mit mehreren Hubschraubern am selben Standort (z.B. Christophorus 14/99) werden jetzt als ein Marker mit Anzahl-Badge dargestellt, dessen Farbe den besten Status aller dortigen Maschinen zeigt. Ein Klick öffnet die Details zu allen Stationen an diesem Standort.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Mobile Ansicht:</strong> Das OE5ITH-Logo in der oberen Leiste war auf Mobilgeräten unsichtbar — wird jetzt wieder angezeigt.</li>
+            <li><strong>Kartenseiten (Tablet):</strong> Bei mittleren Bildschirmbreiten fehlte auf Kartenseiten einer der beiden Schnellzugriffs-Links („Luftrettung") — beide sind jetzt sichtbar.</li>
+          </ul>
+
           <h2>[3.7.0] - 2026-07-07</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>
