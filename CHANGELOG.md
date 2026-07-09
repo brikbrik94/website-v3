@@ -2,6 +2,26 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-09 22:57
+
+### Behoben
+- **Legenden-Swatch-Auflösung auf `/karte` — drei reale Lücken nach Live-Test behoben**
+  (`src/lib/resolveLegendSwatch.ts`, `src/components/Sidebar.ts`). Live-Test gegen echte
+  Overlays hat gezeigt: (1) Für alle 14 über `layers.json` kuratierten Overlays (Autobahnen,
+  Bezirke, RD, NEF, …) erschien **gar kein** Legenden-Eintrag — `layers.json`s `template`-Feld
+  (z.B. `"strassen"`) ist eine Kategorie-Bezeichnung für die UI, kein MapLibre-Layer-Typ, wie
+  fälschlich angenommen. Fix: `Sidebar.ts` lädt beim Toggle einer solchen Gruppe zusätzlich
+  (einmalig pro Overlay, gecacht) das zugehörige `style.json` nach, um Typ+Farbe aus der echten
+  Layer-Definition zu holen — `layers.json` bleibt weiterhin allein zuständig für die
+  Gruppierung/Benennung in der Sidebar. (2) `resolveLegendSwatch()` kannte nur `match`-
+  Expressions, nicht `case` (z.B. OpenSkiMap-Pistenfarben) — jetzt unterstützt, inkl. rekursiver
+  Auflösung verschachtelter `match`/`case`-Fallback-Arme (reales Muster: `case` mit
+  `match`-Expression als Fallback). (3) Reine Text-Label-`symbol`-Layer ohne `icon-color` (nur
+  `text-color`) lieferten „?" statt Farbe — jetzt als Fallback berücksichtigt. Alle drei Fixes
+  gegen echte, live abgerufene Style-Daten verifiziert (Autobahnen A1 → `#0000FF`, OpenSkiMap-
+  Pistenfläche → `#95a5a6`, Ski-Label → `#333`). Verifiziert: `npx tsc --noEmit` 0 Fehler,
+  `npm test` 133/133.
+
 ## [Unreleased] - 2026-07-09 20:48
 
 ### Hinzugefügt

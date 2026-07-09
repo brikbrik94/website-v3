@@ -7,11 +7,23 @@ export interface LegendSwatch {
   color: string | null;
 }
 
+// Fallback-Arm von match/case ist laut MapLibre-Style-Spec verpflichtend und immer der letzte
+// Array-Eintrag (['match', input, label1, output1, ..., fallback] bzw.
+// ['case', cond1, out1, ..., fallback]). Rekursiv, weil reale Styles (z.B. OpenSkiMap) den
+// Fallback-Arm einer case-Expression wieder mit einer verschachtelten match-Expression befüllen.
+function extractLiteralColor(value: unknown): string | null {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value) && (value[0] === 'match' || value[0] === 'case')) {
+    return extractLiteralColor(value[value.length - 1]);
+  }
+  return null;
+}
+
 /**
  * Löst die Legenden-Swatch-Farbe eines MapLibre-Layers auf — deckt nur die im Projekt
- * tatsächlich vorkommenden Muster ab (Literal-Farbe, `match`-Expression-Fallback), keine
- * vollständige Style-Spec-Expression-Engine (siehe docs/superpowers/specs/2026-07-09-
- * map-legend-interactive-design.md, Entscheidung 5).
+ * tatsächlich vorkommenden Muster ab (Literal-Farbe, `match`-/`case`-Expression-Fallback,
+ * ggf. verschachtelt), keine vollständige Style-Spec-Expression-Engine (siehe
+ * docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md, Entscheidung 5).
  */
 export function resolveLegendSwatch(layer: LayerSpecification): LegendSwatch | null {
   let type: SwatchType;
@@ -35,24 +47,17 @@ export function resolveLegendSwatch(layer: LayerSpecification): LegendSwatch | n
       raw = layer.paint?.['circle-color'];
       break;
     case 'symbol':
+      // Reine Text-Label-Layer (z.B. OpenSkiMap "ski-labels") haben kein Icon, nur text-color.
       type = 'dot';
-      raw = layer.paint?.['icon-color'];
+      raw = layer.paint?.['icon-color'] ?? layer.paint?.['text-color'];
       break;
     default:
       return null;
   }
 
-  if (typeof raw === 'string') {
-    return { type, color: raw };
-  }
-
-  // Fallback-Arm einer match-Expression ist laut MapLibre-Style-Spec verpflichtend und immer
-  // der letzte Array-Eintrag: ['match', input, label1, output1, ..., fallback].
-  if (Array.isArray(raw) && raw[0] === 'match') {
-    const fallback = raw[raw.length - 1];
-    if (typeof fallback === 'string') {
-      return { type, color: fallback };
-    }
+  const color = extractLiteralColor(raw);
+  if (color !== null) {
+    return { type, color };
   }
 
   console.warn('[resolveLegendSwatch] Farbe nicht auflösbar für Layer', layer.id);

@@ -36,6 +36,44 @@ describe('resolveLegendSwatch', () => {
     expect(resolveLegendSwatch(layer)).toEqual({ type: 'dot', color: '#888888' });
   });
 
+  it('extracts the fallback (else) arm of a case expression', () => {
+    const layer = {
+      id: 'l5b', type: 'line', source: 's',
+      paint: { 'line-color': ['case', ['==', ['get', 'x'], 'y'], '#111111', '#222222'] }
+    } as LayerSpecification;
+    expect(resolveLegendSwatch(layer)).toEqual({ type: 'line', color: '#222222' });
+  });
+
+  it('recursively unwraps a nested match expression inside a case fallback (real OpenSkiMap pattern)', () => {
+    const layer = {
+      id: 'l5c', type: 'fill', source: 's',
+      paint: {
+        'fill-color': [
+          'case', ['==', ['get', 'difficulty_convention'], 'europe'],
+          ['match', ['get', 'difficulty'], 'novice', '#3498db', 'easy', '#3498db', '#95a5a6'],
+          ['match', ['get', 'difficulty'], 'novice', '#2ecc71', 'easy', '#2ecc71', '#95a5a6']
+        ]
+      }
+    } as LayerSpecification;
+    expect(resolveLegendSwatch(layer)).toEqual({ type: 'area', color: '#95a5a6' });
+  });
+
+  it('falls back to text-color for a symbol layer with no icon-color (text-only label layer)', () => {
+    const layer = {
+      id: 'l5d', type: 'symbol', source: 's',
+      paint: { 'text-color': '#2c3e50', 'text-halo-color': '#ffffff' }
+    } as LayerSpecification;
+    expect(resolveLegendSwatch(layer)).toEqual({ type: 'dot', color: '#2c3e50' });
+  });
+
+  it('prefers icon-color over text-color for a symbol layer that has both', () => {
+    const layer = {
+      id: 'l5e', type: 'symbol', source: 's',
+      paint: { 'icon-color': '#111111', 'text-color': '#222222' }
+    } as LayerSpecification;
+    expect(resolveLegendSwatch(layer)).toEqual({ type: 'dot', color: '#111111' });
+  });
+
   it('returns color: null and warns for an unresolvable expression', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const layer = {

@@ -47,6 +47,27 @@ export const initSidebar = (
 ) => {
   const loadedLayers = new Map<string, LayerMetaGroup[] | LayerSpecification[]>();
 
+  // Separater Cache für den layersMeta-Pfad: layers.json liefert Gruppierung/Namen, aber keine
+  // echten LayerSpecifications (kein paint) — für die Legenden-Farbauflösung wird das zugehörige
+  // style.json bei Bedarf einmal pro Overlay nachgeladen und hier gecacht (nicht bei jedem Toggle
+  // neu). Reine Farbauflösung, betrifft nicht die Accordion-Gruppierung selbst.
+  const styleLayersCache = new Map<string, LayerSpecification[]>();
+
+  const fetchStyleLayersForColor = async (overlayId: string, overlayUrl: string): Promise<LayerSpecification[]> => {
+    const cached = styleLayersCache.get(overlayId);
+    if (cached) return cached;
+    try {
+      const res = await fetch(overlayUrl);
+      const style = await res.json();
+      const layers = (style.layers as LayerSpecification[]).filter((l) => l.type !== 'background');
+      styleLayersCache.set(overlayId, layers);
+      return layers;
+    } catch (err) {
+      console.error(`[Sidebar] style.json für Legenden-Farbauflösung nicht ladbar (${overlayId}):`, err);
+      return [];
+    }
+  };
+
   const renderOverlayGroup = (m: MapItem) => {
     const id = m.name.toLowerCase().replace(/\s+/g, '-');
     return `
@@ -157,34 +178,42 @@ export const initSidebar = (
     updateBodyHeight(groupEl);
   };
 
-  const buildToggleEvent = (itemEl: HTMLElement, group: HTMLElement, checked: boolean): LayerToggleEvent => {
+  const buildToggleEvent = async (itemEl: HTMLElement, group: HTMLElement, checked: boolean): Promise<LayerToggleEvent> => {
     const overlayId = group.getAttribute('data-id')!;
     const overlayUrl = group.getAttribute('data-url')!;
     const layerIds: string[] = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
     const layerType = itemEl.getAttribute('data-layer-type')!;
     const legendLabel = itemEl.querySelector('.acc-item-label')?.textContent ?? layerType;
 
-    // Der Swatch-TYP ist immer aus layerType ableitbar (layersMeta-Pfad: g.template; Fallback-
-    // Pfad: l.type) — unabhängig davon, ob eine echte LayerSpecification mit paint verfügbar ist.
-    // Nur die FARBE braucht eine echte LayerSpecification (nur im Fallback-Pfad vorhanden). Damit
-    // bekommt jeder legend-fähige Layer immer einen Eintrag (Farbe oder "?"), nie gar keinen —
-    // siehe docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md, Entscheidung 6.
-    const swatchType = swatchTypeForLayerType(layerType);
-    let swatch: LegendSwatch | null = null;
-    if (swatchType) {
-      let color: string | null = null;
-      const loaded = loadedLayers.get(overlayId);
-      if (loaded) {
-        for (const entry of loaded) {
-          if ('style_layers' in entry) break; // layersMeta-Pfad, keine echte LayerSpecification
-          if (entry.id === layerIds[0]) {
-            const resolved = resolveLegendSwatch(entry);
-            if (resolved) color = resolved.color;
-            break;
-          }
+    // Der Swatch-TYP wird zunächst aus layerType (layersMeta-Pfad: g.template; Fallback-Pfad:
+    // l.type) versucht abzuleiten — funktioniert nur, wenn layerType tatsächlich ein MapLibre-
+    // Layer-Typ ist. layers.json nutzt für template aber eigene Kategorie-Bezeichnungen
+    // (z.B. "strassen", "gebiete" statt "line"/"fill") — dafür wird unten zusätzlich die echte
+    // Layer-Definition aus dem style.json herangezogen (liefert Typ UND Farbe gemeinsam).
+    let realLayer: LayerSpecification | undefined;
+    const loaded = loadedLayers.get(overlayId);
+    if (loaded) {
+      for (const entry of loaded) {
+        if ('style_layers' in entry) break; // layersMeta-Pfad, keine echte LayerSpecification
+        if (entry.id === layerIds[0]) {
+          realLayer = entry;
+          break;
         }
       }
-      swatch = { type: swatchType, color };
+    }
+    if (!realLayer) {
+      const styleLayers = await fetchStyleLayersForColor(overlayId, overlayUrl);
+      realLayer = styleLayers.find(l => l.id === layerIds[0]);
+    }
+
+    let swatch: LegendSwatch | null = null;
+    if (realLayer) {
+      swatch = resolveLegendSwatch(realLayer);
+    } else {
+      // Weder echte LayerSpecification noch style.json-Treffer verfügbar (z.B. Fetch-Fehler) —
+      // letzter Versuch über layerType, sonst kein Eintrag (nicht legend-fähiger Typ).
+      const swatchType = swatchTypeForLayerType(layerType);
+      if (swatchType) swatch = { type: swatchType, color: null };
     }
 
     return {
@@ -255,14 +284,14 @@ export const initSidebar = (
     }
   };
 
-  const handleToggleItem = (itemEl: HTMLElement) => {
+  const handleToggleItem = async (itemEl: HTMLElement) => {
     if (itemEl.classList.contains('loading-state')) return;
-    
+
     const group = itemEl.closest('.acc-group') as HTMLElement;
     const isChecked = itemEl.classList.toggle('checked');
     itemEl.setAttribute('aria-checked', isChecked ? 'true' : 'false');
 
-    onLayerToggle(buildToggleEvent(itemEl, group, isChecked));
+    onLayerToggle(await buildToggleEvent(itemEl, group, isChecked));
     updateGroupStatus(group);
   };
 
@@ -280,7 +309,7 @@ export const initSidebar = (
 
       const item = target.closest('.acc-item');
       if (item) {
-        handleToggleItem(item as HTMLElement);
+        await handleToggleItem(item as HTMLElement);
         return;
       }
     }
@@ -300,7 +329,7 @@ export const initSidebar = (
     // Item Click
     const item = target.closest('.acc-item');
     if (item) {
-      handleToggleItem(item as HTMLElement);
+      await handleToggleItem(item as HTMLElement);
       return;
     }
 
@@ -312,12 +341,12 @@ export const initSidebar = (
       const overlayId = group.getAttribute('data-id')!;
       const overlayUrl = group.getAttribute('data-url')!;
       
-      group.querySelectorAll('.acc-item:not(.checked):not(.loading-state)').forEach(el => {
-        const itemEl = el as HTMLElement;
+      const itemsToEnable = Array.from(group.querySelectorAll('.acc-item:not(.checked):not(.loading-state)')) as HTMLElement[];
+      for (const itemEl of itemsToEnable) {
         itemEl.classList.add('checked');
         itemEl.setAttribute('aria-checked', 'true');
-        onLayerToggle(buildToggleEvent(itemEl, group, true));
-      });
+        onLayerToggle(await buildToggleEvent(itemEl, group, true));
+      }
 
       if (onBulkToggle) onBulkToggle(overlayId, overlayUrl, true);
       updateGroupStatus(group);
@@ -331,12 +360,12 @@ export const initSidebar = (
       const overlayId = group.getAttribute('data-id')!;
       const overlayUrl = group.getAttribute('data-url')!;
       
-      group.querySelectorAll('.acc-item.checked').forEach(el => {
-        const itemEl = el as HTMLElement;
+      const itemsToDisable = Array.from(group.querySelectorAll('.acc-item.checked')) as HTMLElement[];
+      for (const itemEl of itemsToDisable) {
         itemEl.classList.remove('checked');
         itemEl.setAttribute('aria-checked', 'false');
-        onLayerToggle(buildToggleEvent(itemEl, group, false));
-      });
+        onLayerToggle(await buildToggleEvent(itemEl, group, false));
+      }
 
       if (onBulkToggle) onBulkToggle(overlayId, overlayUrl, false);
       updateGroupStatus(group);
