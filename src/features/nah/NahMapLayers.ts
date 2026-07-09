@@ -1,4 +1,5 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl, { type LayerSpecification } from 'maplibre-gl';
+import type { Feature, FeatureCollection, Point, LineString } from 'geojson';
 import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MAP_COLORS, MAP_ROUTE_STYLES } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
@@ -190,7 +191,7 @@ export const NahMapLayers = {
     });
 
     // Create one feature per group
-    const features = Array.from(grouped.values()).map(group => {
+    const features: Feature<Point>[] = Array.from(grouped.values()).map(group => {
       const representative = group[0];
       const groupStatus = this.computeGroupStatus(group);
       return {
@@ -205,14 +206,14 @@ export const NahMapLayers = {
       };
     });
 
-    const data = {
+    const data: FeatureCollection<Point> = {
       type: 'FeatureCollection',
-      features: features as any
+      features
     };
 
     const source = map.getSource(STATIONS_SOURCE) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData(data as any);
+      source.setData(data);
     }
 
     MapRegistry.registerSource(STATIONS_SOURCE, {
@@ -226,13 +227,13 @@ export const NahMapLayers = {
    * Nutzung im zentralen Klick-Handler der Seite (queryRenderedFeatures, analog zu
    * TrackingMapLayers.handleMapClick).
    */
-  findClickedStation(map: maplibregl.Map, point: [number, number]): { station: NahStation & { status: NahStationStatus }; coordinates: [number, number] } | null {
+  findClickedStation(map: maplibregl.Map, point: [number, number]): { station: NahStation & { status: NahStationStatus; _all_stations: NahStation[] | undefined }; coordinates: [number, number] } | null {
     const features = map.queryRenderedFeatures(point, { layers: [STATIONS_LAYER] });
     if (features.length === 0) return null;
 
     const feat = features[0];
-    const coordinates = (feat.geometry as any).coordinates as [number, number];
-    const rawProps = feat.properties as NahStation & { status: NahStationStatus };
+    const coordinates = (feat.geometry as Point).coordinates as [number, number];
+    const rawProps = feat.properties as NahStation & { status: NahStationStatus; _all_stations: NahStation[] | string };
     // MapLibre GL JS JSON-stringifies non-primitive GeoJSON feature properties
     // (z.B. Arrays) intern; months_active muss hier wieder in ein echtes Array
     // geparst werden, damit buildStationPopupHtml eine echte NahStation sieht.
@@ -241,9 +242,9 @@ export const NahMapLayers = {
       months_active: typeof rawProps.months_active === 'string'
         ? JSON.parse(rawProps.months_active)
         : rawProps.months_active,
-      _all_stations: typeof (rawProps as any)._all_stations === 'string'
-        ? JSON.parse((rawProps as any)._all_stations)
-        : (rawProps as any)._all_stations
+      _all_stations: typeof rawProps._all_stations === 'string'
+        ? JSON.parse(rawProps._all_stations)
+        : rawProps._all_stations
     };
     return {
       station,
@@ -263,7 +264,7 @@ export const NahMapLayers = {
       return false;
     }
 
-    const allStations = (hit.station as any)._all_stations as NahStation[] | undefined;
+    const allStations = hit.station._all_stations;
     let popupHtml: string;
 
     if (allStations && allStations.length > 1) {
@@ -294,7 +295,7 @@ export const NahMapLayers = {
 
     // NAH-Stationen (Symbol-Layer statt DOM-Marker; siehe
     // docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)
-    const stationsLayerDef = {
+    const stationsLayerDef: LayerSpecification = {
       id: STATIONS_LAYER,
       type: 'symbol',
       source: STATIONS_SOURCE,
@@ -313,11 +314,11 @@ export const NahMapLayers = {
         ]
       }
     };
-    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsLayerDef as any);
+    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsLayerDef);
     attachHoverCursor(map, [STATIONS_LAYER]);
 
     // Text-Label für Station-Count (nur sichtbar wenn > 1)
-    const stationsCountLayer = {
+    const stationsCountLayer: LayerSpecification = {
       id: 'nah-stations-count-label',
       type: 'symbol',
       source: STATIONS_SOURCE,
@@ -339,12 +340,12 @@ export const NahMapLayers = {
         'text-halo-width': 1.5,
       }
     };
-    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsCountLayer as any);
+    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsCountLayer);
 
     const sourceId = 'nah-lines';
     const layerId = 'nah-lines';
 
-    const layerDef = {
+    const layerDef: LayerSpecification = {
       id: layerId,
       type: 'line',
       source: sourceId,
@@ -371,7 +372,7 @@ export const NahMapLayers = {
       }
     };
 
-    MapCore.ensureGeoJsonLayer(map, sourceId, layerDef as any);
+    MapCore.ensureGeoJsonLayer(map, sourceId, layerDef);
   },
 
   setTargetPin(map: maplibregl.Map, lng: number, lat: number) {
@@ -398,7 +399,7 @@ export const NahMapLayers = {
     // Reset feature states für alle Features der Source (unabhängig von der Ergebnisanzahl)
     map.removeFeatureState({ source: sourceId });
 
-    const lineFeatures = results.map((s, index) => ({
+    const lineFeatures: Feature<LineString>[] = results.map((s, index) => ({
       type: 'Feature',
       id: index,
       geometry: {
@@ -408,14 +409,14 @@ export const NahMapLayers = {
       properties: { osm_id: s.osm_id }
     }));
 
-    const data = {
+    const data: FeatureCollection<LineString> = {
       type: 'FeatureCollection',
-      features: lineFeatures as any
+      features: lineFeatures
     };
 
     const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
     if (source) {
-      source.setData(data as any);
+      source.setData(data);
     }
 
     // Persist in MapRegistry for style switches
