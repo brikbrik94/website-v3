@@ -15,7 +15,7 @@
 - **Keine hardcodierten Farben/Z-Index/Layoutwerte in TS** — nur CI-Tokens (`var(--muted)`) bzw. bestehende `MAP_COLORS`-Getter.
 - **Kein `style="..."` in dynamisch erzeugtem DOM/HTML** außer laufzeitberechneter Werte (hier: keine — alle neuen Styles gehören in CSS-Klassen).
 - **Bestehende CI-Klasse wiederverwenden statt neu erfinden:** `.toast-close` (`oe5ith-ci/css/toast.css`) für den Entfernen-Button — exakt das passende, bereits vorhandene Muster für einen kompakten Dismiss-Button.
-- **Testbarkeit-Realität dieses Repos:** Es gibt keine jsdom/happy-dom-Umgebung (siehe TODO.md → „DOM-Testumgebung einrichten"). `resolveLegendSwatch.ts` ist eine reine Funktion und bekommt echte Vitest-Unit-Tests (Task 1). `MapLegend.ts`/`Sidebar.ts`/`MapPage.ts` fassen echtes DOM an und werden — wie alle vergleichbaren Dateien in diesem Repo (`NahMapLayers.ts`, `RoutingSidebar.ts` u.a., siehe CHANGELOG-Historie) — nicht mit Fake-DOM-Unit-Tests, sondern per `npx tsc --noEmit` (Typkorrektheit) + `npm test` (keine Regression an den 112 bestehenden Tests) + abschließender Playwright-Live-Verifikation (Task 5) abgesichert. Das ist keine Abkürzung, sondern deckt sich mit der bisherigen Praxis in diesem Repo.
+- **Testbarkeit-Realität dieses Repos:** Es gibt keine jsdom/happy-dom-Umgebung (siehe TODO.md → „DOM-Testumgebung einrichten"). `resolveLegendSwatch.ts` ist eine reine Funktion und bekommt echte Vitest-Unit-Tests (Task 1). `MapLegend.ts`/`Sidebar.ts`/`MapPage.ts` fassen echtes DOM an und werden — wie alle vergleichbaren Dateien in diesem Repo (`NahMapLayers.ts`, `RoutingSidebar.ts` u.a., siehe CHANGELOG-Historie) — nicht mit Fake-DOM-Unit-Tests, sondern per `npx tsc --noEmit` (Typkorrektheit) + `npm test` (keine Regression an den 112 bestehenden Tests) + abschließender Playwright-Live-Verifikation (Task 4) abgesichert. Das ist keine Abkürzung, sondern deckt sich mit der bisherigen Praxis in diesem Repo.
 - Verifikationsbefehle: `npx tsc --noEmit && npm test` (siehe CLAUDE.md → Commands).
 - Dateien **immer explizit** stagen, nie `git add -A`.
 
@@ -357,14 +357,19 @@ git commit -m "feat(map): MapLegend um entfernbare, klickbare Einträge erweiter
 
 ---
 
-## Task 3: `Sidebar.ts` — Toggle-Callback liefert Legend-Infos
+## Task 3: `Sidebar.ts` + `MapPage.ts` — Toggle-Callback liefert Legend-Infos, `/karte` verdrahtet
 
 **Files:**
 - Modify: `src/components/Sidebar.ts`
+- Modify: `src/pages/MapPage.ts`
 
 **Interfaces:**
-- Consumes: `resolveLegendSwatch(layer: LayerSpecification): LegendSwatch | null` aus Task 1 (`../lib/resolveLegendSwatch`)
-- Produces: `export interface LayerToggleEvent { overlayId: string; overlayUrl: string; layerIds: string[]; layerType: string; checked: boolean; legendId: string; legendLabel: string; swatch: LegendSwatch | null; itemEl: HTMLElement; }`, `export type LayerToggleCallback = (event: LayerToggleEvent) => void;` (ersetzt die bisherige 5-Positionsparameter-Signatur — einziger Konsument ist `MapPage.ts`, siehe Task 4)
+- Consumes: `resolveLegendSwatch(layer: LayerSpecification): LegendSwatch | null` aus Task 1 (`../lib/resolveLegendSwatch`), `MapLegend.addEntry`/`removeEntry` aus Task 2
+- Produces: `export interface LayerToggleEvent { overlayId: string; overlayUrl: string; layerIds: string[]; layerType: string; checked: boolean; legendId: string; legendLabel: string; swatch: LegendSwatch | null; itemEl: HTMLElement; }`, `export type LayerToggleCallback = (event: LayerToggleEvent) => void;` (ersetzt die bisherige 5-Positionsparameter-Signatur — einziger Konsument ist `MapPage.ts`, unten im selben Task)
+
+**Hinweis:** `Sidebar.ts`s Callback-Signatur und ihr einziger Konsument (`MapPage.ts`) gehören in
+einen Task, nicht zwei — sonst kompiliert der Zwischenstand nach nur einer der beiden Dateien
+nicht (kein eigenständig testbares Ergebnis).
 
 - [ ] **Step 1: Import + Typ ergänzen**
 
@@ -479,31 +484,7 @@ Im `btnAllOff`-Handler (aktuell Zeilen 284-298), analog:
       });
 ```
 
-- [ ] **Step 4: Typecheck**
-
-Run: `npx tsc --noEmit`
-Expected: Fehler in `src/pages/MapPage.ts` (alter Callback-Aufruf passt nicht mehr zur neuen
-Signatur) — das ist erwartet, wird in Task 4 behoben. Bestätige, dass die einzigen Fehler in
-`MapPage.ts` liegen (nicht anderswo).
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/components/Sidebar.ts
-git commit -m "feat(map): Sidebar-Toggle liefert Legend-Event (Label, Swatch, DOM-Element)"
-```
-
----
-
-## Task 4: `MapPage.ts` — Legende mit Sidebar synchronisieren
-
-**Files:**
-- Modify: `src/pages/MapPage.ts`
-
-**Interfaces:**
-- Consumes: `LayerToggleEvent` aus Task 3 (`../components/Sidebar`), `MapLegend.addEntry`/`removeEntry` aus Task 2
-
-- [ ] **Step 1: Import ergänzen**
+- [ ] **Step 4: `MapPage.ts` — Import ergänzen**
 
 Zeile 5 (`import { initSidebar } from '../components/Sidebar';`) ersetzen durch:
 
@@ -511,7 +492,7 @@ Zeile 5 (`import { initSidebar } from '../components/Sidebar';`) ersetzen durch:
 import { initSidebar, type LayerToggleEvent } from '../components/Sidebar';
 ```
 
-- [ ] **Step 2: `initSidebar`-Aufruf anpassen**
+- [ ] **Step 5: `initSidebar`-Aufruf anpassen**
 
 Den `onLayerToggle`-Callback (aktuell Zeilen 67-78) ersetzen durch:
 
@@ -530,7 +511,7 @@ Den `onLayerToggle`-Callback (aktuell Zeilen 67-78) ersetzen durch:
             );
 ```
 
-- [ ] **Step 3: `toggleLayer` umschreiben**
+- [ ] **Step 6: `toggleLayer` umschreiben**
 
 Die bestehende `toggleLayer`-Methode (aktuell Zeilen 114-125) ersetzen durch:
 
@@ -564,21 +545,21 @@ Die bestehende `toggleLayer`-Methode (aktuell Zeilen 114-125) ersetzen durch:
     }
 ```
 
-- [ ] **Step 4: Typecheck + bestehende Tests**
+- [ ] **Step 7: Typecheck + bestehende Tests**
 
 Run: `npx tsc --noEmit && npm test`
-Expected: 0 TS-Fehler (die in Task 3 erwarteten Fehler sind jetzt behoben), 112/112 Tests grün.
+Expected: 0 TS-Fehler, 112/112 Tests grün.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/pages/MapPage.ts
+git add src/components/Sidebar.ts src/pages/MapPage.ts
 git commit -m "feat(map): /karte-Legende zeigt aktive Layer, synchron mit Sidebar-Accordion"
 ```
 
 ---
 
-## Task 5: Live-Verifikation + Dokumentation
+## Task 4: Live-Verifikation + Dokumentation
 
 **Files:**
 - Modify: `CHANGELOG.md`
@@ -637,14 +618,19 @@ git commit -m "docs: Legende Schritt 1+2 abgeschlossen, TODO/CHANGELOG nachgezog
 ## Self-Review
 
 **Spec-Abdeckung:** Entscheidung 1 (nur `/karte`) → alle Tasks scopen auf `/karte`. Entscheidung 2
-(nur aktive Layer) → Task 4 fügt Einträge nur bei `checked=true` hinzu. Entscheidung 3 (Klick =
-ausblenden) → `onRemove`. Entscheidung 4 (keine `MapRegistry`-Abstraktion) → nirgends angefasst.
-Entscheidung 5 (eigener Resolver) → Task 1. Entscheidung 6 („?"-Fallback) → Task 2 Step 2 +
-Task 3 Step 2 Kommentar. Entscheidung 7 (Sync via `.click()`) → Task 4 Step 3 `onRemove`.
+(nur aktive Layer) → Task 3 Step 6 fügt Einträge nur bei `checked=true` hinzu. Entscheidung 3
+(Klick = ausblenden) → `onRemove`. Entscheidung 4 (keine `MapRegistry`-Abstraktion) → nirgends
+angefasst. Entscheidung 5 (eigener Resolver) → Task 1. Entscheidung 6 („?"-Fallback) → Task 2
+Step 2 + Task 3 Step 2 Kommentar. Entscheidung 7 (Sync via `.click()`) → Task 3 Step 6 `onRemove`.
 
 **Platzhalter-Scan:** Keine TBD/TODO-Marker in den Steps, aller Code ist vollständig.
 
-**Typkonsistenz geprüft:** `LegendSwatch`/`SwatchType` (Task 1) → identisch in Task 3 (`Sidebar.ts`)
-und Task 4 (`event.swatch.type`/`event.swatch.color`) verwendet. `LayerToggleEvent` (Task 3) →
-identisch als Parametertyp in Task 4 `toggleLayer()`. `AddLegendEntryOptions`/`LegendEntry.id`
-(Task 2) → in Task 4 `legend.addEntry({id: event.legendId, ...})` konsistent genutzt.
+**Typkonsistenz geprüft:** `LegendSwatch`/`SwatchType` (Task 1) → identisch in `Sidebar.ts`
+(`buildToggleEvent`) und `MapPage.ts` (`event.swatch.type`/`event.swatch.color`) innerhalb von
+Task 3 verwendet. `LayerToggleEvent` (Task 3, `Sidebar.ts`) → identisch als Parametertyp in
+`toggleLayer()` (Task 3, `MapPage.ts`) — beide im selben Task, kein Zwischenstand mit
+Typ-Mismatch. `AddLegendEntryOptions`/`LegendEntry.id` (Task 2) → in Task 3
+`legend.addEntry({id: event.legendId, ...})` konsistent genutzt. **Korrektur beim Self-Review:**
+ursprünglich waren `Sidebar.ts` (Callback-Signatur ändern) und `MapPage.ts` (einziger Konsument)
+zwei getrennte Tasks — zusammengelegt zu Task 3, da der Zwischenstand nach nur der ersten Datei
+nicht kompiliert hätte (kein eigenständig testbares Ergebnis, siehe Task-Right-Sizing-Regel).
