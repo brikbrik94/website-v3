@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { MapCore, MARKERS_SPRITE_BASE } from '../lib/MapCore';
 import { initTopbar } from '../components/Topbar';
-import { initSidebar } from '../components/Sidebar';
+import { initSidebar, type LayerToggleEvent } from '../components/Sidebar';
 import { MapLegend } from '../lib/MapLegend';
 import { InventoryService } from '../services/InventoryService';
 import { LayoutHelper } from '../lib/LayoutHelper';
@@ -65,9 +65,9 @@ export class MapPageController extends BasePageController {
 
             // 6. Sidebar initialisieren (Layer-Management + Ortssuche)
             initSidebar(mounts.sidebar, overlays,
-                async (overlayId, overlayUrl, layerIds, _layerType, checked) => {
+                async (event) => {
                     if (this.map) {
-                        await this.toggleLayer(overlayId, overlayUrl, layerIds, checked, this.map);
+                        await this.toggleLayer(event, this.map, legend);
                     }
                 },
                 undefined,
@@ -109,14 +109,26 @@ export class MapPageController extends BasePageController {
     }
 
     /**
-     * Schaltet einzelne Layer oder Gruppen ein/aus über den gemeinsamen OverlayLoader.
+     * Schaltet einzelne Layer oder Gruppen ein/aus über den gemeinsamen OverlayLoader und hält
+     * die Legende synchron (nur aktive Layer werden dort gelistet, siehe
+     * docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
      */
-    private async toggleLayer(overlayId: string, overlayUrl: string, layerIds: string[], checked: boolean, m: maplibregl.Map) {
+    private async toggleLayer(event: LayerToggleEvent, m: maplibregl.Map, legend: MapLegend) {
         try {
-            if (checked) {
-                await OverlayLoader.add(m, overlayId, overlayUrl, { signal: this.signal, layerIds });
+            if (event.checked) {
+                await OverlayLoader.add(m, event.overlayId, event.overlayUrl, { signal: this.signal, layerIds: event.layerIds });
+                if (event.swatch) {
+                    legend.addEntry({
+                        id: event.legendId,
+                        label: event.legendLabel,
+                        type: event.swatch.type,
+                        color: event.swatch.color,
+                        onRemove: () => event.itemEl.click()
+                    });
+                }
             } else {
-                OverlayLoader.remove(m, overlayId, { layerIds });
+                OverlayLoader.remove(m, event.overlayId, { layerIds: event.layerIds });
+                legend.removeEntry(event.legendId);
             }
             m.triggerRepaint();
         } catch (err) {

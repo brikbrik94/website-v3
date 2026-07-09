@@ -2,6 +2,7 @@ import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
+import { resolveLegendSwatch, type LegendSwatch } from '../lib/resolveLegendSwatch';
 
 export interface LayerMetaGroup {
   name: string;
@@ -14,13 +15,19 @@ export interface LayerMetaEntry {
   groups: LayerMetaGroup[];
 }
 
-export type LayerToggleCallback = (
-  overlayId: string, 
-  overlayUrl: string, 
-  layerIds: string[], 
-  layerType: string, 
-  checked: boolean
-) => void;
+export interface LayerToggleEvent {
+  overlayId: string;
+  overlayUrl: string;
+  layerIds: string[];
+  layerType: string;
+  checked: boolean;
+  legendId: string;
+  legendLabel: string;
+  swatch: LegendSwatch | null;
+  itemEl: HTMLElement;
+}
+
+export type LayerToggleCallback = (event: LayerToggleEvent) => void;
 
 export type BulkToggleCallback = (
   overlayId: string, 
@@ -150,6 +157,46 @@ export const initSidebar = (
     updateBodyHeight(groupEl);
   };
 
+  const buildToggleEvent = (itemEl: HTMLElement, group: HTMLElement, checked: boolean): LayerToggleEvent => {
+    const overlayId = group.getAttribute('data-id')!;
+    const overlayUrl = group.getAttribute('data-url')!;
+    const layerIds: string[] = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
+    const layerType = itemEl.getAttribute('data-layer-type')!;
+    const legendLabel = itemEl.querySelector('.acc-item-label')?.textContent ?? layerType;
+
+    // Swatch-Auflösung geht nur, wenn für dieses Overlay echte LayerSpecifications (mit paint)
+    // im Fallback-Pfad (kein layersMeta-Eintrag) geladen wurden. Der layersMeta-Pfad liefert nur
+    // LayerMetaGroup (Name+style_layers+template, kein paint) — dort bleibt swatch bewusst null
+    // (Legende zeigt "?", siehe docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md,
+    // Entscheidung 6). Externe layers.json um Farbinfo zu erweitern ist außerhalb dieses Repos.
+    // for...of statt .find(): loadedLayers ist LayerMetaGroup[] | LayerSpecification[] (Union
+    // zweier Array-Typen) — TS narrowt einen 'in'-Check pro Element im for...of sauber, ohne
+    // dass ein Cast auf den ganzen Array-Typ nötig wird.
+    let swatch: LegendSwatch | null = null;
+    const loaded = loadedLayers.get(overlayId);
+    if (loaded) {
+      for (const entry of loaded) {
+        if ('style_layers' in entry) break; // layersMeta-Pfad, keine echten LayerSpecifications
+        if (entry.id === layerIds[0]) {
+          swatch = resolveLegendSwatch(entry);
+          break;
+        }
+      }
+    }
+
+    return {
+      overlayId,
+      overlayUrl,
+      layerIds,
+      layerType,
+      checked,
+      legendId: `${overlayId}:${layerIds.join(',')}`,
+      legendLabel,
+      swatch,
+      itemEl
+    };
+  };
+
   const updateGroupStatus = (groupEl: HTMLElement) => {
     const statusEl = groupEl.querySelector('.acc-status')!;
     const items = groupEl.querySelectorAll('.acc-item:not(.loading-state)');
@@ -211,13 +258,8 @@ export const initSidebar = (
     const group = itemEl.closest('.acc-group') as HTMLElement;
     const isChecked = itemEl.classList.toggle('checked');
     itemEl.setAttribute('aria-checked', isChecked ? 'true' : 'false');
-    
-    const overlayId = group.getAttribute('data-id')!;
-    const overlayUrl = group.getAttribute('data-url')!;
-    const layerIds = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
-    const layerType = itemEl.getAttribute('data-layer-type')!;
 
-    onLayerToggle(overlayId, overlayUrl, layerIds, layerType, isChecked);
+    onLayerToggle(buildToggleEvent(itemEl, group, isChecked));
     updateGroupStatus(group);
   };
 
@@ -271,9 +313,7 @@ export const initSidebar = (
         const itemEl = el as HTMLElement;
         itemEl.classList.add('checked');
         itemEl.setAttribute('aria-checked', 'true');
-        const layerIds = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
-        const layerType = itemEl.getAttribute('data-layer-type')!;
-        onLayerToggle(overlayId, overlayUrl, layerIds, layerType, true);
+        onLayerToggle(buildToggleEvent(itemEl, group, true));
       });
 
       if (onBulkToggle) onBulkToggle(overlayId, overlayUrl, true);
@@ -292,9 +332,7 @@ export const initSidebar = (
         const itemEl = el as HTMLElement;
         itemEl.classList.remove('checked');
         itemEl.setAttribute('aria-checked', 'false');
-        const layerIds = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
-        const layerType = itemEl.getAttribute('data-layer-type')!;
-        onLayerToggle(overlayId, overlayUrl, layerIds, layerType, false);
+        onLayerToggle(buildToggleEvent(itemEl, group, false));
       });
 
       if (onBulkToggle) onBulkToggle(overlayId, overlayUrl, false);
