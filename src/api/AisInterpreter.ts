@@ -24,7 +24,7 @@ export class AisInterpreter {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            const ships: Ship[] = (data.ships || []).map((s: any) => ({
+            const ships: Ship[] = (data.ships || []).map((s: Ship) => ({
                 ...s,
                 speed: s.speed ?? s.sog ?? 0 // Map sog to speed for consistency
             })).filter((s: Ship) => s.lat != null && s.lon != null);
