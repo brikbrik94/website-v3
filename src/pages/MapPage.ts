@@ -16,6 +16,10 @@ import { buildGenericFeaturePopupHtml } from '../lib/GenericFeaturePopup';
 const SEARCH_PIN_SOURCE = 'map-search-pin';
 const SEARCH_PIN_LAYER = 'map-search-pin-layer';
 
+// Klick-Toleranz in Pixeln für queryRenderedFeatures — ohne das ist ein exakter Treffer auf
+// dünnen Linien-Layern (Autobahnen 1-3px, Höhenlinien 0.5-2.7px) praktisch unmöglich.
+const CLICK_TOLERANCE_PX = 4;
+
 /**
  * MapPageController - Klassischer Karten-Viewer mit Layer-Verwaltung.
  */
@@ -121,7 +125,11 @@ export class MapPageController extends BasePageController {
     private handleOverlayClick = (e: maplibregl.MapMouseEvent) => {
         if (!this.map) return;
         const activeLayerIds = OverlayLoader.getActiveLayerIds();
-        const features = this.map.queryRenderedFeatures(e.point, { layers: activeLayerIds });
+        const bbox: [[number, number], [number, number]] = [
+            [e.point.x - CLICK_TOLERANCE_PX, e.point.y - CLICK_TOLERANCE_PX],
+            [e.point.x + CLICK_TOLERANCE_PX, e.point.y + CLICK_TOLERANCE_PX]
+        ];
+        const features = this.map.queryRenderedFeatures(bbox, { layers: activeLayerIds });
 
         if (features.length === 0) {
             PopupManager.closePopup();

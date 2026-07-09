@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-09 23:53
+
+### Behoben
+- **Klick-Toleranz für Overlay-Popups auf `/karte`** (`src/pages/MapPage.ts`) — Nutzer meldete
+  nach Live-Test, dass beim Klicken auf Overlays (auch bei sichtbar aktivem Layer) gar nichts
+  passierte. `queryRenderedFeatures` fragte bisher nur den exakten Klick-Pixel ab; bei dünnen
+  Linien-Layern (Autobahnen 1-3px, Höhenlinien 0.5-2.7px) ist ein pixelgenauer Treffer praktisch
+  unmöglich. Jetzt wird eine kleine Toleranz-Bounding-Box (±4px) statt eines Einzelpixels
+  abgefragt. **Noch nicht erneut vom Nutzer im Browser bestätigt** — nächster Live-Test steht
+  aus. `npx tsc --noEmit` 0 Fehler, `npm test` 145/145 (keine neuen Tests, reine
+  MapPage.ts-Wiring-Änderung, siehe bestehende Testbarkeits-Konvention für DOM-Code).
+
 ## [Unreleased] - 2026-07-09 23:45
 
 ### Hinzugefügt
