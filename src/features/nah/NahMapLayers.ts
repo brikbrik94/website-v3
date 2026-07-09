@@ -6,6 +6,14 @@ import { MapRegistry } from '../../lib/MapRegistry';
 import { PopupManager } from '../../lib/PopupManager';
 import { attachHoverCursor } from '../../lib/HoverCursor';
 import { NahStation, NahStationResult } from '../../types/nah';
+import {
+  type NahStationStatus,
+  computeStationStatus,
+  buildStationPopupHtml,
+  buildMultiStationPopupHtml
+} from './NahPopupBuilder';
+
+export type { NahStationStatus };
 
 const SPRITE_BASE = MARKERS_SPRITE_BASE;
 const TARGET_PIN_SOURCE = 'nah-target-pin';
@@ -15,24 +23,10 @@ const STATIONS_LAYER = 'nah-stations-layer';
 const HELI_ICON_ID = 'nah-heli-icon';
 const HELI_ICON_SIZE = 64;
 
-export type NahStationStatus = 'active' | 'inactive' | 'offseason';
-
 const STATUS_PRIORITY: Record<NahStationStatus, number> = {
   active: 3,
   offseason: 2,
   inactive: 1
-};
-
-const STATUS_BADGE_CLASS: Record<NahStationStatus, string> = {
-  active: 'badge-green',
-  inactive: 'badge-red',
-  offseason: 'badge-gray',
-};
-
-const STATUS_TEXT: Record<NahStationStatus, string> = {
-  active: 'EINSATZBEREIT',
-  inactive: 'AUSSER DIENST (Betriebszeit)',
-  offseason: 'AUSSER SAISON',
 };
 
 // Rendert das fa-helicopter-Glyph (Font Awesome 7 Free, solid, ) einmalig auf einen
@@ -73,103 +67,10 @@ async function ensureHeliIcon(map: maplibregl.Map): Promise<void> {
 }
 
 export const NahMapLayers = {
-  computeStationStatus(station: NahStation): NahStationStatus {
-    if (!station.in_season) return 'offseason';
-    if (!station.is_active) return 'inactive';
-    return 'active';
-  },
-
   computeGroupStatus(stations: NahStation[]): NahStationStatus {
     return stations
-      .map(s => this.computeStationStatus(s))
+      .map(s => computeStationStatus(s))
       .sort((a, b) => (STATUS_PRIORITY[b] || 0) - (STATUS_PRIORITY[a] || 0))[0] || 'inactive';
-  },
-
-  buildStationPopupHtml(station: NahStation): string {
-    const status = this.computeStationStatus(station);
-    const badgeClass = STATUS_BADGE_CLASS[status];
-    const statusText = STATUS_TEXT[status];
-
-    let hoursHtml = '';
-    if (station.op_type === 'fixed' && station.fixed_start && station.fixed_end) {
-      hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end}</td></tr>`;
-    } else if (station.op_type === 'daylight') {
-      if (station.fixed_start && station.fixed_end) {
-        hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end} (max. ECET)</td></tr>`;
-      } else if (station.fixed_start) {
-        hoursHtml = `<tr><td>Zeiten</td><td>Ab ${station.fixed_start} bis ECET</td></tr>`;
-      } else {
-        hoursHtml = `<tr><td>Zeiten</td><td>BCET bis ECET</td></tr>`;
-      }
-    } else if (station.op_type === '24/7') {
-      hoursHtml = `<tr><td>Zeiten</td><td>24 Stunden / 7 Tage</td></tr>`;
-    }
-
-    return `
-      <div class="map-popup-detail">
-        <div class="popup-header">
-          <div class="popup-header-title">${station.callsign}</div>
-          <div class="popup-header-org">${station.name}</div>
-        </div>
-        <table class="popup-kv">
-          <tr><td>Status</td><td><span class="badge ${badgeClass}">${statusText}</span></td></tr>
-          <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
-          ${hoursHtml}
-          <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>
-          ${status === 'offseason' ? `<tr><td>Saison</td><td>Monate: ${station.months_active?.join(', ') || '-'}</td></tr>` : ''}
-        </table>
-      </div>
-    `;
-  },
-
-  buildMultiStationPopupHtml(stations: NahStation[]): string {
-    return `
-      <div class="map-popup-detail">
-        <div class="popup-header">
-          <div class="popup-header-title">${stations.length} Stationen am Standort</div>
-        </div>
-        <div class="popup-stations-list">
-          ${stations.map(station => {
-            const status = this.computeStationStatus(station);
-            const badgeClass = STATUS_BADGE_CLASS[status];
-            const statusText = STATUS_TEXT[status];
-
-            let hoursHtml = '';
-            if (station.op_type === 'fixed' && station.fixed_start && station.fixed_end) {
-              hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end}</td></tr>`;
-            } else if (station.op_type === 'daylight') {
-              if (station.fixed_start && station.fixed_end) {
-                hoursHtml = `<tr><td>Zeiten</td><td>${station.fixed_start} - ${station.fixed_end} (max. ECET)</td></tr>`;
-              } else if (station.fixed_start) {
-                hoursHtml = `<tr><td>Zeiten</td><td>Ab ${station.fixed_start} bis ECET</td></tr>`;
-              } else {
-                hoursHtml = `<tr><td>Zeiten</td><td>BCET bis ECET</td></tr>`;
-              }
-            } else if (station.op_type === '24/7') {
-              hoursHtml = `<tr><td>Zeiten</td><td>24 Stunden / 7 Tage</td></tr>`;
-            }
-
-            return `
-            <div class="popup-station-item">
-              <div class="popup-station-header">
-                <div class="popup-header-title">${station.callsign}</div>
-                <div class="popup-header-org">${station.name}</div>
-              </div>
-              <div class="popup-station-details">
-                <table class="popup-kv">
-                  <tr><td>Status</td><td><span class="badge ${badgeClass}">${statusText}</span></td></tr>
-                  <tr><td>Betrieb</td><td>${station.op_type}</td></tr>
-                  ${hoursHtml}
-                  <tr><td>Nacht</td><td>${station.is_night_ready ? 'Ja' : 'Nein'}</td></tr>
-                  ${status === 'offseason' ? `<tr><td>Saison</td><td>Monate: ${station.months_active?.join(', ') || '-'}</td></tr>` : ''}
-                </table>
-              </div>
-            </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
   },
 
   /**
@@ -268,9 +169,9 @@ export const NahMapLayers = {
     let popupHtml: string;
 
     if (allStations && allStations.length > 1) {
-      popupHtml = this.buildMultiStationPopupHtml(allStations);
+      popupHtml = buildMultiStationPopupHtml(allStations);
     } else {
-      popupHtml = this.buildStationPopupHtml(hit.station);
+      popupHtml = buildStationPopupHtml(hit.station);
     }
 
     PopupManager.showFeaturePopup(map, hit.coordinates, popupHtml);
