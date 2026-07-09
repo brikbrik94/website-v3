@@ -1,4 +1,8 @@
 import { Toast } from '../../lib/Toast';
+import type { BadgeClass } from '../../lib/BadgeStyles';
+
+const HTTP_OK_BADGE: BadgeClass = 'badge-green';
+const HTTP_ERROR_BADGE: BadgeClass = 'badge-red';
 
 /**
  * Renders the API Debug technical playground.
@@ -102,7 +106,7 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
       const latency = Math.round(performance.now() - start);
       
       statusBadge.textContent = `${response.status} ${response.statusText}`;
-      statusBadge.className = `badge ${response.ok ? 'badge-green' : 'badge-red'}`;
+      statusBadge.className = `badge ${response.ok ? HTTP_OK_BADGE : HTTP_ERROR_BADGE}`;
       latencyEl.textContent = `${latency} ms`;
       
       const data = await response.json();
@@ -121,7 +125,7 @@ export const renderDebugModule = async (container: HTMLElement, signal?: AbortSi
       jsonViewer.textContent = JSON.stringify(sanitized, null, 2);
     } catch (error) {
       statusBadge.textContent = 'ERROR';
-      statusBadge.className = 'badge badge-red';
+      statusBadge.className = `badge ${HTTP_ERROR_BADGE}`;
       latencyEl.textContent = '-- ms';
       jsonViewer.textContent = `Error: ${(error as Error).message}`;
     } finally {

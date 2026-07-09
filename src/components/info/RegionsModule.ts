@@ -1,4 +1,5 @@
 import { StatsResponse } from '../../types/common';
+import type { BadgeClass } from '../../lib/BadgeStyles';
 
 interface RegionStation {
   type: string;
@@ -6,6 +7,15 @@ interface RegionStation {
   short_name: string;
   name: string;
 }
+
+const PERCENTAGE_BADGE: BadgeClass = 'badge-gray';
+
+// RD (Rettungsdienst) vs. übrige Stationstypen (aktuell nur NEF) — kein NahStationStatus-artiges
+// Mehrfach-Vokabular, sondern eine feste 2-Weg-Unterscheidung für diese Tabelle.
+const STATION_TYPE_BADGE_CLASS: Record<'RD' | 'other', BadgeClass> = {
+  RD: 'badge-gray',
+  other: 'badge-red',
+};
 
 /**
  * Renders the Regions Analysis module.
@@ -57,7 +67,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
           <h3 title="${region}">${region}</h3>
           <p class="t-body flex-align-center gap-8">
             <span class="font-semibold">${active} / ${total}</span> 
-            <span class="badge badge-gray">${pct}%</span>
+            <span class="badge ${PERCENTAGE_BADGE}">${pct}%</span>
           </p>
         </div>
       `;
@@ -188,7 +198,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
       `;
 
       data.forEach((station: RegionStation) => {
-        const badgeClass = station.type === 'RD' ? 'badge-gray' : 'badge-red';
+        const badgeClass = STATION_TYPE_BADGE_CLASS[station.type === 'RD' ? 'RD' : 'other'];
         tableHtml += `
           <tr>
             <td><span class="badge ${badgeClass}">${station.type}</span></td>
