@@ -5,6 +5,103 @@ Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./R
 Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
 noch nicht getrennt) und sind entsprechend gemischt.
 
+## 2026-07-09 — TODO.md vollständig abgearbeitet
+
+Alle drei verbliebenen TODO.md-Abschnitte (Map-Subsystem Cleanup, UI/UX & Branding, Standards-
+Angleichung) sind komplett erledigt; TODO.md ist damit leer und bereit für neue Einträge. Die
+zwei zuvor offenen Sprite-404-Punkte (Tile-Server, außerhalb dieses Repos) wurden nicht
+archiviert, sondern nach [docs/external-blockers.md](./docs/external-blockers.md) verschoben —
+sie sind kein abgeschlossener TODO-Punkt, sondern weiterhin offen, nur außerhalb der Reichweite
+dieses Repos.
+
+### Kleinere Map-Bugs (Sammeltask)
+- [x] `NahPageController.destroy()` ruft jetzt `PopupManager.closePopup()` auf, analog zu `TrackingMapLayers.destroy()` (2026-07-07).
+- [x] Width-Desync `TrackingMapLayers.ts` behoben — gemeinsame `ADSB_TRACK_WIDTH`-Konstante für `ensureLayers`/`highlightItem` (2026-07-07).
+- [x] TerrainManager Double-Add-Race geprüft und behoben (2026-07-07) — redundanter un-awaited `applyTerrainInfrastructure()`-Direktaufruf aus `initTerrainManager()` entfernt; `MapCore.init()`s `restore()` deckt sowohl kalten (`style.load`) als auch warmen (`setTimeout`-Fallback) Fall bereits ab.
+- [x] NAH-Feature-State-Reset hardcoded `for (i<5)` (`NahMapLayers.ts`) behoben — `map.removeFeatureState({source})` statt fixer Index-Schleife (2026-07-07).
+- [x] Badge-Text-Umbruch behoben — lokaler CSS-Override (`.result-badges .badge { white-space: normal }`) in `src/styles/sidebar.css`; Root Cause liegt in `oe5ith-ci` (`css/badges.css` `.badge` erzwingt `white-space: nowrap`), dokumentiert in `oe5ith-ci/ci-bug-reports.md` (Eintrag 2, nicht im Submodul gefixt) (2026-07-07).
+- [x] Turn-by-Turn-Anzeige für A→B-Routen (Phase 2) umgesetzt (2026-07-07) — siehe
+  [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./docs/superpowers/specs/2026-07-07-turn-by-turn-design.md).
+- [x] **NAH: Mehrfach-Stationen mit Status-Aggregation und Badge** (2026-07-08) — ✅ ERLEDIGT
+  Stationen mit identischen Koordinaten (z.B. C14/C99, Martin 1/10) werden jetzt aggregiert:
+  ein gemeinsamer Marker mit Nummern-Badge zeigt an, dass mehrere Stationen am Standort sind.
+  Die Icon-Farbe widerspiegelt den besten Status aller Stationen (aktiv > außer Saison > außer Dienst).
+  Klick zeigt alle Stationen mit vollständigen Details. 11 Commits, 112 Tests grün.
+  Siehe [CHANGELOG.md](./CHANGELOG.md) für Details.
+
+### UI/UX & Branding (Sammeltask)
+
+Aus `docs/proposals/todo.txt` übernommen (2026-07-05) — kleinere, unabhängige UI-/Text-Anpassungen
+an bereits bestehenden Features.
+
+- [x] **Credits/Copyright-Modal überarbeitet und erweitert** (2026-07-07) — siehe
+  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./docs/superpowers/specs/2026-07-07-copyright-modal-design.md).
+  Kontakt-Mail + Impressum, Datenschutz-Hinweis, vollständige/korrigierte Lizenzangaben ergänzt;
+  toter Landing-Page-Link zum Modal repariert. Kontaktformular bewusst nicht umgesetzt (kein
+  Mail-Versand-Backend vorhanden) — bei Bedarf eigener ROADMAP.md-Punkt.
+- [x] **`.leaflet-popup-*`-CSS-Regeln in `src/styles/modal.css` entfernt** (2026-07-08, commit ff62695) — beim
+  Copyright-Modal-Audit (2026-07-07) gefunden: Das Projekt hat keine `leaflet`-Abhängigkeit
+  mehr (fehlt in `package.json`, kein Import im Code), aber `modal.css:294-314` enthielt noch
+  `.leaflet-popup-content-wrapper`/`.leaflet-popup-content`/`.leaflet-popup-tip-container`/
+  `.leaflet-popup-close-button`-Regeln — vermutlich Altlast aus einer Zeit vor der Migration
+  auf MapLibre GL JS. 27 Zeilen toter Code gelöscht.
+- [x] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzt** (2026-07-07) — siehe
+  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md).
+  War tatsächlich kein „beengt"-Problem, sondern ein Reachability-Bug: Karte/Umrechner/Tracking
+  waren auf Mobile über die Topbar gar nicht erreichbar (Dropdown komplett ausgeblendet).
+- [x] **Logo bei Mobile auch anzeigen** (2026-07-08, commit 82fcf5e) — auf der Landing-Page ist das Logo/OE5ITH-Wort-Zeichen
+  auf Mobile nicht sichtbar war (hatte `display: none` in einer Breakpoint-Regel in `topbar.css`); entfernt, Logo zeigt jetzt auf allen Breakpoints. Übernommen aus `docs/proposals/todo.txt` (2026-07-08).
+- [x] **Topbar-Nav-Markup dedupliziert** (2026-07-08, commit 92fe3b1) — War dupliziert zwischen
+  `src/components/Topbar.ts` und `src/main.ts` (Landing-Page nutzt `Topbar.ts` nicht, hat eine
+  eigene Kopie derselben Nav-Struktur) — gefunden beim Mobile-Topbar-Nav-Fix (2026-07-07). In eine
+  gemeinsame `src/components/TopbarNav.ts` (`renderTopbarNav()`) extrahiert, beide Stellen nutzen
+  die Komponente jetzt.
+- [x] **Tablet-Quicklinks-Bug behoben** (2026-07-08, commit 6fc60d6) — Auf Tablet-Breite bei
+  Kartenseiten (`/nah` u.a., 900px) war nur 1 von 2 Quicklinks sichtbar („Luftrettung" fehlte,
+  „Routing" blieb sichtbar). Root Cause: `Topbar.ts`s `.topbar-right`-Container hatte bei
+  Kartenseiten (`hasMap`) einen `<button class="controls-toggle mobile-only">` als *erstes* Kind
+  vor den beiden `.topbar-nav-link`-Elementen; die Tablet-Regel `.topbar-nav-link:nth-child(n+3)`
+  (`oe5ith-ci/css/topbar.css`) zählt die Position unter *allen* Geschwister-Elementen — der Button
+  schob „Luftrettung" auf Platz 3 und blendete es aus. Fix: Reihenfolge in `.topbar-right` getauscht
+  (Nav-Links vor Button). Entdeckt beim Live-Test des Mobile-Topbar-Nav-Fixes (2026-07-07).
+- [x] **Versionierungspraxis überdenken** (2026-07-09) — über den Proposal-Zyklus umgesetzt, siehe
+  [docs/proposals/archive/2026-07-09-release-batching-draft.md](./docs/proposals/archive/2026-07-09-release-batching-draft.md).
+  `AGENT_INSTRUCTIONS.md` §4 hat jetzt einen „Release-Trigger"-Absatz: Die Release-Checkliste
+  (Version/Changelogs/Build/Tag/Deploy) läuft nicht mehr automatisch nach jedem abgeschlossenen
+  TODO-/ROADMAP-Punkt, sondern wird vom Agenten an natürlichen Arbeitsblock-Enden vorgeschlagen und
+  erst nach Bestätigung ausgeführt (Ausnahme: akute/sicherheitsrelevante Fixes weiterhin sofort).
+  Verifikation (`tsc`/`test`) bleibt davon unberührt weiterhin Pflicht pro Änderung.
+
+### Standards-Angleichung
+
+Bestehenden Code/bestehende Praxis an die in [CLAUDE.md](./CLAUDE.md#standards-referenzen) referenzierten
+Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
+
+- [x] **PHP (`api/*.php`) gegen PSR-12 prüfen** (2026-07-08) — PHP_CodeSniffer mit PSR-12-Ruleset
+  eingerichtet (`phpcs.xml` + `composer.json` `lint`-Script), bestehende Verstöße gefixt.
+  Siehe `composer run lint` zur Verifikation sowie `phpcs.xml`/`composer.json` in der Codebase.
+- [x] **Security-Praxis gegen OWASP Top 10 gegenchecken** (2026-07-08) — Hybrid-Audit mit
+  automatisiertem Security-Script (`bash scripts/security-audit.sh`) für Secret-/Injection-Heuristiken
+  sowie umfassende manuelle Bewertung aller 10 Kategorien in `docs/security/owasp-top10-checklist.md`.
+  Dabei Info-Disclosure in `diag.php` gefunden (siehe separater TODO.md-Punkt unten).
+- [x] **`diag.php`-Info-Disclosure in Produktion blockiert** (2026-07-08) — beim
+  OWASP-Top-10-Audit gefunden (siehe
+  [docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md), Kategorien
+  A01/A05): `api/diag.php` war ohne Zugriffsschutz öffentlich erreichbar und exponierte
+  PHP-Version, geladene Extensions, DB-Host/Port/Name/User (Passwort maskiert) sowie den internen
+  ORS-Health-Status. Fix: `location = /api/diag.php { deny all; return 403; }` in `nginx.conf`
+  ergänzt — nur im Produktions-Server-Block (`map.oe5ith.at`, HTTPS), der lokale Dev-Block bleibt
+  bewusst unverändert (dort ist der Endpoint zum Debuggen nützlich). Manuell auf dem Server
+  angewendet und verifiziert (`https://map.oe5ith.at/api/diag.php` → 403, 2026-07-09). Hinweis:
+  `deploy-website.sh` synced `nginx.conf` weiterhin nicht automatisch — bei künftigen
+  nginx.conf-Änderungen erneut manuell deployen. `api/diag.php` selbst bleibt im Code bestehen
+  (kein Entfernen/Absichern auf Code-Ebene) — die nginx-Sperre ist bewusst der gewählte Fix
+  (Defense-in-Depth auf Code-Ebene bliebe ein möglicher Folgepunkt, aktuell nicht nötig).
+- [x] **OpenAPI-Spec für `api/*.php` erstellen** (2026-07-08) — OpenAPI-3.x-Spec für alle 12
+  API-Endpoints in `docs/openapi.yaml` angelegt, validiert via `npm run validate:openapi`.
+  Umfasst Request/Response-Schemas, Query-Parameter und Status-Codes für alle Endpoints
+  (`nah.php`, `stations.php`, `ors.php`, `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, etc.).
+
 ## Unreleased (2026-07-06)
 
 ### U5: NAH DOM-Marker → Symbol-Layer migriert
