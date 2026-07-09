@@ -1,18 +1,25 @@
 import maplibregl from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
-import { MapCore } from '../lib/MapCore';
+import { MapCore, MARKERS_SPRITE_BASE } from '../lib/MapCore';
 import { initTopbar } from '../components/Topbar';
 import { initSidebar } from '../components/Sidebar';
 import { MapLegend } from '../lib/MapLegend';
 import { InventoryService } from '../services/InventoryService';
 import { LayoutHelper } from '../lib/LayoutHelper';
 import { OverlayLoader } from '../lib/OverlayLoader';
+import { MapRegistry } from '../lib/MapRegistry';
+import { MAP_COLORS } from '../lib/MapStyles';
+import type { GeocoderSelection } from '../lib/GeocoderSearchField';
+
+const SEARCH_PIN_SOURCE = 'map-search-pin';
+const SEARCH_PIN_LAYER = 'map-search-pin-layer';
 
 /**
  * MapPageController - Klassischer Karten-Viewer mit Layer-Verwaltung.
  */
 export class MapPageController extends BasePageController {
     private map?: maplibregl.Map;
+    private searchPinCoord: [number, number] | null = null;
 
     public async mount(container: HTMLElement): Promise<void> {
         try {
@@ -33,13 +40,17 @@ export class MapPageController extends BasePageController {
                 legendTitle: 'Karten-Layer'
             });
 
-            // 3. Karte initialisieren
+            // 3. Sprite für den Such-Pin registrieren (wird von MapRegistry.restore geladen)
+            MapRegistry.registerImage('oe5ith-markers', MARKERS_SPRITE_BASE);
+
+            // 4. Karte initialisieren
             this.map = MapCore.init(
                 mounts.map,
-                basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json'
+                basemaps[0]?.style.url || 'https://tiles.oe5ith.at/basemaps/styles/at/style.json',
+                (m) => this._setupSearchPin(m)
             );
 
-            // 4. Topbar & Legende initialisieren
+            // 5. Topbar & Legende initialisieren
             const legend = new MapLegend(mounts.legend!);
             initTopbar(mounts.topbar, basemaps, async (url) => {
                 if (this.map) {
@@ -52,7 +63,7 @@ export class MapPageController extends BasePageController {
                 }
             }, () => legend.toggle());
 
-            // 5. Sidebar initialisieren (Layer-Management)
+            // 6. Sidebar initialisieren (Layer-Management + Ortssuche)
             initSidebar(mounts.sidebar, overlays,
                 async (overlayId, overlayUrl, layerIds, _layerType, checked) => {
                     if (this.map) {
@@ -61,13 +72,40 @@ export class MapPageController extends BasePageController {
                 },
                 undefined,
                 undefined,
-                layersMeta.layers
+                layersMeta.layers,
+                (selection) => this._handleSearchSelect(selection),
+                this.signal
             );
-            
+
             console.debug('[MapPageController] Mounted successfully');
         } catch (err) {
             console.error('[MapPageController] Initialization failed:', err);
         }
+    }
+
+    /**
+     * Registriert Source+Layer für den Such-Pin (analog CoordsPage._setupCoordsPin). Läuft bei
+     * jedem style.load erneut, da MapLibre die per addImage/addLayer hinzugefügten Ressourcen
+     * einer alten Style-Instanz beim Basemap-Wechsel verwirft.
+     */
+    private _setupSearchPin(map: maplibregl.Map) {
+        const layerDef = MapCore.createPinLayer(SEARCH_PIN_LAYER, SEARCH_PIN_SOURCE, {
+            icon: 'ci-symbol-location',
+            size: 0.75,
+            anchor: 'center',
+            color: MAP_COLORS.accent,
+        });
+        MapCore.ensureGeoJsonLayer(map, SEARCH_PIN_SOURCE, layerDef);
+        if (this.searchPinCoord) {
+            MapCore.setPointSource(map, SEARCH_PIN_SOURCE, this.searchPinCoord);
+        }
+    }
+
+    private _handleSearchSelect(selection: GeocoderSelection) {
+        if (!this.map) return;
+        this.searchPinCoord = [selection.lon, selection.lat];
+        MapCore.setPointSource(this.map, SEARCH_PIN_SOURCE, this.searchPinCoord);
+        this.map.flyTo({ center: this.searchPinCoord, zoom: 14 });
     }
 
     /**

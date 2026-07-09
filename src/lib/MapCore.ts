@@ -90,6 +90,11 @@ export const MapCore = {
     });
 
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: false,
+      showUserLocation: true
+    }), 'top-right');
 
     // Terrain Manager für diese Karte initialisieren
     initTerrainManager(map, 'pmtiles://https://tiles.oe5ith.at/elevation/pmtiles/at-elevation.pmtiles');

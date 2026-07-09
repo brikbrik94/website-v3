@@ -1,10 +1,19 @@
 import { CoordSystemBlock } from '../CoordSystemBlock';
+import { CoordsDataService } from '../CoordsDataService';
 import { CoordsState } from '../types';
 import { GeocoderService } from '../../../lib/GeocoderService';
-import { renderGeocodeItemHtml } from '../../../lib/UIUtils';
+import { GeocoderSearchField } from '../../../lib/GeocoderSearchField';
 
 export class AddressBlock extends CoordSystemBlock {
-  private geocodeTimeout: ReturnType<typeof setTimeout> | undefined;
+  constructor(
+    container: HTMLElement,
+    service: CoordsDataService,
+    systemId: string,
+    title: string,
+    private signal: AbortSignal
+  ) {
+    super(container, service, systemId, title);
+  }
 
   public render(): string {
     return `
@@ -31,40 +40,9 @@ export class AddressBlock extends CoordSystemBlock {
     const input = this.element.querySelector('[data-field="address"]') as HTMLInputElement;
     const resultsContainer = this.element.querySelector('#geocoder-results') as HTMLElement;
 
-    input.addEventListener('input', () => {
-      const query = input.value.trim();
-      clearTimeout(this.geocodeTimeout);
-
-      if (query.length < 3) {
-        resultsContainer.classList.add('hidden');
-        return;
-      }
-
-      this.geocodeTimeout = setTimeout(async () => {
-        const results = await GeocoderService.search(query);
-        if (results.length > 0) {
-          resultsContainer.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
-          resultsContainer.classList.remove('hidden');
-          resultsContainer.querySelectorAll('.geocoder-item').forEach(item => {
-            item.addEventListener('click', (ev) => {
-              ev.stopPropagation();
-              const lat = parseFloat(item.getAttribute('data-lat')!);
-              const lon = parseFloat(item.getAttribute('data-lon')!);
-              this.updateField('address', item.getAttribute('data-name')!);
-              resultsContainer.classList.add('hidden');
-              this.service.setWgs(lat, lon);
-            });
-          });
-        } else {
-          resultsContainer.classList.add('hidden');
-        }
-      }, 400);
-    });
-
-    document.addEventListener('click', (e) => {
-      if (resultsContainer && !resultsContainer.contains(e.target as Node)) {
-        resultsContainer.classList.add('hidden');
-      }
+    new GeocoderSearchField(input, resultsContainer, {
+      signal: this.signal,
+      onSelect: (selection) => this.service.setWgs(selection.lat, selection.lon)
     });
   }
 

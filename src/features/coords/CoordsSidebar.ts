@@ -15,7 +15,8 @@ export class CoordsSidebar {
 
   constructor(
     private container: HTMLElement,
-    private service: CoordsDataService
+    private service: CoordsDataService,
+    private signal: AbortSignal
   ) {}
 
   public init() {
@@ -35,7 +36,7 @@ export class CoordsSidebar {
     
     // Initialize blocks
     this.blocks = [
-      new AddressBlock(blocksContainer, this.service, 'address', 'Adresse'),
+      new AddressBlock(blocksContainer, this.service, 'address', 'Adresse', this.signal),
       new Wgs84Block(blocksContainer, this.service, 'wgs84', 'WGS84'),
       new UtmBlock(blocksContainer, this.service, 'utm', 'UTM'),
       new BmnBlock(blocksContainer, this.service, 'bmn', 'BMN'),

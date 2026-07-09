@@ -1,8 +1,8 @@
 import { RoutingService } from '../lib/RoutingService';
 import { GeocoderService } from '../lib/GeocoderService';
-import { GeocodeResult, RouteExtras, RouteSegment, RoutingStation } from '../types/common';
+import { GeocoderSearchField } from '../lib/GeocoderSearchField';
+import { RouteExtras, RouteSegment, RoutingStation } from '../types/common';
 import { getSidebarFooterHtml, setupSidebarToggle } from '../lib/SidebarUtils';
-import { renderGeocodeItemHtml } from '../lib/UIUtils';
 import { getProfileBadge, getRouteWarnings, formatSteps } from '../features/routing/RoutingDetailsFormatter';
 import type { BadgeClass } from '../lib/BadgeStyles';
 
@@ -46,7 +46,8 @@ export const setRoutingCoord = async (type: 'start' | 'target', lat: number, lon
 
 export const initRoutingSidebar = async (
   container: HTMLElement,
-  onRouteStart: (params: RoutingParams) => void
+  onRouteStart: (params: RoutingParams) => void,
+  signal: AbortSignal
 ) => {
   const isOnline = await RoutingService.checkHealth();
   let profiles: string[] = [];
@@ -103,7 +104,7 @@ export const initRoutingSidebar = async (
         <div class="tool-sep"></div>
 
         <!-- Start -->
-        <div class="form-field form-field-relative" style="margin-bottom:7px" id="field-start">
+        <div class="form-field pos-relative" style="margin-bottom:7px" id="field-start">
           <label class="form-label" for="input-start">Start</label>
           <div class="form-input-wrap">
             <i class="fa-solid fa-location-dot form-input-icon"></i>
@@ -113,7 +114,7 @@ export const initRoutingSidebar = async (
         </div>
 
         <!-- Ziel -->
-        <div class="form-field form-field-relative" style="margin-bottom:7px">
+        <div class="form-field pos-relative" style="margin-bottom:7px">
           <label class="form-label" for="input-target" id="label-target">Ziel</label>
           <div class="form-input-wrap">
             <i class="fa-solid fa-flag-checkered form-input-icon"></i>
@@ -191,45 +192,19 @@ export const initRoutingSidebar = async (
   };
 
   const setupGeocoder = (input: HTMLInputElement, resultsContainer: HTMLElement) => {
-    let timeout: ReturnType<typeof setTimeout>;
+    // Rohe Koordinaten-Eingabe ("lat, lon") löst keine Geocoder-Suche aus.
     input.addEventListener('input', () => {
       delete input.dataset.lat;
       delete input.dataset.lon;
-      clearTimeout(timeout);
-      const query = input.value.trim();
-      if (query.length < 3 || parseCoords(query)) {
-        resultsContainer.classList.add('hidden');
-        return;
-      }
-      timeout = setTimeout(async () => {
-        const results = await GeocoderService.search(query);
-        renderResults(results, input, resultsContainer);
-      }, 400);
-    });
-    document.addEventListener('click', (e) => {
-      if (!input.contains(e.target as Node) && !resultsContainer.contains(e.target as Node)) {
-        resultsContainer.classList.add('hidden');
-      }
-    });
-  };
+    }, { signal });
 
-  const renderResults = (results: GeocodeResult[], input: HTMLInputElement, container: HTMLElement) => {
-    if (results.length === 0) {
-      container.classList.add('hidden');
-      return;
-    }
-    container.innerHTML = results.map(r => renderGeocodeItemHtml(r)).join('');
-    container.classList.remove('hidden');
-    container.querySelectorAll('.geocoder-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const lat = item.getAttribute('data-lat')!;
-        const lon = item.getAttribute('data-lon')!;
-        const name = item.getAttribute('data-name')!;
-        input.value = name;
-        input.dataset.lat = lat;
-        input.dataset.lon = lon;
-        container.classList.add('hidden');
-      });
+    new GeocoderSearchField(input, resultsContainer, {
+      signal,
+      suppressWhen: (query) => parseCoords(query) !== null,
+      onSelect: (selection) => {
+        input.dataset.lat = String(selection.lat);
+        input.dataset.lon = String(selection.lon);
+      }
     });
   };
 
