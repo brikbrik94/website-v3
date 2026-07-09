@@ -58,3 +58,20 @@ export function resolveLegendSwatch(layer: LayerSpecification): LegendSwatch | n
   console.warn('[resolveLegendSwatch] Farbe nicht auflösbar für Layer', layer.id);
   return { type, color: null };
 }
+
+const SWATCH_TYPE_BY_LAYER_TYPE: Record<string, SwatchType> = {
+  line: 'line',
+  fill: 'area',
+  'fill-extrusion': 'area',
+  circle: 'dot',
+  symbol: 'dot',
+};
+
+/**
+ * Wie resolveLegendSwatch()'s Typ-Ableitung, aber nur anhand des Layer-Typ-Strings (z.B. aus
+ * layers.json-Metadata, wo keine echte LayerSpecification mit paint verfügbar ist) — für Fälle,
+ * in denen der Swatch-Typ unabhängig von der Farbauflösung gebraucht wird.
+ */
+export function swatchTypeForLayerType(layerType: string): SwatchType | null {
+  return SWATCH_TYPE_BY_LAYER_TYPE[layerType] ?? null;
+}

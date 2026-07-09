@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch } from './resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType } from './resolveLegendSwatch';
 
 describe('resolveLegendSwatch', () => {
   it('resolves a literal line-color as type line', () => {
@@ -60,5 +60,35 @@ describe('resolveLegendSwatch', () => {
   it('returns null for a non-legend-able layer type (background)', () => {
     const layer = { id: 'l9', type: 'background' } as LayerSpecification;
     expect(resolveLegendSwatch(layer)).toBeNull();
+  });
+});
+
+describe('swatchTypeForLayerType', () => {
+  it("maps 'line' to 'line'", () => {
+    expect(swatchTypeForLayerType('line')).toBe('line');
+  });
+
+  it("maps 'fill' to 'area'", () => {
+    expect(swatchTypeForLayerType('fill')).toBe('area');
+  });
+
+  it("maps 'fill-extrusion' to 'area'", () => {
+    expect(swatchTypeForLayerType('fill-extrusion')).toBe('area');
+  });
+
+  it("maps 'circle' to 'dot'", () => {
+    expect(swatchTypeForLayerType('circle')).toBe('dot');
+  });
+
+  it("maps 'symbol' to 'dot'", () => {
+    expect(swatchTypeForLayerType('symbol')).toBe('dot');
+  });
+
+  it("returns null for 'raster'", () => {
+    expect(swatchTypeForLayerType('raster')).toBeNull();
+  });
+
+  it("returns null for 'background'", () => {
+    expect(swatchTypeForLayerType('background')).toBeNull();
   });
 });

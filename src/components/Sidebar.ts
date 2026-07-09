@@ -2,7 +2,7 @@ import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, type LegendSwatch } from '../lib/resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, type LegendSwatch } from '../lib/resolveLegendSwatch';
 
 export interface LayerMetaGroup {
   name: string;
@@ -164,24 +164,27 @@ export const initSidebar = (
     const layerType = itemEl.getAttribute('data-layer-type')!;
     const legendLabel = itemEl.querySelector('.acc-item-label')?.textContent ?? layerType;
 
-    // Swatch-Auflösung geht nur, wenn für dieses Overlay echte LayerSpecifications (mit paint)
-    // im Fallback-Pfad (kein layersMeta-Eintrag) geladen wurden. Der layersMeta-Pfad liefert nur
-    // LayerMetaGroup (Name+style_layers+template, kein paint) — dort bleibt swatch bewusst null
-    // (Legende zeigt "?", siehe docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md,
-    // Entscheidung 6). Externe layers.json um Farbinfo zu erweitern ist außerhalb dieses Repos.
-    // for...of statt .find(): loadedLayers ist LayerMetaGroup[] | LayerSpecification[] (Union
-    // zweier Array-Typen) — TS narrowt einen 'in'-Check pro Element im for...of sauber, ohne
-    // dass ein Cast auf den ganzen Array-Typ nötig wird.
+    // Der Swatch-TYP ist immer aus layerType ableitbar (layersMeta-Pfad: g.template; Fallback-
+    // Pfad: l.type) — unabhängig davon, ob eine echte LayerSpecification mit paint verfügbar ist.
+    // Nur die FARBE braucht eine echte LayerSpecification (nur im Fallback-Pfad vorhanden). Damit
+    // bekommt jeder legend-fähige Layer immer einen Eintrag (Farbe oder "?"), nie gar keinen —
+    // siehe docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md, Entscheidung 6.
+    const swatchType = swatchTypeForLayerType(layerType);
     let swatch: LegendSwatch | null = null;
-    const loaded = loadedLayers.get(overlayId);
-    if (loaded) {
-      for (const entry of loaded) {
-        if ('style_layers' in entry) break; // layersMeta-Pfad, keine echten LayerSpecifications
-        if (entry.id === layerIds[0]) {
-          swatch = resolveLegendSwatch(entry);
-          break;
+    if (swatchType) {
+      let color: string | null = null;
+      const loaded = loadedLayers.get(overlayId);
+      if (loaded) {
+        for (const entry of loaded) {
+          if ('style_layers' in entry) break; // layersMeta-Pfad, keine echte LayerSpecification
+          if (entry.id === layerIds[0]) {
+            const resolved = resolveLegendSwatch(entry);
+            if (resolved) color = resolved.color;
+            break;
+          }
         }
       }
+      swatch = { type: swatchType, color };
     }
 
     return {
