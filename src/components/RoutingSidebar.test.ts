@@ -173,7 +173,7 @@ describe('renderStationResults empty state', () => {
 
   it('still shows the results panel with real content for a non-empty station list', () => {
     renderStationResults(
-      [{ name: 'Testort', org: 'ORG', duration: 300, distance: 4000 }],
+      [{ id: 1, name: 'Testort', org: 'ORG', lat: 47.8, lon: 13.0, duration: 300, distance: 4000 }],
       () => {},
       () => {}
     );
