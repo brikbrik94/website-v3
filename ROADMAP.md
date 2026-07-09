@@ -78,46 +78,31 @@ existiert nur einmal. Die großen Feature-Dateien (`TrackingDataService.ts` 486 
 `MapCore.ts` 318 Zeilen) sind laut CLAUDE.md-Konvention (`*DataService`/`*MapLayers`/
 `*SidebarAdapter`) erwartungsgemäß groß, keine "God-File"-Verletzung.
 
-## Map-Subsystem: Anschlussfeatures (nach dem Cleanup)
-
-Voraussetzung: [Map-Subsystem Cleanup](./TODO.md#map-subsystem-cleanup) abgeschlossen (U1–U7).
-Hintergrund/Herleitung: [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md](./docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md).
-
-- [ ] **Legende mit Funktion befüllen** — `MapLegend` (`src/lib/`) existiert, zeigt aber noch keine
-  echten, pro Seite aktiven Layer an. Ziel: Legende pro Seite dynamisch aus den registrierten
-  `MapRegistry`-Layern befüllen, Einträge interaktiv (Toggle-Sichtbarkeit per Klick). Interaktive
-  Einträge am ARIA-APG-Pattern für Listbox/Toggle-Buttons orientieren (siehe CLAUDE.md →
-  Standards-Referenzen, Accessibility).
-- [ ] **Karten-Klick + Overlay-Infos seitenübergreifend** — Klick-auf-Feature-Popups gibt es aktuell
-  nur auf der Tracking-Seite (`PopupManager` dort verdrahtet). Ziel: generisches Klick-Handling für
-  alle Overlay-Layer (NAH, RD/NEF, Contours/Hiking) mit Popup-Infos, nicht Tracking-spezifisch.
-- [ ] **Routing-Kontextmenü: Touchsteuerung** — Das Zielwahl-Kontextmenü in `RoutingPage.ts:76`
-  reagiert nur auf Rechtsklick (Desktop). Ziel: Long-Press-Geste als Touch-Äquivalent für
-  Tablet/Smartphone. Menüstruktur/Tastaturbedienung am ARIA-APG-Menu-Pattern orientieren (siehe
-  CLAUDE.md → Standards-Referenzen, Accessibility).
-- [ ] **NAH: Betreiber-spezifische Icons** — Im Sprite-Set `oe5ith-markers` liegen bereits 9
-  Betreiber-Logos (`nah-adac-luftrettung`, `nah-oeamtc-flugrettung`, `nah-drf-luftrettung`, …),
-  aktuell ungenutzt. Ziel: NAH-Stationsmarker zeigen das Icon ihres Betreibers statt eines
-  generischen Symbols. Braucht (a) ein neues `operator`-Feld in `NahStation`/`api/nah.php`
-  (aktuell nur `name`/`callsign` vorhanden, keine Zuordnung zu den Sprite-Keys), und (b) eine
-  separate Lösung für die Status-Anzeige (grün/rot/grau), da diese Sprites nicht-SDF sind und
-  sich nicht per `icon-color` einfärben lassen (z.B. zusätzlicher Status-Dot-Layer neben dem
-  Betreiber-Icon). Bewusst aus der U5-Migration
-  ([docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md))
-  herausgehalten, die auf ein generisches Status-Icon setzt.
-
 ## Karten-Interaktion & Such-Features
 
 Neue Funktionen für bessere Karten-Bedienung und Suche.
 
-- [ ] **Geocoder-Widget auf Kartenseiten** — Adressensuche/Koordinatensuche (analog zur bestehenden
-  `/coords`-Seite) auf die Map-Seiten (`/nah`, `/routing`, `/tracking` etc.) als kleines
-  Overlay-Widget integrieren, um schnelle Ortssuche ohne Seitenwechsel zu ermöglichen. Übernommen
-  aus `docs/proposals/todo.txt` (2026-07-08).
-- [ ] **MapLibre GL Geolocation-Button** — Benutzer-Position mittels Browser-Geolocation-API
-  abfragen und Karte dorthin verschieben (mit Zoom-Level passend zur Genauigkeit). MapLibre GL hat
-  ein natives `GeolocateControl`, das man anbinden könnte. Übernommen aus `docs/proposals/todo.txt`
-  (2026-07-08).
+- [x] **Geocoder-Widget auf Kartenseiten** (2026-07-09) — ✅ ERLEDIGT, Scope beim Brainstorming
+  eingegrenzt: statt aller Kartenseiten (ursprünglicher Vorschlag) nur `/karte` neu (dort gab es
+  bisher keine Ortssuche), `/coords` (`AddressBlock.ts`) und `/routing`
+  (`RoutingSidebar.ts`, Start+Ziel) blieben UI-seitig unverändert, nutzen intern aber jetzt
+  dasselbe Modul. Neues `src/lib/GeocoderSearchField.ts` kapselt die bisher dreifach fast
+  identisch dupliziert Debounce/Fetch/Dropdown/Outside-Click-Logik hinter einem
+  `onSelect`-Callback — Listener an `AbortSignal` gebunden, behebt dabei einen bestehenden
+  Listener-Leak (nie entfernte `document`-Click-Handler in `AddressBlock.ts`/`RoutingSidebar.ts`)
+  und eine nirgends definierte CSS-Klasse (`form-field-relative` in `RoutingSidebar.ts`, ersetzt
+  durch die vorhandene `.pos-relative`-Utility). Auf `/karte` (`src/components/Sidebar.ts`,
+  `src/pages/MapPage.ts`): neues Suchfeld oberhalb der Layer-Accordions, Auswahl fliegt die Karte
+  zum Ergebnis (`flyTo`) und setzt einen temporären Pin (analog zum bestehenden Coords-Pin-Pattern
+  über `MapCore.createPinLayer`/`setPointSource`). Verifiziert: `npx tsc --noEmit` 0 Fehler,
+  `npm test` 112/112. **Bekannte Restarbeit:** kein automatisierter Test für
+  `GeocoderSearchField` selbst (Projekt hat kein jsdom/happy-dom eingerichtet) — siehe
+  TODO.md.
+- [x] **MapLibre GL Geolocation-Button** (2026-07-09) — ✅ ERLEDIGT. `maplibregl.GeolocateControl`
+  zentral in `MapCore.init()` neben dem bestehenden `NavigationControl` ergänzt (`top-right`),
+  gilt dadurch automatisch für alle 5 Kartenseiten ohne Änderung an den einzelnen
+  Page-Controllern. Einmaliges Hinspringen (`trackUserLocation: false`), kein kontinuierliches
+  Tracking. Verifiziert: `npx tsc --noEmit` 0 Fehler, `npm test` 112/112.
 
 ## Routing: Anschlussfeatures
 
@@ -183,3 +168,31 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   Dev-Server-Problemen: `pkill -f 'vite|php -S'`, `.vite`-Cache leeren, neu starten") in
   CLAUDE.md/AGENT_INSTRUCTIONS.md, damit das nicht bei jeder Live-Verifikation neu diagnostiziert
   werden muss.
+- [ ] **Bausteine-Katalog für wiederverwendbare interne Module** (2026-07-09, aus Diskussion beim
+  Geocoder-Widget entstanden) — `CLAUDE.md` beschreibt die Feature-Struktur bisher nur auf
+  Konventionsebene (`*DataService`/`*MapLayers`/`*SidebarAdapter`-Muster), nicht welche konkreten
+  wiederverwendbaren Bausteine es in `src/lib/` und `src/features/` bereits gibt. Beispiel: das
+  neue `src/lib/GeocoderSearchField.ts` (Ortssuche mit Dropdown, docs/superpowers/specs fehlt
+  noch) taucht sonst nirgends auf, außer man liest den Code oder das CHANGELOG durch. Ziel: ein
+  Katalog/Register (z.B. `docs/architecture/bausteine.md` oder Ergänzung eines bestehenden Docs)
+  mit knappem Eintrag pro Baustein — was er tut, wo er liegt, wie man ihn einbindet (analog zum
+  `oe5ith-ci/docs/registry.json`-Prinzip, aber für website-v3-interne Engineering-Bausteine statt
+  CI-Komponenten) — damit neue Seiten/Features vorhandene Bausteine finden statt sie unwissentlich
+  neu zu bauen. Pflege-Frage noch offen: manuell bei jedem neuen Baustein nachtragen, oder
+  automatisiert aus `src/lib/`/`src/features/` generiert?
+- [ ] **Repo-Root-Ordnerstruktur aufräumen** — im Repo-Root liegen aktuell u.a. Config-Dateien
+  (`composer.json`/`.lock`, `phpcs.xml`, `nginx.conf`, `tsconfig.json`, `vite.config.ts`),
+  Deploy-Tooling (`deploy-website.sh`), acht Markdown-Dateien
+  (`CLAUDE.md`/`GEMINI.md`/`AGENT_INSTRUCTIONS.md`/`README.md`/`CHANGELOG.md`/`ROADMAP.md`/
+  `ROADMAP_ARCHIVE.md`/`TODO.md`/`TODO_ARCHIVE.md`) und mehr nebeneinander — unübersichtlich.
+  **Harte Grenze für eine Umsetzung:** mehrere dieser Root-Platzierungen sind nicht frei wählbar,
+  sondern durch Tool-Konventionen bzw. eigene Regeln vorgegeben und dürfen nicht angetastet
+  werden — `CLAUDE.md`/`GEMINI.md` (zwingend Repo-Root, werden dort automatisch von den jeweiligen
+  Tools geladen), `package.json`/`tsconfig.json`/`vite.config.ts`/`composer.json`/`.gitignore`/
+  `.gitmodules`/`.editorconfig` (Ökosystem-Standardpfade), sowie `TODO.md`/`ROADMAP.md` +
+  `*_ARCHIVE.md` (laut `AGENT_INSTRUCTIONS.md` §3 explizit als Dateipaare **am Repo-Root**
+  festgelegt). Realistische Kandidaten für eine Aufräumung wären eher `deploy-website.sh` +
+  `nginx.conf` (z.B. nach `deploy/`) und ggf. `phpcs.xml`. Braucht einen eigenen
+  Brainstorming-/Design-Durchgang statt einer mechanischen Verschiebung, u.a. weil
+  Deploy-Skript-Pfade (`./deploy-website.sh`) und CI/Editor-Tool-Erwartungen (editorconfig,
+  phpcs) an bestimmten Stellen fest verdrahtet sein könnten.
