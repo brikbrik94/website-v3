@@ -78,8 +78,13 @@ alle vier auf einmal anfassen.
   (ausgelöst durch Sidebar.ts' „Alle an"-Bulk-Toggle, das `onLayerToggle()` nicht awaitet — Muster
   bereits vor dieser Session vorhanden, aber erst durch die neue `getActiveLayerIds()`-Aggregation
   sichtbar geworden). Details + Regressionstest: CHANGELOG.md, 2026-07-10 00:06. 148 Tests grün,
-  0 TypeScript-Fehler. **Hinweis:** erneute Browser-Verifikation nach diesem Fix noch ausstehend
-  (keine Playwright-Umgebung).
+  0 TypeScript-Fehler. **Nach drittem Live-Test** (Nutzer meldete: Gemeinden-Klick funktioniert nur
+  auf Umrisslinie/Namens-Label, nicht innerhalb der Fläche) Root Cause identifiziert (Gemeinden/
+  Bezirke rendern nur `line`, kein `fill`, obwohl die Vektordaten echte Polygon-Geometrie haben)
+  — liegt im Style-JSON auf dem Tile-Server, nicht im Repo-Code; wird vom Nutzer direkt dort
+  behoben statt mit einem Workaround hier (Details:
+  [docs/external-blockers.md](./docs/external-blockers.md)). **Hinweis:** erneute
+  Browser-Verifikation nach dem Race-Condition-Fix noch ausstehend (keine Playwright-Umgebung).
 - [ ] **Routing-Kontextmenü: Touchsteuerung** — Das Zielwahl-Kontextmenü in `RoutingPage.ts:76`
   reagiert nur auf Rechtsklick (Desktop). Ziel: Long-Press-Geste als Touch-Äquivalent für
   Tablet/Smartphone. Menüstruktur/Tastaturbedienung am ARIA-APG-Menu-Pattern orientieren (siehe
