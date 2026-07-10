@@ -2,6 +2,30 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-10 00:06
+
+### Behoben
+- **Race Condition in `OverlayLoader.add()` — Root Cause für „RD/NEF-Klick zeigt nichts"**
+  (`src/lib/OverlayLoader.ts`). Nutzer meldete nach dem Klick-Toleranz-Fix: funktioniert bei
+  Flächen wie Gemeinden, aber nicht bei RD/NEF-Pins oder Zonen-Flächen (zonen-nef/zonen-sew).
+  Mit gezieltem Debug-Logging (statt einer weiteren ungeprüften Hypothese) belegt: Sidebar.ts'
+  „Alle an"-Bulk-Toggle ruft `onLayerToggle()` pro Layer-Gruppe auf, ohne die async-Kette
+  abzuwarten (bestehendes, vor dieser Session schon vorhandenes Muster). Bei einer noch nicht
+  geladenen Overlay-ID lösten dadurch mehrere parallele `OverlayLoader.add()`-Aufrufe jeweils
+  ihren eigenen `fetch()` aus und erzeugten JEWEILS eine eigene, unabhängige Overlay-Entry —
+  die zuletzt aufgelöste gewann und überschrieb die `loaded`-Map, wodurch die `layerIds` aller
+  vorherigen, parallel gestarteten Aufrufe verloren gingen. Die Layer selbst wurden trotzdem
+  korrekt auf der Karte gerendert (`addLayerIfMissing` schreibt direkt auf die Map-Instanz) —
+  nur `OverlayLoader`-intern verlor sich die Buchführung, weshalb `getActiveLayerIds()` (neu
+  aus dem vorherigen Punkt) nur die letzte Gruppe sah und `queryRenderedFeatures` für alle
+  anderen Layer nichts fand. Fix: paralleles `add()` für dieselbe, noch nicht geladene
+  Overlay-ID teilt sich jetzt ein gemeinsames Erstellungs-Promise (`creating`-Map) statt jeweils
+  eine eigene Entry zu erzeugen. Bestehende Race unabhängig von dieser Session, aber erstmals
+  durch die neue `getActiveLayerIds()`-Aggregation sichtbar geworden. Neue
+  `src/lib/OverlayLoader.test.ts` (3 Tests, davon einer als direkter Regressionstest für die
+  Race mit `Promise.all()` + verzögertem Fake-`fetch()`). Verifiziert: `npx tsc --noEmit`
+  0 Fehler, `npm test` 148/148.
+
 ## [Unreleased] - 2026-07-09 23:53
 
 ### Behoben
