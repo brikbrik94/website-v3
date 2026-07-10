@@ -71,8 +71,15 @@ alle vier auf einmal anfassen.
   unangetastet. **Nach erstem Live-Test (Nutzer meldete: kein Popup erscheint trotz aktivem
   Overlay)** Klick-Toleranz nachgebessert — `queryRenderedFeatures` fragte nur den exakten
   Klick-Pixel ab, bei dünnen Linien-Layern (Autobahnen 1-3px, Höhenlinien 0.5-2.7px) praktisch
-  nie treffbar; jetzt ±4px-Toleranz-Box (Details: CHANGELOG.md, 2026-07-09 23:53). **Hinweis:**
-  erneute Browser-Verifikation nach diesem Fix noch ausstehend (keine Playwright-Umgebung).
+  nie treffbar; jetzt ±4px-Toleranz-Box (Details: CHANGELOG.md, 2026-07-09 23:53). **Nach zweitem
+  Live-Test (Nutzer meldete: funktioniert bei Flächen, nicht bei RD/NEF-Pins oder Zonen-Flächen)**
+  mit gezieltem Debug-Logging echte Root Cause gefunden und behoben: Race Condition in
+  `OverlayLoader.add()` bei parallelen Aufrufen für dieselbe, noch nicht geladene Overlay-ID
+  (ausgelöst durch Sidebar.ts' „Alle an"-Bulk-Toggle, das `onLayerToggle()` nicht awaitet — Muster
+  bereits vor dieser Session vorhanden, aber erst durch die neue `getActiveLayerIds()`-Aggregation
+  sichtbar geworden). Details + Regressionstest: CHANGELOG.md, 2026-07-10 00:06. 148 Tests grün,
+  0 TypeScript-Fehler. **Hinweis:** erneute Browser-Verifikation nach diesem Fix noch ausstehend
+  (keine Playwright-Umgebung).
 - [ ] **Routing-Kontextmenü: Touchsteuerung** — Das Zielwahl-Kontextmenü in `RoutingPage.ts:76`
   reagiert nur auf Rechtsklick (Desktop). Ziel: Long-Press-Geste als Touch-Äquivalent für
   Tablet/Smartphone. Menüstruktur/Tastaturbedienung am ARIA-APG-Menu-Pattern orientieren (siehe

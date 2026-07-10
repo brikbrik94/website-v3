@@ -20,6 +20,14 @@ interface LoadedOverlay {
 // sich zu ersetzen.
 const loaded = new Map<string, LoadedOverlay>();
 
+// Läuft eine Overlay-Erstellung (fetch+parse) bereits für eine overlayId, teilen sich parallele
+// add()-Aufrufe dieses eine Promise statt jeder für sich eine eigene entry anzulegen. Ohne das
+// verlieren sich bei parallelen Aufrufen (z.B. Sidebar.ts "Alle an", das onLayerToggle() nicht
+// awaited) alle bis auf die zuletzt aufgelöste entry — jede fetch()-Antwort erzeugt sonst ihre
+// eigene, unabhängige entry und überschreibt die vorherige in `loaded`, wodurch deren bereits
+// gepushte layerIds verloren gehen (Root Cause für "RD/NEF-Klick zeigt nichts").
+const creating = new Map<string, Promise<LoadedOverlay>>();
+
 const prefixed = (overlayId: string, id: string) => (id.startsWith(overlayId) ? id : `${overlayId}-${id}`);
 
 /**
@@ -69,27 +77,37 @@ export const OverlayLoader = {
     let entry = loaded.get(overlayId);
 
     if (!entry) {
-      const res = await fetch(styleUrl, opts?.signal ? { signal: opts.signal } : undefined);
-      const style = await res.json();
+      let pending = creating.get(overlayId);
+      if (!pending) {
+        pending = (async () => {
+          const res = await fetch(styleUrl, opts?.signal ? { signal: opts.signal } : undefined);
+          const style = await res.json();
 
-      entry = { style, sourceIdMap: new Map(), sourceIds: [], layerIds: [], hasImage: false };
-      loaded.set(overlayId, entry);
+          const newEntry: LoadedOverlay = { style, sourceIdMap: new Map(), sourceIds: [], layerIds: [], hasImage: false };
+          loaded.set(overlayId, newEntry);
 
-      if (style.sprite) {
-        const spriteUrl = style.sprite as string;
-        MapRegistry.registerImage(overlayId, spriteUrl, styleUrl);
-        await MapCore.loadSprites(map, spriteUrl, styleUrl);
-        entry.hasImage = true;
+          if (style.sprite) {
+            const spriteUrl = style.sprite as string;
+            MapRegistry.registerImage(overlayId, spriteUrl, styleUrl);
+            await MapCore.loadSprites(map, spriteUrl, styleUrl);
+            newEntry.hasImage = true;
+          }
+
+          const resolvedSources = MapCore.resolveSourceUrls(style.sources || {}, styleUrl);
+          for (const [sourceId, def] of Object.entries(resolvedSources)) {
+            const uniqueSourceId = prefixed(overlayId, sourceId);
+            newEntry.sourceIdMap.set(sourceId, uniqueSourceId);
+            MapRegistry.registerSource(uniqueSourceId, def);
+            addSourceIfMissing(map, uniqueSourceId, def);
+            newEntry.sourceIds.push(uniqueSourceId);
+          }
+
+          return newEntry;
+        })();
+        creating.set(overlayId, pending);
       }
-
-      const resolvedSources = MapCore.resolveSourceUrls(style.sources || {}, styleUrl);
-      for (const [sourceId, def] of Object.entries(resolvedSources)) {
-        const uniqueSourceId = prefixed(overlayId, sourceId);
-        entry.sourceIdMap.set(sourceId, uniqueSourceId);
-        MapRegistry.registerSource(uniqueSourceId, def);
-        addSourceIfMissing(map, uniqueSourceId, def);
-        entry.sourceIds.push(uniqueSourceId);
-      }
+      entry = await pending;
+      creating.delete(overlayId);
     }
 
     const style = entry.style;
