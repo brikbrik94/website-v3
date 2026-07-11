@@ -18,6 +18,22 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.9.0] - 2026-07-11</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Karte:</strong> Klick auf Straßen, Gemeinden, Höhenlinien, Rettungsdienst-Stationen und andere Kartenebenen zeigt jetzt ein Info-Fenster mit den Details des angeklickten Objekts.</li>
+            <li><strong>Karte:</strong> Die Legende ist jetzt interaktiv — sie zeigt nur die gerade aktiven Ebenen und lässt sich per Klick auf eine Ebene direkt wieder ausblenden.</li>
+            <li><strong>Karte:</strong> Neues Adress-/Ortssuchfeld in der Seitenleiste — die Karte springt direkt zum gefundenen Ort.</li>
+            <li><strong>Alle Kartenseiten:</strong> Neuer Button zur Anzeige des eigenen Standorts.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Karte:</strong> Klick auf dünne Linien (z.B. Autobahnen, Höhenlinien) reagiert jetzt zuverlässiger.</li>
+            <li><strong>Karte:</strong> Beim schnellen Ein-/Ausschalten mehrerer Ebenen auf einmal („Alle an") wurden manche Ebenen für Klicks und Info-Fenster nicht mehr erkannt — behoben.</li>
+            <li><strong>Karte:</strong> Die Farbdarstellung der Legende war für einige Ebenen (z.B. Pistenflächen, reine Textbeschriftungen) fehlerhaft oder fehlte ganz — behoben.</li>
+            <li><strong>Live-Tracking:</strong> Flugzeug-Symbole auf der Karte zeigen jetzt eine genauere, vom System übermittelte Flugzeugkategorie statt einer groben Näherung.</li>
+          </ul>
+
           <h2>[3.8.1] - 2026-07-09</h2>
           <h3>Technische Verbesserungen</h3>
           <ul>

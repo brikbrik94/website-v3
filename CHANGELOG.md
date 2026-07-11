@@ -2,30 +2,75 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-11 16:20
+## [3.9.0] - 2026-07-11
+
+### Hinzugefügt
+- **Geocoder-Suchfeld auf `/karte`-Sidebar** (ROADMAP.md → Karten-Interaktion & Such-Features) —
+  neuer Suchbereich oberhalb der Layer-Accordions (`src/components/Sidebar.ts`); Auswahl fliegt
+  die Karte zum Ergebnis (`flyTo`) und setzt einen temporären Pin (`src/pages/MapPage.ts`, analog
+  zum bestehenden Coords-Pin-Pattern).
+- **`GeolocateControl` auf allen 5 Kartenseiten** (ROADMAP.md → Karten-Interaktion &
+  Such-Features) — zentral in `MapCore.init()` neben dem bestehenden `NavigationControl`
+  ergänzt (`src/lib/MapCore.ts`), kein einmaliges Positions-Tracking (`trackUserLocation: false`).
+- **Interaktive Legende auf `/karte`** (TODO.md → Map-Subsystem: Anschlussfeatures, Schritt 1+2) —
+  Legendeneinträge sind klickbar (×-Button blendet einzelne Layer aus). Neuer Farb-Resolver
+  (`src/lib/resolveLegendSwatch.ts`) extrahiert Farben aus MapLibre-Paint-Expressions (Literal +
+  `match`-Fallback-Arm), zeigt „?" wenn nicht auflösbar. Legende auf `/karte` zeigt nur aktive
+  Layer, synchron mit der Sidebar-Accordion — Klick auf „×" in der Legende triggert einen echten
+  `.click()` auf das zugehörige Accordion-Item (derselbe bestehende Toggle-Pfad, keine zweite
+  Implementierung; die Legende kann Layer nur ausblenden, nicht einschalten). Spec:
+  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
+- **Klick-Popups für Overlay-Layer auf `/karte`** (TODO.md → Map-Subsystem: Anschlussfeatures)
+  — Klick auf ein Feature eines aktiven Overlays (Autobahnen, Gemeinden, Höhenlinien, RD/NEF, …)
+  zeigt ein Popup mit dessen Eigenschaften. Neue `OverlayLoader.getActiveLayerIds()` liefert alle
+  aktuell aktiven Overlay-Layer-IDs für `queryRenderedFeatures`. Neues
+  `src/lib/GenericFeaturePopup.ts` baut den Popup-Inhalt generisch aus den rohen
+  GeoJSON-`properties` (Titel-Heuristik: erste vorhandene Property aus `name`/`title`/`ref`/`id`,
+  Rest als Key-Value-Liste; interne `_`-Felder und sehr lange Werte gefiltert; HTML-escaped gegen
+  XSS aus Fremddaten) — bewusst **keine** Kuratierung pro Layer (wie bei Trackings
+  `POPUP_CONFIGS`), da `/karte`s Overlays zu heterogen/zahlreich dafür sind (z.B. 109 einzelne
+  Autobahn-Layer). Popup-Anker ist die tatsächliche Klick-Position (`e.lngLat`), nicht von der
+  Feature-Geometrie abgeleitet — nötig, weil `/karte`-Overlays gemischte Geometrietypen haben
+  (Linien, Polygone), anders als die reinen Punkt-Layer bei Tracking/NAH. `/nah`s bestehender,
+  eigenständiger Popup-Builder bleibt unverändert (bewusst nicht Teil dieses Punkts).
+
+### Geändert
+- **Geocoder-Suche in ein gemeinsames Modul extrahiert** — neues `src/lib/GeocoderSearchField.ts`
+  kapselt Debounce/Fetch/Dropdown-Rendering/Outside-Click-Dismiss, bisher dreifach fast identisch
+  in `AddressBlock.ts` (Coords), `RoutingSidebar.ts` (Start/Ziel) und jetzt neu auf `/karte`
+  dupliziert. Alle internen Listener sind an ein `AbortSignal` gebunden (behebt dabei einen
+  bisherigen Listener-Leak beim Seitenwechsel in `AddressBlock.ts`/`RoutingSidebar.ts`, die
+  ihre `document`-Click-Listener nie entfernt hatten). `RoutingSidebar.ts` nutzte zudem die nirgends
+  definierte CSS-Klasse `form-field-relative` (Dropdown dadurch am falschen Element positioniert)
+  — ersetzt durch die bereits vorhandene lokale Utility `.pos-relative` (schon in `AddressBlock.ts`
+  fürs selbe Problem im Einsatz). Kein Verhaltensunterschied bei Coords/Routing, nur DRY-Refactor.
+  **Bekannte Restarbeit:** kein automatisierter Test für `GeocoderSearchField` selbst — Projekt
+  hat kein jsdom/happy-dom eingerichtet (bestehende DOM-Tests nutzen handgebaute Fake-Elemente
+  statt echtem DOM), neue Test-Dependency wäre eigene Infrastruktur-Entscheidung außerhalb dieses
+  Scopes.
 
 ### Behoben
-- **Tracking-Karte (`/tracking`) nutzte für Flugzeug-Sprites eine eigene, unvollständige
-  ICAO-Klassifizierung statt der vom Server gelieferten** (`src/features/tracking/
-  TrackingDataService.ts`, `TrackingMapLayers.ts`). Live-Testabfrage gegen
-  `wss://api.oe5ith.at/tracking/ws/v2` zeigte: der Server sendet pro Flugzeug bereits ein
-  fertiges `spriteType`-Feld (z.B. `plane-a5`) mit dem exakten Sprite-Namen — dieses Feld war
-  im `AircraftEntity`-Typ nicht deklariert und wurde beim Parsen implizit verworfen. Stattdessen
-  berechnete `mapIcaoToCategory()` clientseitig eine eigene, grobe Kategorie
-  (nur `A1`/`A2`/`A3`/`B1`) aus `icaoType` per Regex/Whitelist — wodurch der Großteil des
-  Sprite-Atlas (`plane-a4`-`plane-a7`, `plane-b2`-`plane-b6`, `plane-c1`-`plane-c3`) vom
-  Frontend aus nie erreichbar war. Fix: `spriteType` zu `AircraftEntity` ergänzt
-  (`src/types/tracking.ts`), `getAdsbGeoJson()` gibt jetzt `sprite: a.spriteType ||
-  'plane-unknown'` direkt weiter, `mapIcaoToCategory()` komplett entfernt. Das
-  `icon-image`-Match in `TrackingMapLayers.ts` (16 Zeilen) wurde durch
-  `['coalesce', ['get', 'sprite'], 'plane-unknown']` ersetzt — analog zum bestehenden
-  AIS-Muster (`ui_sprite`). Neuer `src/features/tracking/TrackingDataService.test.ts`
-  (2 Tests: Sprite-Passthrough + Fallback). Verifiziert: `npx tsc --noEmit` 0 Fehler,
-  `npm test` 150/150.
-
-## [Unreleased] - 2026-07-10 00:06
-
-### Behoben
+- **Legenden-Swatch-Auflösung auf `/karte` — drei reale Lücken nach Live-Test behoben**
+  (`src/lib/resolveLegendSwatch.ts`, `src/components/Sidebar.ts`). Live-Test gegen echte
+  Overlays hat gezeigt: (1) Für alle 14 über `layers.json` kuratierten Overlays (Autobahnen,
+  Bezirke, RD, NEF, …) erschien **gar kein** Legenden-Eintrag — `layers.json`s `template`-Feld
+  (z.B. `"strassen"`) ist eine Kategorie-Bezeichnung für die UI, kein MapLibre-Layer-Typ, wie
+  fälschlich angenommen. Fix: `Sidebar.ts` lädt beim Toggle einer solchen Gruppe zusätzlich
+  (einmalig pro Overlay, gecacht) das zugehörige `style.json` nach, um Typ+Farbe aus der echten
+  Layer-Definition zu holen — `layers.json` bleibt weiterhin allein zuständig für die
+  Gruppierung/Benennung in der Sidebar. (2) `resolveLegendSwatch()` kannte nur `match`-
+  Expressions, nicht `case` (z.B. OpenSkiMap-Pistenfarben) — jetzt unterstützt, inkl. rekursiver
+  Auflösung verschachtelter `match`/`case`-Fallback-Arme (reales Muster: `case` mit
+  `match`-Expression als Fallback). (3) Reine Text-Label-`symbol`-Layer ohne `icon-color` (nur
+  `text-color`) lieferten „?" statt Farbe — jetzt als Fallback berücksichtigt. Alle drei Fixes
+  gegen echte, live abgerufene Style-Daten verifiziert (Autobahnen A1 → `#0000FF`, OpenSkiMap-
+  Pistenfläche → `#95a5a6`, Ski-Label → `#333`).
+- **Klick-Toleranz für Overlay-Popups auf `/karte`** (`src/pages/MapPage.ts`) — Nutzer meldete
+  nach Live-Test, dass beim Klicken auf Overlays (auch bei sichtbar aktivem Layer) gar nichts
+  passierte. `queryRenderedFeatures` fragte bisher nur den exakten Klick-Pixel ab; bei dünnen
+  Linien-Layern (Autobahnen 1-3px, Höhenlinien 0.5-2.7px) ist ein pixelgenauer Treffer praktisch
+  unmöglich. Jetzt wird eine kleine Toleranz-Bounding-Box (±4px) statt eines Einzelpixels
+  abgefragt.
 - **Race Condition in `OverlayLoader.add()` — Root Cause für „RD/NEF-Klick zeigt nichts"**
   (`src/lib/OverlayLoader.ts`). Nutzer meldete nach dem Klick-Toleranz-Fix: funktioniert bei
   Flächen wie Gemeinden, aber nicht bei RD/NEF-Pins oder Zonen-Flächen (zonen-nef/zonen-sew).
@@ -44,98 +89,28 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   eine eigene Entry zu erzeugen. Bestehende Race unabhängig von dieser Session, aber erstmals
   durch die neue `getActiveLayerIds()`-Aggregation sichtbar geworden. Neue
   `src/lib/OverlayLoader.test.ts` (3 Tests, davon einer als direkter Regressionstest für die
-  Race mit `Promise.all()` + verzögertem Fake-`fetch()`). Verifiziert: `npx tsc --noEmit`
-  0 Fehler, `npm test` 148/148.
+  Race mit `Promise.all()` + verzögertem Fake-`fetch()`).
+- **Tracking-Karte (`/tracking`) nutzte für Flugzeug-Sprites eine eigene, unvollständige
+  ICAO-Klassifizierung statt der vom Server gelieferten** (`src/features/tracking/
+  TrackingDataService.ts`, `TrackingMapLayers.ts`). Live-Testabfrage gegen
+  `wss://api.oe5ith.at/tracking/ws/v2` zeigte: der Server sendet pro Flugzeug bereits ein
+  fertiges `spriteType`-Feld (z.B. `plane-a5`) mit dem exakten Sprite-Namen — dieses Feld war
+  im `AircraftEntity`-Typ nicht deklariert und wurde beim Parsen implizit verworfen. Stattdessen
+  berechnete `mapIcaoToCategory()` clientseitig eine eigene, grobe Kategorie
+  (nur `A1`/`A2`/`A3`/`B1`) aus `icaoType` per Regex/Whitelist — wodurch der Großteil des
+  Sprite-Atlas (`plane-a4`-`plane-a7`, `plane-b2`-`plane-b6`, `plane-c1`-`plane-c3`) vom
+  Frontend aus nie erreichbar war. Fix: `spriteType` zu `AircraftEntity` ergänzt
+  (`src/types/tracking.ts`), `getAdsbGeoJson()` gibt jetzt `sprite: a.spriteType ||
+  'plane-unknown'` direkt weiter, `mapIcaoToCategory()` komplett entfernt. Das
+  `icon-image`-Match in `TrackingMapLayers.ts` (16 Zeilen) wurde durch
+  `['coalesce', ['get', 'sprite'], 'plane-unknown']` ersetzt — analog zum bestehenden
+  AIS-Muster (`ui_sprite`). Neuer `src/features/tracking/TrackingDataService.test.ts`
+  (2 Tests: Sprite-Passthrough + Fallback).
 
-## [Unreleased] - 2026-07-09 23:53
+**Noch nicht erneut vom Nutzer im Browser bestätigt:** Klick-Toleranz für Overlay-Popups (aus dem
+Behoben-Punkt oben) sowie die interaktive Legende (keine Playwright-Umgebung verfügbar).
 
-### Behoben
-- **Klick-Toleranz für Overlay-Popups auf `/karte`** (`src/pages/MapPage.ts`) — Nutzer meldete
-  nach Live-Test, dass beim Klicken auf Overlays (auch bei sichtbar aktivem Layer) gar nichts
-  passierte. `queryRenderedFeatures` fragte bisher nur den exakten Klick-Pixel ab; bei dünnen
-  Linien-Layern (Autobahnen 1-3px, Höhenlinien 0.5-2.7px) ist ein pixelgenauer Treffer praktisch
-  unmöglich. Jetzt wird eine kleine Toleranz-Bounding-Box (±4px) statt eines Einzelpixels
-  abgefragt. **Noch nicht erneut vom Nutzer im Browser bestätigt** — nächster Live-Test steht
-  aus. `npx tsc --noEmit` 0 Fehler, `npm test` 145/145 (keine neuen Tests, reine
-  MapPage.ts-Wiring-Änderung, siehe bestehende Testbarkeits-Konvention für DOM-Code).
-
-## [Unreleased] - 2026-07-09 23:45
-
-### Hinzugefügt
-- **Klick-Popups für Overlay-Layer auf `/karte`** (TODO.md → Map-Subsystem: Anschlussfeatures)
-  — Klick auf ein Feature eines aktiven Overlays (Autobahnen, Gemeinden, Höhenlinien, RD/NEF, …)
-  zeigt ein Popup mit dessen Eigenschaften. Neue `OverlayLoader.getActiveLayerIds()` liefert alle
-  aktuell aktiven Overlay-Layer-IDs für `queryRenderedFeatures`. Neues
-  `src/lib/GenericFeaturePopup.ts` baut den Popup-Inhalt generisch aus den rohen
-  GeoJSON-`properties` (Titel-Heuristik: erste vorhandene Property aus `name`/`title`/`ref`/`id`,
-  Rest als Key-Value-Liste; interne `_`-Felder und sehr lange Werte gefiltert; HTML-escaped gegen
-  XSS aus Fremddaten) — bewusst **keine** Kuratierung pro Layer (wie bei Trackings
-  `POPUP_CONFIGS`), da `/karte`s Overlays zu heterogen/zahlreich dafür sind (z.B. 109 einzelne
-  Autobahn-Layer). Popup-Anker ist die tatsächliche Klick-Position (`e.lngLat`), nicht von der
-  Feature-Geometrie abgeleitet — nötig, weil `/karte`-Overlays gemischte Geometrietypen haben
-  (Linien, Polygone), anders als die reinen Punkt-Layer bei Tracking/NAH. `/nah`s bestehender,
-  eigenständiger Popup-Builder bleibt unverändert (bewusst nicht Teil dieses Punkts). Verifiziert:
-  `npx tsc --noEmit` 0 Fehler, `npm test` 145/145.
-
-## [Unreleased] - 2026-07-09 22:57
-
-### Behoben
-- **Legenden-Swatch-Auflösung auf `/karte` — drei reale Lücken nach Live-Test behoben**
-  (`src/lib/resolveLegendSwatch.ts`, `src/components/Sidebar.ts`). Live-Test gegen echte
-  Overlays hat gezeigt: (1) Für alle 14 über `layers.json` kuratierten Overlays (Autobahnen,
-  Bezirke, RD, NEF, …) erschien **gar kein** Legenden-Eintrag — `layers.json`s `template`-Feld
-  (z.B. `"strassen"`) ist eine Kategorie-Bezeichnung für die UI, kein MapLibre-Layer-Typ, wie
-  fälschlich angenommen. Fix: `Sidebar.ts` lädt beim Toggle einer solchen Gruppe zusätzlich
-  (einmalig pro Overlay, gecacht) das zugehörige `style.json` nach, um Typ+Farbe aus der echten
-  Layer-Definition zu holen — `layers.json` bleibt weiterhin allein zuständig für die
-  Gruppierung/Benennung in der Sidebar. (2) `resolveLegendSwatch()` kannte nur `match`-
-  Expressions, nicht `case` (z.B. OpenSkiMap-Pistenfarben) — jetzt unterstützt, inkl. rekursiver
-  Auflösung verschachtelter `match`/`case`-Fallback-Arme (reales Muster: `case` mit
-  `match`-Expression als Fallback). (3) Reine Text-Label-`symbol`-Layer ohne `icon-color` (nur
-  `text-color`) lieferten „?" statt Farbe — jetzt als Fallback berücksichtigt. Alle drei Fixes
-  gegen echte, live abgerufene Style-Daten verifiziert (Autobahnen A1 → `#0000FF`, OpenSkiMap-
-  Pistenfläche → `#95a5a6`, Ski-Label → `#333`). Verifiziert: `npx tsc --noEmit` 0 Fehler,
-  `npm test` 133/133.
-
-## [Unreleased] - 2026-07-09 20:48
-
-### Hinzugefügt
-- **Interaktive Legende auf `/karte`** (TODO.md → Map-Subsystem: Anschlussfeatures, Schritt 1+2) —
-  Legendeneinträge sind klickbar (×-Button blendet einzelne Layer aus). Neuer Farb-Resolver
-  (`src/lib/resolveLegendSwatch.ts`) extrahiert Farben aus MapLibre-Paint-Expressions (Literal +
-  `match`-Fallback-Arm), zeigt „?" wenn nicht auflösbar. Legende auf `/karte` zeigt nur aktive
-  Layer, synchron mit der Sidebar-Accordion — Klick auf „×" in der Legende triggert einen echten
-  `.click()` auf das zugehörige Accordion-Item (derselbe bestehende Toggle-Pfad, keine zweite
-  Implementierung; die Legende kann Layer nur ausblenden, nicht einschalten). Spec:
-  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
-  Verifiziert: `npx tsc --noEmit` 0 Fehler, `npm test` 129/129. **Hinweis:** interaktive
-  Browser-Verifikation noch ausstehend (keine Playwright-Umgebung verfügbar).
-
-## [Unreleased] - 2026-07-09 19:12
-
-### Hinzugefügt
-- **Geocoder-Suchfeld auf `/karte`-Sidebar** (ROADMAP.md → Karten-Interaktion & Such-Features) —
-  neuer Suchbereich oberhalb der Layer-Accordions (`src/components/Sidebar.ts`); Auswahl fliegt
-  die Karte zum Ergebnis (`flyTo`) und setzt einen temporären Pin (`src/pages/MapPage.ts`, analog
-  zum bestehenden Coords-Pin-Pattern).
-- **`GeolocateControl` auf allen 5 Kartenseiten** (ROADMAP.md → Karten-Interaktion &
-  Such-Features) — zentral in `MapCore.init()` neben dem bestehenden `NavigationControl`
-  ergänzt (`src/lib/MapCore.ts`), kein einmaliges Positions-Tracking (`trackUserLocation: false`).
-
-### Geändert
-- **Geocoder-Suche in ein gemeinsames Modul extrahiert** — neues `src/lib/GeocoderSearchField.ts`
-  kapselt Debounce/Fetch/Dropdown-Rendering/Outside-Click-Dismiss, bisher dreifach fast identisch
-  in `AddressBlock.ts` (Coords), `RoutingSidebar.ts` (Start/Ziel) und jetzt neu auf `/karte`
-  dupliziert. Alle internen Listener sind an ein `AbortSignal` gebunden (behebt dabei einen
-  bisherigen Listener-Leak beim Seitenwechsel in `AddressBlock.ts`/`RoutingSidebar.ts`, die
-  ihre `document`-Click-Listener nie entfernt hatten). `RoutingSidebar.ts` nutzte zudem die nirgends
-  definierte CSS-Klasse `form-field-relative` (Dropdown dadurch am falschen Element positioniert)
-  — ersetzt durch die bereits vorhandene lokale Utility `.pos-relative` (schon in `AddressBlock.ts`
-  fürs selbe Problem im Einsatz). Kein Verhaltensunterschied bei Coords/Routing, nur DRY-Refactor.
-  Verifiziert: `npx tsc --noEmit` 0 Fehler, `npm test` 112/112. **Bekannte Restarbeit:** kein
-  automatisierter Test für `GeocoderSearchField` selbst — Projekt hat kein jsdom/happy-dom
-  eingerichtet (bestehende DOM-Tests nutzen handgebaute Fake-Elemente statt echtem DOM), neue
-  Test-Dependency wäre eigene Infrastruktur-Entscheidung außerhalb dieses Scopes.
+`npx tsc --noEmit && npm test` grün (150/150) für den gesamten Umfang dieses Releases.
 
 ## [3.8.1] - 2026-07-09
 
