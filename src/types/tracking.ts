@@ -110,6 +110,7 @@ export type AircraftEntity = {
   loggedAt?: string;
   aircraftType?: string;
   icaoType?: string;
+  spriteType?: string;
   registration?: string;
   manufacturer?: string;
   registeredOwner?: string;

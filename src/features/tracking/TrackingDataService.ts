@@ -392,7 +392,7 @@ export class TrackingDataService {
                     properties: {
                         hex: a.id,
                         flight: a.callsign,
-                        category: this.mapIcaoToCategory(a.icaoType),
+                        sprite: a.spriteType || 'plane-unknown',
                         alt_baro: a.altitudeFt,
                         gs: a.groundSpeedKt,
                         track: a.trackDeg,
@@ -402,38 +402,6 @@ export class TrackingDataService {
                     }
                 }))
         };
-    }
-
-    /**
-     * Maps ICAO aircraft types to the legacy categories used for map icons.
-     * Icons are defined in TrackingMapLayers.ts (A1-A7, B1-B6, C1-C3).
-     */
-    private mapIcaoToCategory(icao?: string): string {
-        if (!icao) return 'A3'; // Default to medium/large jet
-        
-        const type = icao.toUpperCase();
-        
-        // --- B1: Helicopters ---
-        if (/^(EC|H|B|A|R)(35|45|06|40|41|13|14|44|66|10|13)/.test(type) || ['EC35', 'H135', 'H145', 'EC45', 'B06', 'R44', 'R66', 'A109', 'A139', 'AW13', 'AW16'].includes(type)) {
-            return 'B1';
-        }
-
-        // --- A1: Light / GA ---
-        if (/^(C15|C17|C18|P28|SR2|DA2|DA4|DV2|G11|G10)/.test(type) || ['C150', 'C152', 'C172', 'C182', 'P28A', 'P28B', 'SR20', 'SR22', 'DA20', 'DA40', 'DA42', 'DV20'].includes(type)) {
-            return 'A1';
-        }
-
-        // --- A2: Small Jets / Business ---
-        if (/^(C5|C2|L|G)(10|25|35|45|60|L5|LF)/.test(type) || ['C510', 'C525', 'C560', 'C25A', 'C25B', 'LJ35', 'LJ45', 'LJ60', 'GL5T', 'GLF4', 'GLF5', 'GLF6'].includes(type)) {
-            return 'A2';
-        }
-
-        // --- A3: Large Jets (Default for most airliners) ---
-        if (/^(A3|B7|E1|CR)/.test(type) || ['A320', 'A321', 'A319', 'B738', 'B737', 'E190', 'CRJ9'].includes(type)) {
-            return 'A3';
-        }
-
-        return 'A3';
     }
 
     private getAisGeoJson(): GeoJSON.FeatureCollection<GeoJSON.Point> {

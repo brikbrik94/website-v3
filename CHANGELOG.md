@@ -2,6 +2,27 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-11 16:20
+
+### Behoben
+- **Tracking-Karte (`/tracking`) nutzte für Flugzeug-Sprites eine eigene, unvollständige
+  ICAO-Klassifizierung statt der vom Server gelieferten** (`src/features/tracking/
+  TrackingDataService.ts`, `TrackingMapLayers.ts`). Live-Testabfrage gegen
+  `wss://api.oe5ith.at/tracking/ws/v2` zeigte: der Server sendet pro Flugzeug bereits ein
+  fertiges `spriteType`-Feld (z.B. `plane-a5`) mit dem exakten Sprite-Namen — dieses Feld war
+  im `AircraftEntity`-Typ nicht deklariert und wurde beim Parsen implizit verworfen. Stattdessen
+  berechnete `mapIcaoToCategory()` clientseitig eine eigene, grobe Kategorie
+  (nur `A1`/`A2`/`A3`/`B1`) aus `icaoType` per Regex/Whitelist — wodurch der Großteil des
+  Sprite-Atlas (`plane-a4`-`plane-a7`, `plane-b2`-`plane-b6`, `plane-c1`-`plane-c3`) vom
+  Frontend aus nie erreichbar war. Fix: `spriteType` zu `AircraftEntity` ergänzt
+  (`src/types/tracking.ts`), `getAdsbGeoJson()` gibt jetzt `sprite: a.spriteType ||
+  'plane-unknown'` direkt weiter, `mapIcaoToCategory()` komplett entfernt. Das
+  `icon-image`-Match in `TrackingMapLayers.ts` (16 Zeilen) wurde durch
+  `['coalesce', ['get', 'sprite'], 'plane-unknown']` ersetzt — analog zum bestehenden
+  AIS-Muster (`ui_sprite`). Neuer `src/features/tracking/TrackingDataService.test.ts`
+  (2 Tests: Sprite-Passthrough + Fallback). Verifiziert: `npx tsc --noEmit` 0 Fehler,
+  `npm test` 150/150.
+
 ## [Unreleased] - 2026-07-10 00:06
 
 ### Behoben
