@@ -16,7 +16,8 @@ export interface LongPressEvent {
  * Touch-Long-Press-Erkennung — das native contextmenu-Event feuert auf Touch nicht zuverlässig,
  * weil MapLibre bei aktivem Touch-Pan+Zoom `touch-action: none` auf den Canvas setzt (siehe
  * docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
- * Idempotent: mehrfache Aufrufe für dieselbe Map-Instanz registrieren die Listener nur einmal.
+ * Idempotent: mehrfache Aufrufe für dieselbe Map-Instanz registrieren die Listener nur einmal —
+ * ein zweiter Aufruf mit einem anderen Callback ist ein No-Op, der erste Callback gewinnt.
  * Kein explizites Cleanup nötig (siehe HoverCursor.ts — neue Seite = neue Map-Instanz).
  */
 export function attachLongPress(map: maplibregl.Map, onLongPress: (e: LongPressEvent) => void): void {
@@ -70,5 +71,8 @@ export function attachLongPress(map: maplibregl.Map, onLongPress: (e: LongPressE
     }
   });
 
-  canvas.addEventListener('touchcancel', clear);
+  canvas.addEventListener('touchcancel', () => {
+    clear();
+    fired = false;
+  });
 }
