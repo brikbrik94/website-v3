@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-12 09:58
+
+### Hinzugefügt
+- **Routing-Kontextmenü: Touchsteuerung** (TODO.md → Map-Subsystem: Anschlussfeatures) — Long-Press
+  öffnet das Zielwahl-Kontextmenü jetzt auch auf Touch-Geräten (`/routing`, `/coords`), nicht mehr
+  nur per Rechtsklick. Neuer Baustein `src/lib/LongPressGesture.ts` erkennt die Geste unabhängig
+  vom nativen `contextmenu`-Event (das auf Touch wegen MapLibres `touch-action: none` nicht
+  zuverlässig feuert). Spec:
+  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
+
 ## [Unreleased] - 2026-07-12 08:53
 
 ### Geändert
