@@ -26,6 +26,7 @@ const CLICK_TOLERANCE_PX = 4;
 export class MapPageController extends BasePageController {
     private map?: maplibregl.Map;
     private searchPinCoord: [number, number] | null = null;
+    private legendItemsRefCount = new Map<string, number>();
 
     public async mount(container: HTMLElement): Promise<void> {
         try {
@@ -155,7 +156,23 @@ export class MapPageController extends BasePageController {
         try {
             if (event.checked) {
                 await OverlayLoader.add(m, event.overlayId, event.overlayUrl, { signal: this.signal, layerIds: event.layerIds });
-                if (event.swatch) {
+                if (event.legendItems) {
+                    // Mehrere Gruppen desselben Overlays (z.B. die 6 Anfahrtszeit-Ringe) teilen
+                    // dieselbe kuratierte Farbskala — nur beim Übergang 0→1 aktiven Gruppen
+                    // tatsächlich rendern, sonst Duplikate.
+                    const count = (this.legendItemsRefCount.get(event.overlayId) ?? 0) + 1;
+                    this.legendItemsRefCount.set(event.overlayId, count);
+                    if (count === 1) {
+                        event.legendItems.forEach((item, idx) => {
+                            legend.addEntry({
+                                id: `${event.overlayId}:legend-item:${idx}`,
+                                label: item.label,
+                                type: item.type,
+                                color: item.color,
+                            });
+                        });
+                    }
+                } else if (event.swatch) {
                     legend.addEntry({
                         id: event.legendId,
                         label: event.legendLabel,
@@ -166,7 +183,15 @@ export class MapPageController extends BasePageController {
                 }
             } else {
                 OverlayLoader.remove(m, event.overlayId, { layerIds: event.layerIds });
-                legend.removeEntry(event.legendId);
+                if (event.legendItems) {
+                    const count = Math.max(0, (this.legendItemsRefCount.get(event.overlayId) ?? 1) - 1);
+                    this.legendItemsRefCount.set(event.overlayId, count);
+                    if (count === 0) {
+                        event.legendItems.forEach((_, idx) => legend.removeEntry(`${event.overlayId}:legend-item:${idx}`));
+                    }
+                } else {
+                    legend.removeEntry(event.legendId);
+                }
             }
             m.triggerRepaint();
         } catch (err) {
