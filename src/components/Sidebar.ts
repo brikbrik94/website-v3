@@ -2,12 +2,15 @@ import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType, type LegendSwatch } from '../lib/resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, type LegendSwatch, type SwatchType } from '../lib/resolveLegendSwatch';
 
 export interface LayerMetaGroup {
   name: string;
   style_layers: string[];
   template: string;
+  type?: string;
+  color?: unknown;
+  legend_items?: { label: string; color: string }[] | null;
 }
 
 export interface LayerMetaEntry {
@@ -24,6 +27,7 @@ export interface LayerToggleEvent {
   legendId: string;
   legendLabel: string;
   swatch: LegendSwatch | null;
+  legendItems: { label: string; type: SwatchType; color: string }[] | null;
   itemEl: HTMLElement;
 }
 
@@ -144,8 +148,8 @@ export const initSidebar = (
 
     if (meta) {
       loadedLayers.set(id, meta.groups);
-      listEl.innerHTML = meta.groups.map((g) => `
-        <div class="acc-item" tabindex="0" role="checkbox" aria-checked="false" data-layer-ids='${JSON.stringify(g.style_layers)}' data-layer-type="${g.template}">
+      listEl.innerHTML = meta.groups.map((g, idx) => `
+        <div class="acc-item" tabindex="0" role="checkbox" aria-checked="false" data-layer-ids='${JSON.stringify(g.style_layers)}' data-layer-type="${g.template}" data-group-index="${idx}">
           <span class="acc-checkbox"></span>
           <span class="acc-item-label">${g.name}</span>
         </div>
@@ -185,35 +189,45 @@ export const initSidebar = (
     const layerType = itemEl.getAttribute('data-layer-type')!;
     const legendLabel = itemEl.querySelector('.acc-item-label')?.textContent ?? layerType;
 
-    // Der Swatch-TYP wird zunächst aus layerType (layersMeta-Pfad: g.template; Fallback-Pfad:
-    // l.type) versucht abzuleiten — funktioniert nur, wenn layerType tatsächlich ein MapLibre-
-    // Layer-Typ ist. layers.json nutzt für template aber eigene Kategorie-Bezeichnungen
-    // (z.B. "strassen", "gebiete" statt "line"/"fill") — dafür wird unten zusätzlich die echte
-    // Layer-Definition aus dem style.json herangezogen (liefert Typ UND Farbe gemeinsam).
-    let realLayer: LayerSpecification | undefined;
+    // layers.json liefert seit 2026-07-12 pro Gruppe direkt type/color (und optional
+    // legend_items für Match-Farbskalen) — das wird bevorzugt genutzt. Nachladen des vollen
+    // style.json (fetchStyleLayersForColor) bleibt nur Fallback für Gruppen/Overlays ohne
+    // color-Feld (siehe docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+    let swatch: LegendSwatch | null = null;
+    let legendItems: { label: string; type: SwatchType; color: string }[] | null = null;
+
     const loaded = loadedLayers.get(overlayId);
-    if (loaded) {
-      for (const entry of loaded) {
-        if ('style_layers' in entry) break; // layersMeta-Pfad, keine echte LayerSpecification
-        if (entry.id === layerIds[0]) {
-          realLayer = entry;
-          break;
-        }
+    const isMetaPath = !!loaded && loaded.length > 0 && 'style_layers' in loaded[0];
+
+    if (isMetaPath) {
+      const idx = Number(itemEl.getAttribute('data-group-index'));
+      const metaGroup = (loaded as LayerMetaGroup[])[idx];
+
+      if (metaGroup.legend_items && metaGroup.legend_items.length > 0) {
+        const itemType = swatchTypeForLayerType(metaGroup.type ?? layerType) ?? 'dot';
+        legendItems = metaGroup.legend_items.map(li => ({ label: li.label, type: itemType, color: li.color }));
+      } else if (metaGroup.color !== undefined) {
+        swatch = resolveSwatchFromLayersMetaColor(metaGroup.type, metaGroup.color);
       }
     }
-    if (!realLayer) {
-      const styleLayers = await fetchStyleLayersForColor(overlayId, overlayUrl);
-      realLayer = styleLayers.find(l => l.id === layerIds[0]);
-    }
 
-    let swatch: LegendSwatch | null = null;
-    if (realLayer) {
-      swatch = resolveLegendSwatch(realLayer);
-    } else {
-      // Weder echte LayerSpecification noch style.json-Treffer verfügbar (z.B. Fetch-Fehler) —
-      // letzter Versuch über layerType, sonst kein Eintrag (nicht legend-fähiger Typ).
-      const swatchType = swatchTypeForLayerType(layerType);
-      if (swatchType) swatch = { type: swatchType, color: null };
+    if (!isMetaPath || (!legendItems && swatch === null)) {
+      // Fallback: kein layersMeta-Pfad ODER Gruppe ohne color-Feld (Alt-/Sonderfall, z.B. ein
+      // Overlay ganz ohne layersMeta-Eintrag).
+      let realLayer: LayerSpecification | undefined;
+      if (loaded && !isMetaPath) {
+        realLayer = (loaded as LayerSpecification[]).find(l => l.id === layerIds[0]);
+      }
+      if (!realLayer) {
+        const styleLayers = await fetchStyleLayersForColor(overlayId, overlayUrl);
+        realLayer = styleLayers.find(l => l.id === layerIds[0]);
+      }
+      if (realLayer) {
+        swatch = resolveLegendSwatch(realLayer);
+      } else {
+        const swatchType = swatchTypeForLayerType(layerType);
+        if (swatchType) swatch = { type: swatchType, color: null };
+      }
     }
 
     return {
@@ -225,6 +239,7 @@ export const initSidebar = (
       legendId: `${overlayId}:${layerIds.join(',')}`,
       legendLabel,
       swatch,
+      legendItems,
       itemEl
     };
   };
