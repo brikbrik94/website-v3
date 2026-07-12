@@ -266,12 +266,12 @@ export function attachLongPress(map: maplibregl.Map, onLongPress: (e: LongPressE
 - [ ] **Step 4: Test laufen lassen, Erfolg verifizieren**
 
 Run: `npx vitest run src/lib/LongPressGesture.test.ts`
-Expected: PASS, alle 11 Tests grün.
+Expected: PASS, alle 10 Tests grün.
 
 - [ ] **Step 5: Volle Testsuite + Typecheck**
 
 Run: `npx tsc --noEmit && npm test`
-Expected: 0 TypeScript-Fehler, alle Tests grün (156 bestehende + 11 neue = 167).
+Expected: 0 TypeScript-Fehler, alle Tests grün (156 bestehende + 10 neue = 166).
 
 - [ ] **Step 6: Committen**
 
@@ -472,7 +472,7 @@ Neue Methode ergänzen (z.B. direkt nach `mount()`):
 - [ ] **Step 5: Typecheck + volle Testsuite**
 
 Run: `npx tsc --noEmit && npm test`
-Expected: 0 TypeScript-Fehler, alle Tests grün (167).
+Expected: 0 TypeScript-Fehler, alle Tests grün (166).
 
 - [ ] **Step 6: Committen**
 
@@ -514,7 +514,7 @@ Neu:
   `src/lib/LongPressGesture.ts` (`attachLongPress()`, analog `HoverCursor.ts`), unabhängig vom
   nativen Event. Rechtsklick auf Desktop bleibt unverändert. Spec:
   [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
-  167 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
+  166 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
   ARIA-APG-Tastaturnavigation fürs Menü (Pfeiltasten, Roving Tabindex) — eigener Folge-Punkt bei
   Bedarf; visuelles Hold-Feedback während des Haltens — bei Bedarf nach Live-Test nachziehen.
 ```

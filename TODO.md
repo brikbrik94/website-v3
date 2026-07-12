@@ -93,10 +93,17 @@ alle vier auf einmal anfassen.
   behoben statt mit einem Workaround hier (Details:
   [docs/external-blockers.md](./docs/external-blockers.md)). **Hinweis:** erneute
   Browser-Verifikation nach dem Race-Condition-Fix noch ausstehend (keine Playwright-Umgebung).
-- [ ] **Routing-Kontextmenü: Touchsteuerung** — Das Zielwahl-Kontextmenü in `RoutingPage.ts:76`
-  reagiert nur auf Rechtsklick (Desktop). Ziel: Long-Press-Geste als Touch-Äquivalent für
-  Tablet/Smartphone. Menüstruktur/Tastaturbedienung am ARIA-APG-Menu-Pattern orientieren (siehe
-  CLAUDE.md → Standards-Referenzen, Accessibility).
+- [x] **Routing-Kontextmenü: Touchsteuerung** (2026-07-12) — ✅ ERLEDIGT. Long-Press öffnet das
+  Zielwahl-Kontextmenü jetzt auch auf Touch-Geräten, auf `/routing` und `/coords` (beide nutzen
+  denselben `ContextMenu`-Baustein). Root Cause recherchiert: kein CI-/CSS-Bug, sondern MapLibres
+  eigenes `touch-action: none` (nötig für Pan/Zoom per Touch) unterdrückt die native
+  `contextmenu`-Long-Press-Erkennung — daher neue, eigene Erkennung in
+  `src/lib/LongPressGesture.ts` (`attachLongPress()`, analog `HoverCursor.ts`), unabhängig vom
+  nativen Event. Rechtsklick auf Desktop bleibt unverändert. Spec:
+  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
+  166 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
+  ARIA-APG-Tastaturnavigation fürs Menü (Pfeiltasten, Roving Tabindex) — eigener Folge-Punkt bei
+  Bedarf; visuelles Hold-Feedback während des Haltens — bei Bedarf nach Live-Test nachziehen.
 - [ ] **NAH: Betreiber-spezifische Icons** — Im Sprite-Set `oe5ith-markers` liegen bereits 9
   Betreiber-Logos (`nah-adac-luftrettung`, `nah-oeamtc-flugrettung`, `nah-drf-luftrettung`, …),
   aktuell ungenutzt. Ziel: NAH-Stationsmarker zeigen das Icon ihres Betreibers statt eines
