@@ -40,25 +40,24 @@ alle vier auf einmal anfassen.
   **Hinweis: vollständige interaktive Browser-Verifikation weiterhin ausstehend** (keine
   Playwright/Headless-Browser in dieser Umgebung) — die drei jetzt behobenen Lücken wurden vom
   Nutzer manuell im Browser gefunden; ein erneuter Durchlauf nach diesem Fix steht noch aus.
-- [ ] **Legenden-Granularität: neues `layers.json`-Schema konsumieren** (2026-07-09 aufgemacht,
-  2026-07-12 externe Seite geliefert) — ursprünglich: die Legende auf `/karte` zeigt einen Eintrag
-  pro *einzeln getoggeltem Layer/Gruppe* (z.B. ein Eintrag pro Autobahn: „A1", „A10", „A11", …),
-  nicht einen Eintrag pro *semantischer Kategorie* (z.B. ein einziger „Autobahn" = dunkelblaue
-  Linie). Option (b) aus der ursprünglichen Formulierung — kuratierte Legenden-Infos direkt in
-  `layers.json` ergänzen — ist jetzt extern umgesetzt und unter `https://tiles.oe5ith.at/layers.json`
-  live: jede Gruppe liefert zusätzlich `type`, `color` (aufgelöste Farbe bzw. MapLibre-Match-
-  Expression) und `opacity` direkt mit, sowie optional `legend_items: {label, color}[]` für
-  Gruppen mit mehreren semantischen Kategorien (aktuell nur beim `anfahrtszeit`-Template befüllt,
-  6 Einträge; alle anderen Templates liefern `legend_items: null`). Dieses Repo konsumiert die
-  neuen Felder noch nicht:
-  - `LayerMetaGroup` (`src/components/Sidebar.ts:7-11`) kennt `type`/`color`/`opacity`/
-    `legend_items` noch nicht.
-  - `buildToggleEvent()` (`src/components/Sidebar.ts:181-230`) lädt bei fehlendem `realLayer`
-    weiterhin das volle `style.json` per `fetchStyleLayersForColor` nach, obwohl `color` jetzt
-    direkt in `layersMeta` steckt.
-  - Bei vorhandenem `legend_items` muss ein Toggle mehrere Legenden-Zeilen erzeugen (aktuell immer
-    genau eine pro Gruppe).
-  Design/Umsetzung: siehe Spec (folgt).
+- [x] **Legenden-Granularität: neues `layers.json`-Schema konsumieren** (2026-07-09 aufgemacht,
+  2026-07-12 externe Seite geliefert + hier umgesetzt) — ✅ ERLEDIGT. Ursprünglich: die Legende auf
+  `/karte` zeigte einen Eintrag pro *einzeln getoggeltem Layer/Gruppe* (z.B. „A1", „A10", „A11", …),
+  nicht einen Eintrag pro *semantischer Kategorie*. Option (b) aus der ursprünglichen Formulierung
+  — kuratierte Legenden-Infos direkt in `layers.json` ergänzen — wurde extern umgesetzt
+  (`https://tiles.oe5ith.at/layers.json` liefert seither pro Gruppe `type`/`color`/`legend_items`)
+  und hier konsumiert: neue `resolveSwatchFromLayersMetaColor()` in `src/lib/resolveLegendSwatch.ts`,
+  `buildToggleEvent()` in `src/components/Sidebar.ts` bevorzugt `layersMeta.color`/`legend_items`
+  vor dem teuren `style.json`-Fallback (der zuvor durch einen Bug immer griff), `MapPageController`
+  in `src/pages/MapPage.ts` dedupliziert `legend_items` pro Overlay per Referenzzählung (die 6
+  Anfahrtszeit-Ringe zeigen ihre 6-stufige Farbskala jetzt genau einmal statt mehrfach dupliziert).
+  Subagent-driven-development mit Task-Reviews (alle „Approved") + finaler Whole-Branch-Review
+  (Opus, „Ready to merge: Yes", keine Critical/Important-Funde). Spec:
+  [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+  156 Tests grün, 0 TypeScript-Fehler. Vom Nutzer live auf `/karte` verifiziert und bestätigt.
+  Weitere Optimierungsrichtungen (Kuratierung auf mehr Templates ausweiten, `opacity` nutzen,
+  Legenden-Gruppierung) als eigener Punkt in ROADMAP.md → „Karten-Legende: weitere Optimierung"
+  festgehalten.
 - [ ] **Schritt 3: Anwendung auf `/nah`** — migriert die 5 bestehenden, hardcodierten
   `legend.addEntry()`-Aufrufe (`NahPage.ts:39-43`) auf das neue System. Sonderfall: der
   Stationen-Symbol-Layer hat eine `match`-Expression auf `status` (`NahMapLayers.ts:209-215`) —
