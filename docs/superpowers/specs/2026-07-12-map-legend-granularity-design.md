@@ -209,10 +209,13 @@ private async toggleLayer(event: LayerToggleEvent, m: maplibregl.Map, legend: Ma
   verhindert Duplikate; Zähler kann nicht negativ werden (`Math.max(0, …)`), falls ein `remove`
   ohne vorheriges `add` ankäme (sollte laut Sidebar-Zustandsmaschine nicht vorkommen, ist aber
   defensiv abgesichert).
-- `data-group-index` fehlt/ist nicht parsebar (sollte nur bei Programmierfehler auftreten, nicht
-  bei normaler Nutzung) → `Number(null)` ergibt `NaN`, `array[NaN]` ist `undefined` →
-  nachfolgender Zugriff auf `group.legend_items`/`group.color` wirft; das ist beabsichtigt sichtbar
-  (kein stilles Fallback, das den Bug verschleiern würde) statt einer stillen Fehlbehandlung.
+- `data-group-index` fehlt (sollte nur bei Programmierfehler auftreten, nicht bei normaler
+  Nutzung) → praktisch unerreichbar, da das Attribut ausschließlich im selben Render-Zweig
+  gesetzt wird, der auch `isMetaPath` wahr werden lässt (structurally gekoppelt, siehe
+  `discoverLayers()`/`buildToggleEvent()` in `Sidebar.ts`) — nicht wie ursprünglich hier
+  behauptet `Number(null)` → `NaN` (`Number(null)` ist tatsächlich `0`, nur `Number(undefined)`
+  ist `NaN`, und `getAttribute()` liefert bei fehlendem Attribut `null`, nie `undefined`).
+  Korrigiert nach Review-Fund in der finalen Whole-Branch-Review (2026-07-12).
 
 ## Testing
 

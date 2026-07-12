@@ -26,6 +26,10 @@ const CLICK_TOLERANCE_PX = 4;
 export class MapPageController extends BasePageController {
     private map?: maplibregl.Map;
     private searchPinCoord: [number, number] | null = null;
+    // Zählt aktive Gruppen pro Overlay, nicht pro legend_items-Inhalt — setzt voraus, dass alle
+    // Gruppen eines Overlays denselben legend_items-Satz tragen (aktuell nur beim
+    // Anfahrtszeit-Overlay der Fall). Trüge ein künftiges Overlay pro Gruppe unterschiedliche
+    // legend_items, würden nur die Zeilen der zuerst aktivierten Gruppe angezeigt.
     private legendItemsRefCount = new Map<string, number>();
 
     public async mount(container: HTMLElement): Promise<void> {
