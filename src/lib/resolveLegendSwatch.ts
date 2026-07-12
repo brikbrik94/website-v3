@@ -80,3 +80,14 @@ const SWATCH_TYPE_BY_LAYER_TYPE: Record<string, SwatchType> = {
 export function swatchTypeForLayerType(layerType: string): SwatchType | null {
   return SWATCH_TYPE_BY_LAYER_TYPE[layerType] ?? null;
 }
+
+/**
+ * Wie resolveLegendSwatch(), aber für layers.json-Metadata (LayerMetaGroup), wo `type`/`color`
+ * bereits direkt mitgeliefert werden statt aus einer echten LayerSpecification mit `paint`
+ * extrahiert werden zu müssen (siehe docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+ */
+export function resolveSwatchFromLayersMetaColor(type: string | undefined, color: unknown): LegendSwatch | null {
+  const swatchType = swatchTypeForLayerType(type ?? '');
+  if (!swatchType) return null;
+  return { type: swatchType, color: extractLiteralColor(color) };
+}

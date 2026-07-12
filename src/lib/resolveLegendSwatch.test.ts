@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType } from './resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor } from './resolveLegendSwatch';
 
 describe('resolveLegendSwatch', () => {
   it('resolves a literal line-color as type line', () => {
@@ -128,5 +128,33 @@ describe('swatchTypeForLayerType', () => {
 
   it("returns null for 'background'", () => {
     expect(swatchTypeForLayerType('background')).toBeNull();
+  });
+});
+
+describe('resolveSwatchFromLayersMetaColor', () => {
+  it('resolves a literal color for a fill group as type area', () => {
+    expect(resolveSwatchFromLayersMetaColor('fill', '#3b82f6')).toEqual({ type: 'area', color: '#3b82f6' });
+  });
+
+  it('resolves a literal color for a line group as type line', () => {
+    expect(resolveSwatchFromLayersMetaColor('line', '#111111')).toEqual({ type: 'line', color: '#111111' });
+  });
+
+  it('extracts the fallback arm of a match expression', () => {
+    const color = ['match', ['get', 'AA_MINS'], 15, '#10b981', 30, '#84cc16', '#3b82f6'];
+    expect(resolveSwatchFromLayersMetaColor('fill', color)).toEqual({ type: 'area', color: '#3b82f6' });
+  });
+
+  it('returns color: null for an unresolvable expression, type still known', () => {
+    const color = ['interpolate', ['linear'], ['zoom'], 0, '#000000', 10, '#ffffff'];
+    expect(resolveSwatchFromLayersMetaColor('line', color)).toEqual({ type: 'line', color: null });
+  });
+
+  it('returns null for a non-legend-able type (raster)', () => {
+    expect(resolveSwatchFromLayersMetaColor('raster', '#ffffff')).toBeNull();
+  });
+
+  it('returns null when type is undefined', () => {
+    expect(resolveSwatchFromLayersMetaColor(undefined, '#ffffff')).toBeNull();
   });
 });
