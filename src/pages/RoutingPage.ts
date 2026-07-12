@@ -6,6 +6,7 @@ import { initTopbar } from '../components/Topbar';
 import { MapLegend } from '../lib/MapLegend';
 import { LayoutHelper } from '../lib/LayoutHelper';
 import { ContextMenu } from '../components/ContextMenu';
+import { attachLongPress } from '../lib/LongPressGesture';
 import { InventoryService } from '../services/InventoryService';
 import { ContextMenuItem } from '../types/common';
 
@@ -70,36 +71,43 @@ export class RoutingPageController extends BasePageController {
         attachHoverCursor(this.map, ['routing-path']);
 
         this.map.on('contextmenu', (e) => {
-            const { lat, lng } = e.lngLat;
-            const modeBtn = document.querySelector('.segmented-btn.active');
-            const mode = modeBtn?.getAttribute('data-mode') || 'ab';
-
-            const menuItems: (ContextMenuItem | 'sep' | { label: string, type: 'label' })[] = [
-                { label: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, type: 'label' },
-                'sep'
-            ];
-
-            if (mode === 'ab') {
-                menuItems.push({ 
-                    label: 'Als Startpunkt setzen', 
-                    icon: 'fa-solid fa-location-dot',
-                    onClick: () => this.sidebarAdapter?.setCoord('start', lat, lng)
-                });
-                menuItems.push({ 
-                    label: 'Als Zielpunkt setzen', 
-                    icon: 'fa-solid fa-flag-checkered',
-                    onClick: () => this.sidebarAdapter?.setCoord('target', lat, lng)
-                });
-            } else {
-                menuItems.push({ 
-                    label: 'Als Einsatzort setzen', 
-                    icon: 'fa-solid fa-truck-medical',
-                    onClick: () => this.sidebarAdapter?.setCoord('target', lat, lng)
-                });
-            }
-
-            ContextMenu.show(e.originalEvent.clientX, e.originalEvent.clientY, menuItems);
+            this.showContextMenuAt(e.lngLat.lat, e.lngLat.lng, e.originalEvent.clientX, e.originalEvent.clientY);
         });
+
+        attachLongPress(this.map, (e) => {
+            this.showContextMenuAt(e.lngLat.lat, e.lngLat.lng, e.clientX, e.clientY);
+        });
+    }
+
+    private showContextMenuAt(lat: number, lng: number, clientX: number, clientY: number): void {
+        const modeBtn = document.querySelector('.segmented-btn.active');
+        const mode = modeBtn?.getAttribute('data-mode') || 'ab';
+
+        const menuItems: (ContextMenuItem | 'sep' | { label: string, type: 'label' })[] = [
+            { label: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, type: 'label' },
+            'sep'
+        ];
+
+        if (mode === 'ab') {
+            menuItems.push({
+                label: 'Als Startpunkt setzen',
+                icon: 'fa-solid fa-location-dot',
+                onClick: () => this.sidebarAdapter?.setCoord('start', lat, lng)
+            });
+            menuItems.push({
+                label: 'Als Zielpunkt setzen',
+                icon: 'fa-solid fa-flag-checkered',
+                onClick: () => this.sidebarAdapter?.setCoord('target', lat, lng)
+            });
+        } else {
+            menuItems.push({
+                label: 'Als Einsatzort setzen',
+                icon: 'fa-solid fa-truck-medical',
+                onClick: () => this.sidebarAdapter?.setCoord('target', lat, lng)
+            });
+        }
+
+        ContextMenu.show(clientX, clientY, menuItems);
     }
 
     private handleMapRestore(): void {

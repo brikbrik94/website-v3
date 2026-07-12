@@ -11,6 +11,7 @@ import { OverlayLoader } from '../lib/OverlayLoader';
 import { MAP_COLORS } from '../lib/MapStyles';
 import { Toast } from '../lib/Toast';
 import { ContextMenu } from '../components/ContextMenu';
+import { attachLongPress } from '../lib/LongPressGesture';
 import { ContextMenuItem } from '../types/common';
 
 const COORDS_PIN_SOURCE = 'coords-pin';
@@ -75,17 +76,11 @@ export class CoordsPageController extends BasePageController {
         // inkonsistent zum Routing-Kontextmenü-Pattern); Rechtsklick-Drag ist bereits für die
         // 3D-Steuerung (Kippen/Rotieren) reserviert, daher Kontextmenü statt Direktbindung.
         this.map.on('contextmenu', (e) => {
-            const { lat, lng } = e.lngLat;
-            const menuItems: (ContextMenuItem | 'sep' | { label: string, type: 'label' })[] = [
-                { label: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, type: 'label' },
-                'sep',
-                {
-                    label: 'Koordinate hier setzen',
-                    icon: 'fa-solid fa-location-dot',
-                    onClick: () => this.service.setWgs(lat, lng)
-                }
-            ];
-            ContextMenu.show(e.originalEvent.clientX, e.originalEvent.clientY, menuItems);
+            this.showContextMenuAt(e.lngLat.lat, e.lngLat.lng, e.originalEvent.clientX, e.originalEvent.clientY);
+        });
+
+        attachLongPress(this.map, (e) => {
+            this.showContextMenuAt(e.lngLat.lat, e.lngLat.lng, e.clientX, e.clientY);
         });
 
         this.service.addListener((state) => {
@@ -96,6 +91,19 @@ export class CoordsPageController extends BasePageController {
         });
 
         console.debug('[CoordsPageController] Mounted');
+    }
+
+    private showContextMenuAt(lat: number, lng: number, clientX: number, clientY: number): void {
+        const menuItems: (ContextMenuItem | 'sep' | { label: string, type: 'label' })[] = [
+            { label: `${lat.toFixed(4)}, ${lng.toFixed(4)}`, type: 'label' },
+            'sep',
+            {
+                label: 'Koordinate hier setzen',
+                icon: 'fa-solid fa-location-dot',
+                onClick: () => this.service.setWgs(lat, lng)
+            }
+        ];
+        ContextMenu.show(clientX, clientY, menuItems);
     }
 
     /**
