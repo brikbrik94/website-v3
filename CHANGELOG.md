@@ -2,6 +2,19 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-12 08:53
+
+### Geändert
+- **Legenden-Granularität: kuratierte `layers.json`-Metadata konsumiert** (TODO.md → Map-Subsystem:
+  Anschlussfeatures) — `/karte` nutzt jetzt die neuen `type`/`color`/`legend_items`-Felder aus
+  `https://tiles.oe5ith.at/layers.json` direkt für die Legenden-Swatches
+  (`resolveSwatchFromLayersMetaColor()` in `src/lib/resolveLegendSwatch.ts`), statt bei jedem
+  Toggle das volle `style.json` nachzuladen. Gruppen mit kuratierten `legend_items` (aktuell nur
+  die 6 Anfahrtszeit-Ringe) zeigen ihre Farbskala genau einmal pro Overlay, unabhängig davon, wie
+  viele der zugehörigen Gruppen gleichzeitig aktiv sind (Referenzzählung in
+  `MapPageController.toggleLayer()`, `src/pages/MapPage.ts`). Spec:
+  [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+
 ## [3.9.0] - 2026-07-11
 
 ### Hinzugefügt
