@@ -196,3 +196,36 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   Brainstorming-/Design-Durchgang statt einer mechanischen Verschiebung, u.a. weil
   Deploy-Skript-Pfade (`./deploy-website.sh`) und CI/Editor-Tool-Erwartungen (editorconfig,
   phpcs) an bestimmten Stellen fest verdrahtet sein könnten.
+
+## Karten-Legende: weitere Optimierung
+
+Anschluss an TODO.md → „Map-Subsystem: Anschlussfeatures" (Legende Schritt 1+2, v3.9.0) und die
+`layers.json`-Konsumierung (2026-07-12, unreleased,
+[docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md)).
+Bewusst hier statt in TODO.md — die folgenden Punkte sind keine konkret spezifizierten
+Erweiterungen, sondern offene Richtungen, die erst einen eigenen Brainstorming-Durchgang
+brauchen. Die Schritte 3-5 (Legende auf `/nah`/`/routing`/`/tracking` anwenden) sind bereits
+konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
+
+- [ ] **`legend_items`-Kuratierung auf weitere Overlay-Templates ausweiten** — aktuell liefert
+  `layers.json` nur beim `anfahrtszeit`-Template kuratierte `legend_items` (die 6-stufige
+  Farbskala); alle anderen 7 Templates (Autobahnen, Bezirke, Leitstellen-Bereiche, RD/NEF-Zonen,
+  NAH-Stützpunkte, …) zeigen weiterhin einen Legenden-Eintrag pro einzeln getoggelter
+  Gruppe/Instanz statt einen pro semantischer Kategorie (z.B. „A1"/„A10"/„A11" statt einem
+  einzigen „Autobahn"-Eintrag) — das ursprüngliche Granularitätsproblem aus dem Live-Test
+  2026-07-09 ist damit nur für Anfahrtszeit gelöst, nicht generell. Zwei Stoßrichtungen offen:
+  (a) weitere Templates extern in `layers.json` mit `legend_items` kuratieren (analog
+  Anfahrtszeit), oder (b) client-seitig Gruppen mit identischer `color`/`type` zu einer Zeile
+  zusammenfassen (die ursprünglich verworfene Alternative (a) aus dem 2026-07-09-Design, jetzt
+  ggf. neu zu bewerten).
+- [ ] **`opacity`-Feld aus `layers.json` für Swatches nutzen** — bewusst außerhalb der
+  2026-07-12-Umsetzung gelassen (siehe Spec, „Out of Scope"). Legenden-Swatches rendern aktuell
+  immer volldeckend, unabhängig von der tatsächlichen Layer-Opacity auf der Karte (z.B.
+  Anfahrtszeit-Flächen mit 0.4 Opacity zeigen einen kräftigeren Swatch, als auf der Karte zu
+  sehen ist) — könnte die Legende irreführend wirken lassen, sobald mehr Overlays mit
+  niedriger Opacity dazukommen.
+- [ ] **Legenden-Gruppierung/Section-Header** — `MapLegend.ts` kennt aktuell nur eine flache
+  Liste von Einträgen ohne Überschriften. Bei vielen gleichzeitig aktiven Overlays (z.B. mehrere
+  Autobahnen + Anfahrtszeit-Ringe + Bezirke) könnte eine Legende ohne erkennbare Gruppierung
+  unübersichtlich werden. Noch nicht validiert, ob das in der Praxis tatsächlich ein Problem ist
+  — vor einer Umsetzung erst live beobachten.
