@@ -65,6 +65,7 @@ export class IsochronesSidebarAdapter {
   }
 
   public async handleMapClick(lngLat: { lat: number; lng: number }): Promise<void> {
+    IsochronesMapLayers.updatePendingPoint(this.map, [lngLat.lng, lngLat.lat]);
     await setIsochronesPoint(lngLat.lat, lngLat.lng);
   }
 
@@ -102,6 +103,9 @@ export class IsochronesSidebarAdapter {
       geojson
     });
 
+    // Der berechnete Query-Pin (updatePointsLayer) übernimmt jetzt denselben Punkt —
+    // Pending-Pin entfernen, sonst läge ein doppelter Marker an derselben Stelle.
+    IsochronesMapLayers.updatePendingPoint(this.map, null);
     this.refresh();
   }
 
