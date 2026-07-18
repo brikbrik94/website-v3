@@ -112,6 +112,17 @@ Import: `from '.../lib/HoverCursor'` (Pfad relativ zum aufrufenden Modul anpasse
 Exports:
 - `attachHoverCursor` (function)
 
+## `IsochronesService.ts`
+
+Abstraktionsschicht über den `/api/ors.php`-Proxy für ORS-Isochronen-Abfragen. Health-Check
+und Profil-Liste sind generische ORS-Abfragen, die schon in RoutingService existieren — hier
+direkt wiederverwendet statt dupliziert.
+
+Import: `from '.../lib/IsochronesService'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `IsochronesService` (const)
+
 ## `LayoutHelper.ts`
 
 LayoutHelper
@@ -208,6 +219,7 @@ Import: `from '.../lib/MapStyles'` (Pfad relativ zum aufrufenden Modul anpassen)
 Exports:
 - `MAP_ROUTE_STYLES` (const)
 - `MAP_COLORS` (const)
+- `getIsochroneRingColor` (function)
 
 ## `OverlayLoader.ts`
 
