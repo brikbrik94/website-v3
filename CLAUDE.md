@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OE5ITH GeoPortal — a multi-page geo web app (interactive maps, routing, air-rescue status, coordinate conversion, live ADS-B/AIS tracking). Vanilla TypeScript + Vite frontend with a thin PHP backend proxy.
 
+Bevor du nach den hier ergänzten, repo-spezifischen Angaben handelst: lies zuerst
+[AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) vollständig — die dortigen Mandate sind
+verbindlich und werden hier nicht wiederholt.
+
 ## Commands
 
 ```bash
@@ -102,7 +106,7 @@ Pflege-Regel.
 ## Project conventions
 
 - **Design system / CI compliance:** All UI/CSS must follow the `oe5ith-ci` git submodule (a shared design system). **Read `oe5ith-ci/docs/for-coding-agents.md` before any UI change.** Do not invent visual patterns if one already exists there (page types, components, tokens).
-- **Never fix bugs inside `oe5ith-ci` from this repo.** The submodule is maintained externally with its own review/checks process. If a bug in the shared design system (tokens, components) is found while working here, document it — don't fix it — in `oe5ith-ci/ci-bug-reports.md` (context, root cause, reproduction, the fix already validated locally in website-v3 if any, impact on other OE5ITH portals), analogous to the existing `oe5ith-ci/ci-*-request.md` files used for feature requests. These files live uncommitted in the submodule's working tree (not committed in the submodule, not staged as a submodule-pointer change in this repo) — reference them from `TODO.md` with a short pointer, not a full description.
+- **Never fix bugs inside `oe5ith-ci` from this repo.** The submodule is maintained externally with its own review/checks process. If a bug in the shared design system (tokens, components) is found while working here, document it — don't fix it — in `docs/ci/bug-reports.md` (context, root cause, reproduction, the fix already validated locally in website-v3 if any, impact on other OE5ITH portals), analogous to `docs/ci/*-request.md` files used for feature requests and `docs/ci/handoff-*.md` files used for ready-to-implement handoffs. These files are committed normally in this repo (unlike the previous convention of leaving them uncommitted in the submodule's working tree) — reference them from `TODO.md` with a short pointer, not a full description.
 - **No hardcoded values:** Never hardcode colors, radii, shadows, z-index, etc. In CSS use CI tokens (`var(--accent)`, `var(--z-topbar)`, …) from `src/styles/common.css`. In JS/TS map code use the dynamic getters in `src/lib/MapStyles.ts` (`MAP_COLORS`, `MAP_ROUTE_STYLES`), which resolve CI CSS tokens at runtime with fallbacks — never write hex values.
 - **Styling:** Vanilla CSS, one file per concern under `src/styles/`, imported via `src/app.css`. No CSS framework.
 - **Versioning & changelogs & releases:** See the dedicated **Releases, versioning & git** section below. Short version: `src/version.ts` is the SemVer single source of truth (shown in the sidebar), **both** changelogs must be updated on every release, and releases follow a fixed checklist.
