@@ -18,6 +18,18 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.10.0] - 2026-07-18</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Luftrettung, Routing, Tracking:</strong> Auch diese drei Kartenseiten zeigen jetzt eine Legende, die erklärt, was Farben und Symbole auf der Karte bedeuten (bisher nur auf der Karten-Seite verfügbar).</li>
+            <li><strong>Routing:</strong> Links mit vorausgefüllter Route (Start, Ziel, Modus) lassen sich jetzt teilen und öffnen — z.B. aus dem Koordinaten-Umrechner heraus.</li>
+            <li><strong>Routing:</strong> Auf Touch-Geräten (Tablet/Smartphone) öffnet längeres Halten auf der Karte jetzt ebenfalls das Menü zur Ziel-/Startauswahl, nicht mehr nur ein Rechtsklick am Desktop.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Luftrettung (NAH):</strong> Die Legende zeigt den Status jetzt mit einem Hubschrauber-Symbol statt einem schlichten Punkt, passend zur Darstellung auf der Karte.</li>
+          </ul>
+
           <h2>[3.9.0] - 2026-07-11</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>

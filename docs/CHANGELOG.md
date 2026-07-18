@@ -2,40 +2,47 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-18 14:05
+## [3.10.0] - 2026-07-18
 
 ### Hinzugefügt
-- **CI-Pipeline via GitHub Actions (ROADMAP.md → Repo-Pflege & Dokumentation)** —
-  `.github/workflows/ci.yml`, 2 parallele Jobs (`frontend`: `tsc`/`vitest`/OpenAPI-Validierung,
-  `backend`: PSR-12-Lint/Security-Audit), Trigger bei Push auf `master` + allen Pull Requests.
-  Kein Secrets-/DB-Handling nötig — alle Checks sind statisch oder laufen mit gemockten Daten.
-
-## [Unreleased] - 2026-07-18 13:00
-
-### Geändert
-- **Repo-Root aufgeräumt (ROADMAP.md → Repo-Pflege & Dokumentation)** — `TODO.md`/
-  `TODO_ARCHIVE.md`/`ROADMAP.md`/`ROADMAP_ARCHIVE.md`/`CHANGELOG.md` (diese Datei) von Repo-Root
-  nach `docs/` verschoben. `AGENT_INSTRUCTIONS.md` bleibt am Root. `GEMINI.md` komplett entfernt
-  (Gemini CLI nicht genutzt). `AGENT_INSTRUCTIONS.md` §3 selbst geändert (generische Regel für
-  die TODO/ROADMAP-Dateipaare jetzt `docs/` statt Repo-Root, per Proposal-Zyklus) statt nur
-  repo-spezifisch abzuweichen. `CLAUDE.md`/`README.md` und alle internen Querverweise der
-  verschobenen Dateien entsprechend angepasst; ein dabei gefundener, vorbestehender kaputter
-  Link in `ROADMAP.md` mitkorrigiert. Historische Dokumente (Specs/Pläne/archivierte Proposals)
-  bewusst nicht rückwirkend angepasst.
-
-## [Unreleased] - 2026-07-18 12:25
-
-### Hinzugefügt
+- **Legenden-Rollout abgeschlossen (`/nah`, `/routing`, `/tracking`, TODO.md → Map-Subsystem:
+  Anschlussfeatures, Schritte 3-5)** — alle 4 Kartenseiten (`/karte`, `/nah`, `/routing`,
+  `/tracking`) zeigen jetzt eine befüllte Legende:
+  - `/nah`: die 3 hardcodierten Status-Legendeneinträge lesen die Farbe jetzt aus der echten
+    Stations-Layer-Definition (neue `resolveLegendSwatchBranches()` in
+    `src/lib/resolveLegendSwatch.ts`, extrahiert alle Branches einer `match`-Expression statt
+    nur den Fallback-Arm; neu exportierte `NahMapLayers.getStationsLayerDefinition()`) statt
+    separat gepflegter `MAP_COLORS`-Konstanten. Status-Einträge zeigen jetzt ein
+    Helikopter-Icon statt eines Farbpunkts, passend zum tatsächlichen Kartensymbol (neuer
+    `icon`-Eintragstyp in `MapLegend`/`LegendEntry`).
+  - `/routing`: `RoutingPage.ts` zeigt jetzt 4 Legendeneinträge (Gewählte/Alternative Route,
+    Start-/Zielpunkt), vorher wurde die Legende instanziiert, aber nie befüllt. Bewusst kein
+    Eintrag für die Stations-Icons (ein Icon pro Rettungsorganisation, keine kleine
+    geschlossene Aufzählung).
+  - `/tracking` hatte bisher gar keine Legende. Jetzt 7 Einträge: 4 ADS-B-Höhenstufen (Boden/
+    5.000/15.000/35.000+ ft, `MAP_COLORS.alt0-35k`) + 3 AIS-Schiffstyp-Farben (Tanker/Gefahrgut,
+    Passagierschiff, Sonstige — entsprechend `ShipTypeMapper.getColor()`s 3-Bucket-Zuordnung).
+- **URL-Parameter für Routing-Deep-Links (ROADMAP.md → Routing: Anschlussfeatures)** —
+  `/routing?mode=ab|sew|nef&target=<lat>,<lon>&start=<lat>,<lon>&profile=<profilId>` füllt die
+  Sidebar vor (neue `parseRoutingDeepLink()` in `src/features/routing/RoutingDeepLink.ts`,
+  `RoutingSidebarAdapter.applyDeepLink()`). Bei `mode=ab` nur Vorausfüllen, bei `mode=sew`/`nef`
+  automatische Berechnung (reiner Lesezugriff).
+- **Routing-Kontextmenü: Touchsteuerung** (TODO.md → Map-Subsystem: Anschlussfeatures) — Long-Press
+  öffnet das Zielwahl-Kontextmenü jetzt auch auf Touch-Geräten (`/routing`, `/coords`), nicht mehr
+  nur per Rechtsklick. Neuer Baustein `src/lib/LongPressGesture.ts` erkennt die Geste unabhängig
+  vom nativen `contextmenu`-Event (das auf Touch wegen MapLibres `touch-action: none` nicht
+  zuverlässig feuert). Spec:
+  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
+- **DOM-Testumgebung für `GeocoderSearchField` (TODO.md → Sonstiges)** — `happy-dom` als
+  Dev-Dependency ergänzt, nur per `// @vitest-environment happy-dom`-Kommentar in
+  `GeocoderSearchField.test.ts` aktiviert (nicht global). 11 neue Tests (Debounce,
+  `suppressWhen`, Rendern/Leerergebnis, `onSelect`, Outside-Click-Dismiss, `AbortSignal`).
 - **Bausteine-Katalog für `src/lib/` (ROADMAP.md → Repo-Pflege & Dokumentation)** —
   `docs/architecture/bausteine.md`, automatisiert generiert (`npm run docs:bausteine`,
   `scripts/generate-bausteine-catalog.mjs`) aus Exports + JSDoc-Kommentaren der 25 Dateien in
   `src/lib/`. `CLAUDE.md` verweist bei „Map infrastructure" darauf. Nebenbei aufgedeckt: 10 der
   25 Dateien haben keinen JSDoc-Kommentar über ihrem Haupt-Export — als neuer TODO.md-Punkt
   erfasst, nicht in diesem Rahmen nachgezogen.
-
-## [Unreleased] - 2026-07-18 12:10
-
-### Hinzugefügt
 - **`npm run dev:reset` (ROADMAP.md → Repo-Pflege & Dokumentation)** — neues
   `scripts/dev-reset.sh` beendet gezielt hängen gebliebene Dev-Server-Prozesse (Vite Port 8000,
   PHP-API Port 8081) und leert den Vite-Dependency-Optimize-Cache. Root Cause: `concurrently
@@ -44,106 +51,10 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   „504 Outdated Optimize Dep"-Fehlern im Browser bei weiterlaufendem Vite trotz abgestürztem
   PHP-Server. Bewusst kein automatischer `predev`-Hook, nur auf Abruf. In `CLAUDE.md` bei den
   Commands dokumentiert.
-
-## [Unreleased] - 2026-07-18 11:15
-
-### Geändert
-- **Dokumente an referenzierte Standards angeglichen (ROADMAP.md → Repo-Pflege &
-  Dokumentation)** — `CLAUDE.md` dokumentiert jetzt das vollständige, offizielle
-  6-Kategorien-Set von Keep a Changelog (`Hinzugefügt`/`Geändert`/`Veraltet`/`Entfernt`/
-  `Behoben`/`Sicherheit`) statt bisher nur 4 (per Proposal-Zyklus, siehe
-  `docs/proposals/archive/2026-07-18-changelog-full-categories-*`). Ein historischer Eintrag
-  (v3.3.1) nutzte `### Aktualisiert` statt einer dokumentierten Kategorie — korrigiert zu
-  `### Geändert`. `TODO_ARCHIVE.md`/`ROADMAP_ARCHIVE.md`-Überschriften auf ein einheitliches
-  `## YYYY-MM-DD — Beschreibung`-Format vereinheitlicht (vorher gemischt mit
-  `## Unreleased (DATUM)`).
-
-## [Unreleased] - 2026-07-18 10:40
-
-### Hinzugefügt
-- **URL-Parameter für Routing-Deep-Links (ROADMAP.md → Routing: Anschlussfeatures)** —
-  `/routing?mode=ab|sew|nef&target=<lat>,<lon>&start=<lat>,<lon>&profile=<profilId>` füllt die
-  Sidebar vor (neue `parseRoutingDeepLink()` in `src/features/routing/RoutingDeepLink.ts`,
-  `RoutingSidebarAdapter.applyDeepLink()`). Bei `mode=ab` nur Vorausfüllen, bei `mode=sew`/`nef`
-  automatische Berechnung (reiner Lesezugriff). 11 neue Tests, 196 Tests grün, 0
-  TypeScript-Fehler.
-
-### Geändert
-- **`RoutingSidebarAdapter.init()` jetzt async/awaited** — Voraussetzung für die Deep-Link-
-  Anwendung (Sidebar-DOM muss inkl. geladener Profile stehen, bevor Werte gesetzt werden);
-  behebt nebenbei eine potenzielle Race Condition bei Map-Klicks vor fertigem
-  Sidebar-Rendering.
-
-## [Unreleased] - 2026-07-18 09:35
-
-### Hinzugefügt
-- **DOM-Testumgebung für `GeocoderSearchField` (TODO.md → Sonstiges)** — `happy-dom` als
-  Dev-Dependency ergänzt, nur per `// @vitest-environment happy-dom`-Kommentar in
-  `GeocoderSearchField.test.ts` aktiviert (nicht global). 11 neue Tests (Debounce,
-  `suppressWhen`, Rendern/Leerergebnis, `onSelect`, Outside-Click-Dismiss, `AbortSignal`).
-  185 Tests grün, 0 TypeScript-Fehler.
-
-### Geändert
-- **„NAH: Betreiber-spezifische Icons" von TODO.md nach ROADMAP.md verschoben** — eher ein
-  Komfort-Update mit tieferem Logik-Eingriff (neues `operator`-Feld, eigene Layer-Architektur
-  für die Status-Anzeige) als eine mechanische Erweiterung.
-
-## [Unreleased] - 2026-07-18 08:55
-
-### Hinzugefügt
-- **`/tracking`-Legende ergänzt (TODO.md → Map-Subsystem: Anschlussfeatures, Schritt 5)** —
-  `/tracking` hatte bisher gar keine Legende. Jetzt 7 Einträge: 4 ADS-B-Höhenstufen (Boden/
-  5.000/15.000/35.000+ ft, `MAP_COLORS.alt0-35k`) + 3 AIS-Schiffstyp-Farben (Tanker/Gefahrgut,
-  Passagierschiff, Sonstige — entsprechend `ShipTypeMapper.getColor()`s 3-Bucket-Zuordnung).
-  Damit sind alle 5 Schritte des Legenden-Rollouts (`/karte`, `/nah`, `/routing`, `/tracking`)
-  abgeschlossen.
-
-## [Unreleased] - 2026-07-18 08:40
-
-### Geändert
-- **`/routing`-Legende befüllt (TODO.md → Map-Subsystem: Anschlussfeatures, Schritt 4)** —
-  `RoutingPage.ts` zeigt jetzt 4 Legendeneinträge (Gewählte/Alternative Route, Start-/Zielpunkt),
-  vorher wurde die Legende instanziiert, aber nie befüllt. Bewusst kein Eintrag für die
-  Stations-Icons (ein Icon pro Rettungsorganisation, keine kleine geschlossene Aufzählung).
-
-## [Unreleased] - 2026-07-18 07:52
-
-### Geändert
-- **`/nah`-Legende: Schritt 3 (TODO.md → Map-Subsystem: Anschlussfeatures)** — die 3 hardcodierten
-  Status-Legendeneinträge lesen die Farbe jetzt aus der echten Stations-Layer-Definition
-  (neue `resolveLegendSwatchBranches()` in `src/lib/resolveLegendSwatch.ts`, extrahiert alle
-  Branches einer `match`-Expression statt nur den Fallback-Arm; neu exportierte
-  `NahMapLayers.getStationsLayerDefinition()`) statt separat gepflegter `MAP_COLORS`-Konstanten.
-  Zusätzlich zeigen die Status-Einträge jetzt ein Helikopter-Icon statt eines Farbpunkts, passend
-  zum tatsächlichen Kartensymbol (neuer `icon`-Eintragstyp in `MapLegend`/`LegendEntry`).
-
-## [Unreleased] - 2026-07-18 07:50
-
-### Geändert
-- **`oe5ith-ci`-Submodul auf v1.21.0 aktualisiert** — enthält 4 aus website-v3 gemeldete Punkte:
-  neuer `MapLegend`-Eintragstyp `icon` (`.map-legend-icon`), neues Badge-Modifier `.badge-wrap`
-  (behebt den `white-space: nowrap`-Umbruch-Bug), sowie `--map-bg`-Token sowie
-  `.coord-row-wgs`/`.coord-vals` (beide bereits lokal vorhanden, jetzt auch im Design-System).
-  `src/styles/badges.css`/`modal.css`/`utils.css` entsprechend nachgezogen; redundanter lokaler
-  `background: var(--map-bg)`-Override in `src/app.css`s `.full-map` entfernt (kommt jetzt aus
-  dem gesyncten `utils.css`); Routing-Sidebar-Warn-Badges nutzen jetzt `.badge-wrap` statt eines
-  lokalen CSS-Overrides.
-- **CI-Meldedateien liegen jetzt in `docs/ci/`** statt unversioniert im `oe5ith-ci`-Arbeitsverzeichnis
-  (`bug-reports.md`, `open-items.md`, `routing-disclosure-request.md`, `legend-icon-swatch-request.md`,
-  `handoff-2026-06-20-map-bg-wgs84.md`) — committete, dauerhaft nachvollziehbare Dokumentation statt
-  Dateien, die bei einem frischen Submodul-Checkout verloren gegangen wären.
-
-## [Unreleased] - 2026-07-12 09:58
-
-### Hinzugefügt
-- **Routing-Kontextmenü: Touchsteuerung** (TODO.md → Map-Subsystem: Anschlussfeatures) — Long-Press
-  öffnet das Zielwahl-Kontextmenü jetzt auch auf Touch-Geräten (`/routing`, `/coords`), nicht mehr
-  nur per Rechtsklick. Neuer Baustein `src/lib/LongPressGesture.ts` erkennt die Geste unabhängig
-  vom nativen `contextmenu`-Event (das auf Touch wegen MapLibres `touch-action: none` nicht
-  zuverlässig feuert). Spec:
-  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
-
-## [Unreleased] - 2026-07-12 08:53
+- **CI-Pipeline via GitHub Actions (ROADMAP.md → Repo-Pflege & Dokumentation)** —
+  `.github/workflows/ci.yml`, 2 parallele Jobs (`frontend`: `tsc`/`vitest`/OpenAPI-Validierung,
+  `backend`: PSR-12-Lint/Security-Audit), Trigger bei Push auf `master` + allen Pull Requests.
+  Kein Secrets-/DB-Handling nötig — alle Checks sind statisch oder laufen mit gemockten Daten.
 
 ### Geändert
 - **Legenden-Granularität: kuratierte `layers.json`-Metadata konsumiert** (TODO.md → Map-Subsystem:
@@ -155,6 +66,45 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   viele der zugehörigen Gruppen gleichzeitig aktiv sind (Referenzzählung in
   `MapPageController.toggleLayer()`, `src/pages/MapPage.ts`). Spec:
   [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+- **`oe5ith-ci`-Submodul auf v1.21.0 aktualisiert** — enthält 4 aus website-v3 gemeldete Punkte:
+  neuer `MapLegend`-Eintragstyp `icon` (`.map-legend-icon`), neues Badge-Modifier `.badge-wrap`
+  (behebt den `white-space: nowrap`-Umbruch-Bug), sowie `--map-bg`-Token sowie
+  `.coord-row-wgs`/`.coord-vals` (beide bereits lokal vorhanden, jetzt auch im Design-System).
+  `src/styles/badges.css`/`modal.css`/`utils.css` entsprechend nachgezogen; redundanter lokaler
+  `background: var(--map-bg)`-Override in `src/app.css`s `.full-map` entfernt (kommt jetzt aus
+  dem gesyncten `utils.css`); Routing-Sidebar-Warn-Badges nutzen jetzt `.badge-wrap` statt eines
+  lokalen CSS-Overrides.
+- **`RoutingSidebarAdapter.init()` jetzt async/awaited** — Voraussetzung für die Deep-Link-
+  Anwendung (Sidebar-DOM muss inkl. geladener Profile stehen, bevor Werte gesetzt werden);
+  behebt nebenbei eine potenzielle Race Condition bei Map-Klicks vor fertigem
+  Sidebar-Rendering.
+- **CI-Meldedateien liegen jetzt in `docs/ci/`** statt unversioniert im `oe5ith-ci`-Arbeitsverzeichnis
+  (`bug-reports.md`, `open-items.md`, `routing-disclosure-request.md`, `legend-icon-swatch-request.md`,
+  `handoff-2026-06-20-map-bg-wgs84.md`) — committete, dauerhaft nachvollziehbare Dokumentation statt
+  Dateien, die bei einem frischen Submodul-Checkout verloren gegangen wären.
+- **„NAH: Betreiber-spezifische Icons" von TODO.md nach ROADMAP.md verschoben** — eher ein
+  Komfort-Update mit tieferem Logik-Eingriff (neues `operator`-Feld, eigene Layer-Architektur
+  für die Status-Anzeige) als eine mechanische Erweiterung.
+- **Dokumente an referenzierte Standards angeglichen (ROADMAP.md → Repo-Pflege &
+  Dokumentation)** — `CLAUDE.md` dokumentiert jetzt das vollständige, offizielle
+  6-Kategorien-Set von Keep a Changelog (`Hinzugefügt`/`Geändert`/`Veraltet`/`Entfernt`/
+  `Behoben`/`Sicherheit`) statt bisher nur 4 (per Proposal-Zyklus, siehe
+  `docs/proposals/archive/2026-07-18-changelog-full-categories-*`). Ein historischer Eintrag
+  (v3.3.1) nutzte `### Aktualisiert` statt einer dokumentierten Kategorie — korrigiert zu
+  `### Geändert`. `TODO_ARCHIVE.md`/`ROADMAP_ARCHIVE.md`-Überschriften auf ein einheitliches
+  `## YYYY-MM-DD — Beschreibung`-Format vereinheitlicht (vorher gemischt mit
+  `## Unreleased (DATUM)`).
+- **Repo-Root aufgeräumt (ROADMAP.md → Repo-Pflege & Dokumentation)** — `TODO.md`/
+  `TODO_ARCHIVE.md`/`ROADMAP.md`/`ROADMAP_ARCHIVE.md`/`CHANGELOG.md` (diese Datei) von Repo-Root
+  nach `docs/` verschoben. `AGENT_INSTRUCTIONS.md` bleibt am Root. `GEMINI.md` komplett entfernt
+  (Gemini CLI nicht genutzt). `AGENT_INSTRUCTIONS.md` §3 selbst geändert (generische Regel für
+  die TODO/ROADMAP-Dateipaare jetzt `docs/` statt Repo-Root, per Proposal-Zyklus) statt nur
+  repo-spezifisch abzuweichen. `CLAUDE.md`/`README.md` und alle internen Querverweise der
+  verschobenen Dateien entsprechend angepasst; ein dabei gefundener, vorbestehender kaputter
+  Link in `ROADMAP.md` mitkorrigiert. Historische Dokumente (Specs/Pläne/archivierte Proposals)
+  bewusst nicht rückwirkend angepasst.
+
+`npx tsc --noEmit && npm test` grün (196/196) für den gesamten Umfang dieses Releases.
 
 ## [3.9.0] - 2026-07-11
 
