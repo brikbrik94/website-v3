@@ -3,6 +3,8 @@ import { BasePageController } from '../../core/BasePageController';
 import { MapCore } from '../../lib/MapCore';
 import { LayoutHelper } from '../../lib/LayoutHelper';
 import { initTopbar } from '../../components/Topbar';
+import { MapLegend } from '../../lib/MapLegend';
+import { MAP_COLORS } from '../../lib/MapStyles';
 import { initTrackingSidebar, updateTrackingList, updateTrackingServerStatus, setActiveTrackingItem } from '../../components/TrackingSidebar';
 import { InventoryService } from '../../services/InventoryService';
 import { TrackingMapLayers } from './TrackingMapLayers';
@@ -19,7 +21,23 @@ export class TrackingPageController extends BasePageController {
     public async mount(container: HTMLElement): Promise<void> {
         const invService = InventoryService.getInstance();
         const basemaps = await invService.getBasemaps();
-        const mounts = LayoutHelper.renderBaseLayout(container);
+        const mounts = LayoutHelper.renderBaseLayout(container, {
+            withLegend: true,
+            legendTitle: 'Tracking'
+        });
+
+        const legend = new MapLegend(mounts.legend!);
+        // ADS-B: Höhen-Gradient, 4 Stufen aus TrackingMapLayers.ts (icon-color/line-color
+        // 'interpolate'-Ausdruck über dieselben MAP_COLORS.alt*-Tokens).
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.alt0, label: 'Boden' });
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.alt5k, label: '5.000 ft' });
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.alt15k, label: '15.000 ft' });
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.alt35k, label: '35.000+ ft' });
+        // AIS: Schiffstyp, 3 Farben aus ShipTypeMapper.getColor() (src/lib/ShipTypeMapper.ts) —
+        // Bucket-Zuordnung dort ändern, falls sich die Kategorien hier je verschieben.
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.danger, label: 'Tanker / Gefahrgut' });
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.warning, label: 'Passagierschiff' });
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.accent, label: 'Sonstige Schiffe' });
 
         this.map = MapCore.init(
             mounts.map,
@@ -82,7 +100,7 @@ export class TrackingPageController extends BasePageController {
                 // Die Wiederherstellung (ensureLayers + loadSprites + refresh) läuft
                 // automatisch über den style.load-Listener aus MapCore.init (onRestore).
             }
-        }, undefined, [
+        }, () => legend.toggle(), [
             {
                 id: 'toggle-adsb',
                 icon: 'fa-solid fa-plane',

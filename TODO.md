@@ -84,9 +84,15 @@ alle vier auf einmal anfassen.
   bei `/nah`s Status, ein Eintrag pro Organisation wäre unbegrenzt/unpraktisch. 174 Tests grün,
   0 TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf `/routing` weiterhin ausstehend
   (keine Playwright-Umgebung hier).
-- [ ] **Schritt 5: Anwendung auf `/tracking`** — hat aktuell noch gar keine `MapLegend`-Instanz,
-  muss zuerst ergänzt werden (`LayoutHelper.renderBaseLayout(..., { withLegend: true })` fehlt in
-  `TrackingPage.ts`).
+- [x] **Schritt 5: Anwendung auf `/tracking`** (2026-07-18) — ✅ ERLEDIGT. `/tracking` hatte
+  bisher gar keine Legende (`withLegend` fehlte, kein `MapLegend`, kein Legend-Toggle im Topbar).
+  Jetzt 7 Einträge: 4 ADS-B-Höhenstufen (`MAP_COLORS.alt0/alt5k/alt15k/alt35k`, direkt aus dem
+  bestehenden `interpolate`-Ausdruck in `TrackingMapLayers.ts:64-71`) + 3 AIS-Schiffstyp-Farben
+  (`MAP_COLORS.danger/warning/accent`, entsprechend der 3-Bucket-Zuordnung in
+  `ShipTypeMapper.getColor()`). Keine neue Resolver-Logik nötig — beide Farbsätze waren schon
+  über bestehende, geteilte Konstanten direkt referenzierbar (kein `match`-Sonderfall wie bei
+  Schritt 3). 174 Tests grün, 0 TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf
+  `/tracking` weiterhin ausstehend (keine Playwright-Umgebung hier).
 - [x] **Karten-Klick + Overlay-Infos auf `/karte`** (2026-07-09) — ✅ ERLEDIGT (Scope beim
   Brainstorming korrigiert: `/nah` hatte bereits einen eigenen, funktionierenden Popup-Builder
   — der ursprüngliche TODO-Text war hier veraltet — die echte Lücke war ausschließlich `/karte`,
