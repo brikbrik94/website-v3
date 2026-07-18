@@ -18,9 +18,11 @@ export interface ContextMenuItem {
 
 export interface LegendEntry {
     id?: string;
-    type: 'dot' | 'line' | 'area';
+    type: 'dot' | 'line' | 'area' | 'icon';
     color: string | null;
     label: string;
+    /** FontAwesome-Klassen (z.B. 'fa-solid fa-helicopter'), nur bei type: 'icon' relevant. */
+    icon?: string;
 }
 
 export interface RouteStyle {

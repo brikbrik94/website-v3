@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor } from './resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, resolveLegendSwatchBranches } from './resolveLegendSwatch';
 
 describe('resolveLegendSwatch', () => {
   it('resolves a literal line-color as type line', () => {
@@ -156,5 +156,89 @@ describe('resolveSwatchFromLayersMetaColor', () => {
 
   it('returns null when type is undefined', () => {
     expect(resolveSwatchFromLayersMetaColor(undefined, '#ffffff')).toBeNull();
+  });
+});
+
+describe('resolveLegendSwatchBranches', () => {
+  const statusLabels = {
+    active: 'Einsatzbereit',
+    inactive: 'Außer Dienst (Betriebszeit)',
+    offseason: 'Außer Saison',
+  };
+
+  it('extracts all match branches with mapped labels (NAH status pattern)', () => {
+    const layer = {
+      id: 'nah-stations-layer', type: 'symbol', source: 's',
+      paint: {
+        'icon-color': [
+          'match', ['get', 'status'],
+          'active', '#22c55e',
+          'inactive', '#ef4444',
+          'offseason', '#888888',
+          '#22c55e'
+        ]
+      }
+    } as LayerSpecification;
+
+    expect(resolveLegendSwatchBranches(layer, statusLabels)).toEqual([
+      { type: 'dot', color: '#22c55e', label: 'Einsatzbereit' },
+      { type: 'dot', color: '#ef4444', label: 'Außer Dienst (Betriebszeit)' },
+      { type: 'dot', color: '#888888', label: 'Außer Saison' },
+    ]);
+  });
+
+  it('does not include the fallback arm as its own branch', () => {
+    const layer = {
+      id: 'l1', type: 'line', source: 's',
+      paint: { 'line-color': ['match', ['get', 'x'], 'a', '#111111', '#222222'] }
+    } as LayerSpecification;
+
+    expect(resolveLegendSwatchBranches(layer, { a: 'A' })).toEqual([
+      { type: 'line', color: '#111111', label: 'A' },
+    ]);
+  });
+
+  it('skips branches with no matching label and warns', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const layer = {
+      id: 'l2', type: 'symbol', source: 's',
+      paint: { 'icon-color': ['match', ['get', 'status'], 'active', '#22c55e', 'unknown', '#000000', '#22c55e'] }
+    } as LayerSpecification;
+
+    expect(resolveLegendSwatchBranches(layer, { active: 'Einsatzbereit' })).toEqual([
+      { type: 'dot', color: '#22c55e', label: 'Einsatzbereit' },
+    ]);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[resolveLegendSwatchBranches] Kein Label für match-Wert', 'unknown', 'auf Layer', 'l2'
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('returns null for a literal (non-match) color expression', () => {
+    const layer = { id: 'l3', type: 'symbol', source: 's', paint: { 'icon-color': '#abcdef' } } as LayerSpecification;
+    expect(resolveLegendSwatchBranches(layer, statusLabels)).toBeNull();
+  });
+
+  it('returns null for a case expression (unsupported)', () => {
+    const layer = {
+      id: 'l4', type: 'line', source: 's',
+      paint: { 'line-color': ['case', ['==', ['get', 'x'], 'y'], '#111111', '#222222'] }
+    } as LayerSpecification;
+    expect(resolveLegendSwatchBranches(layer, { y: 'Y' })).toBeNull();
+  });
+
+  it('returns null for a non-legend-able layer type', () => {
+    const layer = { id: 'l5', type: 'raster', source: 's' } as LayerSpecification;
+    expect(resolveLegendSwatchBranches(layer, {})).toBeNull();
+  });
+
+  it('returns null when no branch has a matching label', () => {
+    const layer = {
+      id: 'l6', type: 'symbol', source: 's',
+      paint: { 'icon-color': ['match', ['get', 'status'], 'active', '#22c55e', '#22c55e'] }
+    } as LayerSpecification;
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(resolveLegendSwatchBranches(layer, { unrelated: 'X' })).toBeNull();
+    warnSpy.mockRestore();
   });
 });

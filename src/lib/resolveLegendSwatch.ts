@@ -20,40 +20,38 @@ function extractLiteralColor(value: unknown): string | null {
 }
 
 /**
+ * Ordnet einem Layer-Typ die Swatch-Art und die relevante Paint-Property zu — gemeinsame
+ * Grundlage für resolveLegendSwatch() (ein Swatch pro Layer) und resolveLegendSwatchBranches()
+ * (mehrere Swatches pro Layer, siehe unten).
+ */
+function paintExpressionForLayer(layer: LayerSpecification): { type: SwatchType; raw: unknown } | null {
+  switch (layer.type) {
+    case 'line':
+      return { type: 'line', raw: layer.paint?.['line-color'] };
+    case 'fill':
+      return { type: 'area', raw: layer.paint?.['fill-color'] };
+    case 'fill-extrusion':
+      return { type: 'area', raw: layer.paint?.['fill-extrusion-color'] };
+    case 'circle':
+      return { type: 'dot', raw: layer.paint?.['circle-color'] };
+    case 'symbol':
+      // Reine Text-Label-Layer (z.B. OpenSkiMap "ski-labels") haben kein Icon, nur text-color.
+      return { type: 'dot', raw: layer.paint?.['icon-color'] ?? layer.paint?.['text-color'] };
+    default:
+      return null;
+  }
+}
+
+/**
  * Löst die Legenden-Swatch-Farbe eines MapLibre-Layers auf — deckt nur die im Projekt
  * tatsächlich vorkommenden Muster ab (Literal-Farbe, `match`-/`case`-Expression-Fallback,
  * ggf. verschachtelt), keine vollständige Style-Spec-Expression-Engine (siehe
  * docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md, Entscheidung 5).
  */
 export function resolveLegendSwatch(layer: LayerSpecification): LegendSwatch | null {
-  let type: SwatchType;
-  let raw: unknown;
-
-  switch (layer.type) {
-    case 'line':
-      type = 'line';
-      raw = layer.paint?.['line-color'];
-      break;
-    case 'fill':
-      type = 'area';
-      raw = layer.paint?.['fill-color'];
-      break;
-    case 'fill-extrusion':
-      type = 'area';
-      raw = layer.paint?.['fill-extrusion-color'];
-      break;
-    case 'circle':
-      type = 'dot';
-      raw = layer.paint?.['circle-color'];
-      break;
-    case 'symbol':
-      // Reine Text-Label-Layer (z.B. OpenSkiMap "ski-labels") haben kein Icon, nur text-color.
-      type = 'dot';
-      raw = layer.paint?.['icon-color'] ?? layer.paint?.['text-color'];
-      break;
-    default:
-      return null;
-  }
+  const resolved = paintExpressionForLayer(layer);
+  if (!resolved) return null;
+  const { type, raw } = resolved;
 
   const color = extractLiteralColor(raw);
   if (color !== null) {
@@ -62,6 +60,46 @@ export function resolveLegendSwatch(layer: LayerSpecification): LegendSwatch | n
 
   console.warn('[resolveLegendSwatch] Farbe nicht auflösbar für Layer', layer.id);
   return { type, color: null };
+}
+
+export interface LegendSwatchBranch extends LegendSwatch {
+  label: string;
+}
+
+/**
+ * Wie resolveLegendSwatch(), aber statt nur den Fallback-Arm einer `match`-Expression zu lesen,
+ * werden alle Branches ausgelesen und über `labelsByMatchValue` auf Legenden-Labels gemappt — für
+ * Layer, bei denen mehrere match-Werte je eine eigene Legenden-Zeile ergeben sollen (z.B.
+ * NAH-Stationsstatus `active`/`inactive`/`offseason`, siehe `NahMapLayers.getStationsLayerDefinition()`).
+ * Deckt nur `match`-Expressions mit einzelnen String-Labels ab (keine `case`-Expressions, keine
+ * Array-Label-Gruppen) — das reicht für die im Projekt tatsächlich vorkommenden Fälle. Branches
+ * ohne Eintrag in `labelsByMatchValue` werden übersprungen (mit `console.warn`).
+ */
+export function resolveLegendSwatchBranches(
+  layer: LayerSpecification,
+  labelsByMatchValue: Record<string, string>
+): LegendSwatchBranch[] | null {
+  const resolved = paintExpressionForLayer(layer);
+  if (!resolved) return null;
+  const { type, raw } = resolved;
+
+  if (!Array.isArray(raw) || raw[0] !== 'match') return null;
+
+  const branches: LegendSwatchBranch[] = [];
+  for (let i = 2; i + 1 < raw.length; i += 2) {
+    const matchValue = raw[i];
+    const color = raw[i + 1];
+    if (typeof matchValue !== 'string' || typeof color !== 'string') continue;
+
+    const label = labelsByMatchValue[matchValue];
+    if (!label) {
+      console.warn('[resolveLegendSwatchBranches] Kein Label für match-Wert', matchValue, 'auf Layer', layer.id);
+      continue;
+    }
+    branches.push({ type, color, label });
+  }
+
+  return branches.length > 0 ? branches : null;
 }
 
 const SWATCH_TYPE_BY_LAYER_TYPE: Record<string, SwatchType> = {
