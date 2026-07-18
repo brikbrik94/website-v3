@@ -1,5 +1,10 @@
 # CI-Aufgabe: Karten-Hintergrund-Token + WGS84-Zeilenklassen
 
+**Status:** ✅ Umgesetzt in `oe5ith-ci` v1.21.0 (2026-07-18, Commits `894a293`/`0d4f3ea`) — exakt
+wie unten beschrieben. In website-v3 nachgezogen: `src/styles/utils.css`s `.full-map` bekommt
+`background: var(--map-bg);` aus dem CI-Sync, der bisherige lokale Override in `src/app.css`
+wurde entfernt (siehe „Nachgelagert" unten). `src/styles/common.css`/`coords.css` waren bereits
+identisch zum CI-Stand (Ursprung der Anfrage). Submodul-Pointer aktualisiert (2026-07-18).
 **Ziel-Repo:** `oe5ith-ci` (Design-System-Submodul)
 **Datum:** 2026-06-20
 **Auslöser:** Konsumierende Seite `website-v3` (Koordinaten-Umrechner + Karte)

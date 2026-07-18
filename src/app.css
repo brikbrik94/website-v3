@@ -107,8 +107,6 @@ html, body {
   height: 100%;
   position: relative;
   min-width: 0;
-  /* Weiß als Default (--map-bg in common.css), per Stylesheet überschreibbar */
-  background: var(--map-bg);
 }
 
 /* ═══════════════════════════════════════
