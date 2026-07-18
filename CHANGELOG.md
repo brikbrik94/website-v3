@@ -2,6 +2,20 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 09:35
+
+### Hinzugefügt
+- **DOM-Testumgebung für `GeocoderSearchField` (TODO.md → Sonstiges)** — `happy-dom` als
+  Dev-Dependency ergänzt, nur per `// @vitest-environment happy-dom`-Kommentar in
+  `GeocoderSearchField.test.ts` aktiviert (nicht global). 11 neue Tests (Debounce,
+  `suppressWhen`, Rendern/Leerergebnis, `onSelect`, Outside-Click-Dismiss, `AbortSignal`).
+  185 Tests grün, 0 TypeScript-Fehler.
+
+### Geändert
+- **„NAH: Betreiber-spezifische Icons" von TODO.md nach ROADMAP.md verschoben** — eher ein
+  Komfort-Update mit tieferem Logik-Eingriff (neues `operator`-Feld, eigene Layer-Architektur
+  für die Status-Anzeige) als eine mechanische Erweiterung.
+
 ## [Unreleased] - 2026-07-18 08:55
 
 ### Hinzugefügt

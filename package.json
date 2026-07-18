@@ -25,6 +25,7 @@
     "@apidevtools/swagger-parser": "^12.1.0",
     "@types/geojson": "^7946.0.16",
     "concurrently": "^9.2.1",
+    "happy-dom": "^20.10.6",
     "typescript": "^6.0.3",
     "vite": "^8.0.13",
     "vitest": "^4.1.7"

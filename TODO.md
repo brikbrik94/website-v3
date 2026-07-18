@@ -129,27 +129,27 @@ alle vier auf einmal anfassen.
   166 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
   ARIA-APG-Tastaturnavigation fürs Menü (Pfeiltasten, Roving Tabindex) — eigener Folge-Punkt bei
   Bedarf; visuelles Hold-Feedback während des Haltens — bei Bedarf nach Live-Test nachziehen.
-- [ ] **NAH: Betreiber-spezifische Icons** — Im Sprite-Set `oe5ith-markers` liegen bereits 9
-  Betreiber-Logos (`nah-adac-luftrettung`, `nah-oeamtc-flugrettung`, `nah-drf-luftrettung`, …),
-  aktuell ungenutzt. Ziel: NAH-Stationsmarker zeigen das Icon ihres Betreibers statt eines
-  generischen Symbols. Braucht (a) ein neues `operator`-Feld in `NahStation`/`api/nah.php`
-  (aktuell nur `name`/`callsign` vorhanden, keine Zuordnung zu den Sprite-Keys), und (b) eine
-  separate Lösung für die Status-Anzeige (grün/rot/grau), da diese Sprites nicht-SDF sind und
-  sich nicht per `icon-color` einfärben lassen (z.B. zusätzlicher Status-Dot-Layer neben dem
-  Betreiber-Icon). Bewusst aus der U5-Migration
-  ([docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md))
-  herausgehalten, die auf ein generisches Status-Icon setzt.
 
 ## Sonstiges
 
-- [ ] **DOM-Testumgebung (jsdom/happy-dom) einrichten** — `src/lib/GeocoderSearchField.ts`
-  (2026-07-09, ROADMAP.md → Karten-Interaktion & Such-Features) manipuliert echtes DOM
-  (querySelector/addEventListener/innerHTML) und hat deshalb keinen automatisierten Test; das
-  Projekt hat aktuell keine DOM-Testumgebung (bestehende DOM-nahe Tests wie
-  `RoutingSidebarAdapter.test.ts` nutzen handgebaute Fake-Elemente statt echtem DOM). Ziel:
-  `jsdom` oder `happy-dom` als Dev-Dependency + Vitest-Environment-Konfiguration ergänzen, danach
-  Test für `GeocoderSearchField` (Debounce, `suppressWhen`, `onSelect`, Outside-Click-Dismiss)
-  nachziehen.
+- [x] **DOM-Testumgebung (jsdom/happy-dom) einrichten** (2026-07-18) — ✅ ERLEDIGT. `happy-dom`
+  als Dev-Dependency ergänzt, aber bewusst **nicht** global konfiguriert — nur
+  `GeocoderSearchField.test.ts` aktiviert es per `// @vitest-environment happy-dom`-Kommentar,
+  die restlichen 22 Testdateien bleiben auf dem schnelleren `node`-Default (kein Risiko für
+  bestehende Tests, keine Vitest-Config-Änderung nötig). 11 neue Tests für
+  `GeocoderSearchField` (Mindestlänge, Debounce inkl. Reset bei erneuter Eingabe,
+  `suppressWhen`, Rendern/Leerergebnis, `onSelect`, Outside-Click-Dismiss vs. Klick auf
+  Input/Ergebnis-Container, verworfenes Ergebnis nach `AbortSignal`, Listener-Cleanup nach
+  Abort) — mit `vi.useFakeTimers()`/`vi.advanceTimersByTimeAsync()` und `vi.spyOn(GeocoderService, 'search')`.
+  185 Tests grün, 0 TypeScript-Fehler.
+- [ ] **`npm audit`: 3 Schwachstellen in Dev-Dependencies** (2026-07-18, beim Ergänzen von
+  `happy-dom` aufgefallen — nicht dadurch verursacht, bereits vorher vorhanden) — 1× `critical`
+  (`shell-quote`, über `concurrently` — Quote-Escaping unvollständig bei `object`-`op`-Werten),
+  1× `critical` + 1× `high` (`vite`: `launch-editor` NTLMv2-Hash-Leak über UNC-Pfade auf Windows,
+  sowie `server.fs.deny`-Bypass über alternative Pfade auf Windows). Beide nur Dev-/Build-Tooling
+  (nicht im produktiven `dist/`-Output), Windows-spezifisch bzw. nur bei laufendem Dev-Server
+  relevant — kein akuter Produktions-Impact, aber noch nicht geprüft, ob `npm audit fix` ohne
+  Breaking Changes an `vite`/`concurrently` möglich ist.
 
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in
