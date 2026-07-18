@@ -21,6 +21,19 @@ export interface RoutingParams {
 }
 
 /**
+ * Parst eine "lat, lon"-Texteingabe (Eingabefeld-Format) in ein Koordinaten-Tupel — auch von
+ * RoutingDeepLink.ts wiederverwendet, damit Deep-Link-Query-Parameter exakt dasselbe Format
+ * akzeptieren wie die Eingabefelder selbst.
+ */
+export const parseCoords = (val: string): [number, number] | null => {
+  const parts = val.split(',').map(p => parseFloat(p.trim()));
+  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+    return [parts[0], parts[1]] as [number, number];
+  }
+  return null;
+};
+
+/**
  * Erlaubt das Setzen von Koordinaten von außen (z.B. Context-Menu).
  */
 export const setRoutingCoord = async (type: 'start' | 'target', lat: number, lon: number) => {
@@ -175,14 +188,6 @@ export const initRoutingSidebar = async (
     btn.classList.add('active');
     updateModeUI(btn.getAttribute('data-mode')!);
   });
-
-  const parseCoords = (val: string): [number, number] | null => {
-    const parts = val.split(',').map(p => parseFloat(p.trim()));
-    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-      return [parts[0], parts[1]] as [number, number];
-    }
-    return null;
-  };
 
   const getCoordsFromInput = (input: HTMLInputElement): [number, number] | null => {
     if (input.dataset.lat && input.dataset.lon) {

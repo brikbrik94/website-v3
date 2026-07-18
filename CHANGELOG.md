@@ -2,6 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 10:40
+
+### Hinzugefügt
+- **URL-Parameter für Routing-Deep-Links (ROADMAP.md → Routing: Anschlussfeatures)** —
+  `/routing?mode=ab|sew|nef&target=<lat>,<lon>&start=<lat>,<lon>&profile=<profilId>` füllt die
+  Sidebar vor (neue `parseRoutingDeepLink()` in `src/features/routing/RoutingDeepLink.ts`,
+  `RoutingSidebarAdapter.applyDeepLink()`). Bei `mode=ab` nur Vorausfüllen, bei `mode=sew`/`nef`
+  automatische Berechnung (reiner Lesezugriff). 11 neue Tests, 196 Tests grün, 0
+  TypeScript-Fehler.
+
+### Geändert
+- **`RoutingSidebarAdapter.init()` jetzt async/awaited** — Voraussetzung für die Deep-Link-
+  Anwendung (Sidebar-DOM muss inkl. geladener Profile stehen, bevor Werte gesetzt werden);
+  behebt nebenbei eine potenzielle Race Condition bei Map-Klicks vor fertigem
+  Sidebar-Rendering.
+
 ## [Unreleased] - 2026-07-18 09:35
 
 ### Hinzugefügt
