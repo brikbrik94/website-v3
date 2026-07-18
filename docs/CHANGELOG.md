@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 19:40
+
+### Hinzugefügt
+- Neue Karten-Seite `/isochrones` (Alias `/isochronen`) für Erreichbarkeitsanalyse: Punkt per
+  Kartenklick/Geocoder/Koordinaten setzen, ORS-Fahrprofil + Zeit- oder Distanz-Ringe wählen,
+  Isochronen-Polygone erscheinen auf der Karte. Mehrere Abfragen können gestapelt und einzeln
+  per Augen-Icon ein-/ausgeblendet werden (Sidebar-Typ 4). Kein neuer PHP-Endpoint — nutzt den
+  bestehenden generischen `api/ors.php`-Proxy. Spec:
+  [docs/superpowers/specs/2026-07-18-isochrones-page-design.md](./superpowers/specs/2026-07-18-isochrones-page-design.md).
+
 ## [3.10.1] - 2026-07-18
 
 ### Hinzugefügt

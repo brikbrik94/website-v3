@@ -190,10 +190,30 @@ zu bearbeiten (nicht in einem Rutsch).
 
 - [ ] **Hilfeseite** — Übersicht/Beschreibung der App-Funktionen, Einstieg vermutlich über einen
   neuen Topbar-Link (analog zu den bestehenden `.nav-link`-Einträgen in `src/main.ts`).
-- [ ] **Isochronen-Abfrage-Seite** — neue Karten-Seite für Erreichbarkeitsanalyse (z.B. über die
-  ORS-Isochrones-API, analog zur bestehenden ORS-Routing-Anbindung in `api/ors.php`), strukturell
-  an den bestehenden Karten-Seiten orientiert (siehe `docs/page-types.md`/`sidebar-types.md` in
-  `oe5ith-ci` für passende Sidebar-/Layout-Patterns).
+- [x] **Isochronen-Abfrage-Seite** (2026-07-18) — ✅ ERLEDIGT. Neue Karten-Seite `/isochrones`
+  (Alias `/isochronen`, redirected clientseitig per `history.replaceState`) für generische
+  Erreichbarkeitsanalyse: Punkt per Kartenklick, Geocoder-Suche oder manueller Koordinaten-Eingabe
+  setzen, ORS-Fahrprofil sowie Zeit- oder Distanz-Ringe wählen — die resultierenden
+  Isochronen-Polygone erscheinen auf der Karte. Mehrere Abfragen lassen sich gleichzeitig stapeln
+  und einzeln per Augen-Icon ein-/ausblenden (Vergleich mehrerer Standorte). Abgegrenzt von den
+  bestehenden, statisch kuratierten „Anfahrtszeit-Ringen" auf `/karte`
+  (`anfahrtszeit-linz`-Overlay, serverseitig vom Tile-Server vorberechnet) — diese Seite ist eine
+  Live-Abfrage für beliebige Punkte, analog zu `/routing`. Dateistruktur 1:1 an
+  `src/features/routing/`/`src/pages/RoutingPage.ts` gespiegelt: `src/lib/IsochronesService.ts`
+  (eigenständiges Modul für den ORS-Aufruf, ruft für Health-Check/Profile-Liste aber direkt
+  `RoutingService.checkHealth()`/`.getProfiles()` auf statt zu duplizieren),
+  `src/features/isochrones/IsochronesDataService.ts` (reiner State-Container),
+  `IsochronesMapLayers.ts`, `IsochronesSidebarAdapter.ts`, `parseRangeList.ts` (Parser für die
+  Ring-Werte-Eingabe), `src/components/IsochronesSidebar.ts` (Formular + Ergebnis-Liste, Sidebar-
+  Typ 4 „Tool-Panel + Ergebnis-Liste" laut `oe5ith-ci/docs/sidebar-types.md`),
+  `src/pages/IsochronesPage.ts`. Kein neuer PHP-Endpoint — nutzt den bestehenden generischen
+  `api/ors.php?path=isochrones/{profile}`-Proxy (derselbe Mechanismus wie bei
+  `path=directions/{profile}/geojson` in `/routing`). `MapStyles.ts` um `getIsochroneRingColor()`
+  ergänzt. Neue Landing-Page-Kachel (`src/main.ts`, `.card-grid`, `fa-solid fa-bullseye`). Spec:
+  [docs/superpowers/specs/2026-07-18-isochrones-page-design.md](./superpowers/specs/2026-07-18-isochrones-page-design.md),
+  Plan: `docs/superpowers/plans/2026-07-18-isochrones-page.md`. 243 Tests grün, 0
+  TypeScript-Fehler. **Hinweis:** Browser-Verifikation weiterhin ausstehend (keine
+  Playwright-Umgebung hier).
 
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in
