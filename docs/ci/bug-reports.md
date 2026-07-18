@@ -4,7 +4,13 @@ Gefundene Bugs im `oe5ith-ci`-Design-System, entdeckt beim Arbeiten in `website-
 **website-v3 fixt diese Bugs nicht selbst im Submodul** — das Repo wird extern mit eigenem
 Review-/Check-Prozess gepflegt. Diese Datei dokumentiert Funde für die Übernahme dort; sie liegt
 als normale, committete Datei in diesem Repo (`docs/ci/bug-reports.md`), analog zu den
-`docs/ci/*-request.md`-Dateien für Feature-Anfragen und `docs/ci/handoff-*.md` für Handoffs.
+`docs/ci/*-request.md`-Dateien für Feature-Anfragen und `docs/ci/handoff-*.md` für Handoffs
+(vollständig abgeschlossene Request-/Handoff-Dateien wandern nach `docs/ci/archive/`, diese
+Sammeldatei selbst bleibt dauerhaft hier, auch wenn — wie aktuell — beide Einträge unten bereits
+behoben sind).
+
+**Aktueller Stand: keine offenen Bugs.** Beide Einträge unten sind behoben, siehe
+`docs/ci/open-items.md` für die Gesamtübersicht.
 
 ---
 
