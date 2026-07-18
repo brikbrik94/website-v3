@@ -137,11 +137,11 @@ this repo's concrete implementation of that convention.
 1. **`CHANGELOG.md`** (`docs/CHANGELOG.md`, moved from repo root 2026-07-18) — the technical record, Keep-a-Changelog-structured, all 6 official categories in German (`Hinzugefügt` / `Geändert` / `Veraltet` / `Entfernt` / `Behoben` / `Sicherheit` — i.e. Added/Changed/Deprecated/Removed/Fixed/Security), used as needed (not every entry needs every category).
 2. **The in-app changelog** shown when the user clicks the version in the sidebar — currently hardcoded HTML in `src/lib/GlobalModals.ts` (`changelog-modal-body`). This is a **curated, user-facing** summary in plain German (no internal symbol/function/file names), grouped as „Neuigkeiten & Features" / „Verbesserungen & Fixes". **Known debt: it currently lags behind `CHANGELOG.md`; pull it forward on the next UI touch.** (Intended future improvement: render it collapsibly — headline first, details on click — or generate it from a single curated source.)
 
-**Versioning:** `src/version.ts` (`APP_VERSION`) is the SemVer single source of truth.
+**Versioning:** `src/version.ts` (`APP_VERSION`) is the SemVer single source of truth; `package.json`'s `version` field is kept in sync on every release (bumped alongside `src/version.ts`, step 2 below) purely for tooling/display consistency — it is not itself authoritative. (Known history: this drifted unsynced from v3.3.1 through v3.9.0 before being caught and resynced at v3.10.0 — keep both in the same commit going forward.)
 
 **Commits & tags:** German subject after the Conventional-Commits prefix; `release: vX.Y.Z — …` for the release commit (repo-specific type, not part of the spec). The `oe5ith-ci` submodule is versioned independently (its own `vX.Y.Z` tags).
 
-**Release checklist (concrete commands):** (1) `npx tsc --noEmit && npm test` green → (2) bump `src/version.ts` → (3) consolidate `CHANGELOG.md` into the `[X.Y.Z]` heading → (4) update the in-app changelog (`GlobalModals.ts`) → (5) `npm run build` → (6) commit `release: vX.Y.Z`, annotated tag `vX.Y.Z`, push commit + tag → (7) deploy with `./deploy-website.sh`.
+**Release checklist (concrete commands):** (1) `npx tsc --noEmit && npm test` green → (2) bump `src/version.ts` **and** `package.json`'s `version` field → (3) consolidate `CHANGELOG.md` into the `[X.Y.Z]` heading → (4) update the in-app changelog (`GlobalModals.ts`) → (5) `npm run build` → (6) commit `release: vX.Y.Z`, annotated tag `vX.Y.Z`, push commit + tag → (7) deploy with `./deploy-website.sh`.
 
 ## Working style
 

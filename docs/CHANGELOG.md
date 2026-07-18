@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 14:30
+
+### Behoben
+- **`package.json`s `version`-Feld war seit `3.3.1` nicht mehr mitgezogen worden** (TODO.md →
+  Sonstiges) — auf `3.10.0` nachgezogen, `src/version.ts` blieb die ganze Zeit korrekt. Ab jetzt
+  wird `package.json` bei jedem Release mit gebumpt (`CLAUDE.md`-Release-Checkliste ergänzt).
+
 ## [3.10.0] - 2026-07-18
 
 ### Hinzugefügt

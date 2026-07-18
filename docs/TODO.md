@@ -168,14 +168,10 @@ alle vier auf einmal anfassen.
   Zeichenlimit im Code finden (weder in `Wgs84Block.ts` noch in `oe5ith-ci/css/coords.css`);
   könnte an der `.coord-vals`/`.coord-input-dms`-Breite liegen (visuell abgeschnitten statt
   wirklich begrenzt) — braucht Live-Reproduktion zur Root-Cause-Bestimmung, bevor das gefixt wird.
-- [ ] **`package.json`s `version`-Feld hängt seit `3.3.1` fest** (2026-07-18, beim v3.10.0-Release
-  aufgefallen) — `src/version.ts` (`APP_VERSION`) ist laut `CLAUDE.md` die alleinige
-  SemVer-Quelle und wurde seither korrekt bei jedem Release gepflegt, `package.json`s eigenes
-  `"version"`-Feld aber nicht (letzter Bump war `3.3.0`→`3.3.1`, `git log -p package.json`).
-  Rein kosmetisch (Projekt ist `"private": true`, wird nicht auf npm veröffentlicht), aber
-  potenziell verwirrend, falls jemand `package.json` als Versionsquelle liest. Ziel: entweder
-  bei jedem Release mitziehen (Release-Checkliste in `CLAUDE.md` um einen Schritt ergänzen)
-  oder bewusst als „nur `src/version.ts` zählt" dokumentieren und `package.json`s Feld ignorieren.
+- [x] **`package.json`s `version`-Feld hängt seit `3.3.1` fest** (2026-07-18) — ✅ ERLEDIGT.
+  `package.json` auf `3.10.0` nachgezogen (war seit `3.3.0`→`3.3.1` nicht mehr mitgezogen worden,
+  `src/version.ts` blieb korrekt). Nutzer-Entscheidung: ab jetzt bei jedem Release mitziehen —
+  `CLAUDE.md`s Release-Checkliste (Schritt 2) und der „Versioning"-Absatz entsprechend ergänzt.
 
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in
