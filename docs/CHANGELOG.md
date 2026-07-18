@@ -2,26 +2,7 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-18 16:05
-
-### Behoben
-- **UTM-/BMN-Eingabefelder: derselbe Komma-Bug wie bei WGS84** (TODO.md → Sonstiges) —
-  `UtmBlock.ts`/`BmnBlock.ts` auf den bereits vorhandenen `parseDecimalInput()`-Helper
-  umgestellt, analog zum WGS84-Fix.
-
-## [Unreleased] - 2026-07-18 15:05
-
-### Behoben
-- **Koordinaten-Umrechner (`/coords`, WGS84): Komma als Dezimaltrennzeichen wurde verschluckt**
-  (TODO.md → Sonstiges) — `Wgs84Block.ts` parste alle DD-/DDM-/DMS-Eingabefelder mit rohem
-  `parseFloat()`, das bei einem Komma abbricht (`parseFloat("48,3") === 48` statt `48.3`, ohne
-  Fehler). Neuer, isoliert getesteter `parseDecimalInput()`-Helper
-  (`src/features/coords/parseDecimalInput.ts`) ersetzt alle 12 `parseFloat()`-Aufrufe.
-  Zusätzlich: Grad-/ganzzahlige Minuten-Felder bekommen jetzt eine feste, schmale Breite statt
-  sich die Zeile gleichmäßig mit dem Dezimalfeld (Minuten bei DDM, Sekunden bei DMS) zu teilen —
-  das Dezimalfeld hat dadurch mehr Platz. 6 neue Tests, 202 Tests grün, 0 TypeScript-Fehler.
-
-## [Unreleased] - 2026-07-18 14:50
+## [3.10.1] - 2026-07-18
 
 ### Hinzugefügt
 - **JSDoc-Kommentare für 10 `src/lib/`-Dateien ergänzt** (TODO.md → Sonstiges) — `BasemapStore.ts`,
@@ -30,7 +11,21 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   generierten Bausteine-Katalog (`docs/architecture/bausteine.md`) als fehlend aufgedeckt.
   `npm run docs:bausteine` zeigt jetzt 0 verbleibende Lücken.
 
-## [Unreleased] - 2026-07-18 14:40
+### Behoben
+- **`package.json`s `version`-Feld war seit `3.3.1` nicht mehr mitgezogen worden** (TODO.md →
+  Sonstiges) — auf `3.10.0` nachgezogen, `src/version.ts` blieb die ganze Zeit korrekt. Ab jetzt
+  wird `package.json` bei jedem Release mit gebumpt (`CLAUDE.md`-Release-Checkliste ergänzt).
+- **Koordinaten-Umrechner (`/coords`, WGS84): Komma als Dezimaltrennzeichen wurde verschluckt**
+  (TODO.md → Sonstiges) — `Wgs84Block.ts` parste alle DD-/DDM-/DMS-Eingabefelder mit rohem
+  `parseFloat()`, das bei einem Komma abbricht (`parseFloat("48,3") === 48` statt `48.3`, ohne
+  Fehler). Neuer, isoliert getesteter `parseDecimalInput()`-Helper
+  (`src/features/coords/parseDecimalInput.ts`) ersetzt alle 12 `parseFloat()`-Aufrufe.
+  Zusätzlich: Grad-/ganzzahlige Minuten-Felder bekommen jetzt eine feste, schmale Breite statt
+  sich die Zeile gleichmäßig mit dem Dezimalfeld (Minuten bei DDM, Sekunden bei DMS) zu teilen —
+  das Dezimalfeld hat dadurch mehr Platz. 6 neue Tests, 202 Tests grün, 0 TypeScript-Fehler.
+- **UTM-/BMN-Eingabefelder: derselbe Komma-Bug wie bei WGS84** (TODO.md → Sonstiges) —
+  `UtmBlock.ts`/`BmnBlock.ts` auf den bereits vorhandenen `parseDecimalInput()`-Helper
+  umgestellt, analog zum WGS84-Fix.
 
 ### Sicherheit
 - **3 `npm audit`-Schwachstellen in Dev-Dependencies behoben** (TODO.md → Sonstiges) — `npm audit
@@ -38,13 +33,6 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   transitiv `shell-quote` (1.8.3→1.9.0). Betraf nur Dev-/Build-Tooling (nicht den produktiven
   `dist/`-Output), 1× `high` + 2× `critical`. `npm audit` zeigt danach 0 Schwachstellen;
   `tsc`/`test`/`build` erneut grün.
-
-## [Unreleased] - 2026-07-18 14:30
-
-### Behoben
-- **`package.json`s `version`-Feld war seit `3.3.1` nicht mehr mitgezogen worden** (TODO.md →
-  Sonstiges) — auf `3.10.0` nachgezogen, `src/version.ts` blieb die ganze Zeit korrekt. Ab jetzt
-  wird `package.json` bei jedem Release mit gebumpt (`CLAUDE.md`-Release-Checkliste ergänzt).
 
 ## [3.10.0] - 2026-07-18
 

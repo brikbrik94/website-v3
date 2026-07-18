@@ -18,6 +18,12 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.10.1] - 2026-07-18</h2>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Koordinaten-Umrechner:</strong> Eingaben mit Komma als Dezimaltrennzeichen (z.B. „48,3" statt „48.3") wurden falsch interpretiert — betraf WGS84, UTM und BMN, ist jetzt behoben.</li>
+          </ul>
+
           <h2>[3.10.0] - 2026-07-18</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>
