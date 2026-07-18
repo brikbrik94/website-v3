@@ -95,14 +95,29 @@ Neue Funktionen für bessere Karten-Bedienung und Suche.
   `src/pages/MapPage.ts`): neues Suchfeld oberhalb der Layer-Accordions, Auswahl fliegt die Karte
   zum Ergebnis (`flyTo`) und setzt einen temporären Pin (analog zum bestehenden Coords-Pin-Pattern
   über `MapCore.createPinLayer`/`setPointSource`). Verifiziert: `npx tsc --noEmit` 0 Fehler,
-  `npm test` 112/112. **Bekannte Restarbeit:** kein automatisierter Test für
-  `GeocoderSearchField` selbst (Projekt hat kein jsdom/happy-dom eingerichtet) — siehe
-  TODO.md.
+  `npm test` 112/112. **Bekannte Restarbeit (erledigt 2026-07-18):** automatisierter Test für
+  `GeocoderSearchField` nachgezogen, siehe TODO.md → „DOM-Testumgebung".
 - [x] **MapLibre GL Geolocation-Button** (2026-07-09) — ✅ ERLEDIGT. `maplibregl.GeolocateControl`
   zentral in `MapCore.init()` neben dem bestehenden `NavigationControl` ergänzt (`top-right`),
   gilt dadurch automatisch für alle 5 Kartenseiten ohne Änderung an den einzelnen
   Page-Controllern. Einmaliges Hinspringen (`trackUserLocation: false`), kein kontinuierliches
   Tracking. Verifiziert: `npx tsc --noEmit` 0 Fehler, `npm test` 112/112.
+
+## NAH: Anschlussfeatures
+
+- [ ] **NAH: Betreiber-spezifische Icons** — Von TODO.md hierher verschoben (2026-07-18): eher
+  ein Komfort-Update als eine reine Erweiterung, braucht einen tieferen Eingriff in die Logik
+  (neues Datenfeld + eigene Layer-Architektur für die Status-Anzeige), kein mechanisches Anhängen
+  an Bestehendes. Im Sprite-Set `oe5ith-markers` liegen bereits 9 Betreiber-Logos
+  (`nah-adac-luftrettung`, `nah-oeamtc-flugrettung`, `nah-drf-luftrettung`, …), aktuell ungenutzt.
+  Ziel: NAH-Stationsmarker zeigen das Icon ihres Betreibers statt eines generischen Symbols.
+  Braucht (a) ein neues `operator`-Feld in `NahStation`/`api/nah.php` (aktuell nur `name`/
+  `callsign` vorhanden, keine Zuordnung zu den Sprite-Keys), und (b) eine separate Lösung für die
+  Status-Anzeige (grün/rot/grau), da diese Sprites nicht-SDF sind und sich nicht per `icon-color`
+  einfärben lassen (z.B. zusätzlicher Status-Dot-Layer neben dem Betreiber-Icon). Bewusst aus der
+  U5-Migration
+  ([docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md))
+  herausgehalten, die auf ein generisches Status-Icon setzt.
 
 ## Routing: Anschlussfeatures
 
