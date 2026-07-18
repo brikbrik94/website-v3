@@ -1,6 +1,7 @@
 import { CoordSystemBlock } from '../CoordSystemBlock';
 import { CoordsState } from '../types';
 import { Toast } from '../../../lib/Toast';
+import { parseDecimalInput } from '../parseDecimalInput';
 
 type Wgs84Format = 'dd' | 'ddm' | 'dms';
 
@@ -166,8 +167,8 @@ export class Wgs84Block extends CoordSystemBlock {
     if (!this.element) return;
 
     if (this.format === 'dd') {
-      const lat = parseFloat((this.element.querySelector('[data-field="lat"]') as HTMLInputElement).value);
-      const lon = parseFloat((this.element.querySelector('[data-field="lon"]') as HTMLInputElement).value);
+      const lat = parseDecimalInput((this.element.querySelector('[data-field="lat"]') as HTMLInputElement).value);
+      const lon = parseDecimalInput((this.element.querySelector('[data-field="lon"]') as HTMLInputElement).value);
       const latSuf = this.element.querySelector('[data-field="lat-suffix"]')!.textContent || 'N';
       const lonSuf = this.element.querySelector('[data-field="lon-suffix"]')!.textContent || 'E';
       if (!isNaN(lat) && !isNaN(lon)) {
@@ -180,23 +181,23 @@ export class Wgs84Block extends CoordSystemBlock {
     }
 
     if (this.format === 'ddm') {
-      const latD = parseFloat((this.element.querySelector('[data-field="lat-d"]') as HTMLInputElement).value);
-      const latM = parseFloat((this.element.querySelector('[data-field="lat-m"]') as HTMLInputElement).value);
+      const latD = parseDecimalInput((this.element.querySelector('[data-field="lat-d"]') as HTMLInputElement).value);
+      const latM = parseDecimalInput((this.element.querySelector('[data-field="lat-m"]') as HTMLInputElement).value);
       const latSuf = this.element.querySelector('[data-field="lat-suffix"]')!.textContent || 'N';
-      const lonD = parseFloat((this.element.querySelector('[data-field="lon-d"]') as HTMLInputElement).value);
-      const lonM = parseFloat((this.element.querySelector('[data-field="lon-m"]') as HTMLInputElement).value);
+      const lonD = parseDecimalInput((this.element.querySelector('[data-field="lon-d"]') as HTMLInputElement).value);
+      const lonM = parseDecimalInput((this.element.querySelector('[data-field="lon-m"]') as HTMLInputElement).value);
       const lonSuf = this.element.querySelector('[data-field="lon-suffix"]')!.textContent || 'E';
       this.service.setDdm(latD, latM, latSuf, lonD, lonM, lonSuf);
       return;
     }
 
-    const latD = parseFloat((this.element.querySelector('[data-field="lat-d"]') as HTMLInputElement).value);
-    const latM = parseFloat((this.element.querySelector('[data-field="lat-m"]') as HTMLInputElement).value);
-    const latS = parseFloat((this.element.querySelector('[data-field="lat-s"]') as HTMLInputElement).value);
+    const latD = parseDecimalInput((this.element.querySelector('[data-field="lat-d"]') as HTMLInputElement).value);
+    const latM = parseDecimalInput((this.element.querySelector('[data-field="lat-m"]') as HTMLInputElement).value);
+    const latS = parseDecimalInput((this.element.querySelector('[data-field="lat-s"]') as HTMLInputElement).value);
     const latSuf = this.element.querySelector('[data-field="lat-suffix"]')!.textContent || 'N';
-    const lonD = parseFloat((this.element.querySelector('[data-field="lon-d"]') as HTMLInputElement).value);
-    const lonM = parseFloat((this.element.querySelector('[data-field="lon-m"]') as HTMLInputElement).value);
-    const lonS = parseFloat((this.element.querySelector('[data-field="lon-s"]') as HTMLInputElement).value);
+    const lonD = parseDecimalInput((this.element.querySelector('[data-field="lon-d"]') as HTMLInputElement).value);
+    const lonM = parseDecimalInput((this.element.querySelector('[data-field="lon-m"]') as HTMLInputElement).value);
+    const lonS = parseDecimalInput((this.element.querySelector('[data-field="lon-s"]') as HTMLInputElement).value);
     const lonSuf = this.element.querySelector('[data-field="lon-suffix"]')!.textContent || 'E';
     this.service.setDms(latD, latM, latS, latSuf, lonD, lonM, lonS, lonSuf);
   }
