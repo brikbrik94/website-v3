@@ -5,6 +5,7 @@ import { Toast } from '../lib/Toast';
 import { initNahSidebar, updateNahServerStatus } from '../components/NahSidebar';
 import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { MapLegend } from '../lib/MapLegend';
+import { resolveLegendSwatchBranches } from '../lib/resolveLegendSwatch';
 import { PopupManager } from '../lib/PopupManager';
 import { NahStationResult } from '../types/nah';
 import { InventoryService } from '../services/InventoryService';
@@ -38,9 +39,22 @@ export class NahPageController extends BasePageController {
       const legend = new MapLegend(mounts.legend!);
       legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Gewählte Station' });
       legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Nächste Stationen' });
-      legend.addEntry({ type: 'dot',  color: MAP_COLORS.success, label: 'Einsatzbereit' });
-      legend.addEntry({ type: 'dot',  color: MAP_COLORS.danger, label: 'Außer Dienst (Betriebszeit)' });
-      legend.addEntry({ type: 'dot',  color: MAP_COLORS.muted, label: 'Außer Saison' });
+
+      // Status-Farben werden aus der echten Stations-Layer-Definition gelesen (eine Quelle der
+      // Wahrheit statt separat gepflegter MAP_COLORS-Duplikate), Icon passend zum Kartensymbol.
+      const statusBranches = resolveLegendSwatchBranches(NahMapLayers.getStationsLayerDefinition(), {
+        active: 'Einsatzbereit',
+        inactive: 'Außer Dienst (Betriebszeit)',
+        offseason: 'Außer Saison',
+      });
+      if (statusBranches) {
+        statusBranches.forEach((b) => legend.addEntry({ type: 'icon', icon: 'fa-solid fa-helicopter', color: b.color, label: b.label }));
+      } else {
+        console.warn('[NahPage] Status-Legende konnte nicht aus der Stations-Layer-Definition abgeleitet werden, nutze Fallback-Werte');
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.success, label: 'Einsatzbereit' });
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.danger, label: 'Außer Dienst (Betriebszeit)' });
+        legend.addEntry({ type: 'dot', color: MAP_COLORS.muted, label: 'Außer Saison' });
+      }
 
       initNahSidebar(mounts.sidebar);
       this.sidebarResults = document.getElementById('nah-sidebar-results')!;

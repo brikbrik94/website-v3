@@ -2,6 +2,17 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 07:52
+
+### Geändert
+- **`/nah`-Legende: Schritt 3 (TODO.md → Map-Subsystem: Anschlussfeatures)** — die 3 hardcodierten
+  Status-Legendeneinträge lesen die Farbe jetzt aus der echten Stations-Layer-Definition
+  (neue `resolveLegendSwatchBranches()` in `src/lib/resolveLegendSwatch.ts`, extrahiert alle
+  Branches einer `match`-Expression statt nur den Fallback-Arm; neu exportierte
+  `NahMapLayers.getStationsLayerDefinition()`) statt separat gepflegter `MAP_COLORS`-Konstanten.
+  Zusätzlich zeigen die Status-Einträge jetzt ein Helikopter-Icon statt eines Farbpunkts, passend
+  zum tatsächlichen Kartensymbol (neuer `icon`-Eintragstyp in `MapLegend`/`LegendEntry`).
+
 ## [Unreleased] - 2026-07-18 07:50
 
 ### Geändert

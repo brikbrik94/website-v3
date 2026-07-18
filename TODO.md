@@ -58,11 +58,22 @@ alle vier auf einmal anfassen.
   Weitere Optimierungsrichtungen (Kuratierung auf mehr Templates ausweiten, `opacity` nutzen,
   Legenden-Gruppierung) als eigener Punkt in ROADMAP.md → „Karten-Legende: weitere Optimierung"
   festgehalten.
-- [ ] **Schritt 3: Anwendung auf `/nah`** — migriert die 5 bestehenden, hardcodierten
-  `legend.addEntry()`-Aufrufe (`NahPage.ts:39-43`) auf das neue System. Sonderfall: der
-  Stationen-Symbol-Layer hat eine `match`-Expression auf `status` (`NahMapLayers.ts:209-215`) —
-  **ein** Layer wird zu **drei** Legenden-Zeilen (Einsatzbereit/Außer Dienst/Außer Saison), das
-  Metadata-Format aus Schritt 1 muss mehrere Label/Farbe-Paare pro Layer-ID abbilden können.
+- [x] **Schritt 3: Anwendung auf `/nah`** (2026-07-18) — ✅ ERLEDIGT. Die 3 hardcodierten
+  Status-`legend.addEntry()`-Aufrufe wurden auf einen erweiterten Resolver umgestellt: neue
+  `resolveLegendSwatchBranches()` in `src/lib/resolveLegendSwatch.ts` liest — anders als
+  `resolveLegendSwatch()`, das nur den Fallback-Arm einer `match`-Expression liest — **alle**
+  Branches aus und mappt sie über ein Label-Dictionary auf Legenden-Zeilen (Sonderfall: **ein**
+  Layer → **drei** Zeilen). Farbe kommt jetzt aus der echten Stations-Layer-Definition
+  (`NahMapLayers.getStationsLayerDefinition()`, extrahiert aus der bisher nur lokal in
+  `initLayers()` gebauten Literal) statt separat gepflegten `MAP_COLORS`-Konstanten — eine Quelle
+  der Wahrheit, Fallback auf die alten hardcodierten Werte falls die Layer-Definition sich künftig
+  unerwartet ändert. Zusätzlich: Status-Einträge zeigen jetzt ein Helikopter-Icon
+  (`fa-solid fa-helicopter`) statt eines Farbpunkts, passend zum tatsächlichen Kartensymbol —
+  neuer `icon`-Eintragstyp in `MapLegend`/`LegendEntry`, dafür vorher `.map-legend-icon` per
+  CI-Request in `oe5ith-ci` v1.21.0 umgesetzt (`docs/ci/legend-icon-swatch-request.md`). 8 neue
+  Tests (`resolveLegendSwatch.test.ts`, `NahMapLayers.test.ts`), 174 Tests grün, 0
+  TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf `/nah` weiterhin ausstehend (keine
+  Playwright-Umgebung hier).
 - [ ] **Schritt 4: Anwendung auf `/routing`** — `RoutingPage.ts` instanziiert `MapLegend` aktuell
   nur für den Topbar-Toggle-Button, befüllt sie nie.
 - [ ] **Schritt 5: Anwendung auf `/tracking`** — hat aktuell noch gar keine `MapLegend`-Instanz,

@@ -39,13 +39,18 @@ export class MapLegend {
     const div = document.createElement('div');
     div.className = 'map-legend-entry';
 
-    const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', area: 'map-legend-area' }[entry.type];
+    const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', area: 'map-legend-area', icon: 'map-legend-icon' }[entry.type];
 
     if (entry.color === null) {
       const unknown = document.createElement('i');
       unknown.className = 'fa-solid fa-circle-question map-legend-unknown';
       unknown.title = 'Farbe nicht auflösbar';
       div.appendChild(unknown);
+    } else if (entry.type === 'icon') {
+      const marker = document.createElement('i');
+      marker.className = `${entry.icon} ${typeClass}`;
+      marker.style.color = entry.color;
+      div.appendChild(marker);
     } else {
       const marker = document.createElement('div');
       marker.className = typeClass;

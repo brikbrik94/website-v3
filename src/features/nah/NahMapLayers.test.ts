@@ -18,6 +18,20 @@ function makeStation(overrides: Partial<NahStation> = {}): NahStation {
   };
 }
 
+describe('NahMapLayers.getStationsLayerDefinition', () => {
+  it('returns a symbol layer with a status match-expression for icon-color', () => {
+    const def = NahMapLayers.getStationsLayerDefinition();
+    expect(def.id).toBe('nah-stations-layer');
+    expect(def.type).toBe('symbol');
+    const iconColor = (def.paint as Record<string, unknown>)['icon-color'] as unknown[];
+    expect(iconColor[0]).toBe('match');
+    expect(iconColor[1]).toEqual(['get', 'status']);
+    expect(iconColor).toContain('active');
+    expect(iconColor).toContain('inactive');
+    expect(iconColor).toContain('offseason');
+  });
+});
+
 describe('NahMapLayers.computeGroupStatus', () => {
   it('returns "active" when at least one station is active and in season', () => {
     const stations: NahStation[] = [

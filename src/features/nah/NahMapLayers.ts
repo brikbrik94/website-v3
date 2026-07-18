@@ -66,7 +66,42 @@ async function ensureHeliIcon(map: maplibregl.Map): Promise<void> {
   }
 }
 
+// NAH-Stationen (Symbol-Layer statt DOM-Marker; siehe
+// docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md). Eigene Funktion statt
+// Inline-Literal in initLayers(), damit die Legende (NahPage.ts) dieselbe Layer-Definition (und
+// damit dieselbe status→Farbe-Zuordnung) lesen kann, ohne sie ein zweites Mal zu pflegen.
+function buildStationsLayerDef(): LayerSpecification {
+  return {
+    id: STATIONS_LAYER,
+    type: 'symbol',
+    source: STATIONS_SOURCE,
+    layout: {
+      'icon-image': HELI_ICON_ID,
+      'icon-size': 0.5,
+      'icon-allow-overlap': true,
+    },
+    paint: {
+      'icon-color': [
+        'match', ['get', 'status'],
+        'active', MAP_COLORS.success,
+        'inactive', MAP_COLORS.danger,
+        'offseason', MAP_COLORS.muted,
+        MAP_COLORS.success
+      ]
+    }
+  };
+}
+
 export const NahMapLayers = {
+  /**
+   * Liefert die aktuelle Stations-Layer-Definition (inkl. status→Farbe-Paint-Expression), ohne
+   * dass die Karte initialisiert sein muss — für resolveLegendSwatchBranches() in NahPage.ts.
+   */
+  getStationsLayerDefinition(): LayerSpecification {
+    return buildStationsLayerDef();
+  },
+
+
   computeGroupStatus(stations: NahStation[]): NahStationStatus {
     return stations
       .map(s => computeStationStatus(s))
@@ -194,28 +229,7 @@ export const NahMapLayers = {
     });
     MapCore.ensureGeoJsonLayer(map, TARGET_PIN_SOURCE, targetPinLayerDef);
 
-    // NAH-Stationen (Symbol-Layer statt DOM-Marker; siehe
-    // docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)
-    const stationsLayerDef: LayerSpecification = {
-      id: STATIONS_LAYER,
-      type: 'symbol',
-      source: STATIONS_SOURCE,
-      layout: {
-        'icon-image': HELI_ICON_ID,
-        'icon-size': 0.5,
-        'icon-allow-overlap': true,
-      },
-      paint: {
-        'icon-color': [
-          'match', ['get', 'status'],
-          'active', MAP_COLORS.success,
-          'inactive', MAP_COLORS.danger,
-          'offseason', MAP_COLORS.muted,
-          MAP_COLORS.success
-        ]
-      }
-    };
-    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsLayerDef);
+    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, buildStationsLayerDef());
     attachHoverCursor(map, [STATIONS_LAYER]);
 
     // Text-Label für Station-Count (nur sichtbar wenn > 1)
