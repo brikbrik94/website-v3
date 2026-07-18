@@ -2,6 +2,14 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 14:05
+
+### Hinzugefügt
+- **CI-Pipeline via GitHub Actions (ROADMAP.md → Repo-Pflege & Dokumentation)** —
+  `.github/workflows/ci.yml`, 2 parallele Jobs (`frontend`: `tsc`/`vitest`/OpenAPI-Validierung,
+  `backend`: PSR-12-Lint/Security-Audit), Trigger bei Push auf `master` + allen Pull Requests.
+  Kein Secrets-/DB-Handling nötig — alle Checks sind statisch oder laufen mit gemockten Daten.
+
 ## [Unreleased] - 2026-07-18 13:00
 
 ### Geändert

@@ -183,15 +183,18 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   (`## Unreleased (DATUM)` vs. `## DATUM — Beschreibung`) — auf einheitliches
   `## YYYY-MM-DD — Beschreibung` (bzw. `## YYYY-MM` für den älteren monatsweisen Block ohne
   Tagesgranularität) vereinheitlicht.
-- [ ] **Continuous-Integration-Pipeline (Build-Automatisierung, z.B. GitHub Actions)** — aktuell
-  läuft `npx tsc --noEmit && npm test` (sowie die neuen `composer run lint` /
-  `bash scripts/security-audit.sh` / `npm run validate:openapi` aus der Standards-Angleichung,
-  siehe [docs/superpowers/specs/2026-07-08-standards-angleichung-design.md](./superpowers/specs/2026-07-08-standards-angleichung-design.md))
-  nur lokal/manuell vor jedem Commit. Ziel: bei jedem Push/PR automatisch ausführen. Nicht zu
-  verwechseln mit dem `oe5ith-ci`-Submodul (Corporate Identity) — hier geht es um eine
-  Build-/Test-Pipeline. Bewusst als eigener ROADMAP-Punkt (nicht Teil der Standards-Angleichung
-  selbst), da eine neue Infrastruktur-Entscheidung (welcher CI-Anbieter, Secrets-Handling für
-  DB-Zugriff in der Pipeline etc.) nötig ist.
+- [x] **Continuous-Integration-Pipeline (Build-Automatisierung, GitHub Actions)** (2026-07-18) —
+  ✅ ERLEDIGT. `.github/workflows/ci.yml`, 2 parallele Jobs: `frontend` (`npx tsc --noEmit`,
+  `npm test`, `npm run validate:openapi`) und `backend` (`composer run lint`,
+  `bash scripts/security-audit.sh`). Trigger: Push auf `master` + alle Pull Requests. Vor der
+  Umsetzung geprüft: **kein** Secrets-/DB-Zugriffs-Handling nötig — alle Checks sind entweder
+  statische Analyse (`api/*.php`-Secret-Scan, PSR-12) oder laufen mit gemockten Daten (alle 196
+  Tests nutzen Fake-URLs, kein echter Fetch/DB-Zugriff). Das im ursprünglichen Punkt befürchtete
+  Infrastruktur-Problem existierte also nicht. Kein `submodules: true` beim Checkout nötig —
+  `oe5ith-ci` wird von keinem Check angefasst (nur Doku-Kommentare referenzieren es, `vite.config.ts`
+  ignoriert es explizit im Watcher). Alle Workflow-Schritte lokal mit frischem `npm ci`/
+  `composer install` verifiziert (identische Kommandos wie im Workflow). Nicht zu verwechseln mit
+  dem `oe5ith-ci`-Submodul (Corporate Identity) — hier geht es um eine Build-/Test-Pipeline.
 - [x] **Vite-/PHP-Dev-Server: Robustheit & Health-Check** (2026-07-18) — ✅ ERLEDIGT. Root Cause
   geklärt: `concurrently --kill-others` (package.json `dev`) greift nur, solange der
   `concurrently`-Elternprozess selbst noch läuft — stirbt/verwaist der (z.B. weil eine frühere
