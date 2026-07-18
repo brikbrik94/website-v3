@@ -1,5 +1,10 @@
 import { MAP_COLORS } from './MapStyles';
 
+/**
+ * Ordnet AIS/ERIDM-Schiffstyp-Codes (Standard-AIS 0-99, Inland-ERIDM 8000+) einem Sprite,
+ * einer lesbaren Klassenbezeichnung und einer von 3 Farb-Buckets zu (Tanker/Behörde-SAR →
+ * `danger`, Passagier-/Fahrgastschiff → `warning`, alles andere → `accent`).
+ */
 export class ShipTypeMapper {
   /**
    * Returns the sprite ID for a given AIS/ERIDM ship type code.

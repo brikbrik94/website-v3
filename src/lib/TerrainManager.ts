@@ -1,6 +1,12 @@
 import { Map } from 'maplibre-gl';
 import { OverlayLoader } from './OverlayLoader';
 
+/**
+ * Verwaltet 3D-Terrain (Elevation), Hillshading und das Höhenlinien-Overlay für eine
+ * Map-Instanz — modul-scoped (nicht pro Instanz), da pro Seite nur eine Map gleichzeitig lebt.
+ * `initTerrainManager()` setzt die Toggle-Zustände bei jedem Seitenaufruf zurück, damit auf der
+ * nächsten Seite nichts unerwartet aktiv bleibt.
+ */
 export const ELEVATION_SOURCE_ID = 'at-elevation';
 export const HILLSHADE_LAYER_ID = 'at-hillshade';
 

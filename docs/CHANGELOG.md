@@ -2,6 +2,15 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 14:50
+
+### Hinzugefügt
+- **JSDoc-Kommentare für 10 `src/lib/`-Dateien ergänzt** (TODO.md → Sonstiges) — `BasemapStore.ts`,
+  `GeocoderService.ts`, `ManeuverIcons.ts`, `MapLegend.ts`, `MapRegistry.ts`, `PopupManager.ts`,
+  `RoutingService.ts`, `ShipTypeMapper.ts`, `TerrainManager.ts`, `Toast.ts` — vom automatisch
+  generierten Bausteine-Katalog (`docs/architecture/bausteine.md`) als fehlend aufgedeckt.
+  `npm run docs:bausteine` zeigt jetzt 0 verbleibende Lücken.
+
 ## [Unreleased] - 2026-07-18 14:40
 
 ### Sicherheit

@@ -2,6 +2,11 @@ import { RouteResult, RoutingStation } from '../types/common';
 
 const ORS_BASE_URL = '/api/ors.php';
 
+/**
+ * Abstraktionsschicht über den `/api/ors.php`-Proxy zum OpenRouteService (ORS): Health-Check,
+ * verfügbare Fahrprofile, Routenberechnung (A→B) und Matrix-basierte Nächste-Station-Suche
+ * (SEW/NEF).
+ */
 export const RoutingService = {
   async checkHealth(): Promise<boolean> {
     try {
