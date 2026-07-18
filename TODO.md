@@ -74,8 +74,16 @@ alle vier auf einmal anfassen.
   Tests (`resolveLegendSwatch.test.ts`, `NahMapLayers.test.ts`), 174 Tests grün, 0
   TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf `/nah` weiterhin ausstehend (keine
   Playwright-Umgebung hier).
-- [ ] **Schritt 4: Anwendung auf `/routing`** — `RoutingPage.ts` instanziiert `MapLegend` aktuell
-  nur für den Topbar-Toggle-Button, befüllt sie nie.
+- [x] **Schritt 4: Anwendung auf `/routing`** (2026-07-18) — ✅ ERLEDIGT. `RoutingPage.ts`
+  befüllt die Legende jetzt mit 4 Einträgen: 2 Routen-Linien (Gewählte/Alternative Route, aus
+  `MAP_ROUTE_STYLES`) + Start-/Zielpunkt (Dots, aus `MAP_COLORS.success`/`.danger`) — beide
+  Quellen waren schon vorher die einzige Quelle für die jeweiligen Kartenlayer (`RoutingMapLayers.ts`),
+  keine neue Resolver-Logik nötig (keine `match`-Expression wie bei Schritt 3). Bewusst **kein**
+  Legenden-Eintrag für die Stations-Icons — die kommen pro Rettungsorganisation
+  (`rd-<org>`/`nef-<org>`, `api/stations.php:78-80`), keine kleine geschlossene Aufzählung wie
+  bei `/nah`s Status, ein Eintrag pro Organisation wäre unbegrenzt/unpraktisch. 174 Tests grün,
+  0 TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf `/routing` weiterhin ausstehend
+  (keine Playwright-Umgebung hier).
 - [ ] **Schritt 5: Anwendung auf `/tracking`** — hat aktuell noch gar keine `MapLegend`-Instanz,
   muss zuerst ergänzt werden (`LayoutHelper.renderBaseLayout(..., { withLegend: true })` fehlt in
   `TrackingPage.ts`).
