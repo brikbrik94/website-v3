@@ -150,6 +150,24 @@ alle vier auf einmal anfassen.
   (nicht im produktiven `dist/`-Output), Windows-spezifisch bzw. nur bei laufendem Dev-Server
   relevant — kein akuter Produktions-Impact, aber noch nicht geprüft, ob `npm audit fix` ohne
   Breaking Changes an `vite`/`concurrently` möglich ist.
+- [ ] **10 `src/lib/`-Dateien ohne JSDoc-Kommentar** (2026-07-18, beim Erstellen von
+  `docs/architecture/bausteine.md` aufgefallen) — `BasemapStore.ts`, `GeocoderService.ts`,
+  `ManeuverIcons.ts`, `MapLegend.ts`, `MapRegistry.ts`, `PopupManager.ts`, `RoutingService.ts`,
+  `ShipTypeMapper.ts`, `TerrainManager.ts`, `Toast.ts` zeigen im automatisch generierten
+  Bausteine-Katalog `_TODO: Beschreibung ergänzen_`, da keiner ihrer Exports einen
+  JSDoc-Kommentar (`/** ... */` direkt darüber) hat. Ziel: je einen kurzen JSDoc-Kommentar über
+  dem jeweiligen Haupt-Export ergänzen, danach `npm run docs:bausteine` erneut laufen lassen.
+- [ ] **Koordinaten-Umrechner (`/coords`, WGS84): Komma als Dezimaltrennzeichen wird verschluckt**
+  (2026-07-18, aus `docs/proposals/fixes.md` übernommen) — bestätigt: `Wgs84Block.ts` parst alle
+  DD-/DDM-/DMS-Eingabefelder mit rohem `parseFloat(input.value)` (`Wgs84Block.ts:169-199`, u.a.
+  `lat`/`lon`/`lat-d`/`lat-m`/`lon-d`/`lon-m`/DMS-Sekunden), ohne Komma vorher durch Punkt zu
+  ersetzen — `parseFloat("48,3")` liefert `48` (bricht am Komma ab), statt `48.3` oder einen
+  Parse-Fehler zu liefern. Nutzer erwartet, dass auch das im Deutschen übliche Komma als
+  Dezimaltrennzeichen funktioniert. Zusätzlich gemeldet: die Eingabelänge sei zu stark begrenzt
+  und verursache Probleme — dafür konnte ich **kein** explizites `maxlength`-Attribut oder
+  Zeichenlimit im Code finden (weder in `Wgs84Block.ts` noch in `oe5ith-ci/css/coords.css`);
+  könnte an der `.coord-vals`/`.coord-input-dms`-Breite liegen (visuell abgeschnitten statt
+  wirklich begrenzt) — braucht Live-Reproduktion zur Root-Cause-Bestimmung, bevor das gefixt wird.
 
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in

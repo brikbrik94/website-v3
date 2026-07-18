@@ -2,7 +2,7 @@
 
 Umgesetzte Punkte aus [ROADMAP.md](./ROADMAP.md), chronologisch nach Release.
 
-## Unreleased (2026-07-03)
+## 2026-07-03 — CLAUDE.md-Aufsplittung (AGENT_INSTRUCTIONS.md/GEMINI.md)
 
 ### `CLAUDE.md` in portable + repo-spezifische Teile aufgesplittet
 - [x] Repo-unabhängige, standardbasierte Regeln (Standards-Referenzen-Auszug, TODO/Roadmap-Split,

@@ -2,6 +2,41 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 12:25
+
+### Hinzugefügt
+- **Bausteine-Katalog für `src/lib/` (ROADMAP.md → Repo-Pflege & Dokumentation)** —
+  `docs/architecture/bausteine.md`, automatisiert generiert (`npm run docs:bausteine`,
+  `scripts/generate-bausteine-catalog.mjs`) aus Exports + JSDoc-Kommentaren der 25 Dateien in
+  `src/lib/`. `CLAUDE.md` verweist bei „Map infrastructure" darauf. Nebenbei aufgedeckt: 10 der
+  25 Dateien haben keinen JSDoc-Kommentar über ihrem Haupt-Export — als neuer TODO.md-Punkt
+  erfasst, nicht in diesem Rahmen nachgezogen.
+
+## [Unreleased] - 2026-07-18 12:10
+
+### Hinzugefügt
+- **`npm run dev:reset` (ROADMAP.md → Repo-Pflege & Dokumentation)** — neues
+  `scripts/dev-reset.sh` beendet gezielt hängen gebliebene Dev-Server-Prozesse (Vite Port 8000,
+  PHP-API Port 8081) und leert den Vite-Dependency-Optimize-Cache. Root Cause: `concurrently
+  --kill-others` (package.json `dev`) greift nicht mehr, wenn der `concurrently`-Elternprozess
+  selbst schon weg ist (z.B. beendete Session ohne sauberen Stop der Kindprozesse) — führte zu
+  „504 Outdated Optimize Dep"-Fehlern im Browser bei weiterlaufendem Vite trotz abgestürztem
+  PHP-Server. Bewusst kein automatischer `predev`-Hook, nur auf Abruf. In `CLAUDE.md` bei den
+  Commands dokumentiert.
+
+## [Unreleased] - 2026-07-18 11:15
+
+### Geändert
+- **Dokumente an referenzierte Standards angeglichen (ROADMAP.md → Repo-Pflege &
+  Dokumentation)** — `CLAUDE.md` dokumentiert jetzt das vollständige, offizielle
+  6-Kategorien-Set von Keep a Changelog (`Hinzugefügt`/`Geändert`/`Veraltet`/`Entfernt`/
+  `Behoben`/`Sicherheit`) statt bisher nur 4 (per Proposal-Zyklus, siehe
+  `docs/proposals/archive/2026-07-18-changelog-full-categories-*`). Ein historischer Eintrag
+  (v3.3.1) nutzte `### Aktualisiert` statt einer dokumentierten Kategorie — korrigiert zu
+  `### Geändert`. `TODO_ARCHIVE.md`/`ROADMAP_ARCHIVE.md`-Überschriften auf ein einheitliches
+  `## YYYY-MM-DD — Beschreibung`-Format vereinheitlicht (vorher gemischt mit
+  `## Unreleased (DATUM)`).
+
 ## [Unreleased] - 2026-07-18 10:40
 
 ### Hinzugefügt
@@ -471,7 +506,7 @@ Die beiden Basemap-At-Bugs wurden beim manuellen Durchtesten der U1/U2-Verifikat
 
 ## [3.3.1] - 2026-05-21 02:40
 
-### Aktualisiert
+### Geändert
 - **Kern-Abhängigkeiten-Upgrade:** Aktualisierung aller zentralen Build- und Laufzeit-Bibliotheken auf die neuesten Versionen (`typescript` v6.0.3, `vite` v8.0.13, `vitest` v4.1.7, `@fortawesome/fontawesome-free` v7.2.0, `maplibre-gl` v5.24.0, `pmtiles` v4.4.1) zur Verbesserung der Performance (inkl. WebGPU-Support in MapLibre 5) und zur langfristigen Wartbarkeit.
 - **Typ-Kompatibilität:** Bereitstellung von `src/vite-env.d.ts` zur Behebung strengerer TypeScript 6-Prüfungen bei CSS-Import-Seiteneffekten.
 
