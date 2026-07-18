@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 08:55
+
+### Hinzugefügt
+- **`/tracking`-Legende ergänzt (TODO.md → Map-Subsystem: Anschlussfeatures, Schritt 5)** —
+  `/tracking` hatte bisher gar keine Legende. Jetzt 7 Einträge: 4 ADS-B-Höhenstufen (Boden/
+  5.000/15.000/35.000+ ft, `MAP_COLORS.alt0-35k`) + 3 AIS-Schiffstyp-Farben (Tanker/Gefahrgut,
+  Passagierschiff, Sonstige — entsprechend `ShipTypeMapper.getColor()`s 3-Bucket-Zuordnung).
+  Damit sind alle 5 Schritte des Legenden-Rollouts (`/karte`, `/nah`, `/routing`, `/tracking`)
+  abgeschlossen.
+
 ## [Unreleased] - 2026-07-18 08:40
 
 ### Geändert
