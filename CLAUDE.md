@@ -98,8 +98,8 @@ konkrete Umsetzung hier: Secrets nur in `api/config.local.php`, DB-Zugriff nur �
 Read-only `web_api_user` — siehe Project conventions unten. Kein systematischer OWASP-Abgleich
 bisher — Self-Check als Aufgabe in TODO.md.
 
-Folgearbeiten aus den oben genannten Abweichungen sind in [TODO.md](./TODO.md) (Angleichung
-bestehenden Codes/bestehender Docs an einen Standard) bzw. [ROADMAP.md](./ROADMAP.md) (größere,
+Folgearbeiten aus den oben genannten Abweichungen sind in [TODO.md](./docs/TODO.md) (Angleichung
+bestehenden Codes/bestehender Docs an einen Standard) bzw. [ROADMAP.md](./docs/ROADMAP.md) (größere,
 noch nicht existierende Initiativen) erfasst.
 
 **Pflege dieser Sektion:** Neue **repo-/domänenspezifische** Standards (z.B. ein neues Geodatenformat,
@@ -134,7 +134,7 @@ this repo's concrete implementation of that convention.
 
 **Two changelogs exist here and BOTH must be kept current — they have different audiences and neither is generated from the other:**
 
-1. **`CHANGELOG.md`** (repo root) — the technical record, Keep-a-Changelog-structured, all 6 official categories in German (`Hinzugefügt` / `Geändert` / `Veraltet` / `Entfernt` / `Behoben` / `Sicherheit` — i.e. Added/Changed/Deprecated/Removed/Fixed/Security), used as needed (not every entry needs every category).
+1. **`CHANGELOG.md`** (`docs/CHANGELOG.md`, moved from repo root 2026-07-18) — the technical record, Keep-a-Changelog-structured, all 6 official categories in German (`Hinzugefügt` / `Geändert` / `Veraltet` / `Entfernt` / `Behoben` / `Sicherheit` — i.e. Added/Changed/Deprecated/Removed/Fixed/Security), used as needed (not every entry needs every category).
 2. **The in-app changelog** shown when the user clicks the version in the sidebar — currently hardcoded HTML in `src/lib/GlobalModals.ts` (`changelog-modal-body`). This is a **curated, user-facing** summary in plain German (no internal symbol/function/file names), grouped as „Neuigkeiten & Features" / „Verbesserungen & Fixes". **Known debt: it currently lags behind `CHANGELOG.md`; pull it forward on the next UI touch.** (Intended future improvement: render it collapsibly — headline first, details on click — or generate it from a single curated source.)
 
 **Versioning:** `src/version.ts` (`APP_VERSION`) is the SemVer single source of truth.

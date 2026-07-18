@@ -116,12 +116,12 @@ Neue Funktionen für bessere Karten-Bedienung und Suche.
   Status-Anzeige (grün/rot/grau), da diese Sprites nicht-SDF sind und sich nicht per `icon-color`
   einfärben lassen (z.B. zusätzlicher Status-Dot-Layer neben dem Betreiber-Icon). Bewusst aus der
   U5-Migration
-  ([docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md))
+  ([docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md))
   herausgehalten, die auf ein generisches Status-Icon setzt.
 
 ## Routing: Anschlussfeatures
 
-Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md)
+Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./superpowers/specs/2026-07-04-routing-sidebar-details-design.md)
 (Fahrmodus-Badge, Warn-Badges, Turn-by-Turn für A→B — Phase 1 in TODO.md/CHANGELOG.md).
 
 - [ ] **Gleiche Detailanzeige für SEW/NEF-Einzelstation** — Fahrmodus-Badge,
@@ -186,7 +186,7 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
 - [ ] **Continuous-Integration-Pipeline (Build-Automatisierung, z.B. GitHub Actions)** — aktuell
   läuft `npx tsc --noEmit && npm test` (sowie die neuen `composer run lint` /
   `bash scripts/security-audit.sh` / `npm run validate:openapi` aus der Standards-Angleichung,
-  siehe [docs/superpowers/specs/2026-07-08-standards-angleichung-design.md](../docs/superpowers/specs/2026-07-08-standards-angleichung-design.md))
+  siehe [docs/superpowers/specs/2026-07-08-standards-angleichung-design.md](./superpowers/specs/2026-07-08-standards-angleichung-design.md))
   nur lokal/manuell vor jedem Commit. Ziel: bei jedem Push/PR automatisch ausführen. Nicht zu
   verwechseln mit dem `oe5ith-ci`-Submodul (Corporate Identity) — hier geht es um eine
   Build-/Test-Pipeline. Bewusst als eigener ROADMAP-Punkt (nicht Teil der Standards-Angleichung
@@ -217,28 +217,30 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   `_TODO: Beschreibung ergänzen_` (als eigener TODO.md-Punkt erfasst, nicht in diesem Rahmen
   nachgezogen). `CLAUDE.md` verweist bei „Map infrastructure" jetzt auf den Katalog. 196 Tests
   grün, 0 TypeScript-Fehler (reine Tooling-/Doku-Änderung, kein App-Code betroffen).
-- [ ] **Repo-Root-Ordnerstruktur aufräumen** — im Repo-Root liegen aktuell u.a. Config-Dateien
-  (`composer.json`/`.lock`, `phpcs.xml`, `nginx.conf`, `tsconfig.json`, `vite.config.ts`),
-  Deploy-Tooling (`deploy-website.sh`), acht Markdown-Dateien
-  (`CLAUDE.md`/`GEMINI.md`/`AGENT_INSTRUCTIONS.md`/`README.md`/`CHANGELOG.md`/`ROADMAP.md`/
-  `ROADMAP_ARCHIVE.md`/`TODO.md`/`TODO_ARCHIVE.md`) und mehr nebeneinander — unübersichtlich.
-  **Harte Grenze für eine Umsetzung:** mehrere dieser Root-Platzierungen sind nicht frei wählbar,
-  sondern durch Tool-Konventionen bzw. eigene Regeln vorgegeben und dürfen nicht angetastet
-  werden — `CLAUDE.md`/`GEMINI.md` (zwingend Repo-Root, werden dort automatisch von den jeweiligen
-  Tools geladen), `package.json`/`tsconfig.json`/`vite.config.ts`/`composer.json`/`.gitignore`/
-  `.gitmodules`/`.editorconfig` (Ökosystem-Standardpfade), sowie `TODO.md`/`ROADMAP.md` +
-  `*_ARCHIVE.md` (laut `AGENT_INSTRUCTIONS.md` §3 explizit als Dateipaare **am Repo-Root**
-  festgelegt). Realistische Kandidaten für eine Aufräumung wären eher `deploy-website.sh` +
-  `nginx.conf` (z.B. nach `deploy/`) und ggf. `phpcs.xml`. Braucht einen eigenen
-  Brainstorming-/Design-Durchgang statt einer mechanischen Verschiebung, u.a. weil
-  Deploy-Skript-Pfade (`./deploy-website.sh`) und CI/Editor-Tool-Erwartungen (editorconfig,
-  phpcs) an bestimmten Stellen fest verdrahtet sein könnten.
+- [x] **Repo-Root-Ordnerstruktur aufräumen** (2026-07-18) — ✅ ERLEDIGT, Scope beim Brainstorming
+  auf die **Dokumente** eingegrenzt (Nutzer-Entscheidung: `deploy-website.sh`/`nginx.conf`/
+  `phpcs.xml` bleiben am Root, dafür kein eigener `deploy/`-Ordner). Verschoben nach `docs/`:
+  `TODO.md`/`TODO_ARCHIVE.md`/`ROADMAP.md`/`ROADMAP_ARCHIVE.md`/`CHANGELOG.md`.
+  `AGENT_INSTRUCTIONS.md` bleibt bewusst am Root (Korrektur nach initialem Proposal-Missverständnis:
+  nur TODO/ROADMAP/CHANGELOG sollten ziehen, nicht die Regel-Datei selbst). `GEMINI.md` komplett
+  entfernt (Gemini CLI wird für dieses Projekt nicht genutzt). Dabei **die generische Regel in
+  `AGENT_INSTRUCTIONS.md` §3 selbst geändert** („am Repo-Root" → „unter `docs/`", bezieht sich
+  nur auf TODO/ROADMAP-Dateipaare) statt nur repo-spezifisch abzuweichen — Nutzer-Entscheidung:
+  die Datei ist bisher erst in 2 Repos übernommen, `docs/`-Platzierung ist eine klare
+  Verbesserung. Per Proposal-Zyklus
+  (`docs/proposals/archive/2026-07-18-docs-root-cleanup-{draft,review}.md`). `CLAUDE.md`/
+  `README.md` (bleiben am Root) auf die neuen `docs/`-Pfade umgebogen; interne Querverweise der
+  verschobenen Dateien angepasst (u.a. einen dabei gefundenen, schon vorher kaputten
+  `../docs/...`-Link in `ROADMAP.md` mitkorrigiert). Historische Dokumente (Specs, Pläne,
+  archivierte Proposals) bewusst **nicht** rückwirkend angepasst — referenzieren weiterhin die
+  zum jeweiligen Erstellungszeitpunkt gültigen Pfade. 196 Tests grün, 0 TypeScript-Fehler (reine
+  Datei-/Doku-Verschiebung, kein App-Code betroffen).
 
 ## Karten-Legende: weitere Optimierung
 
 Anschluss an TODO.md → „Map-Subsystem: Anschlussfeatures" (Legende Schritt 1+2, v3.9.0) und die
 `layers.json`-Konsumierung (2026-07-12, unreleased,
-[docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md)).
+[docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./superpowers/specs/2026-07-12-map-legend-granularity-design.md)).
 Bewusst hier statt in TODO.md — die folgenden Punkte sind keine konkret spezifizierten
 Erweiterungen, sondern offene Richtungen, die erst einen eigenen Brainstorming-Durchgang
 brauchen. Die Schritte 3-5 (Legende auf `/nah`/`/routing`/`/tracking` anwenden) sind bereits

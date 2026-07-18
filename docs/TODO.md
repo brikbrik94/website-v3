@@ -22,7 +22,7 @@ alle vier auf einmal anfassen.
   `src/lib/resolveLegendSwatch.ts`), mit „?"-Fallback für nicht aufgelöste Farben. Bewusst
   **keine** `MapRegistry`-Legend-Metadata-Abstraktion gebaut (Entscheidung 4 im Spec-Doc) —
   `MapRegistry.ts` selbst wurde nicht angefasst. Reine Infrastruktur, dokumentiert in
-  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
+  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./superpowers/specs/2026-07-09-map-legend-interactive-design.md).
   129 Tests grün, 0 TypeScript-Fehler.
 - [x] **Schritt 2: Anwendung auf `/karte`** (2026-07-09, Nachbesserung nach Live-Test 2026-07-09) —
   ✅ ERLEDIGT. Legende auf `/karte` zeigt nur aktive Layer (Sidebar-Accordion → Legende automatisch
@@ -53,7 +53,7 @@ alle vier auf einmal anfassen.
   Anfahrtszeit-Ringe zeigen ihre 6-stufige Farbskala jetzt genau einmal statt mehrfach dupliziert).
   Subagent-driven-development mit Task-Reviews (alle „Approved") + finaler Whole-Branch-Review
   (Opus, „Ready to merge: Yes", keine Critical/Important-Funde). Spec:
-  [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+  [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./superpowers/specs/2026-07-12-map-legend-granularity-design.md).
   156 Tests grün, 0 TypeScript-Fehler. Vom Nutzer live auf `/karte` verifiziert und bestätigt.
   Weitere Optimierungsrichtungen (Kuratierung auf mehr Templates ausweiten, `opacity` nutzen,
   Legenden-Gruppierung) als eigener Punkt in ROADMAP.md → „Karten-Legende: weitere Optimierung"
@@ -116,7 +116,7 @@ alle vier auf einmal anfassen.
   Bezirke rendern nur `line`, kein `fill`, obwohl die Vektordaten echte Polygon-Geometrie haben)
   — liegt im Style-JSON auf dem Tile-Server, nicht im Repo-Code; wird vom Nutzer direkt dort
   behoben statt mit einem Workaround hier (Details:
-  [docs/external-blockers.md](./docs/external-blockers.md)). **Hinweis:** erneute
+  [docs/external-blockers.md](./external-blockers.md)). **Hinweis:** erneute
   Browser-Verifikation nach dem Race-Condition-Fix noch ausstehend (keine Playwright-Umgebung).
 - [x] **Routing-Kontextmenü: Touchsteuerung** (2026-07-12) — ✅ ERLEDIGT. Long-Press öffnet das
   Zielwahl-Kontextmenü jetzt auch auf Touch-Geräten, auf `/routing` und `/coords` (beide nutzen
@@ -125,7 +125,7 @@ alle vier auf einmal anfassen.
   `contextmenu`-Long-Press-Erkennung — daher neue, eigene Erkennung in
   `src/lib/LongPressGesture.ts` (`attachLongPress()`, analog `HoverCursor.ts`), unabhängig vom
   nativen Event. Rechtsklick auf Desktop bleibt unverändert. Spec:
-  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
+  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
   166 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
   ARIA-APG-Tastaturnavigation fürs Menü (Pfeiltasten, Roving Tabindex) — eigener Folge-Punkt bei
   Bedarf; visuelles Hold-Feedback während des Haltens — bei Bedarf nach Live-Test nachziehen.
@@ -171,4 +171,4 @@ alle vier auf einmal anfassen.
 
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in
-[docs/external-blockers.md](./docs/external-blockers.md).
+[docs/external-blockers.md](./external-blockers.md).
