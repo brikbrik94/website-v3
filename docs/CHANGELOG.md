@@ -2,6 +2,15 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 14:40
+
+### Sicherheit
+- **3 `npm audit`-Schwachstellen in Dev-Dependencies behoben** (TODO.md → Sonstiges) — `npm audit
+  fix` (ohne `--force`) aktualisiert `vite` (8.0.13→8.1.5), `concurrently` (9.2.1→9.2.4) und
+  transitiv `shell-quote` (1.8.3→1.9.0). Betraf nur Dev-/Build-Tooling (nicht den produktiven
+  `dist/`-Output), 1× `high` + 2× `critical`. `npm audit` zeigt danach 0 Schwachstellen;
+  `tsc`/`test`/`build` erneut grün.
+
 ## [Unreleased] - 2026-07-18 14:30
 
 ### Behoben

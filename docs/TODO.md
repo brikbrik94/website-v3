@@ -142,14 +142,11 @@ alle vier auf einmal anfassen.
   Input/Ergebnis-Container, verworfenes Ergebnis nach `AbortSignal`, Listener-Cleanup nach
   Abort) — mit `vi.useFakeTimers()`/`vi.advanceTimersByTimeAsync()` und `vi.spyOn(GeocoderService, 'search')`.
   185 Tests grün, 0 TypeScript-Fehler.
-- [ ] **`npm audit`: 3 Schwachstellen in Dev-Dependencies** (2026-07-18, beim Ergänzen von
-  `happy-dom` aufgefallen — nicht dadurch verursacht, bereits vorher vorhanden) — 1× `critical`
-  (`shell-quote`, über `concurrently` — Quote-Escaping unvollständig bei `object`-`op`-Werten),
-  1× `critical` + 1× `high` (`vite`: `launch-editor` NTLMv2-Hash-Leak über UNC-Pfade auf Windows,
-  sowie `server.fs.deny`-Bypass über alternative Pfade auf Windows). Beide nur Dev-/Build-Tooling
-  (nicht im produktiven `dist/`-Output), Windows-spezifisch bzw. nur bei laufendem Dev-Server
-  relevant — kein akuter Produktions-Impact, aber noch nicht geprüft, ob `npm audit fix` ohne
-  Breaking Changes an `vite`/`concurrently` möglich ist.
+- [x] **`npm audit`: 3 Schwachstellen in Dev-Dependencies** (2026-07-18) — ✅ ERLEDIGT.
+  `npm audit fix` (ohne `--force`, keine Major-Bumps nötig) behebt alle 3: `vite` 8.0.13→8.1.5,
+  `concurrently` 9.2.1→9.2.4, `shell-quote` 1.8.3→1.9.0 (transitiv). `npm audit` zeigt danach
+  0 Schwachstellen. `npx tsc --noEmit`, `npm test` (196/196) und `npm run build` nach dem Update
+  erneut grün.
 - [ ] **10 `src/lib/`-Dateien ohne JSDoc-Kommentar** (2026-07-18, beim Erstellen von
   `docs/architecture/bausteine.md` aufgefallen) — `BasemapStore.ts`, `GeocoderService.ts`,
   `ManeuverIcons.ts`, `MapLegend.ts`, `MapRegistry.ts`, `PopupManager.ts`, `RoutingService.ts`,
