@@ -9,6 +9,8 @@ const RINGS_SOURCE_ID = 'isochrones-rings';
 const RINGS_LAYER_ID = 'isochrones-rings-layer';
 const POINTS_SOURCE_ID = 'isochrones-points';
 const POINTS_LAYER_ID = 'isochrones-points-layer';
+const PENDING_POINT_SOURCE_ID = 'isochrones-pending-point';
+const PENDING_POINT_LAYER_ID = 'isochrones-pending-point-layer';
 const RINGS_FILL_OPACITY = 0.35;
 
 export class IsochronesMapLayers {
@@ -38,6 +40,34 @@ export class IsochronesMapLayers {
       haloWidth: 2
     });
     MapCore.ensureGeoJsonLayer(map, POINTS_SOURCE_ID, pointsLayerDef);
+
+    // Eigener, gedämpfter Pin für den noch nicht berechneten Punkt (Kartenklick/Geocoder,
+    // bevor "Berechnen" geklickt wurde) — optisch von den bestätigten Query-Pins (Akzentfarbe)
+    // unterscheidbar, damit klar ist: hier wurde noch nichts berechnet.
+    const pendingPointLayerDef = MapCore.createPinLayer(PENDING_POINT_LAYER_ID, PENDING_POINT_SOURCE_ID, {
+      icon: 'ci-pin',
+      size: 0.5,
+      anchor: 'bottom',
+      color: MAP_COLORS.muted,
+      haloColor: MAP_COLORS.white,
+      haloWidth: 2
+    });
+    MapCore.ensureGeoJsonLayer(map, PENDING_POINT_SOURCE_ID, pendingPointLayerDef);
+  }
+
+  /**
+   * Setzt (oder leert, bei `null`) den Pending-Point-Pin — sofortiges visuelles Feedback beim
+   * Setzen eines Punkts (Kartenklick), bevor eine Berechnung existiert. Analog
+   * `RoutingMapLayers.updateStartPin`/`.updateTargetPin` (einfacher `MapCore.setPointSource()`-
+   * Aufruf, keine Neu-Registrierung in MapRegistry pro Aufruf — konsistent mit diesem
+   * bestehenden Muster für einzelne Pins, im Unterschied zu den aus dem vollen DataService-State
+   * neu aufgebauten `updateRingsLayer`/`updatePointsLayer`).
+   */
+  public static updatePendingPoint(map: maplibregl.Map, lngLat: [number, number] | null): void {
+    if (!map.getSource(PENDING_POINT_SOURCE_ID)) {
+      this.ensureBaseLayers(map);
+    }
+    MapCore.setPointSource(map, PENDING_POINT_SOURCE_ID, lngLat);
   }
 
   /**

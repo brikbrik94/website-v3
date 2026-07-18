@@ -2,6 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 20:08
+
+### Behoben
+- **Isochronen (`/isochrones`): Kartenklick zeigte keinen Pin.** `setIsochronesPoint()` aktualisierte
+  bisher nur das Sidebar-Eingabefeld, nie die Karte — der Pin erschien erst nach erfolgreicher
+  Berechnung (`updatePointsLayer`, pro Query). Neuer, gedämpft eingefärbter Pending-Point-Pin
+  (`IsochronesMapLayers.updatePendingPoint()`, eigene Source/Layer, analog
+  `RoutingMapLayers.updateStartPin`) zeigt den gesetzten Punkt sofort bei Kartenklick, wird nach
+  erfolgreicher Berechnung wieder entfernt (der bestätigte Query-Pin übernimmt). 2 neue Tests,
+  245 Tests grün, 0 TypeScript-Fehler.
+
+### Bekannter externer Blocker (nicht Teil dieser Änderung)
+- ORS-Isochronen-Anfragen mit mehr als einem Ring-Wert schlagen mit `HTTP 400` fehl
+  (`maximum_intervals: 1` server-seitig auf `ors.oe5ith.at` konfiguriert) — kein Repo-Code-Bug,
+  Details in [docs/external-blockers.md](./external-blockers.md).
+
 ## [Unreleased] - 2026-07-18 19:40
 
 ### Hinzugefügt

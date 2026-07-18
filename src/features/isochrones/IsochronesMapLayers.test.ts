@@ -98,3 +98,24 @@ describe('IsochronesMapLayers.updatePointsLayer', () => {
     expect(data.features[0].geometry.coordinates).toEqual([14.28, 48.3]);
   });
 });
+
+describe('IsochronesMapLayers.updatePendingPoint', () => {
+  it('writes a single point feature at the given lngLat', () => {
+    const { map, calls } = mockMapWithSource();
+
+    IsochronesMapLayers.updatePendingPoint(map, [14.28, 48.3]);
+
+    const data = calls.find((c) => c.sourceId === 'isochrones-pending-point')!.data as any;
+    expect(data.type).toBe('Feature');
+    expect(data.geometry).toEqual({ type: 'Point', coordinates: [14.28, 48.3] });
+  });
+
+  it('clears the pending point when called with null', () => {
+    const { map, calls } = mockMapWithSource();
+
+    IsochronesMapLayers.updatePendingPoint(map, null);
+
+    const data = calls.find((c) => c.sourceId === 'isochrones-pending-point')!.data as any;
+    expect(data).toEqual({ type: 'FeatureCollection', features: [] });
+  });
+});
