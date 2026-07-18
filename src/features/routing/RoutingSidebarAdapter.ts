@@ -11,6 +11,7 @@ import {
 } from '../../components/RoutingSidebar';
 import { RoutingStation } from '../../types/common';
 import type { Position } from 'geojson';
+import type { RoutingDeepLinkParams } from './RoutingDeepLink';
 
 export class RoutingSidebarAdapter {
   constructor(
@@ -19,8 +20,8 @@ export class RoutingSidebarAdapter {
     private abortSignal: AbortSignal
   ) {}
 
-  public init(container: HTMLElement) {
-    initRoutingSidebar(container, async (params) => {
+  public async init(container: HTMLElement): Promise<void> {
+    await initRoutingSidebar(container, async (params) => {
       const btn = document.getElementById('btn-start-routing') as HTMLButtonElement;
       if (btn) btn.classList.add('loading');
       
@@ -132,6 +133,34 @@ export class RoutingSidebarAdapter {
         if (btn) btn.classList.remove('loading');
       }
     }, this.abortSignal);
+  }
+
+  /**
+   * Wendet einen geparsten Routing-Deep-Link (siehe RoutingDeepLink.ts) auf die bereits
+   * initialisierte Sidebar an: Modus + Profil setzen, Start-/Zielkoordinaten übernehmen. Bei
+   * mode 'sew'/'nef' wird die Berechnung zusätzlich automatisch gestartet (reiner Lesezugriff,
+   * "Nächste Station"-Suche analog zu /nah) — bei 'ab' füllt der Deep-Link nur die Felder,
+   * der Nutzer startet die Berechnung selbst über den "Start"-Button.
+   */
+  public async applyDeepLink(params: RoutingDeepLinkParams): Promise<void> {
+    const modeBtn = document.querySelector(`.segmented-btn[data-mode="${params.mode}"]`) as HTMLElement | null;
+    modeBtn?.click();
+
+    if (params.profile) {
+      const profileSelect = document.getElementById('route-profile') as HTMLSelectElement | null;
+      if (profileSelect?.querySelector(`option[value="${params.profile}"]`)) {
+        profileSelect.value = params.profile;
+      }
+    }
+
+    if (params.mode === 'ab' && params.start) {
+      await this.setCoord('start', params.start[0], params.start[1]);
+    }
+    await this.setCoord('target', params.target[0], params.target[1]);
+
+    if (params.mode !== 'ab') {
+      (document.getElementById('btn-start-routing') as HTMLElement | null)?.click();
+    }
   }
 
   public async setCoord(type: 'start' | 'target', lat: number, lon: number) {

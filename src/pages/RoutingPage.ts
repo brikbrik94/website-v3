@@ -14,6 +14,7 @@ import { ContextMenuItem } from '../types/common';
 import { RoutingDataService } from '../features/routing/RoutingDataService';
 import { RoutingMapLayers } from '../features/routing/RoutingMapLayers';
 import { RoutingSidebarAdapter } from '../features/routing/RoutingSidebarAdapter';
+import { parseRoutingDeepLink } from '../features/routing/RoutingDeepLink';
 
 /**
  * RoutingPageController - Orchestriert die Routing-Seite.
@@ -47,7 +48,14 @@ export class RoutingPageController extends BasePageController {
 
             // 5. Sidebar Adapter & UI initialisieren
             this.sidebarAdapter = new RoutingSidebarAdapter(dataService, this.map, this.signal);
-            this.sidebarAdapter.init(mounts.sidebar);
+            await this.sidebarAdapter.init(mounts.sidebar);
+
+            // Deep-Link-Query-Parameter anwenden, falls vorhanden (z.B. Link aus dem
+            // Koordinaten-Umrechner mit vorausgefüllter Route).
+            const deepLinkParams = parseRoutingDeepLink(window.location.search);
+            if (deepLinkParams) {
+                await this.sidebarAdapter.applyDeepLink(deepLinkParams);
+            }
 
             // 6. Topbar & Legende initialisieren
             const legend = new MapLegend(mounts.legend!);

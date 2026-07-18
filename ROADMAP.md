@@ -130,11 +130,23 @@ Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](.
   (`RoutingSidebarAdapter.ts`, `onHighlight`-Callback). Bewusst nicht Teil der
   A→B-Umsetzung (2026-07-04) — dort zeigt die Liste bereits Dauer/Distanz pro
   Station, Turn-by-Turn pro Station wäre zusätzlicher Scope.
-- [ ] **URL-Parameter für Routing-Deep-Links** — Koordinaten (sowie Modus A→B/SEW/NEF und Profil
-  inkl. Sondersignal) sollen per URL an `/routing` übergeben werden können, damit z.B. ein Link
-  aus dem Umrechner heraus eine vorausgefüllte Route öffnet. Aktuell kein URL-Parameter-Handling
-  im Router (`src/main.ts`) vorhanden — komplett neue Fähigkeit. Aus `docs/proposals/todo.txt`
-  übernommen (2026-07-05).
+- [x] **URL-Parameter für Routing-Deep-Links** (2026-07-18) — ✅ ERLEDIGT.
+  `/routing?mode=ab|sew|nef&target=<lat>,<lon>&start=<lat>,<lon>&profile=<profilId>` — Koordinaten
+  im selben `lat,lon`-Format wie die Eingabefelder selbst (`parseCoords()` in `RoutingSidebar.ts`,
+  jetzt exportiert und wiederverwendet statt dupliziert). Neue, DOM-freie Parse-Funktion
+  `parseRoutingDeepLink()` in `src/features/routing/RoutingDeepLink.ts` (11 Unit-Tests); Anwendung
+  auf die Sidebar über neue `RoutingSidebarAdapter.applyDeepLink()` (Modus per echtem `.click()`
+  auf den passenden `.segmented-btn` gesetzt, Profil nur falls in der geladenen Profil-Liste
+  vorhanden, Koordinaten über das bestehende `setCoord()`). **Nutzer-Entscheidung:** bei
+  `mode=ab` nur Felder vorausfüllen (Start-Button bleibt manueller Trigger); bei `mode=sew`/`nef`
+  (Nächste-Station-Suche, konzeptionell wie `/nah`) wird automatisch berechnet, da reiner
+  Lesezugriff ohne Risiko. Kein URL-Parameter-Handling im Router (`src/main.ts`) nötig —
+  `RoutingPageController.mount()` liest `window.location.search` selbst. Dafür musste
+  `RoutingSidebarAdapter.init()` von "feuert und vergisst" auf awaited/async umgestellt werden
+  (Voraussetzung, damit die Sidebar-DOM inkl. geladener Profile steht, bevor Werte gesetzt
+  werden) — behebt nebenbei eine potenzielle Race Condition (Map-Klicks vor fertigem
+  Sidebar-Rendering griffen zuvor ins Leere). 196 Tests grün, 0 TypeScript-Fehler. **Hinweis:**
+  Browser-Verifikation weiterhin ausstehend (keine Playwright-Umgebung hier).
 
 ## Neue Seiten
 
