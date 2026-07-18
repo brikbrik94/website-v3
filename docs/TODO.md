@@ -179,6 +179,22 @@ alle vier auf einmal anfassen.
   `src/version.ts` blieb korrekt). Nutzer-Entscheidung: ab jetzt bei jedem Release mitziehen —
   `CLAUDE.md`s Release-Checkliste (Schritt 2) und der „Versioning"-Absatz entsprechend ergänzt.
 
+## Neue Seiten (nächste Schritte)
+
+Von ROADMAP.md → „Neue Seiten" hierher verschoben (2026-07-18, Nutzer-Entscheidung) — beide Punkte
+sind der Sache nach neue Features (kein bestehender Code wird erweitert), stehen hier trotzdem als
+konkret geplante nächste Arbeitsschritte statt der übrigen, noch unverbindlichen Roadmap-Punkte.
+Noch nicht brainstormed/spezifiziert — vor der Umsetzung jeweils durch den Brainstorming-Prozess
+(Design/Spec) laufen lassen, siehe `docs/superpowers/specs/`. Zwei unabhängige Features, getrennt
+zu bearbeiten (nicht in einem Rutsch).
+
+- [ ] **Hilfeseite** — Übersicht/Beschreibung der App-Funktionen, Einstieg vermutlich über einen
+  neuen Topbar-Link (analog zu den bestehenden `.nav-link`-Einträgen in `src/main.ts`).
+- [ ] **Isochronen-Abfrage-Seite** — neue Karten-Seite für Erreichbarkeitsanalyse (z.B. über die
+  ORS-Isochrones-API, analog zur bestehenden ORS-Routing-Anbindung in `api/ors.php`), strukturell
+  an den bestehenden Karten-Seiten orientiert (siehe `docs/page-types.md`/`sidebar-types.md` in
+  `oe5ith-ci` für passende Sidebar-/Layout-Patterns).
+
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in
 [docs/external-blockers.md](./external-blockers.md).
