@@ -14,6 +14,10 @@ verbindlich und werden hier nicht wiederholt.
 npm run dev        # concurrently: Vite (frontend) + PHP dev server (api/, on 127.0.0.1:8081)
 npm run dev:vite   # frontend only
 npm run dev:api    # PHP API only (cd api && php -S 127.0.0.1:8081 router.php)
+npm run dev:reset  # bei hängenden Dev-Server-Resten (z.B. "504 Outdated Optimize Dep" im Browser,
+                   # obwohl npm run dev läuft): killt Prozesse auf Port 8000/8081, leert den
+                   # Vite-Cache. Tritt auf, wenn eine frühere Session beendet wurde, ohne die
+                   # concurrently-Kindprozesse zu stoppen — danach npm run dev neu starten.
 npm run build      # tsc (type-check, noEmit) && vite build → dist/
 npm test           # vitest run (all tests)
 npx vitest run src/api/AdsbInterpreter.test.ts   # single test file
@@ -33,7 +37,7 @@ Vite dev server proxies `/api/*` → the PHP server and strips the `/api` prefix
 
 **Feature structure (`src/features/<name>/`):** Each feature (coords, nah, routing, tracking) is split into a `*DataService` (data fetching/logic), `*MapLayers` (registers map sources/layers), and `*SidebarAdapter` (UI wiring). The page controller in `src/pages/` orchestrates them: render layout → register map resources → init `MapCore` → wire sidebar/topbar/legend.
 
-**Map infrastructure (`src/lib/`):** `MapCore` initializes MapLibre GL. `MapRegistry` is a central store of map sources/layers/images that survives basemap style changes (re-applied on style reload) and is cleared between pages. `TerrainManager` handles 3D terrain. `MapLegend`, `PopupManager`, `HoverCursor` (`attachHoverCursor(map, layerIds)` — pointer cursor on hover for clickable layers, idempotent, no manual cleanup needed), `GeocoderService`, `Toast` (central feedback), `GlobalModals` are shared singletons/utilities.
+**Map infrastructure (`src/lib/`):** `MapCore` initializes MapLibre GL. `MapRegistry` is a central store of map sources/layers/images that survives basemap style changes (re-applied on style reload) and is cleared between pages. `TerrainManager` handles 3D terrain. `MapLegend`, `PopupManager`, `HoverCursor` (`attachHoverCursor(map, layerIds)` — pointer cursor on hover for clickable layers, idempotent, no manual cleanup needed), `GeocoderService`, `Toast` (central feedback), `GlobalModals` are shared singletons/utilities. Full inventory of `src/lib/` building blocks (what it does, exports, import path): [docs/architecture/bausteine.md](./docs/architecture/bausteine.md) — auto-generated (`npm run docs:bausteine`), re-run after changes to `src/lib/`.
 
 **Info portal (`/info/*`, `src/pages/InfoPage.ts` + `src/components/info/`):** Modular system-status dashboard. Modules: NAH status, Service Health (live API pings), Regions analysis, Tracking telemetry, Map Inventory, Debug. Subpath selects the active module.
 
@@ -130,7 +134,7 @@ this repo's concrete implementation of that convention.
 
 **Two changelogs exist here and BOTH must be kept current — they have different audiences and neither is generated from the other:**
 
-1. **`CHANGELOG.md`** (repo root) — the technical record, Keep-a-Changelog-structured, categories in German (`Behoben` / `Geändert` / `Hinzugefügt` / `Entfernt`).
+1. **`CHANGELOG.md`** (repo root) — the technical record, Keep-a-Changelog-structured, all 6 official categories in German (`Hinzugefügt` / `Geändert` / `Veraltet` / `Entfernt` / `Behoben` / `Sicherheit` — i.e. Added/Changed/Deprecated/Removed/Fixed/Security), used as needed (not every entry needs every category).
 2. **The in-app changelog** shown when the user clicks the version in the sidebar — currently hardcoded HTML in `src/lib/GlobalModals.ts` (`changelog-modal-body`). This is a **curated, user-facing** summary in plain German (no internal symbol/function/file names), grouped as „Neuigkeiten & Features" / „Verbesserungen & Fixes". **Known debt: it currently lags behind `CHANGELOG.md`; pull it forward on the next UI touch.** (Intended future improvement: render it collapsibly — headline first, details on click — or generate it from a single curated source.)
 
 **Versioning:** `src/version.ts` (`APP_VERSION`) is the SemVer single source of truth.

@@ -167,12 +167,22 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
 (siehe dortige Sektion „Standards-Referenzen"). Kleinere, direkt umsetzbare Angleichungen
 (PSR-12-Audit, OWASP-Self-Check) stehen als eigene Punkte in TODO.md, nicht hier.
 
-- [ ] **Bestehende Dokumente an referenzierte Standards angleichen** — `CHANGELOG.md` fehlen die
-  Keep-a-Changelog-Kategorien `Deprecated`/`Security` (deutsch: „Veraltet"/„Sicherheit"); prüfen,
-  ob sie gebraucht werden und wie sie benannt werden. Den `release: vX.Y.Z` Commit-Typ gegen
-  Conventional Commits abgleichen (kein offizieller Typ — entweder dokumentieren warum bewusst
-  abweichend, oder auf `chore(release):` umstellen). Danach `TODO_ARCHIVE.md`/`ROADMAP_ARCHIVE.md`
-  auf einheitliche, selbstständig lesbare Darstellung prüfen.
+- [x] **Bestehende Dokumente an referenzierte Standards angleichen** (2026-07-18) — ✅ ERLEDIGT.
+  `CLAUDE.md` dokumentiert jetzt das vollständige, offizielle 6-Kategorien-Set von Keep a
+  Changelog (`Hinzugefügt`/`Geändert`/`Veraltet`/`Entfernt`/`Behoben`/`Sicherheit`) statt bisher
+  nur 4 — per Proposal-Zyklus (`docs/proposals/archive/2026-07-18-changelog-full-categories-{draft,review}.md`),
+  da es eine `CLAUDE.md`-Konvention ändert. Auslöser: 2 historische Security-Fixes (2026-07-08,
+  hardcoded DB-Passwort/API-Key, `diag.php`-Info-Disclosure) liefen mangels Kategorie unter
+  `Hinzugefügt`/`Behoben`; `Veraltet` wird ergänzt, obwohl noch nie gebraucht (Nutzer-Entscheidung:
+  strikt nach Spec, nicht nur bisher genutzte Kategorien dokumentieren). Keine rückwirkende
+  Umkategorisierung bestehender Einträge. Nebenbei: ein einzelner historischer Eintrag
+  (`CHANGELOG.md` v3.3.1) nutzte `### Aktualisiert` statt einer der 4 (jetzt 6) dokumentierten
+  Kategorien — korrigiert zu `### Geändert`. Der `release: vX.Y.Z`-Commit-Typ war bereits als
+  bewusste Abweichung dokumentiert, kein weiterer Handlungsbedarf. `TODO_ARCHIVE.md`/
+  `ROADMAP_ARCHIVE.md`: einzige gefundene Inkonsistenz war der Überschriften-Stil
+  (`## Unreleased (DATUM)` vs. `## DATUM — Beschreibung`) — auf einheitliches
+  `## YYYY-MM-DD — Beschreibung` (bzw. `## YYYY-MM` für den älteren monatsweisen Block ohne
+  Tagesgranularität) vereinheitlicht.
 - [ ] **Continuous-Integration-Pipeline (Build-Automatisierung, z.B. GitHub Actions)** — aktuell
   läuft `npx tsc --noEmit && npm test` (sowie die neuen `composer run lint` /
   `bash scripts/security-audit.sh` / `npm run validate:openapi` aus der Standards-Angleichung,
@@ -182,31 +192,31 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   Build-/Test-Pipeline. Bewusst als eigener ROADMAP-Punkt (nicht Teil der Standards-Angleichung
   selbst), da eine neue Infrastruktur-Entscheidung (welcher CI-Anbieter, Secrets-Handling für
   DB-Zugriff in der Pipeline etc.) nötig ist.
-- [ ] **Vite-/PHP-Dev-Server: Robustheit & Health-Check** — bei der Live-Verifikation der
-  `NahMapLayers.ts`-Popup-Extraktion (2026-07-09) mehrfach beobachtet: ein von einer früheren
-  Session zurückgelassener `npm run dev`-Prozess lief teilweise "halb tot" weiter — der
-  PHP-API-Server (`api/router.php`, Port 8081) war bereits abgestürzt (kein laufender Prozess
-  mehr), während der Vite-Server (Port 8000/100.64.0.1) noch lief, aber mit veraltetem
-  Dependency-Optimize-Cache (`node_modules/.vite`), was zu `504 Outdated Optimize Dep`-Fehlern im
-  Browser führte, bis der Vite-Prozess manuell gekillt und mit geleertem `.vite`-Cache neu
-  gestartet wurde. Kein Health-Check/Auto-Restart vorhanden, der das erkennen und melden würde.
-  Ziel: robusteres `npm run dev`-Setup — z.B. PHP-Server-Health-Check vor dem Vite-Start, klarer
-  Fehler statt stillem Absturz, und/oder Dokumentation eines Standard-Verfahrens ("bei
-  Dev-Server-Problemen: `pkill -f 'vite|php -S'`, `.vite`-Cache leeren, neu starten") in
-  CLAUDE.md/AGENT_INSTRUCTIONS.md, damit das nicht bei jeder Live-Verifikation neu diagnostiziert
-  werden muss.
-- [ ] **Bausteine-Katalog für wiederverwendbare interne Module** (2026-07-09, aus Diskussion beim
-  Geocoder-Widget entstanden) — `CLAUDE.md` beschreibt die Feature-Struktur bisher nur auf
-  Konventionsebene (`*DataService`/`*MapLayers`/`*SidebarAdapter`-Muster), nicht welche konkreten
-  wiederverwendbaren Bausteine es in `src/lib/` und `src/features/` bereits gibt. Beispiel: das
-  neue `src/lib/GeocoderSearchField.ts` (Ortssuche mit Dropdown, docs/superpowers/specs fehlt
-  noch) taucht sonst nirgends auf, außer man liest den Code oder das CHANGELOG durch. Ziel: ein
-  Katalog/Register (z.B. `docs/architecture/bausteine.md` oder Ergänzung eines bestehenden Docs)
-  mit knappem Eintrag pro Baustein — was er tut, wo er liegt, wie man ihn einbindet (analog zum
-  `oe5ith-ci/docs/registry.json`-Prinzip, aber für website-v3-interne Engineering-Bausteine statt
-  CI-Komponenten) — damit neue Seiten/Features vorhandene Bausteine finden statt sie unwissentlich
-  neu zu bauen. Pflege-Frage noch offen: manuell bei jedem neuen Baustein nachtragen, oder
-  automatisiert aus `src/lib/`/`src/features/` generiert?
+- [x] **Vite-/PHP-Dev-Server: Robustheit & Health-Check** (2026-07-18) — ✅ ERLEDIGT. Root Cause
+  geklärt: `concurrently --kill-others` (package.json `dev`) greift nur, solange der
+  `concurrently`-Elternprozess selbst noch läuft — stirbt/verwaist der (z.B. weil eine frühere
+  Session beendet wurde, ohne die Kindprozesse zu stoppen), laufen Vite/PHP unabhängig weiter,
+  ohne dass noch etwas sie beendet. Kein automatischer `predev`-Hook (Nutzer-Entscheidung: auf
+  Abruf statt bei jedem Start, kein Perf-/Risiko-Overhead im Normalfall) — stattdessen neuer
+  `npm run dev:reset` (`scripts/dev-reset.sh`): killt gezielt nur Prozesse auf Port 8000/8081
+  (nicht pauschal alles was „vite"/„php" heißt — kein Kollateralschaden bei anderen
+  Prozessen auf der Maschine), leert `node_modules/.vite`. In `CLAUDE.md` bei den Commands
+  dokumentiert (Symptom `504 Outdated Optimize Dep` → `npm run dev:reset` → `npm run dev` neu
+  starten). Manuell getestet (mit/ohne laufende Prozesse auf den Ports). 196 Tests grün, 0
+  TypeScript-Fehler (reine Tooling-Änderung, kein App-Code betroffen).
+- [x] **Bausteine-Katalog für wiederverwendbare interne Module** (2026-07-18) — ✅ ERLEDIGT.
+  `docs/architecture/bausteine.md`, automatisiert generiert (`npm run docs:bausteine`,
+  `scripts/generate-bausteine-catalog.mjs`) aus Exports + JSDoc-Kommentaren in `src/lib/` —
+  Nutzer-Entscheidung: automatisiert statt manuell gepflegt, damit es nicht veraltet. Bewusst nur
+  `src/lib/` (seitenübergreifend wiederverwendbare Bausteine, 25 Dateien) — `src/features/*/`
+  folgt bereits dem in `CLAUDE.md` dokumentierten, seitenspezifischen
+  `*DataService`/`*MapLayers`/`*SidebarAdapter`-Muster und ist kein "wiederverwendbarer
+  Baustein" im Sinne des Tickets. Pro Datei: Beschreibung (erster Export mit direkt darüber
+  stehendem JSDoc-Block), Import-Pfad, Liste der Exports. Nützlicher Nebeneffekt: deckt auf,
+  wo Doku fehlt — 10 von 25 Dateien haben aktuell keinen JSDoc-Kommentar und zeigen
+  `_TODO: Beschreibung ergänzen_` (als eigener TODO.md-Punkt erfasst, nicht in diesem Rahmen
+  nachgezogen). `CLAUDE.md` verweist bei „Map infrastructure" jetzt auf den Katalog. 196 Tests
+  grün, 0 TypeScript-Fehler (reine Tooling-/Doku-Änderung, kein App-Code betroffen).
 - [ ] **Repo-Root-Ordnerstruktur aufräumen** — im Repo-Root liegen aktuell u.a. Config-Dateien
   (`composer.json`/`.lock`, `phpcs.xml`, `nginx.conf`, `tsconfig.json`, `vite.config.ts`),
   Deploy-Tooling (`deploy-website.sh`), acht Markdown-Dateien

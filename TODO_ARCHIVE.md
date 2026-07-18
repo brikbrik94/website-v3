@@ -110,7 +110,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   Umfasst Request/Response-Schemas, Query-Parameter und Status-Codes für alle Endpoints
   (`nah.php`, `stations.php`, `ors.php`, `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, etc.).
 
-## Unreleased (2026-07-06)
+## 2026-07-06 — Map-Subsystem-Cleanup U5-U7 + CI-Submodul-Update
 
 ### U5: NAH DOM-Marker → Symbol-Layer migriert
 - [x] `NahMapLayers.ts` nutzte als letzte Karten-Funktion noch `maplibregl.Marker`-DOM-Elemente
@@ -202,7 +202,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
     Kein Fix im Submodul selbst durchgeführt (läuft extern), nur der Pointer-Bump + Verifikation
     hier.
 
-## Unreleased (2026-07-05)
+## 2026-07-05 — Diverse Bugfixes (Modal-Stacking, Timer-Leak, Kontextmenü, Stationsliste)
 
 ### Versionsinfo-/Copyright-Modal wurde von der Topbar überdeckt
 - [x] `.modal-backdrop` (`src/styles/modal.css`) setzte `z-index: var(--z-backdrop)` (1040) —
@@ -261,7 +261,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   Live per Playwright verifiziert: A→B zeigt jetzt keine Stationsliste mehr, SEW zeigt sie
   weiterhin korrekt an. `npx tsc --noEmit && npm test` grün (68/68).
 
-## Unreleased (2026-07-03)
+## 2026-07-03 — Map-Subsystem-Cleanup U1-U4 (Sprite-Caching, Pin-Boilerplate, Verifikation)
 
 ### U4 Pin-/Marker-Boilerplate zusammengefasst
 - [x] Die fast identisch kopierte Symbol-Layer-Definition für Einzel-Pins (NAH-Einsatzort,
@@ -329,7 +329,7 @@ Playwright) auf zwei unabhängige Bugs zurückgeführt und gefixt:
 Beide Fixes mit `npx tsc --noEmit && npm test` (grün) und Live-Reproduktion vor/nach Fix
 (Playwright gegen laufenden Dev-Server) verifiziert.
 
-## Abgeschlossene Aufgaben (Mai 2026)
+## 2026-05 — Abgeschlossene Aufgaben (Tracking-Gateway-Migration, Map-Registry, frühere Aufgaben)
 ### Release v3.3.0 - Tracking Gateway Migration & BBox Deactivation
 - [x] Tracking Gateway V2 Migration (Types, Service, Tracks)
 - [x] BBox-Filtering Implementation & Deactivation (for Desktop Optimization)

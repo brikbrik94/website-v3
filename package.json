@@ -7,6 +7,8 @@
     "dev:vite": "vite",
     "dev:api": "cd api && php -S 127.0.0.1:8081 router.php",
     "dev": "concurrently --kill-others \"npm run dev:vite\" \"npm run dev:api\"",
+    "dev:reset": "bash scripts/dev-reset.sh",
+    "docs:bausteine": "node scripts/generate-bausteine-catalog.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
