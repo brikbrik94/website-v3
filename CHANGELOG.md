@@ -2,6 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 07:50
+
+### Geändert
+- **`oe5ith-ci`-Submodul auf v1.21.0 aktualisiert** — enthält 4 aus website-v3 gemeldete Punkte:
+  neuer `MapLegend`-Eintragstyp `icon` (`.map-legend-icon`), neues Badge-Modifier `.badge-wrap`
+  (behebt den `white-space: nowrap`-Umbruch-Bug), sowie `--map-bg`-Token sowie
+  `.coord-row-wgs`/`.coord-vals` (beide bereits lokal vorhanden, jetzt auch im Design-System).
+  `src/styles/badges.css`/`modal.css`/`utils.css` entsprechend nachgezogen; redundanter lokaler
+  `background: var(--map-bg)`-Override in `src/app.css`s `.full-map` entfernt (kommt jetzt aus
+  dem gesyncten `utils.css`); Routing-Sidebar-Warn-Badges nutzen jetzt `.badge-wrap` statt eines
+  lokalen CSS-Overrides.
+- **CI-Meldedateien liegen jetzt in `docs/ci/`** statt unversioniert im `oe5ith-ci`-Arbeitsverzeichnis
+  (`bug-reports.md`, `open-items.md`, `routing-disclosure-request.md`, `legend-icon-swatch-request.md`,
+  `handoff-2026-06-20-map-bg-wgs84.md`) — committete, dauerhaft nachvollziehbare Dokumentation statt
+  Dateien, die bei einem frischen Submodul-Checkout verloren gegangen wären.
+
 ## [Unreleased] - 2026-07-12 09:58
 
 ### Hinzugefügt

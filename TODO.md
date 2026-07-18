@@ -117,10 +117,6 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
-- [ ] **CI-Bug: `.badge` erzwingt `white-space: nowrap`** — betrifft `oe5ith-ci` (`css/badges.css:36`),
-  lokaler Workaround in `src/styles/sidebar.css` (`.result-badges .badge`) bereits vorhanden. Details:
-  [docs/ci/bug-reports.md](./docs/ci/bug-reports.md) (Punkt 2), Status-Tracking:
-  [docs/ci/open-items.md](./docs/ci/open-items.md) (Punkt 4). Wird nicht von hier aus gefixt (Submodul).
 - [ ] **DOM-Testumgebung (jsdom/happy-dom) einrichten** — `src/lib/GeocoderSearchField.ts`
   (2026-07-09, ROADMAP.md → Karten-Interaktion & Such-Features) manipuliert echtes DOM
   (querySelector/addEventListener/innerHTML) und hat deshalb keinen automatisierten Test; das

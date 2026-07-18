@@ -52,6 +52,12 @@
   flex-shrink: 0;
 }
 
+/* ── Wrap-Modifier — für Badges mit langem/variablem Text (Warnungen, Freitext) ── */
+.badge-wrap {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 /* ═══════════════════════════════════════
    BADGE FARBEN — 6 Varianten
    ═══════════════════════════════════════ */

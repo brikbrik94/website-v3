@@ -1,17 +1,8 @@
 # CI — Offene Punkte (Übersicht)
 
 Sammel-Einstieg über die aus `website-v3` gemeldeten Punkte im `oe5ith-ci`-Design-System.
-Ursprünglich 3 offene Punkte (Bugs/Feature-Anfragen) — **alle 3 sind erledigt**, siehe unten.
-Am 2026-07-07 kam ein 4. Punkt hinzu (Badge-`white-space`), der noch offen ist. Details je
-Punkt weiterhin in der jeweiligen Detaildatei.
-
-## Offen
-
-### 4. `.badge` erzwingt `white-space: nowrap`, kein interner Umbruch bei langen Texten
-- **Detaildatei:** `bug-reports.md` (Punkt 2)
-- **Status:** ❌ noch nicht behoben — `css/badges.css:36` hat weiterhin `white-space: nowrap`
-  (Stand 2026-07-18, `origin/main` `56ea05a`). Lokaler Workaround in website-v3
-  (`src/styles/sidebar.css`, `.result-badges .badge`) bleibt bis dahin bestehen.
+**Alle 5 bisher gemeldeten Punkte sind erledigt**, siehe unten. Details je Punkt weiterhin in
+der jeweiligen Detaildatei.
 
 ## Erledigt
 
@@ -34,11 +25,26 @@ Punkt weiterhin in der jeweiligen Detaildatei.
   die Request-Datei war nur ein nicht aufgeräumter, im Submodul selbst aber längst committeter
   Rest der ursprünglichen Anfrage. Kein offener Punkt mehr.
 
+### 4. `.badge` erzwingt `white-space: nowrap`, kein interner Umbruch bei langen Texten
+- **Detaildatei:** `bug-reports.md` (Punkt 2)
+- **Status:** ✅ Behoben in `oe5ith-ci` v1.21.0 (2026-07-18, Commit `cf8b22e`) — neues Modifier
+  `.badge-wrap`. In website-v3 konsumiert (`RoutingSidebar.ts`, lokaler Override entfernt).
+
+### 5. Icon-Swatch für `MapLegend` (`.map-legend-icon`)
+- **Detaildatei:** `legend-icon-swatch-request.md`
+- **Status:** ✅ Umgesetzt in `oe5ith-ci` v1.21.0 (2026-07-18, Commit `52cf75e`) — neuer
+  Eintragstyp `icon`. In website-v3 konsumiert (`NahPage.ts`-Status-Legende zeigt jetzt
+  Helikopter-Icons statt Farbpunkten, Farbe weiterhin aus der echten Layer-Definition abgeleitet).
+
 ---
 
 Submodul-Pointer in website-v3 am 2026-07-06 von `dca22e5` (v1.18.0) auf `c92fb77` aktualisiert
 (neuester `origin/main`-Commit; `v1.19.0` ist einen Commit dahinter, keine passende Release-Tag
 für `c92fb77` vorhanden). Details siehe `TODO_ARCHIVE.md`.
+
+Submodul-Pointer in website-v3 am 2026-07-18 auf `v1.21.0` (Commit `bb4e415`) aktualisiert —
+enthält Punkte 4 und 5 oben sowie die bereits lokal vorhandenen `--map-bg`/`.coord-row-wgs`-
+Ergänzungen aus `handoff-2026-06-20-map-bg-wgs84.md` (dort seitdem als erledigt vermerkt).
 
 Diese Übersicht (und die Detaildateien) lagen bis 2026-07-18 unversioniert im Arbeitsverzeichnis
 des `oe5ith-ci`-Submoduls und wurden dann nach `docs/ci/` in website-v3 übertragen (siehe

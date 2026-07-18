@@ -293,12 +293,6 @@
   padding-left: 25px;
   margin-bottom: 5px;
 }
-/* oe5ith-ci .badge erzwingt white-space: nowrap; ein einzelnes, zu breites Badge
-   (z.B. lange Warn-Texte) würde dadurch am Sidebar-Rand abgeschnitten statt umzubrechen.
-   Nicht im Submodul fixbar (siehe oe5ith-ci/ci-bug-reports.md) — lokaler Override hier. */
-.result-badges .badge {
-  white-space: normal;
-}
 
 .result-summary-row {
   display: flex;

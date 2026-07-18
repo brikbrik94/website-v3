@@ -292,7 +292,7 @@ export const updateRoutingSummary = (
     : kvHtml;
 
   const warningBadgesHtml = getRouteWarnings(extras)
-    .map((w) => `<span class="badge ${WARNING_BADGE}"><i class="${w.icon}"></i> ${w.label}</span>`)
+    .map((w) => `<span class="badge ${WARNING_BADGE} badge-wrap"><i class="${w.icon}"></i> ${w.label}</span>`)
     .join('');
 
   const steps = formatSteps(segments);

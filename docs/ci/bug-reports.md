@@ -106,6 +106,12 @@ nicht in website-v3-spezifischem Code.
 
 ## 2. `.badge` erzwingt `white-space: nowrap`, kein interner Umbruch bei langen Texten
 
+**Status:** ✅ Behoben in `oe5ith-ci` v1.21.0 (2026-07-18, Commit `cf8b22e`) — neues Modifier
+`.badge-wrap` (`white-space: normal; overflow-wrap: break-word`), Default `nowrap` für kurze
+Status-Badges bleibt unverändert. In website-v3 konsumiert: `src/styles/badges.css` (Klasse
+gesynct), `src/components/RoutingSidebar.ts` (Warn-Badges nutzen jetzt `badge-wrap` statt
+lokalem Container-Override), lokaler Override in `src/styles/sidebar.css` entfernt. Submodul-
+Pointer aktualisiert (2026-07-18).
 **Gemeldet von:** website-v3 (Routing-Sidebar, `src/components/RoutingSidebar.ts`,
 Warn-Badges wie „Zufahrtsbeschränkungen auf der Strecke")
 **Datum:** 2026-07-07

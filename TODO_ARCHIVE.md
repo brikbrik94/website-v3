@@ -5,6 +5,14 @@ Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./R
 Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
 noch nicht getrennt) und sind entsprechend gemischt.
 
+## 2026-07-18 — CI-Update v1.21.0 konsumiert
+
+- [x] **CI-Bug: `.badge` erzwingt `white-space: nowrap`** — behoben in `oe5ith-ci` v1.21.0
+  (neues Modifier `.badge-wrap`). In website-v3 konsumiert: `src/styles/badges.css` gesynct,
+  `RoutingSidebar.ts`-Warn-Badges nutzen `badge-wrap`, lokaler Override in `src/styles/sidebar.css`
+  entfernt. Details: [docs/ci/bug-reports.md](./docs/ci/bug-reports.md) (Punkt 2),
+  [docs/ci/open-items.md](./docs/ci/open-items.md) (Punkt 4).
+
 ## 2026-07-09 — TODO.md vollständig abgearbeitet
 
 Alle drei verbliebenen TODO.md-Abschnitte (Map-Subsystem Cleanup, UI/UX & Branding, Standards-
