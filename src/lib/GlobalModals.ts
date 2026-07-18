@@ -18,12 +18,6 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
-          <h2>[Unreleased]</h2>
-          <h3>Neuigkeiten & Features</h3>
-          <ul>
-            <li>Neu: Isochronen-Seite — zeigt, welches Gebiet von einem Punkt aus in einer wählbaren Zeit oder Distanz erreichbar ist.</li>
-          </ul>
-
           <h2>[3.10.1] - 2026-07-18</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>
