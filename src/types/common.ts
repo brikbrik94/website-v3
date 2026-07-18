@@ -1,4 +1,4 @@
-import type { Feature, LineString } from 'geojson';
+import type { Feature, FeatureCollection, LineString, Polygon } from 'geojson';
 
 export type ToastType = 'success' | 'warning' | 'danger' | 'info';
 
@@ -103,4 +103,19 @@ export interface StatsResponse {
     nah: Record<string, { total: number, active: number }>;
     rd: Record<string, number>;
     nef: Record<string, number>;
+}
+
+export type IsochroneRangeType = 'time' | 'distance';
+
+export interface IsochroneQuery {
+    id: number;
+    /** [lat, lon] — konsistent mit RoutingDataService-Konvention. */
+    point: [number, number];
+    /** Reverse-geocodierte Adresse oder formatierte Koordinaten, für die Ergebnis-Liste. */
+    label: string;
+    profile: string;
+    rangeType: IsochroneRangeType;
+    /** Nutzereingabe in Minuten (time) bzw. km (distance), aufsteigend sortiert. */
+    ranges: number[];
+    geojson: FeatureCollection<Polygon>;
 }
