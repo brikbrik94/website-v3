@@ -12,6 +12,12 @@ export interface LayerPopupConfig {
     fields: PopupField[];
 }
 
+/**
+ * Kuratierte Popup-Feldkonfiguration pro Layer-ID (Tracking: `adsb-icons`/`ais-icons`) — Titel,
+ * Icon und welche `properties`-Felder in welcher Reihenfolge/Formatierung angezeigt werden.
+ * Konsumiert von `PopupManager.buildHtml()` unten. Für heterogene/unkuratierte Layer (z.B.
+ * `/karte`-Overlays) siehe stattdessen `GenericFeaturePopup.ts`.
+ */
 export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
     'adsb-icons': {
         title: (p) => (p.flight as string)?.trim() || (p.hex as string) || 'Unknown',

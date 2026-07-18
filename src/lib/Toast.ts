@@ -82,4 +82,8 @@ class ToastManager {
   info(msg: string, opt?: ToastOptions) { this.show(msg, 'info', opt); }
 }
 
+/**
+ * Zentrales Feedback-Singleton (Toast-Benachrichtigungen, CI-konforme `.toast`-Klassen).
+ * `success()`/`warning()`/`error()`/`info()` sind Convenience-Wrapper um `show(message, type)`.
+ */
 export const Toast = new ToastManager();

@@ -22,6 +22,13 @@ const sources = new Map<string, ManagedSource>();
 const layers = new Map<string, ManagedLayer>();
 const images = new Map<string, ManagedImage>();
 
+/**
+ * Zentrales, modul-scoped Register aller Sources/Layer/Images einer Kartenseite, das
+ * Basemap-Style-Wechsel überlebt (MapLibre wirft Sources/Layer beim `setStyle()` weg;
+ * `restore()` fügt hier registrierte Definitionen danach erneut hinzu). `clear()` wird beim
+ * Seitenwechsel im Router aufgerufen (`main.ts`), damit keine Ressourcen einer verlassenen Seite
+ * hängen bleiben.
+ */
 export const MapRegistry = {
   registerSource(id: string, definition: SourceSpecification) {
     console.debug(`[MapRegistry] Registering source: ${id}`);

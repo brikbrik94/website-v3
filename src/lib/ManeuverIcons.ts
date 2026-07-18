@@ -20,6 +20,11 @@ const MANEUVER_ICON_PATHS: Record<number, string> = {
 // ORS könnte künftig neue Manöver-Codes einführen; "Straight" ist der neutralste Fallback.
 const FALLBACK_ORS_CODE = 6;
 
+/**
+ * Baut das SVG-Markup für ein ORS-Turn-by-Turn-Manöver-Icon (z.B. für die Wegbeschreibung in
+ * `RoutingSidebar.ts`). Unbekannte/künftige ORS-Codes fallen auf "Straight" (Code 6) zurück statt
+ * nichts anzuzeigen.
+ */
 export function getManeuverIconMarkup(orsCode: number): string {
   const inner = MANEUVER_ICON_PATHS[orsCode] ?? MANEUVER_ICON_PATHS[FALLBACK_ORS_CODE];
   return `<svg class="disclosure-item-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;

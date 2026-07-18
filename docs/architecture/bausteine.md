@@ -26,7 +26,8 @@ Exports:
 
 ## `BasemapStore.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Merkt sich die zuletzt gewählte Basemap-URL in localStorage, damit sie beim nächsten
+Seitenbesuch (auch auf einer anderen Kartenseite) wieder vorausgewählt ist.
 
 Import: `from '.../lib/BasemapStore'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -76,7 +77,9 @@ Exports:
 
 ## `GeocoderService.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Adress-Suche und Reverse-Geocoding über den `/api/geocoder.php`-Proxy (leitet an Nominatim
+weiter). Fehler werden geschluckt und als leeres Ergebnis (`[]`/`null`) zurückgegeben, statt
+zu werfen — Aufrufer (z.B. `GeocoderSearchField`) müssen daher nicht extra try/catchen.
 
 Import: `from '.../lib/GeocoderService'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -139,7 +142,9 @@ Exports:
 
 ## `ManeuverIcons.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Baut das SVG-Markup für ein ORS-Turn-by-Turn-Manöver-Icon (z.B. für die Wegbeschreibung in
+`RoutingSidebar.ts`). Unbekannte/künftige ORS-Codes fallen auf "Straight" (Code 6) zurück statt
+nichts anzuzeigen.
 
 Import: `from '.../lib/ManeuverIcons'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -171,7 +176,9 @@ Exports:
 
 ## `MapLegend.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Steuert das Legende-Panel einer Kartenseite (`.map-legend`-DOM-Struktur aus `oe5ith-ci`).
+Einträge (`dot`/`line`/`area`/`icon`) werden rein clientseitig verwaltet — welche Layer/Farben
+das sind, entscheidet der Aufrufer (z.B. per `resolveLegendSwatch()`), nicht diese Klasse.
 
 Import: `from '.../lib/MapLegend'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -181,7 +188,11 @@ Exports:
 
 ## `MapRegistry.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Zentrales, modul-scoped Register aller Sources/Layer/Images einer Kartenseite, das
+Basemap-Style-Wechsel überlebt (MapLibre wirft Sources/Layer beim `setStyle()` weg;
+`restore()` fügt hier registrierte Definitionen danach erneut hinzu). `clear()` wird beim
+Seitenwechsel im Router aufgerufen (`main.ts`), damit keine Ressourcen einer verlassenen Seite
+hängen bleiben.
 
 Import: `from '.../lib/MapRegistry'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -214,7 +225,10 @@ Exports:
 
 ## `PopupManager.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Kuratierte Popup-Feldkonfiguration pro Layer-ID (Tracking: `adsb-icons`/`ais-icons`) — Titel,
+Icon und welche `properties`-Felder in welcher Reihenfolge/Formatierung angezeigt werden.
+Konsumiert von `PopupManager.buildHtml()` unten. Für heterogene/unkuratierte Layer (z.B.
+`/karte`-Overlays) siehe stattdessen `GenericFeaturePopup.ts`.
 
 Import: `from '.../lib/PopupManager'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -226,7 +240,9 @@ Exports:
 
 ## `RoutingService.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Abstraktionsschicht über den `/api/ors.php`-Proxy zum OpenRouteService (ORS): Health-Check,
+verfügbare Fahrprofile, Routenberechnung (A→B) und Matrix-basierte Nächste-Station-Suche
+(SEW/NEF).
 
 Import: `from '.../lib/RoutingService'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -235,7 +251,9 @@ Exports:
 
 ## `ShipTypeMapper.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Ordnet AIS/ERIDM-Schiffstyp-Codes (Standard-AIS 0-99, Inland-ERIDM 8000+) einem Sprite,
+einer lesbaren Klassenbezeichnung und einer von 3 Farb-Buckets zu (Tanker/Behörde-SAR →
+`danger`, Passagier-/Fahrgastschiff → `warning`, alles andere → `accent`).
 
 Import: `from '.../lib/ShipTypeMapper'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -255,7 +273,10 @@ Exports:
 
 ## `TerrainManager.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Verwaltet 3D-Terrain (Elevation), Hillshading und das Höhenlinien-Overlay für eine
+Map-Instanz — modul-scoped (nicht pro Instanz), da pro Seite nur eine Map gleichzeitig lebt.
+`initTerrainManager()` setzt die Toggle-Zustände bei jedem Seitenaufruf zurück, damit auf der
+nächsten Seite nichts unerwartet aktiv bleibt.
 
 Import: `from '.../lib/TerrainManager'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -270,7 +291,8 @@ Exports:
 
 ## `Toast.ts`
 
-_TODO: Beschreibung ergänzen (kein JSDoc-Kommentar über dem ersten Export gefunden)._
+Zentrales Feedback-Singleton (Toast-Benachrichtigungen, CI-konforme `.toast`-Klassen).
+`success()`/`warning()`/`error()`/`info()` sind Convenience-Wrapper um `show(message, type)`.
 
 Import: `from '.../lib/Toast'` (Pfad relativ zum aufrufenden Modul anpassen)
 

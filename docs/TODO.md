@@ -147,13 +147,12 @@ alle vier auf einmal anfassen.
   `concurrently` 9.2.1→9.2.4, `shell-quote` 1.8.3→1.9.0 (transitiv). `npm audit` zeigt danach
   0 Schwachstellen. `npx tsc --noEmit`, `npm test` (196/196) und `npm run build` nach dem Update
   erneut grün.
-- [ ] **10 `src/lib/`-Dateien ohne JSDoc-Kommentar** (2026-07-18, beim Erstellen von
-  `docs/architecture/bausteine.md` aufgefallen) — `BasemapStore.ts`, `GeocoderService.ts`,
+- [x] **10 `src/lib/`-Dateien ohne JSDoc-Kommentar** (2026-07-18) — ✅ ERLEDIGT. Je ein kurzer
+  JSDoc-Kommentar über dem Haupt-Export ergänzt: `BasemapStore.ts`, `GeocoderService.ts`,
   `ManeuverIcons.ts`, `MapLegend.ts`, `MapRegistry.ts`, `PopupManager.ts`, `RoutingService.ts`,
-  `ShipTypeMapper.ts`, `TerrainManager.ts`, `Toast.ts` zeigen im automatisch generierten
-  Bausteine-Katalog `_TODO: Beschreibung ergänzen_`, da keiner ihrer Exports einen
-  JSDoc-Kommentar (`/** ... */` direkt darüber) hat. Ziel: je einen kurzen JSDoc-Kommentar über
-  dem jeweiligen Haupt-Export ergänzen, danach `npm run docs:bausteine` erneut laufen lassen.
+  `ShipTypeMapper.ts`, `TerrainManager.ts`, `Toast.ts`. `npm run docs:bausteine` neu generiert —
+  0 verbleibende `_TODO: Beschreibung ergänzen_`-Einträge im Katalog. 196 Tests grün, 0
+  TypeScript-Fehler (reine Kommentar-Ergänzung, kein Verhalten geändert).
 - [ ] **Koordinaten-Umrechner (`/coords`, WGS84): Komma als Dezimaltrennzeichen wird verschluckt**
   (2026-07-18, aus `docs/proposals/fixes.md` übernommen) — bestätigt: `Wgs84Block.ts` parst alle
   DD-/DDM-/DMS-Eingabefelder mit rohem `parseFloat(input.value)` (`Wgs84Block.ts:169-199`, u.a.

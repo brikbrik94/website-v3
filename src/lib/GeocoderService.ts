@@ -2,6 +2,11 @@ import { GeocodeResult } from '../types/common';
 
 const GEOCODER_BASE_URL = '/api/geocoder.php';
 
+/**
+ * Adress-Suche und Reverse-Geocoding über den `/api/geocoder.php`-Proxy (leitet an Nominatim
+ * weiter). Fehler werden geschluckt und als leeres Ergebnis (`[]`/`null`) zurückgegeben, statt
+ * zu werfen — Aufrufer (z.B. `GeocoderSearchField`) müssen daher nicht extra try/catchen.
+ */
 export const GeocoderService = {
   async search(query: string): Promise<GeocodeResult[]> {
     if (!query || query.length < 3) return [];
