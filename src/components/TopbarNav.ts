@@ -18,6 +18,7 @@ export function renderTopbarNav(currentPath: string): string {
         <a href="/karte" class="topbar-nav-dropdown-item nav-link ${currentPath === '/karte' ? 'active' : ''}" role="menuitem">Karte</a>
         <a href="/coords" class="topbar-nav-dropdown-item nav-link ${currentPath === '/coords' ? 'active' : ''}" role="menuitem">Umrechner</a>
         <a href="/tracking" class="topbar-nav-dropdown-item nav-link ${currentPath === '/tracking' ? 'active' : ''}" role="menuitem">Tracking</a>
+        <a href="/isochrones" class="topbar-nav-dropdown-item nav-link ${currentPath === '/isochrones' ? 'active' : ''}" role="menuitem">Isochronen</a>
       </div>
     </div>
   `;

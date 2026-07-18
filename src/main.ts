@@ -78,6 +78,13 @@ const renderLandingPage = () => {
             <p>Echtzeit-Anzeige von Flugzeugen (ADS-B) und Schiffen (AIS) in der Region.</p>
             <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
           </a>
+
+          <a href="/isochrones" class="card card-nav nav-link">
+            <div class="card-nav-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <h3>Isochronen</h3>
+            <p>Erreichbarkeitsanalyse: welches Gebiet ist von einem Punkt aus in X Minuten oder km erreichbar?</p>
+            <span class="card-nav-btn"><i class="fa-solid fa-arrow-right"></i> Öffnen</span>
+          </a>
         </div>
 
         <footer class="page-footer">
@@ -149,6 +156,15 @@ const router = async () => {
   } else if (path === '/tracking') {
     const { TrackingPageController } = await import('./features/tracking/TrackingPage');
     currentPage = new TrackingPageController();
+    await currentPage.mount(app);
+  } else if (path === '/isochronen') {
+    // Alias auf den kanonischen Pfad — history.replaceState statt pushState, damit kein
+    // zusätzlicher Browser-History-Eintrag für den Alias selbst entsteht.
+    window.history.replaceState({}, '', '/isochrones');
+    await router();
+  } else if (path === '/isochrones') {
+    const { IsochronesPageController } = await import('./pages/IsochronesPage');
+    currentPage = new IsochronesPageController();
     await currentPage.mount(app);
   } else if (path.startsWith('/info')) {
     const subpath = path.split('/')[2] || 'nah';
