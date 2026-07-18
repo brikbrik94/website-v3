@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 15:05
+
+### Behoben
+- **Koordinaten-Umrechner (`/coords`, WGS84): Komma als Dezimaltrennzeichen wurde verschluckt**
+  (TODO.md → Sonstiges) — `Wgs84Block.ts` parste alle DD-/DDM-/DMS-Eingabefelder mit rohem
+  `parseFloat()`, das bei einem Komma abbricht (`parseFloat("48,3") === 48` statt `48.3`, ohne
+  Fehler). Neuer, isoliert getesteter `parseDecimalInput()`-Helper
+  (`src/features/coords/parseDecimalInput.ts`) ersetzt alle 12 `parseFloat()`-Aufrufe.
+  Zusätzlich: Grad-/ganzzahlige Minuten-Felder bekommen jetzt eine feste, schmale Breite statt
+  sich die Zeile gleichmäßig mit dem Dezimalfeld (Minuten bei DDM, Sekunden bei DMS) zu teilen —
+  das Dezimalfeld hat dadurch mehr Platz. 6 neue Tests, 202 Tests grün, 0 TypeScript-Fehler.
+
 ## [Unreleased] - 2026-07-18 14:50
 
 ### Hinzugefügt
