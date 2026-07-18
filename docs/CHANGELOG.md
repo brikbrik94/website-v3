@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 16:05
+
+### Behoben
+- **UTM-/BMN-Eingabefelder: derselbe Komma-Bug wie bei WGS84** (TODO.md → Sonstiges) —
+  `UtmBlock.ts`/`BmnBlock.ts` auf den bereits vorhandenen `parseDecimalInput()`-Helper
+  umgestellt, analog zum WGS84-Fix.
+
 ## [Unreleased] - 2026-07-18 15:05
 
 ### Behoben

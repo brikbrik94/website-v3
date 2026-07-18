@@ -169,11 +169,11 @@ alle vier auf einmal anfassen.
   `docs/ci/archive/coord-vals-decimal-field-width-request.md`. 202 Tests grün, 0 TypeScript-Fehler.
   **Out-of-Scope-Fund (nicht mitgefixt):** derselbe `parseFloat`-Komma-Bug existiert auch in
   `UtmBlock.ts` und `BmnBlock.ts` — siehe neuer Punkt unten.
-- [ ] **UTM-/BMN-Eingabefelder: derselbe Komma-Bug wie bei WGS84** (2026-07-18, beim Fixen des
-  WGS84-Komma-Bugs gefunden) — `UtmBlock.ts` (`e`/`n`-Felder) und `BmnBlock.ts` (`rw`/`hw`-Felder)
-  parsen ebenfalls mit rohem `parseFloat()` ohne Komma-Normalisierung. Fix: auf den bereits
-  vorhandenen `parseDecimalInput()`-Helper (`src/features/coords/parseDecimalInput.ts`) umstellen,
-  analog zu `Wgs84Block.ts`.
+- [x] **UTM-/BMN-Eingabefelder: derselbe Komma-Bug wie bei WGS84** (2026-07-18) — ✅ ERLEDIGT.
+  `UtmBlock.ts` (`e`/`n`-Felder) und `BmnBlock.ts` (`rw`/`hw`-Felder) auf den bereits vorhandenen,
+  getesteten `parseDecimalInput()`-Helper umgestellt (analog `Wgs84Block.ts`) — mechanischer Swap,
+  keine neuen Tests nötig, da der Helper selbst schon 6 Tests hat. 202 Tests grün, 0
+  TypeScript-Fehler.
 - [x] **`package.json`s `version`-Feld hängt seit `3.3.1` fest** (2026-07-18) — ✅ ERLEDIGT.
   `package.json` auf `3.10.0` nachgezogen (war seit `3.3.0`→`3.3.1` nicht mehr mitgezogen worden,
   `src/version.ts` blieb korrekt). Nutzer-Entscheidung: ab jetzt bei jedem Release mitziehen —

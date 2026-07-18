@@ -1,5 +1,6 @@
 import { CoordSystemBlock } from '../CoordSystemBlock';
 import { CoordsState } from '../types';
+import { parseDecimalInput } from '../parseDecimalInput';
 
 export class UtmBlock extends CoordSystemBlock {
   public render(): string {
@@ -35,8 +36,8 @@ export class UtmBlock extends CoordSystemBlock {
   public parseInput(): void {
     if (!this.element) return;
     const zone = (this.element.querySelector('[data-field="zone"]') as HTMLInputElement).value;
-    const e = parseFloat((this.element.querySelector('[data-field="e"]') as HTMLInputElement).value);
-    const n = parseFloat((this.element.querySelector('[data-field="n"]') as HTMLInputElement).value);
+    const e = parseDecimalInput((this.element.querySelector('[data-field="e"]') as HTMLInputElement).value);
+    const n = parseDecimalInput((this.element.querySelector('[data-field="n"]') as HTMLInputElement).value);
     
     this.service.setUtm(zone, e, n);
   }
