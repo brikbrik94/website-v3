@@ -2,6 +2,19 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 13:00
+
+### Geändert
+- **Repo-Root aufgeräumt (ROADMAP.md → Repo-Pflege & Dokumentation)** — `TODO.md`/
+  `TODO_ARCHIVE.md`/`ROADMAP.md`/`ROADMAP_ARCHIVE.md`/`CHANGELOG.md` (diese Datei) von Repo-Root
+  nach `docs/` verschoben. `AGENT_INSTRUCTIONS.md` bleibt am Root. `GEMINI.md` komplett entfernt
+  (Gemini CLI nicht genutzt). `AGENT_INSTRUCTIONS.md` §3 selbst geändert (generische Regel für
+  die TODO/ROADMAP-Dateipaare jetzt `docs/` statt Repo-Root, per Proposal-Zyklus) statt nur
+  repo-spezifisch abzuweichen. `CLAUDE.md`/`README.md` und alle internen Querverweise der
+  verschobenen Dateien entsprechend angepasst; ein dabei gefundener, vorbestehender kaputter
+  Link in `ROADMAP.md` mitkorrigiert. Historische Dokumente (Specs/Pläne/archivierte Proposals)
+  bewusst nicht rückwirkend angepasst.
+
 ## [Unreleased] - 2026-07-18 12:25
 
 ### Hinzugefügt
@@ -120,7 +133,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   nur per Rechtsklick. Neuer Baustein `src/lib/LongPressGesture.ts` erkennt die Geste unabhängig
   vom nativen `contextmenu`-Event (das auf Touch wegen MapLibres `touch-action: none` nicht
   zuverlässig feuert). Spec:
-  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
+  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
 
 ## [Unreleased] - 2026-07-12 08:53
 
@@ -133,7 +146,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   die 6 Anfahrtszeit-Ringe) zeigen ihre Farbskala genau einmal pro Overlay, unabhängig davon, wie
   viele der zugehörigen Gruppen gleichzeitig aktiv sind (Referenzzählung in
   `MapPageController.toggleLayer()`, `src/pages/MapPage.ts`). Spec:
-  [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+  [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./superpowers/specs/2026-07-12-map-legend-granularity-design.md).
 
 ## [3.9.0] - 2026-07-11
 
@@ -152,7 +165,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   Layer, synchron mit der Sidebar-Accordion — Klick auf „×" in der Legende triggert einen echten
   `.click()` auf das zugehörige Accordion-Item (derselbe bestehende Toggle-Pfad, keine zweite
   Implementierung; die Legende kann Layer nur ausblenden, nicht einschalten). Spec:
-  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md).
+  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./superpowers/specs/2026-07-09-map-legend-interactive-design.md).
 - **Klick-Popups für Overlay-Layer auf `/karte`** (TODO.md → Map-Subsystem: Anschlussfeatures)
   — Klick auf ein Feature eines aktiven Overlays (Autobahnen, Gemeinden, Höhenlinien, RD/NEF, …)
   zeigt ein Popup mit dessen Eigenschaften. Neue `OverlayLoader.getActiveLayerIds()` liefert alle
@@ -281,7 +294,7 @@ Behoben-Punkt oben) sowie die interaktive Legende (keine Playwright-Umgebung ver
   ROADMAP genannt, für volle Konsistenz. Live verifiziert (Playwright): `/routing`-Warnbadges,
   `/info/debug`-Statusbadge.
 - **Release-Trigger in `AGENT_INSTRUCTIONS.md` §4 formalisiert** — über den Proposal-Zyklus
-  ([docs/proposals/archive/2026-07-09-release-batching-draft.md](./docs/proposals/archive/2026-07-09-release-batching-draft.md)):
+  ([docs/proposals/archive/2026-07-09-release-batching-draft.md](./proposals/archive/2026-07-09-release-batching-draft.md)):
   Die Release-Checkliste (Version/Changelogs/Build/Tag/Deploy) läuft nicht mehr automatisch nach
   jedem abgeschlossenen TODO-/ROADMAP-Punkt, sondern wird vom Agenten an natürlichen
   Arbeitsblock-Enden vorgeschlagen und erst nach Bestätigung ausgeführt (Ausnahme:
@@ -293,7 +306,7 @@ Behoben-Punkt oben) sowie die interaktive Legende (keine Playwright-Umgebung ver
 - **Zwei Tile-Server-Sprite-404-Punkte aus `TODO.md` entfernt** — betreffen `tiles.oe5ith.at`
   (Basemap „At Plus" und Overlay „Wanderwege"), das ist separate Server-Infrastruktur außerhalb
   dieses Repos (`nginx.conf` hier deckt nur `map.oe5ith.at` ab). Nach neuem
-  [docs/external-blockers.md](./docs/external-blockers.md) verschoben, da sie ohne
+  [docs/external-blockers.md](./external-blockers.md) verschoben, da sie ohne
   Tile-Server-Zugriff nicht aus diesem Repo heraus behoben werden können; erneut gegengetestet
   (2026-07-09), beide weiterhin 404.
 
@@ -338,8 +351,8 @@ Behoben-Punkt oben) sowie die interaktive Legende (keine Playwright-Umgebung ver
 
 ### Hinzugefügt
 - **Turn-by-Turn-Wegbeschreibung für A→B-Routen** (Phase 2 von
-  [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md),
-  Design: [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./docs/superpowers/specs/2026-07-07-turn-by-turn-design.md)).
+  [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./superpowers/specs/2026-07-04-routing-sidebar-details-design.md),
+  Design: [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./superpowers/specs/2026-07-07-turn-by-turn-design.md)).
   War blockiert auf einer generischen Disclosure-Komponente + Abbiege-Icons im `oe5ith-ci`-Submodul —
   beides seit `oe5ith-ci` v1.20.0 verfügbar (Submodul-Pointer aktualisiert). Neues Modul
   `src/lib/ManeuverIcons.ts` (ORS-Manöver-Code 0-13 → SVG-Icon-Markup, 14 `ci-maneuver-*`-Icons
@@ -355,7 +368,7 @@ Behoben-Punkt oben) sowie die interaktive Legende (keine Playwright-Umgebung ver
 
 ### Geändert
 - **Copyright-Modal überarbeitet und erweitert** (`src/lib/GlobalModals.ts`, Design:
-  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./docs/superpowers/specs/2026-07-07-copyright-modal-design.md)).
+  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./superpowers/specs/2026-07-07-copyright-modal-design.md)).
   Sechs statt drei Abschnitte: „Karten & Daten" (Leaflet-Angabe entfernt — keine
   Projekt-Abhängigkeit), neuer Abschnitt „Bibliotheken" mit den tatsächlichen
   Runtime-Dependencies (MapLibre GL JS, proj4, mgrs, open-location-code, pmtiles, je mit
@@ -367,14 +380,14 @@ Behoben-Punkt oben) sowie die interaktive Legende (keine Playwright-Umgebung ver
   verifiziert (Playwright): Modal öffnet sich sowohl von der Landing-Page als auch vom
   Sidebar-Footer (`/nah`), alle sechs Abschnitte korrekt, `mailto:`-Link korrekt gesetzt, keine
   Konsolenfehler.
-- **`MapRegistry`-Dreifach-Buchhaltung vereinfacht** (U7 + U1b, [docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md](./docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md)). `MapPage.toggleLayer` führte bisher eine eigene, parallele Buchhaltung (`activeLayers` + `overlayMetadata` + `cachedStyles` + `styleFetchPromises`) neben `MapRegistry` — Recherche ergab, dass das exakt dasselbe Problem ist, das `OverlayLoader` (genutzt von `CoordsPage`) bereits mit einer einzigen, schlankeren `loaded`-Map löst. `OverlayLoader` generalisiert: optionale Layer-Untermenge pro `add()`/`remove()`-Aufruf, kumulative Buchhaltung über mehrere Aufrufe für dasselbe Overlay, Style-JSON-Cache pro Overlay. `MapPage.toggleLayer` ist jetzt ein dünner Wrapper um `OverlayLoader`; `activeLayers`, `overlayMetadata`, `cachedStyles`, `styleFetchPromises`, `getStyle()`, `reapplyActiveOverlays()` entfallen vollständig. Neuer gemeinsamer Helper `src/lib/MapDefinitionOps.ts` (`addSourceIfMissing`/`addLayerIfMissing`) ersetzt die 4x duplizierte Guard+Klon+Add-Stelle in `MapRegistry.restore`, `OverlayLoader.add` und `MapCore.ensureGeoJsonLayer`. `CoordsPage.ts`s bestehende `OverlayLoader`-Nutzung (Wanderwege-Overlay, ohne Layer-Untermenge) bleibt unverändert kompatibel. Live verifiziert (Playwright, `/karte`: Mehrfach-Layer-Toggle innerhalb eines Overlays inkl. Source-Cleanup nur beim letzten Abschalten, Basemap-Wechsel-Regression gegen „Basemap At"; `/coords`: Wanderwege-Toggle unverändert).
-- **Hover-Cursor-Logik vereinheitlicht** (U6, [docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md](./docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md)). Drei unabhängige, duplizierte Implementierungen (`TrackingMapLayers`, `RoutingPage`, `NahMapLayers`) durch einen gemeinsamen Helper `attachHoverCursor` (`src/lib/HoverCursor.ts`) ersetzt. Dabei zwei Bugs behoben: `ais-dots-moving`/`ais-dots-static` (Tracking) waren klickbar, zeigten aber keinen Hover-Cursor; `RoutingPage` meldete seine Hover-Listener nie in `destroy()` ab (Leak-Risiko bei Seitenwechsel). Beide verschwinden automatisch durch die vereinheitlichte Implementierung. In `CLAUDE.md` dokumentiert für künftige neue Seiten. Live verifiziert (Playwright, `/tracking`, `/routing`, `/nah`, inkl. Seitenwechsel-Test).
-- **NAH-Stationsmarker von DOM-Markern auf einen MapLibre-Symbol-Layer migriert** (U5, [docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)). NAH war die letzte Karten-Funktion mit `maplibregl.Marker`-DOM-Elementen statt eines Symbol-Layers (Tracking/Coords/Routing nutzen das Muster schon). Das Helikopter-Icon wird jetzt einmalig zur Laufzeit aus dem bestehenden `fa-helicopter`-Glyph als SDF-Icon gerendert (kein neues externes Sprite nötig), Klick/Hover folgen dem in `TrackingMapLayers` etablierten `queryRenderedFeatures`-Muster. Popup-Inhalt bleibt fachlich unverändert. Betreiber-spezifische Icons (bereits im Sprite-Set vorhanden) sind bewusst nicht Teil dieser Migration — siehe neuer ROADMAP.md-Punkt.
+- **`MapRegistry`-Dreifach-Buchhaltung vereinfacht** (U7 + U1b, [docs/superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md](./superpowers/specs/2026-07-06-map-registry-bookkeeping-design.md)). `MapPage.toggleLayer` führte bisher eine eigene, parallele Buchhaltung (`activeLayers` + `overlayMetadata` + `cachedStyles` + `styleFetchPromises`) neben `MapRegistry` — Recherche ergab, dass das exakt dasselbe Problem ist, das `OverlayLoader` (genutzt von `CoordsPage`) bereits mit einer einzigen, schlankeren `loaded`-Map löst. `OverlayLoader` generalisiert: optionale Layer-Untermenge pro `add()`/`remove()`-Aufruf, kumulative Buchhaltung über mehrere Aufrufe für dasselbe Overlay, Style-JSON-Cache pro Overlay. `MapPage.toggleLayer` ist jetzt ein dünner Wrapper um `OverlayLoader`; `activeLayers`, `overlayMetadata`, `cachedStyles`, `styleFetchPromises`, `getStyle()`, `reapplyActiveOverlays()` entfallen vollständig. Neuer gemeinsamer Helper `src/lib/MapDefinitionOps.ts` (`addSourceIfMissing`/`addLayerIfMissing`) ersetzt die 4x duplizierte Guard+Klon+Add-Stelle in `MapRegistry.restore`, `OverlayLoader.add` und `MapCore.ensureGeoJsonLayer`. `CoordsPage.ts`s bestehende `OverlayLoader`-Nutzung (Wanderwege-Overlay, ohne Layer-Untermenge) bleibt unverändert kompatibel. Live verifiziert (Playwright, `/karte`: Mehrfach-Layer-Toggle innerhalb eines Overlays inkl. Source-Cleanup nur beim letzten Abschalten, Basemap-Wechsel-Regression gegen „Basemap At"; `/coords`: Wanderwege-Toggle unverändert).
+- **Hover-Cursor-Logik vereinheitlicht** (U6, [docs/superpowers/specs/2026-07-06-shared-hover-cursor-design.md](./superpowers/specs/2026-07-06-shared-hover-cursor-design.md)). Drei unabhängige, duplizierte Implementierungen (`TrackingMapLayers`, `RoutingPage`, `NahMapLayers`) durch einen gemeinsamen Helper `attachHoverCursor` (`src/lib/HoverCursor.ts`) ersetzt. Dabei zwei Bugs behoben: `ais-dots-moving`/`ais-dots-static` (Tracking) waren klickbar, zeigten aber keinen Hover-Cursor; `RoutingPage` meldete seine Hover-Listener nie in `destroy()` ab (Leak-Risiko bei Seitenwechsel). Beide verschwinden automatisch durch die vereinheitlichte Implementierung. In `CLAUDE.md` dokumentiert für künftige neue Seiten. Live verifiziert (Playwright, `/tracking`, `/routing`, `/nah`, inkl. Seitenwechsel-Test).
+- **NAH-Stationsmarker von DOM-Markern auf einen MapLibre-Symbol-Layer migriert** (U5, [docs/superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md](./superpowers/specs/2026-07-06-nah-symbol-layer-migration-design.md)). NAH war die letzte Karten-Funktion mit `maplibregl.Marker`-DOM-Elementen statt eines Symbol-Layers (Tracking/Coords/Routing nutzen das Muster schon). Das Helikopter-Icon wird jetzt einmalig zur Laufzeit aus dem bestehenden `fa-helicopter`-Glyph als SDF-Icon gerendert (kein neues externes Sprite nötig), Klick/Hover folgen dem in `TrackingMapLayers` etablierten `queryRenderedFeatures`-Muster. Popup-Inhalt bleibt fachlich unverändert. Betreiber-spezifische Icons (bereits im Sprite-Set vorhanden) sind bewusst nicht Teil dieser Migration — siehe neuer ROADMAP.md-Punkt.
 
 ### Behoben
 - **Mobile Topbar: Karte/Umrechner/Tracking waren nicht erreichbar** (`src/components/Topbar.ts`,
   `src/main.ts`, Design:
-  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md)).
+  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./superpowers/specs/2026-07-07-mobile-topbar-nav-design.md)).
   Die CI-Basis blendet `.topbar-nav-dropdown` auf Mobile (≤768px) komplett aus; ein bestehender
   website-v3-Override zeigte zwar die zwei Quicklinks (Routing/Luftrettung) wieder an, aber
   das „Mehr"-Dropdown blieb unsichtbar — die drei darin enthaltenen Seiten waren über die
@@ -414,12 +427,12 @@ Behoben-Punkt oben) sowie die interaktive Legende (keine Playwright-Umgebung ver
 ## [3.6.0] - 2026-07-05 07:16
 
 ### Hinzugefügt
-- **Routing-Sidebar zeigt bei A→B-Routen jetzt Fahrmodus- und Warn-Badges** (Phase 1 von [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md); Turn-by-Turn folgt als Phase 2, siehe TODO.md). Neues Modul `src/features/routing/RoutingDetailsFormatter.ts` (`getProfileBadge`, `getRouteWarnings`, 9 Unit-Tests) mappt das gewählte ORS-Profil auf ein Badge („Normalfahrt"/Auto bzw. „Blaulichtfahrt"/Rettungswagen, Fallback für unbekannte Profile) und wertet die ORS-`extras` (`tollways`, `roadaccessrestrictions`) zu Warn-Badges aus. `RoutingService.calculateRoute()` bekommt einen optionalen `extraInfo`-Parameter, `types/common.ts` additiv um `RouteExtra(s)`/`RouteFeatureProperties` erweitert. Bei der Live-Verifikation (Playwright, Linz→St. Pölten) einen Bug im eigenen Ansatz gefunden und behoben: `extra_info` unconditional für alle Profile anzufragen ließ `driving-emergency`-Routen mit HTTP 500 fehlschlagen (ORS-Fehlercode 2018, `way_type` ist im Graph dieses Profils nicht als Encoded Value geladen) — `RoutingSidebarAdapter.ts` fragt `extra_info` jetzt nur für `driving-car` an; das Fahrmodus-Badge selbst (unabhängig von `extras`) funktioniert für beide Profile unverändert. Nach Live-Test der Anordnung noch einmal überarbeitet, siehe „Fahrmodus-Anzeige … von Text-Badge auf Icon umgestellt" unten.
+- **Routing-Sidebar zeigt bei A→B-Routen jetzt Fahrmodus- und Warn-Badges** (Phase 1 von [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](./superpowers/specs/2026-07-04-routing-sidebar-details-design.md); Turn-by-Turn folgt als Phase 2, siehe TODO.md). Neues Modul `src/features/routing/RoutingDetailsFormatter.ts` (`getProfileBadge`, `getRouteWarnings`, 9 Unit-Tests) mappt das gewählte ORS-Profil auf ein Badge („Normalfahrt"/Auto bzw. „Blaulichtfahrt"/Rettungswagen, Fallback für unbekannte Profile) und wertet die ORS-`extras` (`tollways`, `roadaccessrestrictions`) zu Warn-Badges aus. `RoutingService.calculateRoute()` bekommt einen optionalen `extraInfo`-Parameter, `types/common.ts` additiv um `RouteExtra(s)`/`RouteFeatureProperties` erweitert. Bei der Live-Verifikation (Playwright, Linz→St. Pölten) einen Bug im eigenen Ansatz gefunden und behoben: `extra_info` unconditional für alle Profile anzufragen ließ `driving-emergency`-Routen mit HTTP 500 fehlschlagen (ORS-Fehlercode 2018, `way_type` ist im Graph dieses Profils nicht als Encoded Value geladen) — `RoutingSidebarAdapter.ts` fragt `extra_info` jetzt nur für `driving-car` an; das Fahrmodus-Badge selbst (unabhängig von `extras`) funktioniert für beide Profile unverändert. Nach Live-Test der Anordnung noch einmal überarbeitet, siehe „Fahrmodus-Anzeige … von Text-Badge auf Icon umgestellt" unten.
 - **Unit-Tests für `MapCore.createPinLayer`/`MapCore.setPointSource`** (`src/lib/MapCore.test.ts`, 6 Tests): Defaults, Custom-Optionen, Halo-Paint nur bei gesetzter Farbe, Punkt setzen/leeren/No-Op bei fehlender Source.
 - **TODO/Roadmap-Trennung + Standards-Referenzen (`CLAUDE.md`, `TODO.md`, `ROADMAP.md`).** `TODO.md` (aktueller Scope: Fixes/Cleanup/Erweiterungen) und neues `ROADMAP.md` (neue, noch nicht existierende Features) getrennt, je mit `*_ARCHIVE.md`-Gegenstück. `TODO.md` auf die offene Map-Subsystem-Cleanup-Roadmap (U1–U7) aktualisiert; die 4 alten CI-Token/Accessibility-Punkte entfernt, da sie tatsächlich zu `oe5ith-ci/docs/roadmap.md` gehören. `CLAUDE.md` bekam eine neue Sektion „Standards-Referenzen": referenziert die externen Standards hinter den Repo-Konventionen (Semantic Versioning, Keep a Changelog, Conventional Commits, PSR-12, EditorConfig, BEM, GeoJSON/RFC 7946, WGS84, ISO 8601, WCAG, ARIA APG, Twelve-Factor Config, ADR, OWASP Top 10, Core Web Vitals, OpenAPI) inkl. bekannter Abweichungen, plus eine Pflege-Regel für künftige neue Dienste/Sprachen. Neues `.editorconfig` an bestehenden Codestil angeglichen (2 Spaces JS/TS/CSS, 4 Spaces PHP). Konkrete Angleichungs-Aufgaben (PSR-12-Audit, OWASP-Self-Check, OpenAPI-Spec) als neue TODO.md-Sektion „Standards-Angleichung" erfasst.
 
 ### Geändert
-- **Fahrmodus-Anzeige in der Routing-Zusammenfassung von Text-Badge auf Icon umgestellt** (`src/components/RoutingSidebar.ts`, `updateRoutingSummary`). Live-Test des Fahrmodus-/Warn-Badge-Features (siehe oben) zeigte eine unsaubere Anordnung: das Fahrmodus-Badge stand als eigene blaue Textzeile über der Distanz/Dauer-Box, die Warn-Badges (Maut/Zufahrtsbeschränkung) als getrennter Block danach ohne erkennbaren Bezug zur Route. Jetzt: reines Icon (Auto/Rettungswagen) links neben der unveränderten Distanz/Dauer-Kv-Zeile (Label nur noch als Tooltip), Warn-Badges direkt in derselben Karte darunter. Neue, scoped CSS-Regeln (`.result-summary-row`, `.result-mode-icon`, `.result-summary-row .result-kv`, `.result-summary-row + .result-badges`) in `sidebar.css`, bestehende `.result-kv`/`.result-badges`-Basisklassen (auch von Stationsliste/Tracking genutzt) unverändert. Design: [docs/superpowers/specs/2026-07-05-routing-summary-layout-design.md](./docs/superpowers/specs/2026-07-05-routing-summary-layout-design.md). Beide Profile live gegen ORS verifiziert (Playwright, Linz→St. Pölten).
+- **Fahrmodus-Anzeige in der Routing-Zusammenfassung von Text-Badge auf Icon umgestellt** (`src/components/RoutingSidebar.ts`, `updateRoutingSummary`). Live-Test des Fahrmodus-/Warn-Badge-Features (siehe oben) zeigte eine unsaubere Anordnung: das Fahrmodus-Badge stand als eigene blaue Textzeile über der Distanz/Dauer-Box, die Warn-Badges (Maut/Zufahrtsbeschränkung) als getrennter Block danach ohne erkennbaren Bezug zur Route. Jetzt: reines Icon (Auto/Rettungswagen) links neben der unveränderten Distanz/Dauer-Kv-Zeile (Label nur noch als Tooltip), Warn-Badges direkt in derselben Karte darunter. Neue, scoped CSS-Regeln (`.result-summary-row`, `.result-mode-icon`, `.result-summary-row .result-kv`, `.result-summary-row + .result-badges`) in `sidebar.css`, bestehende `.result-kv`/`.result-badges`-Basisklassen (auch von Stationsliste/Tracking genutzt) unverändert. Design: [docs/superpowers/specs/2026-07-05-routing-summary-layout-design.md](./superpowers/specs/2026-07-05-routing-summary-layout-design.md). Beide Profile live gegen ORS verifiziert (Playwright, Linz→St. Pölten).
 - **Sprite-Sheets werden gecacht statt bei jedem Style-Reload neu geladen (`MapCore.loadSprites`).** Fetch + Bild-Dekodierung eines Sprite-Sheets liefen bisher bei jedem Basemap-Wechsel erneut ab, obwohl der Inhalt pro Sprite-URL identisch ist — wirkt sich auf Core Web Vitals (LCP/INP) beim Karten-Init aus. Neuer Cache (`_spriteSheetCache`, keyed nach Sprite-URL inkl. HiDPI-Suffix) übernimmt jetzt nur noch den einmaligen Fetch/Decode; das (unvermeidbare) erneute `map.addImage()` pro Style-Instanz bleibt bestehen. Zusätzlich die 3 identisch duplizierten `SPRITE_BASE`-Konstanten (`NahMapLayers.ts`, `RoutingMapLayers.ts`, `CoordsPage.ts`) durch eine zentrale, aus `MapCore.ts` exportierte `MARKERS_SPRITE_BASE` ersetzt.
 - **Pin-/Marker-Boilerplate zusammengefasst (`MapCore.createPinLayer`, `MapCore.setPointSource`).** Die Symbol-Layer-Definition für Einzel-Pins (NAH-Einsatzort, Routing-Start/-Ziel, Coords-Pin) und die „Pin-Position setzen/leeren"-Logik waren an drei Stellen fast identisch kopiert. Jetzt zwei gemeinsame `MapCore`-Helper (`createPinLayer` baut die `LayerSpecification`, `setPointSource` setzt/leert die Point-GeoJSON-Source); ersetzt die Duplikate in `NahMapLayers.ts`, `RoutingMapLayers.ts` (inkl. Wegfall der privaten `_updatePin`) und `CoordsPage.ts`.
 - **`CLAUDE.md` in portable + repo-spezifische Teile aufgesplittet.** Neue Datei `AGENT_INSTRUCTIONS.md` enthält jetzt die repo-unabhängigen, standardbasierten Regeln (generische Standards-Referenzen-Auswahl, TODO/Roadmap-Split-Konvention, Releases/Versionierung/Git, Core Mandates) — 1:1 in andere Repos kopierbar, ohne website-v3-Dateipfade. `CLAUDE.md` verweist darauf statt die Regeln zu duplizieren und behält nur noch Repo-Spezifisches (Architektur, Commands, Geodaten-Standards, `oe5ith-ci`-Anwendung, konkrete Release-Dateipfade). `GEMINI.md` (von Gemini CLI zwingend unter diesem Namen geladen) auf einen kurzen Verweis auf `AGENT_INSTRUCTIONS.md` + `CLAUDE.md` reduziert statt eigenständig zu duplizieren — war zuvor veraltet (`api/config.php` statt `api/config.local.php`, verpflichtender `-dev`-Suffix). Entsprechender ROADMAP.md-Punkt nach `ROADMAP_ARCHIVE.md` verschoben.

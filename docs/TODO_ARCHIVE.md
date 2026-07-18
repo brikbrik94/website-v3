@@ -10,15 +10,15 @@ noch nicht getrennt) und sind entsprechend gemischt.
 - [x] **CI-Bug: `.badge` erzwingt `white-space: nowrap`** — behoben in `oe5ith-ci` v1.21.0
   (neues Modifier `.badge-wrap`). In website-v3 konsumiert: `src/styles/badges.css` gesynct,
   `RoutingSidebar.ts`-Warn-Badges nutzen `badge-wrap`, lokaler Override in `src/styles/sidebar.css`
-  entfernt. Details: [docs/ci/bug-reports.md](./docs/ci/bug-reports.md) (Punkt 2),
-  [docs/ci/open-items.md](./docs/ci/open-items.md) (Punkt 4).
+  entfernt. Details: [docs/ci/bug-reports.md](./ci/bug-reports.md) (Punkt 2),
+  [docs/ci/open-items.md](./ci/open-items.md) (Punkt 4).
 
 ## 2026-07-09 — TODO.md vollständig abgearbeitet
 
 Alle drei verbliebenen TODO.md-Abschnitte (Map-Subsystem Cleanup, UI/UX & Branding, Standards-
 Angleichung) sind komplett erledigt; TODO.md ist damit leer und bereit für neue Einträge. Die
 zwei zuvor offenen Sprite-404-Punkte (Tile-Server, außerhalb dieses Repos) wurden nicht
-archiviert, sondern nach [docs/external-blockers.md](./docs/external-blockers.md) verschoben —
+archiviert, sondern nach [docs/external-blockers.md](./external-blockers.md) verschoben —
 sie sind kein abgeschlossener TODO-Punkt, sondern weiterhin offen, nur außerhalb der Reichweite
 dieses Repos.
 
@@ -29,7 +29,7 @@ dieses Repos.
 - [x] NAH-Feature-State-Reset hardcoded `for (i<5)` (`NahMapLayers.ts`) behoben — `map.removeFeatureState({source})` statt fixer Index-Schleife (2026-07-07).
 - [x] Badge-Text-Umbruch behoben — lokaler CSS-Override (`.result-badges .badge { white-space: normal }`) in `src/styles/sidebar.css`; Root Cause liegt in `oe5ith-ci` (`css/badges.css` `.badge` erzwingt `white-space: nowrap`), dokumentiert in `oe5ith-ci/ci-bug-reports.md` (Eintrag 2, nicht im Submodul gefixt) (2026-07-07).
 - [x] Turn-by-Turn-Anzeige für A→B-Routen (Phase 2) umgesetzt (2026-07-07) — siehe
-  [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./docs/superpowers/specs/2026-07-07-turn-by-turn-design.md).
+  [docs/superpowers/specs/2026-07-07-turn-by-turn-design.md](./superpowers/specs/2026-07-07-turn-by-turn-design.md).
 - [x] **NAH: Mehrfach-Stationen mit Status-Aggregation und Badge** (2026-07-08) — ✅ ERLEDIGT
   Stationen mit identischen Koordinaten (z.B. C14/C99, Martin 1/10) werden jetzt aggregiert:
   ein gemeinsamer Marker mit Nummern-Badge zeigt an, dass mehrere Stationen am Standort sind.
@@ -43,7 +43,7 @@ Aus `docs/proposals/todo.txt` übernommen (2026-07-05) — kleinere, unabhängig
 an bereits bestehenden Features.
 
 - [x] **Credits/Copyright-Modal überarbeitet und erweitert** (2026-07-07) — siehe
-  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./docs/superpowers/specs/2026-07-07-copyright-modal-design.md).
+  [docs/superpowers/specs/2026-07-07-copyright-modal-design.md](./superpowers/specs/2026-07-07-copyright-modal-design.md).
   Kontakt-Mail + Impressum, Datenschutz-Hinweis, vollständige/korrigierte Lizenzangaben ergänzt;
   toter Landing-Page-Link zum Modal repariert. Kontaktformular bewusst nicht umgesetzt (kein
   Mail-Versand-Backend vorhanden) — bei Bedarf eigener ROADMAP.md-Punkt.
@@ -54,7 +54,7 @@ an bereits bestehenden Features.
   `.leaflet-popup-close-button`-Regeln — vermutlich Altlast aus einer Zeit vor der Migration
   auf MapLibre GL JS. 27 Zeilen toter Code gelöscht.
 - [x] **Mobilansicht: Quicklinks in der Topbar durch das Dropdown ersetzt** (2026-07-07) — siehe
-  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md).
+  [docs/superpowers/specs/2026-07-07-mobile-topbar-nav-design.md](./superpowers/specs/2026-07-07-mobile-topbar-nav-design.md).
   War tatsächlich kein „beengt"-Problem, sondern ein Reachability-Bug: Karte/Umrechner/Tracking
   waren auf Mobile über die Topbar gar nicht erreichbar (Dropdown komplett ausgeblendet).
 - [x] **Logo bei Mobile auch anzeigen** (2026-07-08, commit 82fcf5e) — auf der Landing-Page ist das Logo/OE5ITH-Wort-Zeichen
@@ -73,7 +73,7 @@ an bereits bestehenden Features.
   schob „Luftrettung" auf Platz 3 und blendete es aus. Fix: Reihenfolge in `.topbar-right` getauscht
   (Nav-Links vor Button). Entdeckt beim Live-Test des Mobile-Topbar-Nav-Fixes (2026-07-07).
 - [x] **Versionierungspraxis überdenken** (2026-07-09) — über den Proposal-Zyklus umgesetzt, siehe
-  [docs/proposals/archive/2026-07-09-release-batching-draft.md](./docs/proposals/archive/2026-07-09-release-batching-draft.md).
+  [docs/proposals/archive/2026-07-09-release-batching-draft.md](./proposals/archive/2026-07-09-release-batching-draft.md).
   `AGENT_INSTRUCTIONS.md` §4 hat jetzt einen „Release-Trigger"-Absatz: Die Release-Checkliste
   (Version/Changelogs/Build/Tag/Deploy) läuft nicht mehr automatisch nach jedem abgeschlossenen
   TODO-/ROADMAP-Punkt, sondern wird vom Agenten an natürlichen Arbeitsblock-Enden vorgeschlagen und
@@ -82,7 +82,7 @@ an bereits bestehenden Features.
 
 ### Standards-Angleichung
 
-Bestehenden Code/bestehende Praxis an die in [CLAUDE.md](./CLAUDE.md#standards-referenzen) referenzierten
+Bestehenden Code/bestehende Praxis an die in [CLAUDE.md](../CLAUDE.md#standards-referenzen) referenzierten
 Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
 
 - [x] **PHP (`api/*.php`) gegen PSR-12 prüfen** (2026-07-08) — PHP_CodeSniffer mit PSR-12-Ruleset
@@ -94,7 +94,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   Dabei Info-Disclosure in `diag.php` gefunden (siehe separater TODO.md-Punkt unten).
 - [x] **`diag.php`-Info-Disclosure in Produktion blockiert** (2026-07-08) — beim
   OWASP-Top-10-Audit gefunden (siehe
-  [docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md), Kategorien
+  [docs/security/owasp-top10-checklist.md](./security/owasp-top10-checklist.md), Kategorien
   A01/A05): `api/diag.php` war ohne Zugriffsschutz öffentlich erreichbar und exponierte
   PHP-Version, geladene Extensions, DB-Host/Port/Name/User (Passwort maskiert) sowie den internen
   ORS-Health-Status. Fix: `location = /api/diag.php { deny all; return 403; }` in `nginx.conf`
@@ -298,7 +298,7 @@ Standards angleichen bzw. dagegen prüfen (kein neuer Code, kein neues Feature).
   `MapCore.loadSprites`) — als eigener TODO.md-Punkt erfasst, nicht mitgefixt.
 
 ### U1+U2 visuell verifiziert (Map-Subsystem Cleanup) — 2 Bugs gefunden + behoben
-6-Punkte-Checkliste aus [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md](./docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md)
+6-Punkte-Checkliste aus [docs/superpowers/plans/2026-06-30-map-subsystem-cleanup.md](./superpowers/plans/2026-06-30-map-subsystem-cleanup.md)
 manuell durchgetestet (`npm run dev`, Basemap „Basemap At"). 4/6 Punkte bestanden direkt
 (Tracking-Restore, Terrain-Leak, Wanderwege-Toggle, Seitenwechsel-Persistenz); 2 Punkte
 schlugen fehl und wurden per systematischer Fehlersuche (Root-Cause + Live-Reproduktion via

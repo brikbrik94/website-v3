@@ -98,8 +98,9 @@ repo-spezifische Einstiegspunkt muss explizit auf das Submodul als kanonische Qu
 
 ## 3. TODO vs. Roadmap
 
-Zwei getrennte Dateipaare am Repo-Root, jedes für sich lesbar und actionable (Deep-Dive-Docs wie
-Design-Specs bleiben optionaler Kontext, nie alleinige Quelle für „was zu tun ist"):
+Zwei getrennte Dateipaare unter `docs/` (nicht am Repo-Root — hält den Root aufgeräumt), jedes für
+sich lesbar und actionable (Deep-Dive-Docs wie Design-Specs bleiben optionaler Kontext, nie
+alleinige Quelle für „was zu tun ist"):
 
 - **`TODO.md` / `TODO_ARCHIVE.md`** — Arbeiten im **aktuellen Scope**: Bugfixes, Cleanup,
   Erweiterungen an bereits bestehendem Code/Features.

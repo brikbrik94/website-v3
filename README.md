@@ -18,7 +18,7 @@ Basiskarten/Overlays, ADS-B/AIS-Gateways für Live-Tracking). Details: [CLAUDE.m
 ## Seiten & Funktionen
 
 Jede Seite unten ist so beschrieben, dass sich daraus später Endnutzer-Hilfetexte ableiten lassen
-(siehe [ROADMAP.md](./ROADMAP.md) → „Hilfeseite"). Die Reihenfolge folgt der Topbar-Navigation.
+(siehe [ROADMAP.md](./docs/ROADMAP.md) → „Hilfeseite"). Die Reihenfolge folgt der Topbar-Navigation.
 
 ### `/karte` — Karten-Viewer
 
@@ -110,8 +110,8 @@ bash scripts/security-audit.sh   # OWASP-Teilaudit
 
 ## Weiterführende Dokumentation
 
-- [CHANGELOG.md](./CHANGELOG.md) — technisches Änderungsprotokoll
-- [ROADMAP.md](./ROADMAP.md) / [TODO.md](./TODO.md) — geplante Features / offene Aufgaben
+- [CHANGELOG.md](./docs/CHANGELOG.md) — technisches Änderungsprotokoll
+- [ROADMAP.md](./docs/ROADMAP.md) / [TODO.md](./docs/TODO.md) — geplante Features / offene Aufgaben
 - [docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md) — Security-Self-Check
 - [CLAUDE.md](./CLAUDE.md) — Architektur, Standards, Coding-Konventionen (primär für Coding-Agenten,
   aber auch als technische Referenz für Menschen geeignet)
