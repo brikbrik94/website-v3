@@ -1,5 +1,6 @@
 import { CoordSystemBlock } from '../CoordSystemBlock';
 import { CoordsState } from '../types';
+import { parseDecimalInput } from '../parseDecimalInput';
 
 export class BmnBlock extends CoordSystemBlock {
   public render(): string {
@@ -39,8 +40,8 @@ export class BmnBlock extends CoordSystemBlock {
   public parseInput(): void {
     if (!this.element) return;
     const m = (this.element.querySelector('[data-field="m"]') as HTMLSelectElement).value;
-    const rw = parseFloat((this.element.querySelector('[data-field="rw"]') as HTMLInputElement).value);
-    const hw = parseFloat((this.element.querySelector('[data-field="hw"]') as HTMLInputElement).value);
+    const rw = parseDecimalInput((this.element.querySelector('[data-field="rw"]') as HTMLInputElement).value);
+    const hw = parseDecimalInput((this.element.querySelector('[data-field="hw"]') as HTMLInputElement).value);
     
     this.service.setBmn(m, rw, hw);
   }
