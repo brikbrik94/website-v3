@@ -4,6 +4,7 @@ import { MapCore } from '../lib/MapCore';
 import { attachHoverCursor } from '../lib/HoverCursor';
 import { initTopbar } from '../components/Topbar';
 import { MapLegend } from '../lib/MapLegend';
+import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';
 import { LayoutHelper } from '../lib/LayoutHelper';
 import { ContextMenu } from '../components/ContextMenu';
 import { attachLongPress } from '../lib/LongPressGesture';
@@ -50,6 +51,10 @@ export class RoutingPageController extends BasePageController {
 
             // 6. Topbar & Legende initialisieren
             const legend = new MapLegend(mounts.legend!);
+            legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.active.color, label: 'Gewählte Route' });
+            legend.addEntry({ type: 'line', color: MAP_ROUTE_STYLES.background.color, label: 'Alternative Route' });
+            legend.addEntry({ type: 'dot', color: MAP_COLORS.success, label: 'Startpunkt' });
+            legend.addEntry({ type: 'dot', color: MAP_COLORS.danger, label: 'Zielpunkt' });
             initTopbar(mounts.topbar, basemaps, (url) => {
                 if (this.map) this.map.setStyle(url);
             }, () => legend.toggle());

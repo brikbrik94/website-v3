@@ -2,6 +2,14 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-18 08:40
+
+### Geändert
+- **`/routing`-Legende befüllt (TODO.md → Map-Subsystem: Anschlussfeatures, Schritt 4)** —
+  `RoutingPage.ts` zeigt jetzt 4 Legendeneinträge (Gewählte/Alternative Route, Start-/Zielpunkt),
+  vorher wurde die Legende instanziiert, aber nie befüllt. Bewusst kein Eintrag für die
+  Stations-Icons (ein Icon pro Rettungsorganisation, keine kleine geschlossene Aufzählung).
+
 ## [Unreleased] - 2026-07-18 07:52
 
 ### Geändert
