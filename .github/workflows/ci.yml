@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  frontend:
+    name: Frontend (tsc, vitest, OpenAPI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm test
+
+      - name: OpenAPI-Spec validieren
+        run: npm run validate:openapi
+
+  backend:
+    name: Backend (PSR-12, Security-Audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - name: PSR-12-Lint
+        run: composer run lint
+
+      - name: OWASP-Security-Audit (Teilcheck)
+        run: bash scripts/security-audit.sh
