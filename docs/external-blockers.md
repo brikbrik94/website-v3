@@ -53,30 +53,3 @@ Umriss-only-Overlays) einen `fill`-Layer pro Gemeinde/Bezirk zu ergänzen. Sobal
 das bestehende Klick-Handling in `MapPage.ts` automatisch — keine Repo-Code-Änderung nötig
 (`OverlayLoader.add()` übernimmt bereits alle Layer aus `style_layers`, `queryRenderedFeatures`
 fragt bereits generisch alle aktiven Layer ab).
-
-## ORS-Instanz (`ors.oe5ith.at`) — Isochronen auf 1 Range pro Anfrage limitiert
-
-Bei der Live-Verifikation der neuen Isochronen-Seite (`/isochrones`, 2026-07-18) festgestellt:
-jede Anfrage mit mehr als einem Ring-Wert (z.B. Standard-Vorbelegung „5 10 15") schlägt mit
-`HTTP 400` fehl. Root Cause per direktem `curl` gegen `api/ors.php?path=isochrones/driving-car`
-verifiziert (nicht geraten) — mit 1 Range liefert die Anfrage ein valides GeoJSON, mit 2+ Ranges
-exakt derselbe Fehler:
-
-```json
-{"error":{"code":3012,"message":"Parameter 'interval' is out of range: Resulting number of 2 isochrones exceeds maximum value of 1."}}
-```
-
-Die self-hosted ORS-Instanz ist server-seitig auf `maximum_intervals: 1` für Isochronen
-konfiguriert. Das Request-Format von `IsochronesService.calculateIsochrones()`
-(`src/lib/IsochronesService.ts`) selbst ist korrekt — der 1-Range-Fall beweist das. Kein
-Repo-Code-Bug.
-
-**Nutzer-Entscheidung (2026-07-18):** wird direkt in der ORS-Server-Config behoben (z.B.
-`maximum_intervals` in der `ors-config.yml` auf `ors.oe5ith.at` erhöhen), kein Workaround im
-Repo-Code (z.B. clientseitiges Aufteilen einer Mehrfach-Range-Anfrage in mehrere
-Einzel-Requests) geplant.
-
-**Fix erfordert:** Zugriff auf die ORS-Server-Konfiguration auf `ors.oe5ith.at`. Sobald
-`maximum_intervals` erhöht ist, funktioniert die bereits implementierte Mehrfach-Ring-Anfrage
-(`5 10 15` etc.) ohne weitere Repo-Code-Änderung — `IsochronesService`/`IsochronesMapLayers`
-unterstützen beliebig viele Ringe pro Query bereits vollständig.
