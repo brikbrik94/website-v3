@@ -2,6 +2,7 @@ import { MapItem } from '../types/inventory';
 import { TerrainControls } from './TerrainControls';
 import { BasemapStore } from '../lib/BasemapStore';
 import { renderTopbarNav } from './TopbarNav';
+import { HELP_CONTENT } from '../content/HelpContent';
 
 export interface CustomAction {
   id: string;
@@ -19,6 +20,7 @@ export const initTopbar = (
 ) => {
   const hasMap = basemaps.length > 0;
   const currentPath = window.location.pathname;
+  const helpEntry = HELP_CONTENT[currentPath];
 
   const customActionsHtml = customActions.map(action => `
     <button class="topbar-toggle topbar-toggle--icon-only btn-custom" 
@@ -80,6 +82,12 @@ export const initTopbar = (
               <i class="fa-solid fa-list-ul"></i>
               <span class="topbar-toggle-label">Legende</span>
             </button>
+            ${helpEntry ? `
+            <button class="topbar-toggle topbar-toggle--icon-only btn-help" data-tooltip="Hilfe">
+              <i class="fa-solid fa-circle-question"></i>
+              <span class="topbar-toggle-label">Hilfe</span>
+            </button>
+            ` : ''}
           </div>
 
           <!-- Tablet Toggle -->
@@ -119,6 +127,12 @@ export const initTopbar = (
             <i class="fa-solid fa-list-ul"></i> 
             <span class="topbar-toggle-label">Legende</span>
           </button>
+          ${helpEntry ? `
+          <button class="topbar-toggle btn-help">
+            <i class="fa-solid fa-circle-question"></i>
+            <span class="topbar-toggle-label">Hilfe</span>
+          </button>
+          ` : ''}
         </div>
       </div>
       ` : ''}
@@ -203,6 +217,11 @@ export const initTopbar = (
       if ((e.target as HTMLElement).closest('.btn-legend')) {
         handleLegendToggle();
       }
+    });
+
+    // Help Button Listener (öffnet seiten-spezifisches Hilfe-Modal)
+    document.querySelectorAll('.btn-help').forEach((btn) => {
+      btn.addEventListener('click', () => window.dispatchEvent(new CustomEvent('open-help')));
     });
 
     // Custom Actions Listeners
