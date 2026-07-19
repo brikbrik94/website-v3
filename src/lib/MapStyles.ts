@@ -49,30 +49,21 @@ export const MAP_COLORS = {
   get black() { return getCssVar('--black', '#000000'); }
 };
 
-const hexToRgb = (hex: string): [number, number, number] => {
-  const clean = hex.replace('#', '');
-  const expanded = clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean;
-  const value = parseInt(expanded, 16);
-  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
-};
-
-const mixRgb = (from: [number, number, number], to: [number, number, number], t: number): string => {
-  const r = Math.round(from[0] + (to[0] - from[0]) * t);
-  const g = Math.round(from[1] + (to[1] - from[1]) * t);
-  const b = Math.round(from[2] + (to[2] - from[2]) * t);
-  return `rgb(${r}, ${g}, ${b})`;
+// Fallbacks spiegeln die aktuellen oe5ith-ci-Werte (ab v1.22.0) 1:1 — nur für
+// Umgebungen ohne geladenes CI-Stylesheet (z.B. Tests), siehe getCssVar().
+const SCALE_REACH_FALLBACK: Record<number, string> = {
+  1: '#ef4444', 2: '#ec6b3d', 3: '#ea9537', 4: '#e8c131', 5: '#dbe52b',
+  6: '#a7e225', 7: '#71e01f', 8: '#3dd620', 9: '#21cd33', 10: '#22c55e'
 };
 
 /**
  * Farbe für einen Isochronen-Ring nach seiner Position in der aufsteigend sortierten
- * Ring-Reihenfolge: index 0 (kürzeste Zeit/Distanz, innerster Ring) ist die volle Akzentfarbe,
- * höhere Indizes werden zunehmend Richtung Weiß aufgehellt (max. 75% Mischung, damit der
- * äußerste Ring auf hellem Kartenhintergrund nicht unsichtbar wird). Bei total <= 1 immer die
- * volle Akzentfarbe.
+ * Ring-Reihenfolge, gemappt auf die CI-Erreichbarkeits-Skala `--scale-reach-1..10`
+ * (1 = rot/schlechteste, 10 = grün/beste Erreichbarkeit, oe5ith-ci ab v1.22.0):
+ * index 0 (kürzeste Zeit/Distanz, innerster Ring, am schnellsten erreichbar) = Stufe 10,
+ * der äußerste Ring = Stufe 1. Bei total <= 1 immer Stufe 10 (voll erreichbar).
  */
 export function getIsochroneRingColor(index: number, total: number): string {
-  const accent = hexToRgb(getCssVar('--accent', '#3b82f6'));
-  const white = hexToRgb(getCssVar('--white', '#ffffff'));
-  const t = total <= 1 ? 0 : (index / (total - 1)) * 0.75;
-  return mixRgb(accent, white, t);
+  const step = total <= 1 ? 10 : Math.round(10 - (index / (total - 1)) * 9);
+  return getCssVar(`--scale-reach-${step}`, SCALE_REACH_FALLBACK[step]);
 }

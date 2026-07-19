@@ -469,6 +469,10 @@
   border-color: var(--success-border);
   color: var(--success);
 }
+/* Isochronen-Ergebnisliste hat 2 Actions pro Item (Sichtbar + Löschen) statt nur 1 —
+   delete-iso-btn braucht deshalb einen eigenen Versatz, sonst liegt es exakt auf toggle-iso-btn */
+.result-action.delete-iso-btn { right: 34px; }
+.result-action.delete-iso-btn:hover { background: var(--danger-subtle); border-color: var(--danger-border); color: var(--danger); }
 
 /* Variante 2: Ergebnis-Liste einfach (NAH-Variante)
    Gleicher Card-Stil wie .result-item, mit Nummer-Badge.

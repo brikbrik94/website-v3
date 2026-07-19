@@ -2,6 +2,23 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-19 12:40
+
+### Behoben
+- **Isochronen (`/isochrones`): Ring-Farben schlecht sichtbar/unterscheidbar.** `getIsochroneRingColor()`
+  (`src/lib/MapStyles.ts`) mischte bisher `--accent` Richtung Weiß (max. 75%) — auf hellen
+  Basemaps kaum Kontrast zwischen den Ringen. Nutzt jetzt die neue, dafür vorgesehene
+  CI-Erreichbarkeits-Skala `--scale-reach-1..10` (10-stufig Rot→Grün, oe5ith-ci v1.22.0,
+  Submodul aktualisiert von v1.21.1): innerster/schnellster Ring = Stufe 10 (Grün), äußerster
+  Ring = Stufe 1 (Rot). Tests entsprechend angepasst (`MapStyles.test.ts`), 245 Tests grün, 0
+  TypeScript-Fehler.
+- **Isochronen (`/isochrones`): Sichtbar- und Löschen-Button in der Ergebnisliste lagen exakt
+  übereinander.** Beide teilten sich über die gemeinsame `.result-action`-Basisklasse dieselbe
+  absolute Position (`bottom:7px; right:8px`) — diese Klasse ist für genau 1 Action pro Item
+  ausgelegt (siehe `RoutingSidebar`), die Isochronen-Ergebnisliste hat aber 2. Neue
+  `.delete-iso-btn`-Regel (`src/styles/page.css`) versetzt den Löschen-Button auf `right:34px`
+  und färbt seinen Hover-Zustand in `--danger` statt `--accent`.
+
 ## [3.11.0] - 2026-07-19
 
 ### Hinzugefügt
