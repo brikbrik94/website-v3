@@ -302,7 +302,7 @@ export const initGlobalModals = () => {
     if (!entry) return;
     document.getElementById('help-modal-title')!.textContent = entry.title;
     document.getElementById('help-modal-body')!.innerHTML = entry.sections
-      .map((s) => `<h3>${s.heading}</h3><p>${s.body}</p>`)
+      .map((s) => `<h2>${s.heading}</h2><p>${s.body}</p>`)
       .join('');
     document.getElementById('help-modal')?.classList.add('open');
   });
