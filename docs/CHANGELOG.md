@@ -2,7 +2,7 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-19 12:40
+## [3.11.1] - 2026-07-19
 
 ### Behoben
 - **Isochronen (`/isochrones`): Ring-Farben schlecht sichtbar/unterscheidbar.** `getIsochroneRingColor()`

@@ -18,6 +18,13 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.11.1] - 2026-07-19</h2>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Erreichbarkeitsanalyse:</strong> Die Farben der Zeit-/Distanz-Ringe waren teils schwer zu unterscheiden — nutzen jetzt eine klar abgestufte Rot-Gelb-Grün-Skala.</li>
+            <li><strong>Erreichbarkeitsanalyse:</strong> Der Sichtbar- und der Löschen-Knopf in der Ergebnisliste lagen optisch übereinander — sind jetzt sauber getrennt.</li>
+          </ul>
+
           <h2>[3.11.0] - 2026-07-19</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>
