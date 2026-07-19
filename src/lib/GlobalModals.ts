@@ -1,4 +1,5 @@
 import { APP_VERSION } from '../version';
+import { HELP_CONTENT } from '../content/HelpContent';
 
 /**
  * GlobalModals - Zentrales Management für Changelog und Copyright Modals.
@@ -272,6 +273,17 @@ export const initGlobalModals = () => {
         </div>
       </div>
     </div>
+
+    <!-- Help Modal (seiten-spezifische Kurzhilfe, Inhalt live befüllt bei open-help) -->
+    <div class="modal-backdrop" id="help-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title" id="help-modal-title"></span>
+          <button class="modal-close" data-close="help-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="help-modal-body"></div>
+      </div>
+    </div>
   `;
 
   document.body.appendChild(mount);
@@ -283,6 +295,16 @@ export const initGlobalModals = () => {
 
   window.addEventListener('open-copyright', () => {
     document.getElementById('copyright-modal')?.classList.add('open');
+  });
+
+  window.addEventListener('open-help', () => {
+    const entry = HELP_CONTENT[window.location.pathname];
+    if (!entry) return;
+    document.getElementById('help-modal-title')!.textContent = entry.title;
+    document.getElementById('help-modal-body')!.innerHTML = entry.sections
+      .map((s) => `<h3>${s.heading}</h3><p>${s.body}</p>`)
+      .join('');
+    document.getElementById('help-modal')?.classList.add('open');
   });
 
   // Close Logic via Delegation
