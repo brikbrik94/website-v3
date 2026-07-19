@@ -188,8 +188,13 @@ Noch nicht brainstormed/spezifiziert — vor der Umsetzung jeweils durch den Bra
 (Design/Spec) laufen lassen, siehe `docs/superpowers/specs/`. Zwei unabhängige Features, getrennt
 zu bearbeiten (nicht in einem Rutsch).
 
-- [ ] **Hilfeseite** — Übersicht/Beschreibung der App-Funktionen, Einstieg vermutlich über einen
-  neuen Topbar-Link (analog zu den bestehenden `.nav-link`-Einträgen in `src/main.ts`).
+- [x] **Hilfeseite** (2026-07-19) — ✅ ERLEDIGT, aber anders als ursprünglich hier notiert: statt
+  einer eigenen `/hilfe`-Seite gibt es jetzt einen „?"-Button in der Topbar (neben der Legende)
+  auf den 6 Kartenseiten, der ein seitenspezifisches Kurzhilfe-Modal öffnet
+  (`src/content/HelpContent.ts` + Erweiterung von `GlobalModals.ts`/`Topbar.ts`). Nutzer-
+  Entscheidung während des Brainstormings (2026-07-19): kontextbezogene Hilfe statt separater
+  Übersichtsseite. Spec:
+  [docs/superpowers/specs/2026-07-19-page-help-modal-design.md](./superpowers/specs/2026-07-19-page-help-modal-design.md).
 - [x] **Isochronen-Abfrage-Seite** (2026-07-18) — ✅ ERLEDIGT. Neue Karten-Seite `/isochrones`
   (Alias `/isochronen`, redirected clientseitig per `history.replaceState`) für generische
   Erreichbarkeitsanalyse: Punkt per Kartenklick, Geocoder-Suche oder manueller Koordinaten-Eingabe

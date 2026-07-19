@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-19 13:30
+
+### Hinzugefügt
+- **Seiten-Hilfe:** Neuer „?"-Button in der Topbar (neben der Legende) auf den 6 Kartenseiten
+  (`/karte`, `/routing`, `/nah`, `/coords`, `/tracking`, `/isochrones`). Öffnet ein Modal mit
+  kurzer, seitenspezifischer Bedienhilfe (`src/content/HelpContent.ts`, generisches Modal in
+  `GlobalModals.ts` analog zu Changelog/Copyright). Ersetzt die ursprünglich in `TODO.md`
+  geplante eigene `/hilfe`-Seite durch einen kontextbezogenen Ansatz. Spec:
+  [docs/superpowers/specs/2026-07-19-page-help-modal-design.md](./superpowers/specs/2026-07-19-page-help-modal-design.md).
+
 ## [3.11.1] - 2026-07-19
 
 ### Behoben
