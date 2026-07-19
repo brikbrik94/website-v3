@@ -2,7 +2,15 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-18 20:08
+## [3.11.0] - 2026-07-19
+
+### Hinzugefügt
+- Neue Karten-Seite `/isochrones` (Alias `/isochronen`) für Erreichbarkeitsanalyse: Punkt per
+  Kartenklick/Geocoder/Koordinaten setzen, ORS-Fahrprofil + Zeit- oder Distanz-Ringe wählen,
+  Isochronen-Polygone erscheinen auf der Karte. Mehrere Abfragen können gestapelt und einzeln
+  per Augen-Icon ein-/ausgeblendet werden (Sidebar-Typ 4). Kein neuer PHP-Endpoint — nutzt den
+  bestehenden generischen `api/ors.php`-Proxy. Spec:
+  [docs/superpowers/specs/2026-07-18-isochrones-page-design.md](./superpowers/specs/2026-07-18-isochrones-page-design.md).
 
 ### Behoben
 - **Isochronen (`/isochrones`): Kartenklick zeigte keinen Pin.** `setIsochronesPoint()` aktualisierte
@@ -12,21 +20,13 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   `RoutingMapLayers.updateStartPin`) zeigt den gesetzten Punkt sofort bei Kartenklick, wird nach
   erfolgreicher Berechnung wieder entfernt (der bestätigte Query-Pin übernimmt). 2 neue Tests,
   245 Tests grün, 0 TypeScript-Fehler.
-
-### Bekannter externer Blocker (nicht Teil dieser Änderung)
-- ORS-Isochronen-Anfragen mit mehr als einem Ring-Wert schlagen mit `HTTP 400` fehl
-  (`maximum_intervals: 1` server-seitig auf `ors.oe5ith.at` konfiguriert) — kein Repo-Code-Bug,
-  Details in [docs/external-blockers.md](./external-blockers.md).
-
-## [Unreleased] - 2026-07-18 19:40
-
-### Hinzugefügt
-- Neue Karten-Seite `/isochrones` (Alias `/isochronen`) für Erreichbarkeitsanalyse: Punkt per
-  Kartenklick/Geocoder/Koordinaten setzen, ORS-Fahrprofil + Zeit- oder Distanz-Ringe wählen,
-  Isochronen-Polygone erscheinen auf der Karte. Mehrere Abfragen können gestapelt und einzeln
-  per Augen-Icon ein-/ausgeblendet werden (Sidebar-Typ 4). Kein neuer PHP-Endpoint — nutzt den
-  bestehenden generischen `api/ors.php`-Proxy. Spec:
-  [docs/superpowers/specs/2026-07-18-isochrones-page-design.md](./superpowers/specs/2026-07-18-isochrones-page-design.md).
+- **Externer Blocker behoben: ORS-Isochronen-Anfragen mit mehreren Ring-Werten.** Die self-hosted
+  ORS-Instanz (`ors.oe5ith.at`) war server-seitig auf `maximum_intervals: 1` limitiert — jede
+  Anfrage mit mehr als einem Ring-Wert (z.B. Standard-Vorbelegung „5 10 15") schlug mit `HTTP 400`
+  fehl. Kein Repo-Code-Bug (`IsochronesService.calculateIsochrones()` unterstützte beliebig viele
+  Ringe pro Query bereits vollständig); die ORS-Server-Config wurde extern aktualisiert und am
+  2026-07-19 per direktem Proxy-Test gegen `api/ors.php` gegengetestet (3 Ringe → `HTTP 200`,
+  gültiges GeoJSON). Details/Historie: [docs/external-blockers.md](./external-blockers.md).
 
 ## [3.10.1] - 2026-07-18
 

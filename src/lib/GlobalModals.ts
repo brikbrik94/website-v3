@@ -18,6 +18,16 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.11.0] - 2026-07-19</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Neue Seite „Erreichbarkeitsanalyse" (Isochronen):</strong> Für einen beliebigen Punkt auf der Karte (per Klick, Adresssuche oder Koordinaten-Eingabe) lässt sich anzeigen, welches Gebiet in bestimmten Zeiten oder Entfernungen mit einem gewählten Fahrprofil erreichbar ist. Mehrere Abfragen lassen sich gleichzeitig anzeigen und einzeln ein-/ausblenden, um z.B. verschiedene Standorte zu vergleichen.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Erreichbarkeitsanalyse:</strong> Ein per Klick gesetzter Punkt erscheint jetzt sofort auf der Karte, statt erst nach Abschluss der Berechnung.</li>
+          </ul>
+
           <h2>[3.10.1] - 2026-07-18</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>
