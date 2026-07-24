@@ -117,6 +117,44 @@ Pflege-Regel.
 - **Secrets:** API credentials live in `api/config.local.php` (gitignored; see `config.local.php.example`). The DB must be accessed only via the read-only `web_api_user`. Never commit secrets or `.env`.
 - **Language:** Code comments and UI copy are largely German; match the surrounding language of the file you edit.
 
+## Nginx configuration (`map.oe5ith.at`)
+
+The repo-root `nginx.conf` is the source of truth for **exactly one** site:
+`/etc/nginx/sites-available/map.oe5ith.at.conf` on the production host. It must stay
+byte-identical to that file — there is no separate `route-map.conf` snippet, the whole vhost
+(static frontend, PHP handler, `/api/diag.php` block, SSL) lives in this single file.
+
+**Scope — only touch what this repo owns:**
+- In scope: `map.oe5ith.at.conf` only.
+- Out of scope: every other `*.oe5ith.at.conf` (ors, geocoder, tiles, api.oe5ith.at/tracking-gateway,
+  adsb, ais, internal, …) — each has its own repo/owner. Don't edit them from here, not even to
+  fix an obvious bug; that mirrors the `oe5ith-ci` submodule rule above (document, don't fix
+  cross-repo).
+- Also out of scope: shared snippets under `/etc/nginx/snippets/` (e.g. `security-headers.conf`).
+  They're included by many sites this repo doesn't own — changing them here has blast radius far
+  beyond `map.oe5ith.at`.
+
+**Change workflow (no git repo under `/etc/nginx`, so this replaces version control there):**
+1. Backup first: `cp /etc/nginx/sites-available/map.oe5ith.at.conf{,.bak-$(date +%Y%m%d)[-suffix]}`.
+2. Edit the repo's `nginx.conf`, not the `/etc/nginx` copy directly — the repo file is authoritative.
+3. Copy it over: `cp nginx.conf /etc/nginx/sites-available/map.oe5ith.at.conf && diff` the two to
+   confirm the sync.
+4. `nginx -t` and only reload (`systemctl reload nginx`) if that passes.
+5. Verify functionally with `curl` (status codes, headers) that nothing else broke, not just that
+   the intended change applied.
+
+**Security headers / CSP:** don't `include snippets/security-headers.conf;` here without checking
+it fits — its CSP is tuned for other sites and can silently break this one. Known trap: it has no
+`worker-src`, so it falls back to `script-src` (no `blob:`) — MapLibre GL creates its internal
+worker via `new Worker(URL.createObjectURL(...))`, which that would block, killing the map. Its
+`connect-src` also doesn't list the hosts this app's *browser* actually calls directly
+(`tiles.oe5ith.at`, `wss://api.oe5ith.at`). Before writing/changing any CSP directive here,
+re-derive the actual external-call surface from source rather than assume: grep `src/` for
+hardcoded `https://`/`wss://` URLs to external `*.oe5ith.at` hosts (browser-side calls, must be in
+`connect-src`) versus `ORS_URL`/`NOMINATIM_URL` in `api/config.php` (server-side `curl`, irrelevant
+to CSP), and grep `node_modules` for `new Worker`/`blob:`/`WebAssembly` usage in map-related deps
+before assuming a directive is safe to omit.
+
 ## TODO vs. Roadmap
 
 The generic TODO/Roadmap split convention (file pairs, criteria, archive handling) is defined in
