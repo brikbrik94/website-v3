@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { IsochronesDataService } from './IsochronesDataService';
 import { IsochronesMapLayers } from './IsochronesMapLayers';
 import { IsochronesService } from '../../lib/IsochronesService';

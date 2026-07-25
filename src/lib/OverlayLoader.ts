@@ -1,4 +1,5 @@
-import maplibregl, { type StyleSpecification } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { type StyleSpecification } from 'maplibre-gl';
 import { MapCore } from './MapCore';
 import { MapRegistry } from './MapRegistry';
 import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';

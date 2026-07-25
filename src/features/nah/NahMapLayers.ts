@@ -1,4 +1,5 @@
-import maplibregl, { type LayerSpecification } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { type LayerSpecification } from 'maplibre-gl';
 import type { Feature, FeatureCollection, Point, LineString } from 'geojson';
 import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MAP_COLORS, MAP_ROUTE_STYLES } from '../../lib/MapStyles';

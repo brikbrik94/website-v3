@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { MapCore } from '../lib/MapCore';
 import { attachHoverCursor } from '../lib/HoverCursor';

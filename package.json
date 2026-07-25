@@ -17,7 +17,7 @@
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.0.0",
     "@fortawesome/fontawesome-free": "^7.2.0",
-    "maplibre-gl": "^5.24.0",
+    "maplibre-gl": "^6.0.0",
     "mgrs": "^2.1.0",
     "open-location-code": "^1.0.3",
     "pmtiles": "^4.4.1",
@@ -26,7 +26,7 @@
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
     "@types/geojson": "^7946.0.16",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.4",
     "happy-dom": "^20.10.6",
     "typescript": "^6.0.3",
     "vite": "^8.0.13",
