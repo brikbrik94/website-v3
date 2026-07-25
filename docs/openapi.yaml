@@ -36,6 +36,14 @@ paths:
               example:
                 status: ok
                 time: 1751234567
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
 
   /db.php:
     get:
@@ -94,6 +102,14 @@ paths:
                           items: { type: integer }
                         calculated_start: { type: string, format: date-time, nullable: true }
                         calculated_end: { type: string, format: date-time, nullable: true }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
 
   /stations.php:
     get:
@@ -214,6 +230,14 @@ paths:
                   nef:
                     type: object
                     additionalProperties: { type: integer }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
 
   /geocoder.php:
     get:
@@ -293,6 +317,14 @@ paths:
           content:
             application/json:
               schema: { type: object }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
         "502":
           description: "Upstream nicht erreichbar"
           content:
@@ -314,6 +346,14 @@ paths:
           content:
             application/json:
               schema: { type: object }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
         "502":
           description: "Upstream nicht erreichbar"
           content:

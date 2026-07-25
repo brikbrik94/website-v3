@@ -4,6 +4,9 @@
  * AIS Data Proxy
  */
 
+require_once 'http.php';
+require_method('GET');
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
