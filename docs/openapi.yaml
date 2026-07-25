@@ -331,19 +331,6 @@ paths:
                 properties:
                   error: { type: string }
 
-  /test.php:
-    get:
-      summary: Trivialer PHP-Interpreter-Check
-      operationId: getTest
-      x-internal: true
-      description: "Interner Diagnose-Endpoint — kein stabiler Vertrag, nicht für Frontend-Konsum gedacht."
-      responses:
-        "200":
-          description: "Plaintext PHP_IS_WORKING"
-          content:
-            text/plain:
-              schema: { type: string, example: "PHP_IS_WORKING" }
-
   /diag.php:
     get:
       summary: Erweiterter Diagnose-Endpoint (PHP/DB/ORS-Konnektivität)
