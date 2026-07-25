@@ -6,7 +6,7 @@
  * Endpoints ohne DB-/ORS-Secret-Bedarf (adsb.php, ais.php, ping.php)
  * eingebunden werden, ohne deren Fail-Closed-Secret-Check zu erben.
  */
-function require_method(string $method)
+function require_method(string $method): void
 {
     if ($_SERVER['REQUEST_METHOD'] !== $method) {
         http_response_code(405);
