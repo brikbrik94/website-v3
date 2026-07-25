@@ -92,8 +92,7 @@ Untermodulen (Subpath wählt das Modul):
 ## Backend-API
 
 Alle `api/*.php`-Endpoints sind als OpenAPI-3.x-Spec dokumentiert: [docs/openapi.yaml](./docs/openapi.yaml)
-(Validierung: `npm run validate:openapi`). Health-Check-Semantik der einzelnen Dienste:
-[docs/API_ENDPOINTS.md](./docs/API_ENDPOINTS.md).
+(Validierung: `npm run validate:openapi`).
 
 ## Entwicklung
 
