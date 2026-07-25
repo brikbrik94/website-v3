@@ -78,7 +78,7 @@ export const RoutingService = {
       // 2. Berechne für diese 7 die echte Route mit driving-emergency.
       // 3. Gib die 5 besten zurück.
       if (profile === 'driving-emergency') {
-        const top7Base = await fetch(`/api/stations.php?target=${target[0]},${target[1]}&type=${type}&profile=driving-car&limit=7`);
+        const top7Base = await fetch(`/api/nearest-stations.php?target=${target[0]},${target[1]}&type=${type}&profile=driving-car&limit=7`);
         const stations7 = await top7Base.json();
 
         const detailedResults = await Promise.all(stations7.map(async (s: RoutingStation) => {
@@ -107,7 +107,7 @@ export const RoutingService = {
       }
 
       // Normalfall: Direkte Matrix-Abfrage mit dem gewählten Profil
-      const res = await fetch(`/api/stations.php?target=${target[0]},${target[1]}&type=${type}&profile=${profile}`);
+      const res = await fetch(`/api/nearest-stations.php?target=${target[0]},${target[1]}&type=${type}&profile=${profile}`);
       if (!res.ok) throw new Error('Stations-API nicht erreichbar');
       return await res.json();
     } catch (e) {
