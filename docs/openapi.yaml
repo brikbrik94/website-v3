@@ -297,28 +297,45 @@ paths:
 
   /ors.php:
     get:
-      summary: Proxy zu OpenRouteService (GET, z.B. Health-Check)
+      summary: Proxy zu OpenRouteService (GET, z.B. Health-Check) — Allowlist-Pfade
       operationId: proxyOrsGet
       parameters:
         - name: path
           in: query
           required: false
-          schema: { type: string, default: health }
-          description: "Pfad-Suffix, wird an die feste ORS-Basis-URL angehängt (kein Host-Override möglich)"
+          schema:
+            type: string
+            default: health
+            enum:
+              - health
+              - status
+          description: >
+            Fester Wert (health/status) oder Muster directions/{profil}/geojson,
+            matrix/{profil}, isochrones/{profil} — alles andere liefert 400.
+            Kein Host-Override möglich (fest an ORS_URL angehängt).
       responses:
         "200":
           description: "ORS-Response (durchgereicht)"
           content:
             application/json:
               schema: { type: object }
+        "400":
+          description: "path entspricht keinem erlaubten Muster"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Invalid path" }
     post:
-      summary: Proxy zu OpenRouteService (POST, z.B. Routing/Matrix/Isochrones mit Body)
+      summary: Proxy zu OpenRouteService (POST, z.B. Routing/Matrix/Isochrones mit Body) — Allowlist-Pfade
       operationId: proxyOrsPost
       parameters:
         - name: path
           in: query
           required: false
           schema: { type: string, default: health }
+          description: "Gleiche Allowlist wie beim GET-Zweig."
       requestBody:
         required: false
         content:
@@ -330,6 +347,14 @@ paths:
           content:
             application/json:
               schema: { type: object }
+        "400":
+          description: "path entspricht keinem erlaubten Muster"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Invalid path" }
 
   /adsb.php:
     get:
