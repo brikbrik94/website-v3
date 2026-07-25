@@ -1,6 +1,7 @@
 # OWASP Top 10 (2021) — Self-Check für api/*.php
 
-Letzte manuelle Bewertung: 2026-07-08. Automatisierbare Teile via
+Letzte manuelle Bewertung: 2026-07-25 (Re-Audit der ausgelieferten Seite, initiale Fassung
+2026-07-08). Automatisierbare Teile via
 [`scripts/security-audit.sh`](../../scripts/security-audit.sh) (`bash scripts/security-audit.sh`).
 
 Legende: ✅ adressiert · ⚠️ teilweise/zu beobachten · ❌ offener Punkt · N/A nicht zutreffend
@@ -14,10 +15,21 @@ Alle Endpoints sind öffentlich ohne Authentifizierung erreichbar — das ist f�
 `adsb.php`, `ais.php`, `geocoder.php`, `ors.php`) bewusst so gewollt (öffentliches GeoPortal ohne
 Login-Konzept).
 
-**Ausnahme:** `diag.php` exponiert PHP-Version, geladene Extensions, DB-Host/Port/Name/User (Passwort
-maskiert) und internen ORS-Health-Status ohne jede Zugriffskontrolle — Info-Disclosure, siehe
-TODO.md für den Fix-Task. Nicht manuell hier behoben (Scope-Entscheidung 2026-07-08: dokumentieren,
-später fixen).
+**`diag.php` — ✅ behoben (2026-07-08/09):** exponierte PHP-Version, geladene Extensions,
+DB-Host/Port/Name/User (Passwort maskiert) und internen ORS-Health-Status ohne Zugriffskontrolle.
+Fix: `location = /api/diag.php { deny all; }` in `nginx.conf` (nur Produktions-Server-Block), live
+verifiziert (`https://map.oe5ith.at/api/diag.php` → 403). Siehe `TODO_ARCHIVE.md`.
+
+**Neuer Fund beim Re-Audit (2026-07-25): `db.php` — ⚠️ offen.** Analog zu `diag.php`, aber nicht
+durch die dortige nginx-Regel erfasst (kein eigener `location`-Block) und **live weiterhin
+öffentlich erreichbar** (`https://map.oe5ith.at/api/db.php` → 200, verifiziert 2026-07-25):
+exponiert die exakte PostgreSQL-Versionszeile (inkl. OS-Build, z.B. „PostgreSQL 17.10 (Debian
+17.10-0+deb13u1)…") und den DB-Uptime-Zeitstempel. Anders als bei `diag.php` **kein reiner
+Blindfund** — `db.php` wird aktiv vom öffentlichen Info-Portal genutzt (`HealthModule.ts`,
+`DebugModule.ts`, Service-Health-Anzeige), ein pauschales `deny all;` würde dieses Feature brechen.
+Braucht eine Produktentscheidung statt eines mechanischen nginx-Blocks: entweder Response auf
+Health-Boolean ohne Versionsstring reduzieren, oder Risiko (Versions-Banner = leichte
+Reconnaissance-Hilfe, keine Zugangsdaten) bewusst als akzeptabel dokumentieren. Siehe TODO.md.
 
 Manuell bewertet — nicht automatisierbar (Access-Control ist eine Design-Entscheidung, kein
 Pattern-Match).
@@ -64,33 +76,44 @@ Nicht automatisierbar — Design-Entscheidung, kein Pattern-Match.
 
 ## A05:2021 — Security Misconfiguration
 
-**Status: ❌ offener Punkt (diag.php)**
+**Status: ⚠️ teilweise (db.php offen, diag.php behoben)**
 
-- `diag.php` (siehe A01) ist der Hauptfund dieser Kategorie — Diagnose-Informationen ohne
-  Zugriffsschutz öffentlich erreichbar.
+- `diag.php` — ✅ behoben, siehe A01.
+- `db.php` — ⚠️ offen (neuer Fund 2026-07-25), siehe A01 für Details.
 - `adsb.php`/`ais.php` setzen `Access-Control-Allow-Origin: *` (Wildcard-CORS) — für diese beiden
   Endpoints akzeptabel, da sie ausschließlich öffentliche, nicht-personenbezogene Live-Tracking-Daten
   (Flugzeuge/Schiffe) ausliefern, kein Auth-Kontext, kein Schreibzugriff.
 - `test.php` gibt `PHP_IS_WORKING` aus — trivialer Health-Check, keine sensiblen Daten, aber
-  ebenfalls ohne Zugriffsschutz (geringes Risiko, aber Teil desselben Musters wie `diag.php`).
+  ebenfalls ohne Zugriffsschutz (geringes Risiko, aber Teil desselben Musters wie `diag.php`/`db.php`).
+- **Neuer Fund (2026-07-25):** `curl_request()` (`api/config.php`, gemeinsam genutzt von `ors.php`
+  und `geocoder.php`) setzt kein `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT` — im Unterschied zu
+  `adsb.php`/`ais.php`, die beide 5s Timeout setzen. Ein hängender/langsamer Upstream (ORS oder
+  Nominatim) kann einen PHP-FPM-Worker unbegrenzt blockieren (Resource-Exhaustion unter Last).
+  Geringes Risiko bei aktuellem Traffic-Volumen, aber inkonsistent zum bereits etablierten Pattern
+  in dieser Codebase. Siehe TODO.md.
+- Live-Check der ausgelieferten HTTP-Security-Header (2026-07-25): `X-Frame-Options`,
+  `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy` und eine
+  auf die tatsächliche externe Call-Surface dieser App zugeschnittene `Content-Security-Policy`
+  sind gesetzt (`nginx.conf`, nicht aus dem generischen CI-Snippet). HTTP→HTTPS-Redirect (301)
+  funktioniert. ✅
 
-Teilautomatisiert (Secret-Checks via `security-audit.sh`); `diag.php`/`test.php`-Exposition ist
-manuell bewertet.
+Teilautomatisiert (Secret-Checks via `security-audit.sh`); `diag.php`/`db.php`/`test.php`-Exposition
+und der Timeout-Fund sind manuell bewertet.
 
 ## A06:2021 — Vulnerable and Outdated Components
 
-**Status: ⚠️ teilweise**
+**Status: ✅ adressiert**
 
 Kein `composer.json` mit Production-Dependencies (API nutzt nur PHP-Core-Extensions: `pgsql`,
-`curl`, `json` — keine externen PHP-Packages im Produktivcode). Mit diesem Plan wird erstmals
-`composer.json` eingeführt, aber nur mit `require-dev` (PHP_CodeSniffer) — kein Produktions-Risiko
-durch Third-Party-Code.
+`curl`, `json` — keine externen PHP-Packages im Produktivcode). `composer.json` enthält nur
+`require-dev` (PHP_CodeSniffer) — kein Produktions-Risiko durch Third-Party-Code. `composer audit`
+(2026-07-25): 0 Advisories.
 
-Frontend-Dependencies (`package.json`) sind nicht Teil dieses PHP-fokussierten Audits — eigenes
-Thema, `npm audit` könnte das separat abdecken (nicht Teil dieses Plans).
+Frontend-Dependencies (`package.json`) beim Re-Audit 2026-07-25 mit einbezogen: `npm audit` →
+0 Schwachstellen (nach den concurrently-9→10-/maplibre-gl-5→6-Upgrades vom selben Tag).
 
 Nicht automatisiert in `security-audit.sh` (kein Production-PHP-Dependency-Baum vorhanden, den man
-scannen müsste).
+scannen müsste) — `npm audit`/`composer audit` sind eigene, etablierte Tools dafür.
 
 ## A07:2021 — Identification and Authentication Failures
 
@@ -131,7 +154,8 @@ anderen Host ansprechen, nur den Pfad innerhalb des konfigurierten ORS-Hosts var
 SSRF-Vektor, da der Host nicht user-kontrolliert ist.
 
 `geocoder.php` proxied ausschließlich zu der fest konfigurierten `NOMINATIM_URL` — gleiches Muster,
-kein SSRF-Vektor.
+kein SSRF-Vektor. Re-geprüft 2026-07-25 (Isochronen-Feature nutzt denselben `ors.php`-Proxy, kein
+neuer Endpoint, keine neue Angriffsfläche).
 
 Manuell bewertet (Code-Struktur-Analyse, kein automatisierbares Pattern für "Host ist nicht
 user-kontrolliert").
@@ -140,16 +164,21 @@ user-kontrolliert").
 
 | Kategorie | Status |
 |---|---|
-| A01 Broken Access Control | ⚠️ (diag.php-Fund, siehe TODO.md) |
+| A01 Broken Access Control | ⚠️ (db.php-Fund offen, diag.php behoben — siehe TODO.md) |
 | A02 Cryptographic Failures | ✅ |
 | A03 Injection | ⚠️ (stationär, kein akuter Fund) |
 | A04 Insecure Design | N/A |
-| A05 Security Misconfiguration | ❌ (diag.php-Fund, siehe TODO.md) |
-| A06 Vulnerable/Outdated Components | ⚠️ (kein Production-PHP-Dependency-Risiko) |
+| A05 Security Misconfiguration | ⚠️ (db.php + curl-Timeout offen, diag.php behoben, Header ✅ — siehe TODO.md) |
+| A06 Vulnerable/Outdated Components | ✅ (npm audit + composer audit: 0 Funde) |
 | A07 Identification/Auth Failures | N/A |
 | A08 Software/Data Integrity Failures | N/A |
 | A09 Security Logging/Monitoring | ⚠️ (kein strukturiertes Error-Logging) |
 | A10 SSRF | ✅ |
 
-**Offener Fix-Bedarf:** `diag.php`-Info-Disclosure (A01/A05) — als TODO.md-Punkt erfasst,
-nicht Teil dieses Audits (Scope-Entscheidung 2026-07-08).
+**Offener Fix-Bedarf (Stand 2026-07-25):**
+- `db.php`-Info-Disclosure (A01/A05) — Produktentscheidung nötig (Response kürzen vs. Risiko
+  akzeptieren), als TODO.md-Punkt erfasst.
+- Fehlender Timeout in `curl_request()` (A05) — mechanischer Fix, als TODO.md-Punkt erfasst.
+
+**Historisch behoben:** `diag.php`-Info-Disclosure (A01/A05), gefunden und gefixt 2026-07-08/09,
+siehe `TODO_ARCHIVE.md`.

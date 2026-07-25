@@ -95,8 +95,9 @@ noch nicht angewandt — konkret relevant für die ROADMAP.md-Punkte „Legende"
 
 Twelve-Factor Config und OWASP Top 10 sind generisch in AGENT_INSTRUCTIONS.md referenziert;
 konkrete Umsetzung hier: Secrets nur in `api/config.local.php`, DB-Zugriff nur über den
-Read-only `web_api_user` — siehe Project conventions unten. Kein systematischer OWASP-Abgleich
-bisher — Self-Check als Aufgabe in TODO.md.
+Read-only `web_api_user` — siehe Project conventions unten. OWASP-Top-10-Self-Check existiert:
+[docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md) (initial
+2026-07-08, re-auditiert 2026-07-25), automatisierbare Teile via `scripts/security-audit.sh`.
 
 Folgearbeiten aus den oben genannten Abweichungen sind in [TODO.md](./docs/TODO.md) (Angleichung
 bestehenden Codes/bestehender Docs an einen Standard) bzw. [ROADMAP.md](./docs/ROADMAP.md) (größere,

@@ -132,18 +132,22 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
-- [ ] **`map.oe5ith.at` hat aktuell keinen CSP-Header.** Aufgefallen während der Recherche zum
-  maplibre-gl-6-Upgrade (2026-07-25): `nginx.conf` (Repo-Root) setzt für `map.oe5ith.at` bislang
-  keine `Content-Security-Policy`. Das geteilte `snippets/security-headers.conf` **nicht**
-  ungeprüft einbinden — CSP dort ist für andere Sites getunt und laut CLAUDE.md („Nginx
-  configuration"-Sektion) bekannt zu eng für diese App: kein `worker-src` (fällt auf `script-src`
-  ohne `blob:` zurück) und `connect-src` deckt `tiles.oe5ith.at`/`wss://api.oe5ith.at` nicht ab.
-  Vor Einführung: tatsächliche externe Call-Surface aus dem Code neu ableiten (`src/` nach
-  hardcodierten `https://`/`wss://`-URLs zu externen `*.oe5ith.at`-Hosts grep — Browser-seitig,
-  gehört in `connect-src` — vs. `ORS_URL`/`NOMINATIM_URL` in `api/config.php`, serverseitiges
-  `curl`, CSP-irrelevant) sowie `node_modules` nach `new Worker`/`blob:`/`WebAssembly`-Nutzung in
-  kartenbezogenen Dependencies grep, bevor eine Direktive als sicher weglassbar angenommen wird.
-  Referenz: OWASP Top 10 (siehe CLAUDE.md → Standards-Referenzen).
+- [ ] **`api/db.php` exponiert PostgreSQL-Versionsstring + Uptime ohne Zugriffsschutz.** Gefunden
+  beim OWASP-Re-Audit (2026-07-25), live verifiziert (`https://map.oe5ith.at/api/db.php` → 200 mit
+  vollem Versionsstring inkl. OS-Build). Details/Historie:
+  [docs/security/owasp-top10-checklist.md](./security/owasp-top10-checklist.md) Kategorie A01/A05.
+  Anders als der bereits gefixte `diag.php`-Fund (siehe TODO_ARCHIVE.md) **kein** reiner
+  Blind-nginx-Block möglich — `db.php` wird aktiv vom Info-Portal genutzt
+  (`src/components/info/HealthModule.ts`, `DebugModule.ts`). Produktentscheidung nötig: Response
+  auf Health-Boolean ohne Versionsstring kürzen, oder Risiko bewusst als akzeptabel dokumentieren.
+- [ ] **`curl_request()` (`api/config.php`) ohne Timeout.** Gefunden beim OWASP-Re-Audit
+  (2026-07-25): die gemeinsame Helper-Funktion für `ors.php`/`geocoder.php` setzt kein
+  `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT`, im Unterschied zu `adsb.php`/`ais.php`, die beide 5s
+  Timeout setzen (inkonsistentes Pattern). Ein hängender Upstream (ORS/Nominatim) kann einen
+  PHP-FPM-Worker unbegrenzt blockieren. Details:
+  [docs/security/owasp-top10-checklist.md](./security/owasp-top10-checklist.md) Kategorie A05.
+  Mechanischer Fix: `CURLOPT_TIMEOUT` (z.B. 5s, analog zu `adsb.php`/`ais.php`) in `curl_request()`
+  ergänzen.
 - [x] **DOM-Testumgebung (jsdom/happy-dom) einrichten** (2026-07-18) — ✅ ERLEDIGT. `happy-dom`
   als Dev-Dependency ergänzt, aber bewusst **nicht** global konfiguriert — nur
   `GeocoderSearchField.test.ts` aktiviert es per `// @vitest-environment happy-dom`-Kommentar,
