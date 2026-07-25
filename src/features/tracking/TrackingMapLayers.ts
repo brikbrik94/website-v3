@@ -1,4 +1,5 @@
-import maplibregl, { type ExpressionSpecification } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { type ExpressionSpecification } from 'maplibre-gl';
 import { MapCore } from '../../lib/MapCore';
 import { MAP_COLORS } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';

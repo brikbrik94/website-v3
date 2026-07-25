@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { RoutingDataService } from './RoutingDataService';
 import { RoutingMapLayers } from './RoutingMapLayers';
 import { RoutingService } from '../../lib/RoutingService';

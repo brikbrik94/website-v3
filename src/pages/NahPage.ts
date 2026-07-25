@@ -1,6 +1,6 @@
 import { MapCore } from '../lib/MapCore';
 import { initTopbar } from '../components/Topbar';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { Toast } from '../lib/Toast';
 import { initNahSidebar, updateNahServerStatus } from '../components/NahSidebar';
 import { MAP_ROUTE_STYLES, MAP_COLORS } from '../lib/MapStyles';

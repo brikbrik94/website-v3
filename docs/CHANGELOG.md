@@ -2,6 +2,26 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-25 06:05
+
+### Geändert
+- **Dependency-Updates (`npm outdated`-Audit):** risikolose In-Range-Updates (`@fontsource/jetbrains-mono`,
+  `@fortawesome/fontawesome-free`, `happy-dom`, `mgrs`, `proj4`, `vite`, `vitest`) via `npm update`.
+  Zusätzlich zwei Major-Upgrades: `concurrently` 9→10 (Node ≥22 vorausgesetzt, hier bereits erfüllt;
+  `--kill-others`-Flag unverändert nutzbar) und `maplibre-gl` 5→6 (kein Default-Export mehr — alle 20
+  betroffenen Importe in `src/lib/` und `src/features/*/` von `import maplibregl from` auf
+  `import * as maplibregl from` umgestellt). `typescript` 6→7 bewusst zurückgestellt (Release ist
+  erst wenige Tage alt, kein öffentliches Compiler-API vor 7.1).
+- **maplibre-gl 6: Worker-Ladepfad für Vite explizit konfiguriert.** v6 leitet die Worker-URL relativ
+  zu `import.meta.url` der eigenen Bundle-Datei her, statt sie wie v5 per `Blob`/`createObjectURL`
+  selbstständig zu inlinen. Vite erkennt diese dynamisch berechnete `new URL()`-Referenz nicht statisch
+  und emittiert die Worker-Datei nicht — Ergebnis: leere Karte ohne sichtbaren Fehler in der
+  Haupt-Konsole (Worker startet, importiert aber sein eigenes `maplibre-gl-shared.mjs`-Sibling-Chunk
+  nicht und terminiert sofort wieder). Fix in `src/lib/MapCore.ts`: Worker-Datei über einen statischen
+  `?worker&url`-Import auflösen (nicht `?url` — das kopiert nur die Rohdatei ohne ihre Abhängigkeit)
+  und `maplibregl.setWorkerUrl()` vor jeder Map-Instanz aufrufen. Verifiziert mit `vite preview`
+  (echter Produktions-Build) auf `/karte`, `/nah`, `/routing`, `/tracking`.
+
 ## [Unreleased] - 2026-07-19 13:30
 
 ### Hinzugefügt

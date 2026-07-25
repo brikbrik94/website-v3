@@ -1,4 +1,5 @@
-import maplibregl, { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { GeoJSONSource, LayerSpecification } from 'maplibre-gl';
 import { Feature, FeatureCollection, Point, Polygon } from 'geojson';
 import { MapCore, MARKERS_SPRITE_BASE } from '../../lib/MapCore';
 import { MapRegistry } from '../../lib/MapRegistry';

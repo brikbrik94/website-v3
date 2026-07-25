@@ -132,6 +132,18 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
+- [ ] **`map.oe5ith.at` hat aktuell keinen CSP-Header.** Aufgefallen während der Recherche zum
+  maplibre-gl-6-Upgrade (2026-07-25): `nginx.conf` (Repo-Root) setzt für `map.oe5ith.at` bislang
+  keine `Content-Security-Policy`. Das geteilte `snippets/security-headers.conf` **nicht**
+  ungeprüft einbinden — CSP dort ist für andere Sites getunt und laut CLAUDE.md („Nginx
+  configuration"-Sektion) bekannt zu eng für diese App: kein `worker-src` (fällt auf `script-src`
+  ohne `blob:` zurück) und `connect-src` deckt `tiles.oe5ith.at`/`wss://api.oe5ith.at` nicht ab.
+  Vor Einführung: tatsächliche externe Call-Surface aus dem Code neu ableiten (`src/` nach
+  hardcodierten `https://`/`wss://`-URLs zu externen `*.oe5ith.at`-Hosts grep — Browser-seitig,
+  gehört in `connect-src` — vs. `ORS_URL`/`NOMINATIM_URL` in `api/config.php`, serverseitiges
+  `curl`, CSP-irrelevant) sowie `node_modules` nach `new Worker`/`blob:`/`WebAssembly`-Nutzung in
+  kartenbezogenen Dependencies grep, bevor eine Direktive als sicher weglassbar angenommen wird.
+  Referenz: OWASP Top 10 (siehe CLAUDE.md → Standards-Referenzen).
 - [x] **DOM-Testumgebung (jsdom/happy-dom) einrichten** (2026-07-18) — ✅ ERLEDIGT. `happy-dom`
   als Dev-Dependency ergänzt, aber bewusst **nicht** global konfiguriert — nur
   `GeocoderSearchField.test.ts` aktiviert es per `// @vitest-environment happy-dom`-Kommentar,

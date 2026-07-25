@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { CoordsDataService } from '../features/coords/CoordsDataService';
 import { CoordsSidebar } from '../features/coords/CoordsSidebar';

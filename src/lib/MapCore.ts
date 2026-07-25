@@ -1,9 +1,17 @@
-import maplibregl, { type LayerSpecification, type SourceSpecification, type StyleImageMetadata } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { type LayerSpecification, type SourceSpecification, type StyleImageMetadata } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { initTerrainManager, applyTerrainInfrastructure } from './TerrainManager';
 import { BasemapStore } from './BasemapStore';
 import { MapRegistry } from './MapRegistry';
 import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
+// maplibre-gl 6 leitet die Worker-URL relativ zu import.meta.url der eigenen Bundle-Datei her.
+// Vite kann diese dynamisch berechnete new-URL()-Referenz nicht statisch erkennen (weder im
+// Dev-optimizeDeps- noch im Build-Bundling), wodurch die Datei nirgends emittiert/ausgeliefert
+// wird und der Worker mit 404 fehlschlägt (leere Karte, keine sichtbaren Tiles). Fix: Worker-Datei
+// explizit über einen statischen ?url-Import auflösen und maplibre-gl vor jeder Map-Instanz mitteilen.
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 // Modul-lokale Variable um die Protokoll-Instanz am Leben zu halten
 let _pmtilesProtocol: Protocol | null = null;

@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { BasePageController } from '../core/BasePageController';
 import { MapCore, MARKERS_SPRITE_BASE } from '../lib/MapCore';
 import { initTopbar } from '../components/Topbar';

@@ -1,4 +1,5 @@
-import maplibregl, { type SourceSpecification, type LayerSpecification } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import { type SourceSpecification, type LayerSpecification } from 'maplibre-gl';
 import { addSourceIfMissing, addLayerIfMissing } from './MapDefinitionOps';
 
 interface ManagedSource {
