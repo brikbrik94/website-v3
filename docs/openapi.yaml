@@ -270,6 +270,14 @@ paths:
               schema:
                 type: array
                 items: { type: object }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
 
   /ors.php:
     get:
