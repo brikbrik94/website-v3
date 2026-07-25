@@ -166,7 +166,7 @@ export const renderRegionsModule = async (container: HTMLElement, signal?: Abort
     });
 
     try {
-      const response = await fetch(`/api/region_stations.php?state=${encodeURIComponent(state)}`, { signal });
+      const response = await fetch(`/api/stations-by-region.php?state=${encodeURIComponent(state)}`, { signal });
       const data = await response.json();
 
       if (signal?.aborted || !container.isConnected) return;
