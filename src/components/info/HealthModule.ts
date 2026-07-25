@@ -16,7 +16,7 @@ export const renderHealthModule = async (container: HTMLElement, signal: AbortSi
     <header class="page-header">
       <div class="page-header-left">
         <h1 class="page-title">Service <span>Health</span></h1>
-        <p class="page-subtitle">Live-Monitor der technischen Dienste und APIs. Details in docs/API_ENDPOINTS.md.</p>
+        <p class="page-subtitle">Live-Monitor der technischen Dienste und APIs.</p>
       </div>
       <div class="page-header-right">
         <div class="page-meta" id="health-meta">Initialisierung...</div>
