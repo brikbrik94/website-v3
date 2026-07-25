@@ -19,6 +19,12 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.12.0] - 2026-07-25</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Alle Kartenseiten:</strong> Neuer „?"-Hilfe-Button in der Topbar (neben der Legende) zeigt eine kurze, seitenspezifische Bedienhilfe. Die Texte sind ein erster Entwurf und werden noch überarbeitet — solange weist ein Hinweis im Hilfe-Fenster darauf hin.</li>
+          </ul>
+
           <h2>[3.11.1] - 2026-07-19</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>
@@ -301,7 +307,10 @@ export const initGlobalModals = () => {
     const entry = HELP_CONTENT[window.location.pathname];
     if (!entry) return;
     document.getElementById('help-modal-title')!.textContent = entry.title;
-    document.getElementById('help-modal-body')!.innerHTML = entry.sections
+    // Provisorischer Hinweis, solange die Hilfetexte automatisch generiert sind und noch
+    // redaktionell überarbeitet werden müssen — beim Feinschliff der Texte hier mit entfernen.
+    const wipNotice = `<span class="badge badge-yellow badge-wrap"><i class="fa-solid fa-hammer"></i> Work in Progress — diese Hilfetexte sind noch nicht final und werden überarbeitet.</span>`;
+    document.getElementById('help-modal-body')!.innerHTML = wipNotice + entry.sections
       .map((s) => `<h2>${s.heading}</h2><p>${s.body}</p>`)
       .join('');
     document.getElementById('help-modal')?.classList.add('open');

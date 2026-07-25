@@ -2,7 +2,20 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-25 06:05
+## [3.12.0] - 2026-07-25
+
+### Hinzugefügt
+- **Seiten-Hilfe:** Neuer „?"-Button in der Topbar (neben der Legende) auf den 6 Kartenseiten
+  (`/karte`, `/routing`, `/nah`, `/coords`, `/tracking`, `/isochrones`). Öffnet ein Modal mit
+  kurzer, seitenspezifischer Bedienhilfe (`src/content/HelpContent.ts`, generisches Modal in
+  `GlobalModals.ts` analog zu Changelog/Copyright). Ersetzt die ursprünglich in `TODO.md`
+  geplante eigene `/hilfe`-Seite durch einen kontextbezogenen Ansatz. Spec:
+  [docs/superpowers/specs/2026-07-19-page-help-modal-design.md](./superpowers/specs/2026-07-19-page-help-modal-design.md).
+- **Seiten-Hilfe: Work-in-Progress-Hinweis.** Die Hilfetexte (`src/content/HelpContent.ts`) sind
+  automatisch generierte Erstentwürfe und noch nicht redaktionell überarbeitet. Bis dahin zeigt
+  jedes Hilfe-Modal (`GlobalModals.ts`, `open-help`-Handler) einen Hinweis-Badge
+  (`.badge-yellow.badge-wrap`, dasselbe CI-Pattern wie bei Routing-Warnhinweisen) über den
+  Inhalten. Vor der inhaltlichen Überarbeitung der Texte wieder entfernen.
 
 ### Geändert
 - **Dependency-Updates (`npm outdated`-Audit):** risikolose In-Range-Updates (`@fontsource/jetbrains-mono`,
@@ -21,16 +34,6 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   `?worker&url`-Import auflösen (nicht `?url` — das kopiert nur die Rohdatei ohne ihre Abhängigkeit)
   und `maplibregl.setWorkerUrl()` vor jeder Map-Instanz aufrufen. Verifiziert mit `vite preview`
   (echter Produktions-Build) auf `/karte`, `/nah`, `/routing`, `/tracking`.
-
-## [Unreleased] - 2026-07-19 13:30
-
-### Hinzugefügt
-- **Seiten-Hilfe:** Neuer „?"-Button in der Topbar (neben der Legende) auf den 6 Kartenseiten
-  (`/karte`, `/routing`, `/nah`, `/coords`, `/tracking`, `/isochrones`). Öffnet ein Modal mit
-  kurzer, seitenspezifischer Bedienhilfe (`src/content/HelpContent.ts`, generisches Modal in
-  `GlobalModals.ts` analog zu Changelog/Copyright). Ersetzt die ursprünglich in `TODO.md`
-  geplante eigene `/hilfe`-Seite durch einen kontextbezogenen Ansatz. Spec:
-  [docs/superpowers/specs/2026-07-19-page-help-modal-design.md](./superpowers/specs/2026-07-19-page-help-modal-design.md).
 
 ## [3.11.1] - 2026-07-19
 
