@@ -61,7 +61,9 @@ paths:
                 properties:
                   error: { type: string, example: "Method not allowed" }
         "500":
-          description: DB-Verbindung fehlgeschlagen (leerer Body)
+          description: >
+            DB-Verbindung fehlgeschlagen (Body: {"error":...} bei Connection-Fehler,
+            sonst leer)
 
   /nah.php:
     get:
@@ -306,9 +308,6 @@ paths:
           schema:
             type: string
             default: health
-            enum:
-              - health
-              - status
           description: >
             Fester Wert (health/status) oder Muster directions/{profil}/geojson,
             matrix/{profil}, isochrones/{profil} — alles andere liefert 400.
