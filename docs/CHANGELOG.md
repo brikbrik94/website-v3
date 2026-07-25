@@ -2,6 +2,21 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-25 07:12
+
+### Sicherheit
+- **OWASP-Top-10-Re-Audit der ausgelieferten Seite.** Aktualisiert
+  [docs/security/owasp-top10-checklist.md](./security/owasp-top10-checklist.md) (initial
+  2026-07-08). Bestätigt: HTTP-Security-Header (inkl. CSP) korrekt ausgeliefert, `npm audit` und
+  `composer audit` 0 Funde, keine Secrets im Client-Bundle, `diag.php`-Block weiterhin wirksam
+  (403), SSRF-/Injection-Bewertung nach dem Isochronen-Feature unverändert gültig. Zwei neue,
+  offene Funde dokumentiert (siehe TODO.md): `api/db.php` exponiert PostgreSQL-Versionsstring +
+  Uptime ohne Zugriffsschutz (kein reiner nginx-Block möglich, da vom Info-Portal aktiv genutzt);
+  `curl_request()` (`api/config.php`) ohne Timeout, inkonsistent zu `adsb.php`/`ais.php`. Nebenbei
+  einen eigenen Fehler korrigiert: ein TODO.md-Eintrag der letzten Session behauptete fälschlich,
+  `map.oe5ith.at` hätte keinen CSP-Header — Live-Check zeigt, der Header existiert bereits seit
+  Commit `2a70c7a` und war korrekt auf die App zugeschnitten; Eintrag entfernt statt weitergeführt.
+
 ## [3.12.0] - 2026-07-25
 
 ### Hinzugefügt
