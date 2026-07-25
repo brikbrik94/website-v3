@@ -2,6 +2,23 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-25 09:37
+
+### Sicherheit
+- **API-Hardening (Folgearbeit aus dem OWASP-Re-Audit vom 2026-07-25).** `api/db.php` exponierte
+  live den vollen PostgreSQL-Versionsstring + Uptime ohne Zugriffsschutz — liefert jetzt nur noch
+  einen reinen Status-Code (200/500) ohne Body. Die `DebugModule.ts`-Seite (`/info/debug`, freies
+  API-Request-Playground) wurde komplett entfernt. `stations.php`/`region_stations.php` wurden in
+  `nearest-stations.php`/`stations-by-region.php` umbenannt (die alten Namen waren nicht
+  unterscheidbar), `test.php` (Duplikat von `ping.php`) entfernt. Neun read-only API-Endpoints
+  akzeptieren jetzt nur noch `GET` (405 sonst). `ors.php` validiert den `path`-Parameter gegen
+  eine Allowlist bekannter ORS-Routen (verhindert Missbrauch des serverseitigen ORS-API-Keys für
+  beliebige Pfade), `nearest-stations.php` validiert das `profile`-Format, `geocoder.php`
+  validiert `lat`/`lon` als numerisch (Adress-Freitextsuche bleibt unverändert offen).
+- **API-Dokumentation konsolidiert.** `docs/API_ENDPOINTS.md` (unvollständig, teils veraltet)
+  gelöscht — `docs/openapi.yaml` (vollständig, maschinell validiert) ist jetzt die alleinige
+  Quelle für alle `api/*.php`-Endpoints.
+
 ## [Unreleased] - 2026-07-25 07:12
 
 ### Sicherheit

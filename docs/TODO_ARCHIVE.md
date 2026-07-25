@@ -5,6 +5,27 @@ Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./R
 Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
 noch nicht getrennt) und sind entsprechend gemischt.
 
+## 2026-07-25 — OWASP-Re-Audit: db.php-Info-Disclosure behoben, API-Fläche generell gehärtet
+
+- [x] **`api/db.php`-Info-Disclosure behoben, Debug-Playground entfernt, API-Endpoints umbenannt
+  und generell gehärtet** (2026-07-25) — beim OWASP-Re-Audit gefunden (siehe
+  [docs/security/owasp-top10-checklist.md](./security/owasp-top10-checklist.md), Kategorien
+  A01/A05): `api/db.php` exponierte live den vollen PostgreSQL-Versionsstring (inkl. OS-Build)
+  und die DB-Uptime ohne Zugriffsschutz. Fix: `db.php` liefert jetzt nur noch einen reinen
+  Status-Code (200/500) ohne Body — kein Frontend-Code las den Body ohnehin. Auf Nutzer-Wunsch
+  im selben Arbeitsblock zusätzlich: komplette `DebugModule.ts` (`/info/debug`,
+  API-Request-Playground) entfernt; `test.php` gelöscht (Duplikat von `ping.php`);
+  `stations.php`/`region_stations.php` in `nearest-stations.php`/`stations-by-region.php`
+  umbenannt (Namen allein waren nicht unterscheidbar); neuer `api/http.php`-Helper erzwingt
+  GET-only bei neun Lese-Endpoints (405 sonst); `ors.php` validiert `path` gegen eine Allowlist
+  bekannter ORS-Routen (verhindert Missbrauch des ORS-API-Keys für beliebige Pfade),
+  `nearest-stations.php` validiert `profile`-Format, `geocoder.php` validiert `lat`/`lon` als
+  numerisch (Adress-Freitextsuche bleibt bewusst offen). Doku konsolidiert: `docs/API_ENDPOINTS.md`
+  (unvollständig, teils veraltet) gelöscht, `docs/openapi.yaml` (vollständig, maschinell validiert)
+  als alleinige Quelle, `CLAUDE.md`s veraltete „keine OpenAPI-Spec vorhanden"-Behauptung korrigiert.
+  Spec: [docs/superpowers/specs/2026-07-25-api-hardening-design.md](./superpowers/specs/2026-07-25-api-hardening-design.md).
+  Plan: [docs/superpowers/plans/2026-07-25-api-hardening-debug-removal.md](./superpowers/plans/2026-07-25-api-hardening-debug-removal.md).
+
 ## 2026-07-18 — CI-Update v1.21.0 konsumiert
 
 - [x] **CI-Bug: `.badge` erzwingt `white-space: nowrap`** — behoben in `oe5ith-ci` v1.21.0

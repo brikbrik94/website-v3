@@ -132,14 +132,6 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
-- [ ] **`api/db.php` exponiert PostgreSQL-Versionsstring + Uptime ohne Zugriffsschutz.** Gefunden
-  beim OWASP-Re-Audit (2026-07-25), live verifiziert (`https://map.oe5ith.at/api/db.php` → 200 mit
-  vollem Versionsstring inkl. OS-Build). Details/Historie:
-  [docs/security/owasp-top10-checklist.md](./security/owasp-top10-checklist.md) Kategorie A01/A05.
-  Anders als der bereits gefixte `diag.php`-Fund (siehe TODO_ARCHIVE.md) **kein** reiner
-  Blind-nginx-Block möglich — `db.php` wird aktiv vom Info-Portal genutzt
-  (`src/components/info/HealthModule.ts`, `DebugModule.ts`). Produktentscheidung nötig: Response
-  auf Health-Boolean ohne Versionsstring kürzen, oder Risiko bewusst als akzeptabel dokumentieren.
 - [ ] **`curl_request()` (`api/config.php`) ohne Timeout.** Gefunden beim OWASP-Re-Audit
   (2026-07-25): die gemeinsame Helper-Funktion für `ors.php`/`geocoder.php` setzt kein
   `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT`, im Unterschied zu `adsb.php`/`ais.php`, die beide 5s
