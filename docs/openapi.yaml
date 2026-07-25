@@ -39,29 +39,21 @@ paths:
 
   /db.php:
     get:
-      summary: Datenbank-Health-Check (Version + Latenz)
+      summary: Datenbank-Health-Check (reiner Status-Code, kein Body)
       operationId: getDbHealth
       responses:
         "200":
-          description: DB-Verbindung erfolgreich
+          description: DB-Verbindung erfolgreich (leerer Body)
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status: { type: string, example: ok }
-                  version: { type: string, description: "PostgreSQL-Versionsstring" }
-                  uptime: { type: string, description: "Postmaster-Startzeit" }
-                  latency_ms: { type: number }
+                  error: { type: string, example: "Method not allowed" }
         "500":
-          description: DB-Verbindung fehlgeschlagen
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, example: error }
-                  message: { type: string }
+          description: DB-Verbindung fehlgeschlagen (leerer Body)
 
   /nah.php:
     get:
