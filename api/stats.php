@@ -1,6 +1,8 @@
 <?php
 
 require_once 'config.php';
+require_once 'http.php';
+require_method('GET');
 date_default_timezone_set('Europe/Vienna');
 header('Content-Type: application/json');
 
