@@ -171,10 +171,10 @@ paths:
                 properties:
                   error: { type: string, example: "Method not allowed" }
 
-  /region_stations.php:
+  /stations-by-region.php:
     get:
       summary: RD/NEF-Stationen eines Bundeslands
-      operationId: getRegionStations
+      operationId: getStationsByRegion
       parameters:
         - name: state
           in: query
@@ -203,6 +203,14 @@ paths:
                 type: object
                 properties:
                   error: { type: string }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
         "500":
           description: "Datenbankfehler"
           content:
