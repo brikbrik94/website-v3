@@ -4,12 +4,11 @@ import { renderNahStatusModule } from '../components/info/NahStatusModule';
 import { renderHealthModule } from '../components/info/HealthModule';
 import { renderRegionsModule } from '../components/info/RegionsModule';
 import { renderInventoryModule } from '../components/info/InventoryModule';
-import { renderDebugModule } from '../components/info/DebugModule';
 import { BasePageController } from '../core/BasePageController';
 import { renderTrackingEndpointsModule } from '../components/info/TrackingEndpointsModule';
 
 /**
- * Info & Debug Page Controller
+ * Info Page Controller
  * Handles layout, module switching and resource lifecycle.
  */
 export class InfoPageController extends BasePageController {
@@ -36,9 +35,6 @@ export class InfoPageController extends BasePageController {
             </a>
             <a href="/info/inventory" class="sidebar-nav-item nav-link ${subpath === 'inventory' ? 'active' : ''}" data-module="inventory">
               <i class="fa-solid fa-layer-group nav-icon"></i> Karten Inventar
-            </a>
-            <a href="/info/debug" class="sidebar-nav-item nav-link ${subpath === 'debug' ? 'active' : ''}" data-module="debug">
-              <i class="fa-solid fa-terminal nav-icon"></i> API Debug
             </a>
           </div>
           ${getSidebarFooterHtml()}
@@ -71,8 +67,6 @@ export class InfoPageController extends BasePageController {
       renderRegionsModule(contentMount, this.signal);
     } else if (subpath === 'inventory') {
       renderInventoryModule(contentMount, this.signal);
-    } else if (subpath === 'debug') {
-      renderDebugModule(contentMount, this.signal);
     } else {
       contentMount.innerHTML = `
         <div class="content-body">
