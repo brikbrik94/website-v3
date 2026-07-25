@@ -20,16 +20,17 @@ DB-Host/Port/Name/User (Passwort maskiert) und internen ORS-Health-Status ohne Z
 Fix: `location = /api/diag.php { deny all; }` in `nginx.conf` (nur Produktions-Server-Block), live
 verifiziert (`https://map.oe5ith.at/api/diag.php` → 403). Siehe `TODO_ARCHIVE.md`.
 
-**Neuer Fund beim Re-Audit (2026-07-25): `db.php` — ⚠️ offen.** Analog zu `diag.php`, aber nicht
-durch die dortige nginx-Regel erfasst (kein eigener `location`-Block) und **live weiterhin
-öffentlich erreichbar** (`https://map.oe5ith.at/api/db.php` → 200, verifiziert 2026-07-25):
-exponiert die exakte PostgreSQL-Versionszeile (inkl. OS-Build, z.B. „PostgreSQL 17.10 (Debian
-17.10-0+deb13u1)…") und den DB-Uptime-Zeitstempel. Anders als bei `diag.php` **kein reiner
-Blindfund** — `db.php` wird aktiv vom öffentlichen Info-Portal genutzt (`HealthModule.ts`,
-`DebugModule.ts`, Service-Health-Anzeige), ein pauschales `deny all;` würde dieses Feature brechen.
-Braucht eine Produktentscheidung statt eines mechanischen nginx-Blocks: entweder Response auf
-Health-Boolean ohne Versionsstring reduzieren, oder Risiko (Versions-Banner = leichte
-Reconnaissance-Hilfe, keine Zugangsdaten) bewusst als akzeptabel dokumentieren. Siehe TODO.md.
+**`db.php` — ✅ behoben (2026-07-25, selber Tag wie der Fund).** War analog zu `diag.php`, aber
+nicht durch dessen nginx-Regel erfasst und live öffentlich erreichbar: exponierte die exakte
+PostgreSQL-Versionszeile (inkl. OS-Build) und den DB-Uptime-Zeitstempel. Kein Frontend-Code las
+den Response-Body — liefert jetzt nur noch einen reinen Status-Code (200/500) ohne Body. Zusätzlich
+im selben Arbeitsblock: `DebugModule.ts` (`/info/debug`, API-Request-Playground) komplett entfernt,
+`test.php` gelöscht (Duplikat von `ping.php`), `stations.php`/`region_stations.php` in
+`nearest-stations.php`/`stations-by-region.php` umbenannt (Namen allein waren nicht
+unterscheidbar), alle neun verbleibenden Lese-Endpoints akzeptieren nur noch GET (405 sonst,
+`api/http.php`), `ors.php`/`nearest-stations.php`/`geocoder.php` validieren `path`/`profile`/
+`lat`+`lon` gegen Allowlist-Muster. Details: Plan
+[docs/superpowers/plans/2026-07-25-api-hardening-debug-removal.md](../superpowers/plans/2026-07-25-api-hardening-debug-removal.md).
 
 Manuell bewertet — nicht automatisierbar (Access-Control ist eine Design-Entscheidung, kein
 Pattern-Match).
@@ -76,15 +77,20 @@ Nicht automatisierbar — Design-Entscheidung, kein Pattern-Match.
 
 ## A05:2021 — Security Misconfiguration
 
-**Status: ⚠️ teilweise (db.php offen, diag.php behoben)**
+**Status: ⚠️ teilweise (curl-Timeout offen, Rest behoben)**
 
 - `diag.php` — ✅ behoben, siehe A01.
-- `db.php` — ⚠️ offen (neuer Fund 2026-07-25), siehe A01 für Details.
+- `db.php` — ✅ behoben, siehe A01.
 - `adsb.php`/`ais.php` setzen `Access-Control-Allow-Origin: *` (Wildcard-CORS) — für diese beiden
   Endpoints akzeptabel, da sie ausschließlich öffentliche, nicht-personenbezogene Live-Tracking-Daten
   (Flugzeuge/Schiffe) ausliefern, kein Auth-Kontext, kein Schreibzugriff.
 - `test.php` gibt `PHP_IS_WORKING` aus — trivialer Health-Check, keine sensiblen Daten, aber
   ebenfalls ohne Zugriffsschutz (geringes Risiko, aber Teil desselben Musters wie `diag.php`/`db.php`).
+- **Method-/Input-Restriktion (2026-07-25):** alle neun verbleibenden reinen Lese-Endpoints
+  akzeptieren nur noch `GET` (`api/http.php`, `require_method()`), `ors.php`/`nearest-stations.php`
+  validieren `path`/`profile` gegen Allowlist-Muster, `geocoder.php` validiert `lat`/`lon` als
+  numerisch (Adress-Freitextsuche bleibt bewusst offen). `curl_request()`-Timeout-Fund bleibt
+  separat offen.
 - **Neuer Fund (2026-07-25):** `curl_request()` (`api/config.php`, gemeinsam genutzt von `ors.php`
   und `geocoder.php`) setzt kein `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT` — im Unterschied zu
   `adsb.php`/`ais.php`, die beide 5s Timeout setzen. Ein hängender/langsamer Upstream (ORS oder
@@ -164,11 +170,11 @@ user-kontrolliert").
 
 | Kategorie | Status |
 |---|---|
-| A01 Broken Access Control | ⚠️ (db.php-Fund offen, diag.php behoben — siehe TODO.md) |
+| A01 Broken Access Control | ⚠️ (diag.php per nginx-Block gefixt, db.php gefixt, Rest bewusst öffentlich) |
 | A02 Cryptographic Failures | ✅ |
 | A03 Injection | ⚠️ (stationär, kein akuter Fund) |
 | A04 Insecure Design | N/A |
-| A05 Security Misconfiguration | ⚠️ (db.php + curl-Timeout offen, diag.php behoben, Header ✅ — siehe TODO.md) |
+| A05 Security Misconfiguration | ⚠️ (curl-Timeout offen, Rest behoben, Header ✅ — siehe TODO.md) |
 | A06 Vulnerable/Outdated Components | ✅ (npm audit + composer audit: 0 Funde) |
 | A07 Identification/Auth Failures | N/A |
 | A08 Software/Data Integrity Failures | N/A |
@@ -176,9 +182,9 @@ user-kontrolliert").
 | A10 SSRF | ✅ |
 
 **Offener Fix-Bedarf (Stand 2026-07-25):**
-- `db.php`-Info-Disclosure (A01/A05) — Produktentscheidung nötig (Response kürzen vs. Risiko
-  akzeptieren), als TODO.md-Punkt erfasst.
 - Fehlender Timeout in `curl_request()` (A05) — mechanischer Fix, als TODO.md-Punkt erfasst.
 
-**Historisch behoben:** `diag.php`-Info-Disclosure (A01/A05), gefunden und gefixt 2026-07-08/09,
+**Historisch behoben:** `diag.php`-Info-Disclosure (A01/A05), gefunden und gefixt 2026-07-08/09.
+`db.php`-Info-Disclosure (A01/A05) samt API-Debug-Modul, Endpoint-Umbenennung und
+Method-/Input-Restriktion auf der gesamten `api/*.php`-Fläche, gefunden und gefixt 2026-07-25 —
 siehe `TODO_ARCHIVE.md`.
