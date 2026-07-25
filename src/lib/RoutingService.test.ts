@@ -67,7 +67,7 @@ describe('RoutingService.findNearestStations (driving-emergency / Sondersignal)'
     };
 
     vi.stubGlobal('fetch', vi.fn((url: string) => {
-      if (typeof url === 'string' && url.includes('stations.php')) {
+      if (typeof url === 'string' && url.includes('nearest-stations.php')) {
         return Promise.resolve({ ok: true, json: () => Promise.resolve(stations) });
       }
       return Promise.resolve({ ok: true, json: () => Promise.resolve(routeGeoJson) });

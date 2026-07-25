@@ -1,11 +1,19 @@
 <?php
 
 require_once 'config.php';
+require_once 'http.php';
+require_method('GET');
 header('Content-Type: application/json');
 
 $target = $_GET['target'] ?? null;
 $type = $_GET['type'] ?? 'sew';
 $profile = $_GET['profile'] ?? 'driving-car'; // Neues Profil-Parameter
+
+if (!preg_match('/^[a-z0-9-]+$/', $profile)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid profile']);
+    exit;
+}
 
 if (!$target) {
     http_response_code(400);
