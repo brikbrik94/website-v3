@@ -45,6 +45,7 @@ export class GraphSidebarAdapter {
       modes: [
         new TerraDrawRenderMode({ modeName: 'render', styles: {} }),
         new TerraDrawRectangleMode({
+          drawInteraction: 'click-drag',
           validation: (feature) => ValidateMaxAreaSquareMeters(feature, MAX_BBOX_AREA_M2)
         })
       ]
