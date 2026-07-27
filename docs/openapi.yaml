@@ -327,8 +327,16 @@ paths:
                 type: object
                 properties:
                   error: { type: string, example: "Invalid path" }
+        "504":
+          description: >
+            Gateway-Timeout vom ORS-Backend durchgereicht (z.B. bei export/{profil} mit zu
+            großer Bbox) — der Client (GraphSidebarAdapter) behandelt diesen Status gezielt
+            getrennt von anderen Fehlern.
+          content:
+            application/json:
+              schema: { type: object }
     post:
-      summary: Proxy zu OpenRouteService (POST, z.B. Routing/Matrix/Isochrones mit Body) — Allowlist-Pfade
+      summary: Proxy zu OpenRouteService (POST, z.B. Routing/Matrix/Isochrones/Graph-Export mit Body) — Allowlist-Pfade
       operationId: proxyOrsPost
       parameters:
         - name: path
@@ -355,6 +363,14 @@ paths:
                 type: object
                 properties:
                   error: { type: string, example: "Invalid path" }
+        "504":
+          description: >
+            Gateway-Timeout vom ORS-Backend durchgereicht (z.B. bei export/{profil} mit zu
+            großer Bbox) — der Client (GraphSidebarAdapter) behandelt diesen Status gezielt
+            getrennt von anderen Fehlern.
+          content:
+            application/json:
+              schema: { type: object }
 
   /adsb.php:
     get:
