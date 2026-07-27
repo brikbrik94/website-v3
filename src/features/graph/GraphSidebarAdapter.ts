@@ -43,7 +43,7 @@ export class GraphSidebarAdapter {
     this.draw = new TerraDraw({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
       modes: [
-        new TerraDrawRenderMode({ styles: {} }),
+        new TerraDrawRenderMode({ modeName: 'render', styles: {} }),
         new TerraDrawRectangleMode({
           validation: (feature) => ValidateMaxAreaSquareMeters(feature, MAX_BBOX_AREA_M2)
         })
