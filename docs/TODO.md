@@ -132,6 +132,20 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
+- [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
+  Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
+  `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die
+  `TerraDraw`-Instanz neu auf, wenn ein Basemap-Wechsel (`setStyle()`) deren eigene, nicht in
+  `MapRegistry` verwaltete Sources/Layer gelöscht hat — nötig, da `terra-draw-maplibre-gl-adapter`
+  selbst keine `style.load`-Behandlung hat. Die dabei verworfene alte Instanz wird aber nie
+  `.stop()`t, wodurch ihre DOM-Event-Listener (`pointerdown`/`pointermove`/`pointerup`/
+  `keydown`/`keyup`/`contextmenu` auf dem Karten-Canvas) bis zum Verlassen der Seite
+  (`map.remove()`) bestehen bleiben — bei mehrfachem Basemap-Wechsel in einer Sitzung sammeln
+  sich so mehrere inerte Instanzen an. Bestätigt harmlos (jede verworfene Instanz bleibt
+  dauerhaft im `'render'`-Modus, dessen Handler No-Ops sind; kein Doppel-Registrieren, kein
+  Crash) und durch die Seitenlebensdauer begrenzt — deshalb bewusst nicht sofort behoben.
+  Mechanischer Fix: in `reapplyLayers()` vor dem Neuaufbau `this.draw.stop()` auf der alten
+  Instanz aufrufen (sofern nicht gerade mitten in einer Zeichnung).
 - [ ] **`curl_request()` (`api/config.php`) ohne Timeout.** Gefunden beim OWASP-Re-Audit
   (2026-07-25): die gemeinsame Helper-Funktion für `ors.php`/`geocoder.php` setzt kein
   `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT`, im Unterschied zu `adsb.php`/`ais.php`, die beide 5s
