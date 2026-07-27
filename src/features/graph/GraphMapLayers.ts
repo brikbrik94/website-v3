@@ -33,13 +33,6 @@ export interface GraphFeatures {
   edgesCount: number;
 }
 
-const EMPTY_FEATURES: GraphFeatures = {
-  nodes: { type: 'FeatureCollection', features: [] },
-  edges: { type: 'FeatureCollection', features: [] },
-  nodesCount: 0,
-  edgesCount: 0
-};
-
 /**
  * Baut GeoJSON aus der ORS-`/export`-Antwort. Bei `json` liefert ORS ein eigenes
  * {nodes, edges}-Graph-Format (kein GeoJSON) — wird hier manuell übersetzt, Edge-Properties
@@ -137,9 +130,5 @@ export class GraphMapLayers {
     const nodesSource = map.getSource(NODES_SOURCE_ID) as GeoJSONSource;
     if (nodesSource) nodesSource.setData(features.nodes);
     MapRegistry.registerSource(NODES_SOURCE_ID, { type: 'geojson', data: features.nodes });
-  }
-
-  public static clear(map: maplibregl.Map): void {
-    this.update(map, EMPTY_FEATURES);
   }
 }

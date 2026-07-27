@@ -40,10 +40,4 @@ describe('GraphDataService', () => {
     service.setResult(makeState({ profile: 'driving-emergency' }));
     expect(service.getResult()?.profile).toBe('driving-emergency');
   });
-
-  it('clears the result', () => {
-    service.setResult(makeState());
-    service.clear();
-    expect(service.getResult()).toBeNull();
-  });
 });

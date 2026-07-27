@@ -12,7 +12,7 @@ describe('GraphExportService.queryExport', () => {
       capturedBody = JSON.parse(init.body);
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ nodes: [], edges: [], nodes_count: 0, edges_count: 0 }),
+        text: () => Promise.resolve(JSON.stringify({ nodes: [], edges: [], nodes_count: 0, edges_count: 0 })),
       });
     }));
 
@@ -28,7 +28,7 @@ describe('GraphExportService.queryExport', () => {
     let capturedUrl = '';
     vi.stubGlobal('fetch', vi.fn((url: string) => {
       capturedUrl = url;
-      return Promise.resolve({ ok: true, json: () => Promise.resolve({ type: 'Topology' }) });
+      return Promise.resolve({ ok: true, text: () => Promise.resolve(JSON.stringify({ type: 'Topology' })) });
     }));
 
     await GraphExportService.queryExport('driving-car', 'topojson', [[16.3, 48.2], [16.31, 48.205]], false);
@@ -39,7 +39,7 @@ describe('GraphExportService.queryExport', () => {
   it('returns { ok: true, payloadBytes } derived from the response size', async () => {
     vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
       ok: true,
-      json: () => Promise.resolve({ nodes: [1, 2, 3], edges: [] }),
+      text: () => Promise.resolve(JSON.stringify({ nodes: [1, 2, 3], edges: [] })),
     })));
 
     const result = await GraphExportService.queryExport('driving-car', 'json', [[0, 0], [1, 1]], true);

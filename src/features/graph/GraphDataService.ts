@@ -24,8 +24,4 @@ export class GraphDataService {
   public getResult(): GraphExportState | null {
     return this.current;
   }
-
-  public clear(): void {
-    this.current = null;
-  }
 }
