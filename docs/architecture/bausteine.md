@@ -96,6 +96,21 @@ Import: `from '.../lib/GlobalModals'` (Pfad relativ zum aufrufenden Modul anpass
 Exports:
 - `initGlobalModals` (const)
 
+## `GraphExportService.ts`
+
+Abstraktionsschicht über den `/api/ors.php`-Proxy für den ORS-`/export`-Endpoint (interner
+Routing-Graph als Bbox-Ausschnitt). Health-Check/Profil-Liste wiederverwendet von
+RoutingService (generische ORS-Abfragen), analog IsochronesService. `status` im
+Fehlerfall wird durchgereicht, damit der Adapter gezielt auf 504 (Bbox zu groß/Timeout,
+siehe Design-Spec-Kalibrierung) reagieren kann statt auf eine generische Fehlermeldung.
+
+Import: `from '.../lib/GraphExportService'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `GraphExportFormat` (type)
+- `GraphExportResult` (type)
+- `GraphExportService` (const)
+
 ## `HoverCursor.ts`
 
 Zeigt einen Pointer-Cursor, solange der Mauszeiger über einem Feature der angegebenen

@@ -42,6 +42,22 @@ export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
             { key: 'cog', label: 'Course', format: (v) => v != null ? `${Math.round(v)}°` : null },
             { key: 'destination', label: 'Destination' }
         ]
+    },
+    'graph-edges-layer': {
+        title: () => 'Kante',
+        icon: 'fa-solid fa-route',
+        fields: [
+            { key: 'node_from', label: 'Von Node' },
+            { key: 'node_to', label: 'Zu Node' },
+            { key: 'weight', label: 'Gewicht (s)', format: (v) => v != null ? Number(v).toFixed(1) : null }
+        ]
+    },
+    'graph-nodes-layer': {
+        title: (p) => `Node ${p.nodeId}`,
+        icon: 'fa-solid fa-circle-dot',
+        fields: [
+            { key: 'nodeId', label: 'Node-ID' }
+        ]
     }
 };
 
