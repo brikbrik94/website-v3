@@ -2,6 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-27 13:45
+
+### Hinzugefügt
+- **Neue, versteckte Seite `/graph` ("Routing-Graph").** Visualisiert den internen
+  ORS-Routing-Graphen (Nodes/Edges) für eine per Karte gesetzte Bbox — frei gezeichnet
+  (Klick-Zieh-Interaktion via `terra-draw`) oder aktueller Kartenausschnitt — mit Profil-,
+  Format- (JSON/TopoJSON) und Geometrie-Auswahl (Luftlinie vs. echter Straßenverlauf, nur bei
+  TopoJSON wirksam). Hartes Flächenlimit von 25 km² verhindert die vom ORS-`/export`-Endpoint
+  bekannten 504-Timeouts bei zu großen Bboxes. Nur über Direkt-URL erreichbar (kein
+  Nav-Link/Homepage-Card, analog `/info`). `api/ors.php`-Allowlist um `export/{profil}` bzw.
+  `export/{profil}/topojson` erweitert. Spec:
+  [docs/superpowers/specs/2026-07-27-ors-graph-export-design.md](./superpowers/specs/2026-07-27-ors-graph-export-design.md),
+  Plan: `docs/superpowers/plans/2026-07-27-ors-graph-export.md`. 274 Tests grün, 0
+  TypeScript-Fehler, manuell im Browser end-to-end verifiziert (Zeichnen, Viewport-Button,
+  beide Formate, Geometrie-Toggle, Größenlimit, Basemap-Wechsel, Popup, Seitenwechsel).
+
 ## [Unreleased] - 2026-07-25 09:37
 
 ### Sicherheit
