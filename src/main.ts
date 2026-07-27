@@ -166,6 +166,10 @@ const router = async () => {
     const { IsochronesPageController } = await import('./pages/IsochronesPage');
     currentPage = new IsochronesPageController();
     await currentPage.mount(app);
+  } else if (path === '/graph') {
+    const { GraphPageController } = await import('./pages/GraphPage');
+    currentPage = new GraphPageController();
+    await currentPage.mount(app);
   } else if (path.startsWith('/info')) {
     const subpath = path.split('/')[2] || 'nah';
     const { InfoPageController } = await import('./pages/InfoPage');
