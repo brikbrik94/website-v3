@@ -19,6 +19,12 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.13.0] - 2026-07-27</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Neu: Routing-Graph-Ansicht („/graph"):</strong> Diagnose-Werkzeug, das den internen Straßen-Routing-Graphen des Kartendienstes für einen frei wählbaren Kartenausschnitt anzeigt — den Ausschnitt selbst zeichnen oder die aktuelle Kartenansicht übernehmen. Nicht über die Hauptnavigation verlinkt, nur über die direkte Adresse erreichbar.</li>
+          </ul>
+
           <h2>[3.12.0] - 2026-07-25</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>

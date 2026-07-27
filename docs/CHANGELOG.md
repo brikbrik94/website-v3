@@ -2,7 +2,7 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-07-27 13:45
+## [3.13.0] - 2026-07-27
 
 ### Hinzugefügt
 - **Neue, versteckte Seite `/graph` ("Routing-Graph").** Visualisiert den internen
@@ -14,28 +14,9 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   Nav-Link/Homepage-Card, analog `/info`). `api/ors.php`-Allowlist um `export/{profil}` bzw.
   `export/{profil}/topojson` erweitert. Spec:
   [docs/superpowers/specs/2026-07-27-ors-graph-export-design.md](./superpowers/specs/2026-07-27-ors-graph-export-design.md),
-  Plan: `docs/superpowers/plans/2026-07-27-ors-graph-export.md`. 274 Tests grün, 0
+  Plan: `docs/superpowers/plans/2026-07-27-ors-graph-export.md`. 273 Tests grün, 0
   TypeScript-Fehler, manuell im Browser end-to-end verifiziert (Zeichnen, Viewport-Button,
   beide Formate, Geometrie-Toggle, Größenlimit, Basemap-Wechsel, Popup, Seitenwechsel).
-
-## [Unreleased] - 2026-07-25 09:37
-
-### Sicherheit
-- **API-Hardening (Folgearbeit aus dem OWASP-Re-Audit vom 2026-07-25).** `api/db.php` exponierte
-  live den vollen PostgreSQL-Versionsstring + Uptime ohne Zugriffsschutz — liefert jetzt nur noch
-  einen reinen Status-Code (200/500) ohne Body. Die `DebugModule.ts`-Seite (`/info/debug`, freies
-  API-Request-Playground) wurde komplett entfernt. `stations.php`/`region_stations.php` wurden in
-  `nearest-stations.php`/`stations-by-region.php` umbenannt (die alten Namen waren nicht
-  unterscheidbar), `test.php` (Duplikat von `ping.php`) entfernt. Neun read-only API-Endpoints
-  akzeptieren jetzt nur noch `GET` (405 sonst). `ors.php` validiert den `path`-Parameter gegen
-  eine Allowlist bekannter ORS-Routen (verhindert Missbrauch des serverseitigen ORS-API-Keys für
-  beliebige Pfade), `nearest-stations.php` validiert das `profile`-Format, `geocoder.php`
-  validiert `lat`/`lon` als numerisch (Adress-Freitextsuche bleibt unverändert offen).
-- **API-Dokumentation konsolidiert.** `docs/API_ENDPOINTS.md` (unvollständig, teils veraltet)
-  gelöscht — `docs/openapi.yaml` (vollständig, maschinell validiert) ist jetzt die alleinige
-  Quelle für alle `api/*.php`-Endpoints.
-
-## [Unreleased] - 2026-07-25 07:12
 
 ### Sicherheit
 - **OWASP-Top-10-Re-Audit der ausgelieferten Seite.** Aktualisiert
@@ -49,6 +30,19 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   einen eigenen Fehler korrigiert: ein TODO.md-Eintrag der letzten Session behauptete fälschlich,
   `map.oe5ith.at` hätte keinen CSP-Header — Live-Check zeigt, der Header existiert bereits seit
   Commit `2a70c7a` und war korrekt auf die App zugeschnitten; Eintrag entfernt statt weitergeführt.
+- **API-Hardening (Folgearbeit aus dem obigen OWASP-Re-Audit).** `api/db.php` exponierte live den
+  vollen PostgreSQL-Versionsstring + Uptime ohne Zugriffsschutz — liefert jetzt nur noch einen
+  reinen Status-Code (200/500) ohne Body. Die `DebugModule.ts`-Seite (`/info/debug`, freies
+  API-Request-Playground) wurde komplett entfernt. `stations.php`/`region_stations.php` wurden in
+  `nearest-stations.php`/`stations-by-region.php` umbenannt (die alten Namen waren nicht
+  unterscheidbar), `test.php` (Duplikat von `ping.php`) entfernt. Neun read-only API-Endpoints
+  akzeptieren jetzt nur noch `GET` (405 sonst). `ors.php` validiert den `path`-Parameter gegen
+  eine Allowlist bekannter ORS-Routen (verhindert Missbrauch des serverseitigen ORS-API-Keys für
+  beliebige Pfade), `nearest-stations.php` validiert das `profile`-Format, `geocoder.php`
+  validiert `lat`/`lon` als numerisch (Adress-Freitextsuche bleibt unverändert offen).
+- **API-Dokumentation konsolidiert.** `docs/API_ENDPOINTS.md` (unvollständig, teils veraltet)
+  gelöscht — `docs/openapi.yaml` (vollständig, maschinell validiert) ist jetzt die alleinige
+  Quelle für alle `api/*.php`-Endpoints.
 
 ## [3.12.0] - 2026-07-25
 
