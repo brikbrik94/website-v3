@@ -310,7 +310,8 @@ paths:
             default: health
           description: >
             Fester Wert (health/status) oder Muster directions/{profil}/geojson,
-            matrix/{profil}, isochrones/{profil} — alles andere liefert 400.
+            matrix/{profil}, isochrones/{profil}, export/{profil} bzw.
+            export/{profil}/topojson — alles andere liefert 400.
             Kein Host-Override möglich (fest an ORS_URL angehängt).
       responses:
         "200":

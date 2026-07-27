@@ -21,11 +21,15 @@
     "mgrs": "^2.1.0",
     "open-location-code": "^1.0.3",
     "pmtiles": "^4.4.1",
-    "proj4": "^2.20.8"
+    "proj4": "^2.20.8",
+    "terra-draw": "^1.32.2",
+    "terra-draw-maplibre-gl-adapter": "^1.4.1",
+    "topojson-client": "^3.1.0"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
     "@types/geojson": "^7946.0.16",
+    "@types/topojson-client": "^3.1.5",
     "concurrently": "^10.0.4",
     "happy-dom": "^20.10.6",
     "typescript": "^6.0.3",
