@@ -49,8 +49,15 @@ export class GraphSidebarAdapter {
         })
       ]
     });
-    this.draw.start();
-    this.draw.setMode('render');
+    const startDraw = () => {
+      this.draw.start();
+      this.draw.setMode('render');
+    };
+    if (map.isStyleLoaded()) {
+      startDraw();
+    } else {
+      map.once('load', startDraw);
+    }
 
     this.draw.on('finish', (id) => {
       const feature = this.draw.getSnapshotFeature(id) as Feature<Polygon> | undefined;
