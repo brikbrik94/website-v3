@@ -36,8 +36,13 @@ export const GraphExportService = {
       });
 
       if (!res.ok) return { ok: false, status: res.status };
-      const raw = await res.json();
-      return { ok: true, raw, format, payloadBytes: JSON.stringify(raw).length };
+      // Größe aus dem bereits vorliegenden Response-Body-Text ableiten statt raw erneut zu
+      // serialisieren (JSON.stringify(raw).length wäre sowohl unnötiger Zusatzaufwand bei
+      // ggf. mehrere MB großen Antworten als auch ungenau, da ein neu serialisiertes Objekt
+      // nicht zwangsläufig gleich lang ist wie die tatsächliche Drahtgröße).
+      const text = await res.text();
+      const raw = JSON.parse(text);
+      return { ok: true, raw, format, payloadBytes: text.length };
     } catch (e) {
       console.error('Graph-Export Fehler:', e);
       return { ok: false, status: null };

@@ -49,7 +49,7 @@ export const POPUP_CONFIGS: Record<string, LayerPopupConfig> = {
         fields: [
             { key: 'node_from', label: 'Von Node' },
             { key: 'node_to', label: 'Zu Node' },
-            { key: 'weight', label: 'Gewicht (s)', format: (v) => v != null ? Number(v).toFixed(1) : null }
+            { key: 'weight', label: 'Gewicht', format: (v) => v != null ? Number(v).toFixed(1) : null }
         ]
     },
     'graph-nodes-layer': {
