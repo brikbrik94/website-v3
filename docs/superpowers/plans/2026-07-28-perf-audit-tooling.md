@@ -380,13 +380,22 @@ const PAGES = [
 ```js
 async function main() {
   const servers = startDevServers();
-  process.on('SIGINT', () => stopDevServers(servers));
-  process.on('SIGTERM', () => stopDevServers(servers));
+  let chrome;
+  process.on('SIGINT', () => {
+    stopDevServers(servers);
+    if (chrome) chrome.kill();
+    process.exit(0);
+  });
+  process.on('SIGTERM', () => {
+    stopDevServers(servers);
+    if (chrome) chrome.kill();
+    process.exit(0);
+  });
 
   const results = [];
   try {
     await waitForServer(VITE_URL, SERVER_READY_TIMEOUT_MS);
-    const chrome = await chromeLauncher.launch({
+    chrome = await chromeLauncher.launch({
       chromePath: chromium.executablePath(),
       chromeFlags: ['--headless=new', '--no-sandbox']
     });
