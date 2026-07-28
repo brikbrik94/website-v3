@@ -61,10 +61,11 @@ export class GraphSidebarAdapter {
     const draw = new TerraDraw({
       adapter: new TerraDrawMapLibreGLAdapter({ map: this.map }),
       modes: [
-        new TerraDrawRenderMode({ modeName: 'render', styles: {} }),
+        new TerraDrawRenderMode({ modeName: 'render', styles: { polygonFillOpacity: 0.15 } }),
         new TerraDrawRectangleMode({
           drawInteraction: 'click-drag',
-          validation: (feature) => ValidateMaxAreaSquareMeters(feature, MAX_BBOX_AREA_M2)
+          validation: (feature) => ValidateMaxAreaSquareMeters(feature, MAX_BBOX_AREA_M2),
+          styles: { fillOpacity: 0.15 }
         })
       ]
     });

@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-28 06:24
+
+### Geändert
+- **`/graph`-Seite: gezeichnete Bbox transparenter.** `fill-opacity` der per `terra-draw`
+  gezeichneten/angezeigten Bbox von `0.3` (Library-Default) auf `0.15` reduziert
+  (`src/features/graph/GraphSidebarAdapter.ts`, sowohl Render- als auch Rectangle-Mode).
+
 ## [3.13.0] - 2026-07-27
 
 ### Hinzugefügt
