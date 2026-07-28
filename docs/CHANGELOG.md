@@ -2,6 +2,14 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-28 07:05
+
+### Sicherheit
+- **`curl_request()` (`api/config.php`) hat jetzt einen Timeout.** `CURLOPT_TIMEOUT` auf 5s gesetzt
+  (analog `adsb.php`/`ais.php`), behebt die beim OWASP-Re-Audit (2026-07-25) gefundene
+  Inkonsistenz — ein hängender Upstream (ORS/Nominatim) konnte zuvor einen PHP-FPM-Worker
+  unbegrenzt blockieren.
+
 ## [Unreleased] - 2026-07-28 06:24
 
 ### Geändert

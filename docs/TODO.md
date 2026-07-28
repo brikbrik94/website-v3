@@ -144,8 +144,18 @@ alle vier auf einmal anfassen.
   sich so mehrere inerte Instanzen an. Bestätigt harmlos (jede verworfene Instanz bleibt
   dauerhaft im `'render'`-Modus, dessen Handler No-Ops sind; kein Doppel-Registrieren, kein
   Crash) und durch die Seitenlebensdauer begrenzt — deshalb bewusst nicht sofort behoben.
-  Mechanischer Fix: in `reapplyLayers()` vor dem Neuaufbau `this.draw.stop()` auf der alten
-  Instanz aufrufen (sofern nicht gerade mitten in einer Zeichnung).
+  **Korrektur (2026-07-28):** der hier ursprünglich vorgeschlagene „mechanische Fix" (`this.draw.stop()`
+  vor dem Neuaufbau) ist falsch und würde einen Crash reintroduzieren — genau das wird im Code
+  bereits bewusst vermieden (`GraphSidebarAdapter.ts:122-134`, Commit `0e6aba4`, zeitlich *vor*
+  diesem TODO-Eintrag entstanden): `stop()` ruft intern `adapter.unregister()` auf, das ungeprüft
+  `map.removeSource('td-point'/'td-linestring'/'td-polygon')` aufruft. In `maplibre-gl`
+  (`Style.removeSource()`) wirft das synchron einen echten `Error` ("There is no source with
+  this ID=…"), wenn die Source nicht existiert — und genau das ist der Zustand, in dem
+  `reapplyLayers()` läuft (Sources sind durch `setStyle()` bereits weg, siehe Guard
+  `if (!this.map.getSource('td-polygon'))` direkt davor). Ein echter Fix bräuchte einen anderen
+  Ansatz (z.B. Dummy-Sources mit den `td-*`-IDs vor `stop()` anlegen, damit `removeSource()` nicht
+  ins Leere greift) — mehr Aufwand, hängt an internen, nicht offiziell dokumentierten
+  terra-draw-Source-IDs. Weiterhin bewusst nicht umgesetzt, da bestätigt harmlos.
 - [ ] **`curl_request()` (`api/config.php`) ohne Timeout.** Gefunden beim OWASP-Re-Audit
   (2026-07-25): die gemeinsame Helper-Funktion für `ors.php`/`geocoder.php` setzt kein
   `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT`, im Unterschied zu `adsb.php`/`ais.php`, die beide 5s

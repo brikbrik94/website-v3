@@ -61,6 +61,7 @@ function curl_request($url, $method = 'GET', $body = null, $headers = [])
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_ENCODING, ''); // Enable all supported encodings (gzip, etc.)
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 
     if ($method === 'POST') {
         curl_setopt($ch, CURLOPT_POST, true);
