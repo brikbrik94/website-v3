@@ -105,10 +105,13 @@ siehe entsprechende TODO.md-Einträge (Step 3).
    potenziell `/info/*` (kein Kartenrendering dort), war aber nicht Teil des 6-Seiten-Audit-Scopes
    — müsste bei Umsetzung eigens verifiziert werden.
 5. **`/routing` und `/isochrones`: identischer CLS von 0,063.** Beide Seiten liefern exakt denselben
-   `cumulativeLayoutShiftMainFrame`-Wert (0,06318…) — spricht für eine gemeinsame Layout-Shift-Quelle
-   in einer geteilten Komponente (beide Seiten nutzen laut Bundle-Analyse `RoutingSidebar`). Niedrige
-   Priorität: 0,063 liegt unter der „poor"-Schwelle von 0,1, aber messbar und seitenübergreifend
-   reproduzierbar.
+   `cumulativeLayoutShiftMainFrame`-Wert (0,06318…) — gemeinsame Ursache noch nicht abschließend
+   lokalisiert. Beide Seiten teilen sich zumindest den Seiten-Shell (`LayoutHelper.renderBaseLayout`,
+   `initTopbar`) und strukturell ähnliche Koordinaten-Eingabezeilen (`IsochronesSidebar.ts`
+   importiert den reinen String-Parsing-Helper `parseCoords` aus `RoutingSidebar.ts`, was allein
+   aber keinen Layout-Shift verursachen kann) — die konkrete Komponente müsste bei Umsetzung erst
+   identifiziert werden. Niedrige Priorität: 0,063 liegt unter der „poor"-Schwelle von 0,1, aber
+   messbar und seitenübergreifend reproduzierbar.
 6. **`/tracking`: auffällig hoher TBT (5.840 ms) und Mainthread-Arbeit.** Deutlich über den übrigen
    5 Seiten (1.990–3.320 ms). `mainthread-work-breakdown`-Audit zeigt 12,0 s Gesamtarbeit, davon
    9,7 s in der Kategorie „Other" (nicht weiter attribuiert). Relativer Ausreißer innerhalb

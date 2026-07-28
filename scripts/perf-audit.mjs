@@ -2,6 +2,7 @@
 // Fährt Lighthouse-Performance-/Accessibility-/Best-Practices-Audits gegen alle 6 Kartenseiten
 // und schreibt rohe Reports nach perf-reports/ (gitignored). Startet/stoppt Vite + PHP-Dev-Server
 // selbst, kein vorheriges "npm run dev" nötig.
+// Voraussetzung: Playwright-Chromium installiert (npx playwright install chromium, einmalig).
 //
 // Ausführen: npm run perf:audit
 import { spawn } from 'node:child_process';
@@ -126,6 +127,11 @@ async function main() {
     } finally {
       await chrome.kill();
     }
+  } catch (err) {
+    console.error(`Audit-Lauf abgebrochen — ${err.message}`);
+    console.error('Falls Playwrights Chromium fehlt: npx playwright install chromium');
+    process.exitCode = 1;
+    return;
   } finally {
     stopDevServers(servers);
   }

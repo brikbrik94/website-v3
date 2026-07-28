@@ -282,9 +282,11 @@ Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
   verifizieren, ob `/info/*` wirklich betroffen ist (war nicht Teil des 6-Seiten-Audit-Scopes).
   Details: `docs/performance/2026-07-28-baseline-audit.md`, Befund 4.
 - [ ] **`/routing` + `/isochrones`: identischer CLS von 0,063.** Beide Seiten liefern exakt
-  denselben Layout-Shift-Wert — spricht für eine gemeinsame Ursache in der geteilten
-  `RoutingSidebar`-Komponente. Niedrige Priorität (unter der „poor"-Schwelle von 0,1), aber
-  reproduzierbar. Details: `docs/performance/2026-07-28-baseline-audit.md`, Befund 5.
+  denselben Layout-Shift-Wert — gemeinsame Ursache noch nicht abschließend lokalisiert; beide
+  Seiten teilen sich zumindest den Seiten-Shell (Layout/Topbar) und strukturell ähnliche
+  Koordinaten-Eingabezeilen, konkrete Komponente müsste bei Umsetzung erst identifiziert werden.
+  Niedrige Priorität (unter der „poor"-Schwelle von 0,1), aber reproduzierbar. Details:
+  `docs/performance/2026-07-28-baseline-audit.md`, Befund 5.
 - [ ] **`/tracking`: auffällig hoher TBT (5.840 ms) gegenüber den übrigen 5 Seiten (1.990–3.320
   ms).** `mainthread-work-breakdown`-Audit zeigt 9,7 von 12,0 s Mainthread-Arbeit in der nicht
   weiter attribuierten Kategorie „Other". Ursache aus den Lighthouse-Daten allein nicht
