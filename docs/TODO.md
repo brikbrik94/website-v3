@@ -252,6 +252,53 @@ zu bearbeiten (nicht in einem Rutsch).
   TypeScript-Fehler. **Hinweis:** Browser-Verifikation weiterhin ausstehend (keine
   Playwright-Umgebung hier).
 
+## Performance (Baseline-Audit 2026-07-28)
+
+Priorisierte Befunde aus dem ersten `npm run perf:audit`/`npm run perf:bundle`-Lauf gegen alle 6
+Kartenseiten. Details (Zahlen, Methodik-Einschränkungen des Dev-Server-Laufs, ausgeschlossene
+Dev-Server-Artefakte) in [docs/performance/2026-07-28-baseline-audit.md](./performance/2026-07-28-baseline-audit.md).
+Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
+
+- [ ] **Fehlende Accessible Names bei Buttons + unzureichender Farbkontrast.** `button-name`- und
+  `color-contrast`-Lighthouse-Audits schlagen global auf allen 6 Kartenseiten (`/karte`,
+  `/routing`, `/nah`, `/coords`, `/tracking`, `/isochrones`) fehl. Details:
+  `docs/performance/2026-07-28-baseline-audit.md`, Befund 1.
+- [ ] **`/coords`: Formularelemente ohne Label.** Zusätzlich zum globalen Befund oben schlagen auf
+  `/coords` die Audits `label` (Formularelemente ohne zugeordnetes Label) und `select-name`
+  (Select ohne zugeordnetes Label) fehl — erklärt den niedrigeren Accessibility-Score dort (0,82
+  vs. 0,91–0,92 auf den übrigen Seiten). Details: `docs/performance/2026-07-28-baseline-audit.md`,
+  Befund 2.
+- [ ] **Kaputte externe Assets (404) auf `/nah` und `/tracking`.** `/nah` lädt die Glyph-Schrift
+  „Open Sans Regular,Arial Unicode MS Regular" (`0-255.pbf`) von `tiles.oe5ith.at` mit 404;
+  `/tracking` lädt das AIS-Sprite (`sprite@2x.png` und `sprite@2x.json`) mit 404. Beides reale
+  Browser-Konsolenfehler, kein Audit-Artefakt. Betrifft den Tile-Server (`tiles.oe5ith.at`), nicht
+  dieses Repo direkt — vor Fix prüfen, ob das ein reines Asset-Problem auf dem Tile-Server ist
+  oder website-v3 einen falschen Pfad anfragt. Details:
+  `docs/performance/2026-07-28-baseline-audit.md`, Befund 3.
+- [ ] **`maplibre-gl` lädt eager auf jeder Route, auch ohne Karte.** `src/main.ts` importiert
+  `OverlayLoader` statisch statt per `import()`; `OverlayLoader.ts` importiert `maplibre-gl` und
+  `MapCore` direkt — dadurch landet `maplibre-gl` (265,53 KB gzip, 91 % des Haupt-Entry-Chunks)
+  auch im Bundle für `/info/*`, obwohl diese Seiten keine Karte rendern. Bei Umsetzung eigens
+  verifizieren, ob `/info/*` wirklich betroffen ist (war nicht Teil des 6-Seiten-Audit-Scopes).
+  Details: `docs/performance/2026-07-28-baseline-audit.md`, Befund 4.
+- [ ] **`/routing` + `/isochrones`: identischer CLS von 0,063.** Beide Seiten liefern exakt
+  denselben Layout-Shift-Wert — spricht für eine gemeinsame Ursache in der geteilten
+  `RoutingSidebar`-Komponente. Niedrige Priorität (unter der „poor"-Schwelle von 0,1), aber
+  reproduzierbar. Details: `docs/performance/2026-07-28-baseline-audit.md`, Befund 5.
+- [ ] **`/tracking`: auffällig hoher TBT (5.840 ms) gegenüber den übrigen 5 Seiten (1.990–3.320
+  ms).** `mainthread-work-breakdown`-Audit zeigt 9,7 von 12,0 s Mainthread-Arbeit in der nicht
+  weiter attribuierten Kategorie „Other". Ursache aus den Lighthouse-Daten allein nicht
+  abschließend bestimmbar (denkbar: Live-ADS-B/AIS-Verbindungsaufbau) — braucht gezielte
+  Nachuntersuchung (z. B. Chrome-Performance-Profil) vor einem Fix. Details:
+  `docs/performance/2026-07-28-baseline-audit.md`, Befund 6.
+- [ ] **Wiederholungslauf gegen echten Produktiv-Build (`vite preview`) statt Dev-Server.** Der
+  bisherige `npm run perf:audit`-Lauf misst gegen den unminifizierten Vite-Dev-Server (bewusste
+  Design-Entscheidung, siehe Spec) — LCP/TBT-Absolutwerte und die „Minify JavaScript"/„Reduce
+  unused JavaScript"-Opportunities sind dadurch Dev-Server-Artefakte, keine Produktionswerte. Für
+  belastbare absolute Werte müsste `perf-audit.mjs` (oder ein neuer Lauf-Modus) gegen `vite
+  preview` statt `vite` laufen — Tooling-Änderung, kein reiner Doku-Punkt. Details:
+  `docs/performance/2026-07-28-baseline-audit.md`, Abschnitt „Wichtiger Hinweis zur Methodik".
+
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in
 [docs/external-blockers.md](./external-blockers.md).
