@@ -101,6 +101,8 @@ Kurzreferenz — vollständige Details (Architektur, Standards, Release-Prozess)
 ```bash
 npm run dev         # Vite + PHP-Dev-Server parallel
 npm run build        # Type-Check + Production-Build
+npm run perf:bundle  # Bundle-Größen-Analyse
+npm run perf:audit    # Lighthouse-Audit gegen alle 6 Kartenseiten
 npm test              # Vitest
 npx tsc --noEmit      # nur Type-Check
 composer run lint     # PSR-12-Check für api/*.php
@@ -111,6 +113,7 @@ bash scripts/security-audit.sh   # OWASP-Teilaudit
 
 - [CHANGELOG.md](./docs/CHANGELOG.md) — technisches Änderungsprotokoll
 - [ROADMAP.md](./docs/ROADMAP.md) / [TODO.md](./docs/TODO.md) — geplante Features / offene Aufgaben
+- [docs/performance/2026-07-28-baseline-audit.md](./docs/performance/2026-07-28-baseline-audit.md) — Performance-Baseline-Audit (Core Web Vitals)
 - [docs/security/owasp-top10-checklist.md](./docs/security/owasp-top10-checklist.md) — Security-Self-Check
 - [CLAUDE.md](./CLAUDE.md) — Architektur, Standards, Coding-Konventionen (primär für Coding-Agenten,
   aber auch als technische Referenz für Menschen geeignet)

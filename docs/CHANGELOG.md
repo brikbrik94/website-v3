@@ -2,6 +2,17 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-07-28 11:35
+
+### Hinzugefügt
+- **Lokales Performance-Audit-Tooling.** `npm run perf:audit` (Lighthouse gegen alle 6
+  Kartenseiten, startet Vite+PHP-Dev-Server selbst) und `npm run perf:bundle`
+  (Bundle-Größen-Analyse via `rollup-plugin-visualizer`, hinter `ANALYZE=1` gated, kein Einfluss
+  auf `npm run build`). Erster Baseline-Report:
+  [docs/performance/2026-07-28-baseline-audit.md](./performance/2026-07-28-baseline-audit.md),
+  7 priorisierte Folge-Punkte in TODO.md. Spec:
+  [docs/superpowers/specs/2026-07-28-perf-audit-tooling-design.md](./superpowers/specs/2026-07-28-perf-audit-tooling-design.md).
+
 ## [Unreleased] - 2026-07-28 07:05
 
 ### Sicherheit

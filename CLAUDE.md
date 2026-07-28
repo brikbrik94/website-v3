@@ -19,6 +19,10 @@ npm run dev:reset  # bei hängenden Dev-Server-Resten (z.B. "504 Outdated Optimi
                    # Vite-Cache. Tritt auf, wenn eine frühere Session beendet wurde, ohne die
                    # concurrently-Kindprozesse zu stoppen — danach npm run dev neu starten.
 npm run build      # tsc (type-check, noEmit) && vite build → dist/
+npm run perf:bundle  # Bundle-Größen-Analyse (rollup-plugin-visualizer) → perf-reports/bundle-*.{html,json}
+npm run perf:audit    # Lighthouse-Audit (Performance/A11y/Best-Practices) gegen alle 6 Kartenseiten
+                       # → perf-reports/. Voraussetzung: Playwright-Chromium installiert
+                       # (npx playwright install chromium, einmalig)
 npm test           # vitest run (all tests)
 npx vitest run src/api/AdsbInterpreter.test.ts   # single test file
 npx tsc --noEmit   # type-check only
@@ -91,7 +95,7 @@ noch nicht angewandt — konkret relevant für die ROADMAP.md-Punkte „Legende"
 | Standard | Quelle | Wofür in diesem Repo | Bekannte Abweichung hier |
 |---|---|---|---|
 | Architecture Decision Records (ADR) | https://adr.github.io/ | Formatvorbild für `docs/superpowers/specs/*-design.md` (Kontext/Entscheidung/Konsequenzen) | lose angelehnt, kein striktes ADR-Template; keine Rückwirkende Umformatierung bestehender Specs geplant |
-| Core Web Vitals (LCP, INP, CLS) | https://web.dev/articles/vitals | Zielmetriken für Ladezeit/Interaktivität der Karte | ungemessen; hängt an den Performance-Punkten aus dem Map-Subsystem-Cleanup (v.a. U3 Sprite-Caching, siehe TODO.md) |
+| Core Web Vitals (LCP, INP, CLS) | https://web.dev/articles/vitals | Zielmetriken für Ladezeit/Interaktivität der Karte | erste Baseline-Messung vorhanden: [docs/performance/2026-07-28-baseline-audit.md](./docs/performance/2026-07-28-baseline-audit.md) (`npm run perf:audit`) — Achtung: LCP/TBT-Absolutwerte sind Dev-Server-Artefakte, nur relative Deltas zwischen Seiten sind belastbar (siehe Methodik-Hinweis im Report); ein Lauf gegen den echten Produktiv-Build (`vite preview`) steht noch aus (TODO.md) |
 
 Twelve-Factor Config und OWASP Top 10 sind generisch in AGENT_INSTRUCTIONS.md referenziert;
 konkrete Umsetzung hier: Secrets nur in `api/config.local.php`, DB-Zugriff nur über den
