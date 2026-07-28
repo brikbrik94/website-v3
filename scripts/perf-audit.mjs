@@ -17,6 +17,19 @@ function startDevServers() {
     cwd: 'api',
     stdio: 'inherit'
   });
+
+  vite.on('error', (err) => {
+    console.error(`Fehler beim Starten von Vite: ${err.message}`);
+    stopDevServers({ vite, php });
+    process.exit(1);
+  });
+
+  php.on('error', (err) => {
+    console.error(`Fehler beim Starten von PHP: ${err.message}`);
+    stopDevServers({ vite, php });
+    process.exit(1);
+  });
+
   return { vite, php };
 }
 
@@ -47,8 +60,14 @@ function waitForServer(url, timeoutMs) {
 
 async function main() {
   const servers = startDevServers();
-  process.on('SIGINT', () => stopDevServers(servers));
-  process.on('SIGTERM', () => stopDevServers(servers));
+  process.on('SIGINT', () => {
+    stopDevServers(servers);
+    process.exit(0);
+  });
+  process.on('SIGTERM', () => {
+    stopDevServers(servers);
+    process.exit(0);
+  });
   try {
     await waitForServer(VITE_URL, SERVER_READY_TIMEOUT_MS);
     console.log('Dev-Server bereit:', VITE_URL);
