@@ -15,6 +15,14 @@ import lighthouse from 'lighthouse';
 const VITE_URL = 'http://100.64.0.1:8000/';
 const REPORT_DIR = 'perf-reports';
 const CATEGORIES = ['performance', 'accessibility', 'best-practices'];
+const PAGES = [
+  ['karte', '/karte'],
+  ['routing', '/routing'],
+  ['nah', '/nah'],
+  ['coords', '/coords'],
+  ['tracking', '/tracking'],
+  ['isochrones', '/isochrones']
+];
 const SERVER_READY_TIMEOUT_MS = 15000;
 const SERVER_POLL_INTERVAL_MS = 300;
 
@@ -95,6 +103,8 @@ async function main() {
     if (chrome) chrome.kill();
     process.exit(0);
   });
+
+  const results = [];
   try {
     await waitForServer(VITE_URL, SERVER_READY_TIMEOUT_MS);
     chrome = await chromeLauncher.launch({
@@ -102,13 +112,30 @@ async function main() {
       chromeFlags: ['--headless=new', '--no-sandbox']
     });
     try {
-      const result = await auditPage('karte', VITE_URL.replace(/\/$/, '') + '/karte', chrome);
-      console.log(JSON.stringify(result, null, 2));
+      for (const [pageName, urlPath] of PAGES) {
+        const url = VITE_URL.replace(/\/$/, '') + urlPath;
+        try {
+          const result = await auditPage(pageName, url, chrome);
+          results.push(result);
+          console.log(`✅ ${pageName}: performance=${result.scores.performance} lcp=${result.lcp}`);
+        } catch (err) {
+          console.error(`❌ ${pageName}: Audit fehlgeschlagen — ${err.message}`);
+          results.push({ pageName, error: err.message });
+        }
+      }
     } finally {
       await chrome.kill();
     }
   } finally {
     stopDevServers(servers);
+  }
+
+  fs.mkdirSync(REPORT_DIR, { recursive: true });
+  fs.writeFileSync(path.join(REPORT_DIR, 'summary.json'), JSON.stringify(results, null, 2));
+
+  if (results.every((r) => r.error)) {
+    console.error('Alle Seiten-Audits fehlgeschlagen.');
+    process.exitCode = 1;
   }
 }
 
