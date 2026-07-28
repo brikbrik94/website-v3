@@ -11,6 +11,7 @@
     "docs:bausteine": "node scripts/generate-bausteine-catalog.mjs",
     "build": "tsc && vite build",
     "perf:bundle": "ANALYZE=1 vite build",
+    "perf:audit": "node scripts/perf-audit.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "validate:openapi": "node -e \"require('@apidevtools/swagger-parser').validate('docs/openapi.yaml').then(() => console.log('✅ OpenAPI-Spec ist valide')).catch(e => { console.error('❌', e.message); process.exit(1); })\""
