@@ -6,8 +6,15 @@
 // Ausführen: npm run perf:audit
 import { spawn } from 'node:child_process';
 import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { chromium } from 'playwright';
+import * as chromeLauncher from 'chrome-launcher';
+import lighthouse from 'lighthouse';
 
 const VITE_URL = 'http://100.64.0.1:8000/';
+const REPORT_DIR = 'perf-reports';
+const CATEGORIES = ['performance', 'accessibility', 'best-practices'];
 const SERVER_READY_TIMEOUT_MS = 15000;
 const SERVER_POLL_INTERVAL_MS = 300;
 
@@ -58,19 +65,39 @@ function waitForServer(url, timeoutMs) {
   });
 }
 
+async function auditPage(pageName, url, chrome) {
+  const result = await lighthouse(url, { port: chrome.port, onlyCategories: CATEGORIES });
+  const { lhr } = result;
+
+  fs.mkdirSync(REPORT_DIR, { recursive: true });
+  fs.writeFileSync(path.join(REPORT_DIR, `${pageName}.json`), JSON.stringify(lhr, null, 2));
+  fs.writeFileSync(path.join(REPORT_DIR, `${pageName}.html`), result.report);
+
+  return {
+    pageName,
+    scores: Object.fromEntries(CATEGORIES.map((c) => [c, lhr.categories[c].score])),
+    lcp: lhr.audits['largest-contentful-paint'].displayValue,
+    cls: lhr.audits['cumulative-layout-shift'].displayValue,
+    tbt: lhr.audits['total-blocking-time'].displayValue
+  };
+}
+
 async function main() {
   const servers = startDevServers();
-  process.on('SIGINT', () => {
-    stopDevServers(servers);
-    process.exit(0);
-  });
-  process.on('SIGTERM', () => {
-    stopDevServers(servers);
-    process.exit(0);
-  });
+  process.on('SIGINT', () => stopDevServers(servers));
+  process.on('SIGTERM', () => stopDevServers(servers));
   try {
     await waitForServer(VITE_URL, SERVER_READY_TIMEOUT_MS);
-    console.log('Dev-Server bereit:', VITE_URL);
+    const chrome = await chromeLauncher.launch({
+      chromePath: chromium.executablePath(),
+      chromeFlags: ['--headless=new', '--no-sandbox']
+    });
+    try {
+      const result = await auditPage('karte', VITE_URL.replace(/\/$/, '') + '/karte', chrome);
+      console.log(JSON.stringify(result, null, 2));
+    } finally {
+      await chrome.kill();
+    }
   } finally {
     stopDevServers(servers);
   }
