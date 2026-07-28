@@ -10,6 +10,7 @@
     "dev:reset": "bash scripts/dev-reset.sh",
     "docs:bausteine": "node scripts/generate-bausteine-catalog.mjs",
     "build": "tsc && vite build",
+    "perf:bundle": "ANALYZE=1 vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "validate:openapi": "node -e \"require('@apidevtools/swagger-parser').validate('docs/openapi.yaml').then(() => console.log('✅ OpenAPI-Spec ist valide')).catch(e => { console.error('❌', e.message); process.exit(1); })\""
@@ -32,6 +33,7 @@
     "@types/topojson-client": "^3.1.5",
     "concurrently": "^10.0.4",
     "happy-dom": "^20.10.6",
+    "rollup-plugin-visualizer": "^7.0.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.13",
     "vitest": "^4.1.7"
