@@ -35,3 +35,6 @@ scratch/
 *.local.*
 
 .env
+
+# Lokales Performance-Audit-Tooling (siehe scripts/perf-audit.mjs, npm run perf:*)
+perf-reports/
