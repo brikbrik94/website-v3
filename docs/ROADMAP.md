@@ -209,6 +209,21 @@ hinter Versionierung/Changelog/Commits/Code-Stil/Geodaten/Accessibility/Security
   `_TODO: Beschreibung ergänzen_` (als eigener TODO.md-Punkt erfasst, nicht in diesem Rahmen
   nachgezogen). `CLAUDE.md` verweist bei „Map infrastructure" jetzt auf den Katalog. 196 Tests
   grün, 0 TypeScript-Fehler (reine Tooling-/Doku-Änderung, kein App-Code betroffen).
+- [ ] **Lokale Dev-Config vereinheitlichen + Endpoint-Info-Datei** — Auslöser: Test-Setup auf
+  einer zweiten Maschine, `vite.config.ts:8` hat den Vite-Dev-Server-Host hart auf `100.64.0.1`
+  (Tailscale/VPN-Adresse der Original-Dev-Maschine) codiert — auf anderen Rechnern bindet Vite
+  damit nicht. `loadEnv()` wird in `vite.config.ts:4` bereits importiert/aufgerufen, das Ergebnis
+  aber aktuell nirgends verwendet (toter Code) — naheliegender Ansatzpunkt, um den Host stattdessen
+  über eine gitignorte `.env.local` konfigurierbar zu machen (Twelve-Factor-Config-Prinzip, das
+  `CLAUDE.md` bereits für `api/config.local.php` referenziert). Ziel geht aber über den einen
+  Host-Wert hinaus: eine neue Info-Datei (z.B. `docs/LOCAL_DEV_SETUP.md`) soll pro externem
+  Endpoint dokumentieren, was für einen anderen Rechner/eine andere Umgebung anzupassen ist —
+  u.a. `ORS_URL`/`NOMINATIM_URL`/`DB_HOST` in `api/config.local.php` (Beispiel bereits vorhanden:
+  `config.local.php.example`), Tile-Server-URL, ADS-B/AIS-Endpunkte — inkl. dem konkreten
+  Anwendungsfall „lokale ORS-Instanz zum Testen einbinden" (Nachbar-Route, wenn kein eigener
+  ORS-Server läuft: Fallback auf den Produktions-`ORS_URL`?). Braucht vorab Klärung, ob/wie die
+  neue `.env.local` mit dem bereits bestehenden `config.local.php`-Mechanismus sauber
+  zusammenspielt, statt einen zweiten, parallelen Config-Weg zu etablieren.
 - [x] **Repo-Root-Ordnerstruktur aufräumen** (2026-07-18) — ✅ ERLEDIGT, Scope beim Brainstorming
   auf die **Dokumente** eingegrenzt (Nutzer-Entscheidung: `deploy-website.sh`/`nginx.conf`/
   `phpcs.xml` bleiben am Root, dafür kein eigener `deploy/`-Ordner). Verschoben nach `docs/`:
