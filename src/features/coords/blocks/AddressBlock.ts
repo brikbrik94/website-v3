@@ -26,7 +26,7 @@ export class AddressBlock extends CoordSystemBlock {
           </div>
         </div>
         <div class="coord-row pos-relative">
-          <input class="coord-input-full" type="text" data-field="address" placeholder="Adresse suchen..." autocomplete="off">
+          <input class="coord-input-full" type="text" data-field="address" aria-label="Adresse" placeholder="Adresse suchen..." autocomplete="off">
           <div id="geocoder-results" class="geocoder-results hidden"></div>
         </div>
       </div>

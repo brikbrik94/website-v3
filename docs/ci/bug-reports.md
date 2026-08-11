@@ -9,8 +9,8 @@ als normale, committete Datei in diesem Repo (`docs/ci/bug-reports.md`), analog 
 Sammeldatei selbst bleibt dauerhaft hier, auch wenn — wie aktuell — beide Einträge unten bereits
 behoben sind).
 
-**Aktueller Stand: keine offenen Bugs.** Beide Einträge unten sind behoben, siehe
-`docs/ci/open-items.md` für die Gesamtübersicht.
+**Aktueller Stand: 1 offener Bug** (Punkt 3, Farbkontrast `.topbar-search-btn`). Punkte 1 und 2
+sind behoben. Siehe `docs/ci/open-items.md` für die Gesamtübersicht.
 
 ---
 
@@ -176,3 +176,64 @@ unberührt, da sie ohnehin nie so breit werden.
   Status-Badges wie „Online"/„v1.4.2", wo ein Umbruch unerwünscht wäre). Falls bewusst: evtl.
   eine zweite Variante (`.badge-wrap` o.ä.) für Badges mit potenziell langem, variablem Text
   (Warnungen, Freitext) im Design-System ergänzen, statt dass jedes Portal einzeln overridet.
+
+---
+
+## 3. `.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)
+
+**Status:** 🔴 Offen
+**Gemeldet von:** website-v3 (Performance-Baseline-Audit, `npm run perf:audit` /
+`lighthouse`-`color-contrast`-Audit, schlägt global auf allen 6 Kartenseiten fehl — Details:
+`docs/performance/2026-07-28-baseline-audit.md`, Befund 1)
+**Datum:** 2026-08-11
+
+### Symptom
+
+Der Suchfeld-Icon-Button in der Topbar (`.topbar-search-btn`) hat einen Text-/Icon-Kontrast von
+nur ~2,06:1 gegenüber seinem Hintergrund — deutlich unter dem WCAG-2.1-AA-Minimum für
+UI-Komponenten/Grafiken (3:1). Lighthouses `color-contrast`-Audit markiert das global auf jeder
+Seite mit sichtbarer Topbar als fehlgeschlagen.
+
+### Root Cause
+
+`css/topbar.css`:
+
+```css
+.topbar-search-btn {
+  ...
+  color: #555;
+  ...
+}
+```
+
+gegen den Topbar-Hintergrund `background: var(--card-bg)` (`css/common.css`: `--card-bg: #252525`).
+Kontrastberechnung (WCAG-Relativluminanz-Formel) für `#555555` auf `#252525`: **≈2,06:1** — sowohl
+unter der 3:1-Schwelle für UI-Komponenten als auch weit unter der 4,5:1-Schwelle für Text.
+
+`css/topbar.css` (website-v3-seitig unter `src/styles/topbar.css` 1:1 gesynct, `diff` zeigt nur
+eine unabhängige, unrelated Zeile Unterschied) enthält an mehreren Stellen hardcodierte Hex-Werte
+statt CI-Tokens (`var(--...)`) — das widerspricht `oe5ith-ci/docs/for-coding-agents.md`s eigener
+Regel „Keine Werte hardcoden". `.topbar-search-btn`s `color: #555` ist ein konkretes Beispiel
+dafür; andere geprüfte Farbpaare in derselben Datei (z.B. `.topbar-dropdown-toggle` `#d1d5db` auf
+`#2a2a2a` ≈9,7:1) sind unauffällig — dies ist kein pauschales `topbar.css`-Problem, sondern
+punktuell an dieser einen Stelle.
+
+### Reproduktion
+
+1. Eine beliebige Kartenseite öffnen (z.B. `/karte`), Topbar-Suchfeld-Icon-Button betrachten.
+2. Lighthouse-Accessibility-Audit fahren (oder `npm run perf:audit` in diesem Repo) —
+   `color-contrast` schlägt fehl, `.topbar-search-btn` als betroffenes Element gelistet.
+
+### Warum nicht lokal in website-v3 gefixt
+
+`src/styles/topbar.css` ist eine reine, synchronisierte Kopie von `oe5ith-ci/css/topbar.css`
+(Kommentar-Header „Extrahiert aus components/topbar.html"). Ein lokaler Override würde bei
+nächstem Re-Sync wieder verworfen bzw. driften — analog zur `oe5ith-ci`-Submodul-Konvention
+dieses Repos (Bugs im Design-System werden dokumentiert, nicht lokal umgangen).
+
+### Vorschlag für `oe5ith-ci`
+
+- `.topbar-search-btn`s `color: #555` auf einen Token mit ausreichendem Kontrast gegen `--card-bg`
+  umstellen (z.B. `var(--text-muted)`, falls vorhanden und kontraststark genug — sonst neuen Token
+  einführen). Gleichzeitig prüfen, ob dieselbe Stelle (oder andere Buttons mit demselben Muster)
+  auch von der oben genannten „keine Hardcoded-Werte"-Regel abweicht.

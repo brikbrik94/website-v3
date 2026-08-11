@@ -12,15 +12,15 @@ export class UtmBlock extends CoordSystemBlock {
         </div>
         <div class="coord-row">
           <span class="coord-label">Zone</span>
-          <input class="coord-input" type="text" data-field="zone" readonly>
+          <input class="coord-input" type="text" data-field="zone" aria-label="Zone" readonly>
         </div>
         <div class="coord-row">
           <span class="coord-label">E</span>
-          <input class="coord-input" type="text" data-field="e" readonly>
+          <input class="coord-input" type="text" data-field="e" aria-label="E" readonly>
         </div>
         <div class="coord-row">
           <span class="coord-label">N</span>
-          <input class="coord-input" type="text" data-field="n" readonly>
+          <input class="coord-input" type="text" data-field="n" aria-label="N" readonly>
         </div>
       </div>
     `;

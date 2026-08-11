@@ -93,6 +93,38 @@ function buildStationsLayerDef(): LayerSpecification {
   };
 }
 
+// Eigene Funktion statt Inline-Literal in initLayers() (analog buildStationsLayerDef() oben) —
+// vor allem, damit 'text-font' testbar bleibt: ohne explizites 'text-font' fällt MapLibre auf
+// seinen Style-Spec-Default ["Open Sans Regular","Arial Unicode MS Regular"] zurück (Leerzeichen
+// statt Bindestrich), den der Tile-Server nicht unter diesem Namen hostet → 404 auf
+// .../fonts/Open Sans Regular,Arial Unicode MS Regular/0-255.pbf (siehe
+// docs/performance/2026-07-28-baseline-audit.md, Befund 3).
+function buildStationsCountLayerDef(): LayerSpecification {
+  return {
+    id: 'nah-stations-count-label',
+    type: 'symbol',
+    source: STATIONS_SOURCE,
+    layout: {
+      'text-field': ['case', ['>', ['get', '_station_count'], 1], ['get', '_station_count'], ''],
+      'text-font': ['Open-Sans-Regular'],
+      'text-size': 12,
+      'text-offset': [0, 1.2],
+      'text-allow-overlap': true,
+    },
+    paint: {
+      'text-color': MAP_COLORS.white,
+      'text-halo-color': [
+        'match', ['get', 'status'],
+        'active', MAP_COLORS.success,
+        'inactive', MAP_COLORS.danger,
+        'offseason', MAP_COLORS.muted,
+        MAP_COLORS.success
+      ],
+      'text-halo-width': 1.5,
+    }
+  };
+}
+
 export const NahMapLayers = {
   /**
    * Liefert die aktuelle Stations-Layer-Definition (inkl. status→Farbe-Paint-Expression), ohne
@@ -100,6 +132,14 @@ export const NahMapLayers = {
    */
   getStationsLayerDefinition(): LayerSpecification {
     return buildStationsLayerDef();
+  },
+
+  /**
+   * Liefert die Layer-Definition des Station-Count-Labels (nur zu Testzwecken exportiert,
+   * analog getStationsLayerDefinition()).
+   */
+  getStationsCountLayerDefinition(): LayerSpecification {
+    return buildStationsCountLayerDef();
   },
 
 
@@ -234,29 +274,7 @@ export const NahMapLayers = {
     attachHoverCursor(map, [STATIONS_LAYER]);
 
     // Text-Label für Station-Count (nur sichtbar wenn > 1)
-    const stationsCountLayer: LayerSpecification = {
-      id: 'nah-stations-count-label',
-      type: 'symbol',
-      source: STATIONS_SOURCE,
-      layout: {
-        'text-field': ['case', ['>', ['get', '_station_count'], 1], ['get', '_station_count'], ''],
-        'text-size': 12,
-        'text-offset': [0, 1.2],
-        'text-allow-overlap': true,
-      },
-      paint: {
-        'text-color': MAP_COLORS.white,
-        'text-halo-color': [
-          'match', ['get', 'status'],
-          'active', MAP_COLORS.success,
-          'inactive', MAP_COLORS.danger,
-          'offseason', MAP_COLORS.muted,
-          MAP_COLORS.success
-        ],
-        'text-halo-width': 1.5,
-      }
-    };
-    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, stationsCountLayer);
+    MapCore.ensureGeoJsonLayer(map, STATIONS_SOURCE, buildStationsCountLayerDef());
 
     const sourceId = 'nah-lines';
     const layerId = 'nah-lines';

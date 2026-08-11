@@ -10,7 +10,7 @@ export class MaidenheadBlock extends CoordSystemBlock {
           <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
         </div>
         <div class="coord-row">
-          <input class="coord-input-full" type="text" data-field="locator" readonly>
+          <input class="coord-input-full" type="text" data-field="locator" aria-label="Maidenhead-Locator" readonly>
         </div>
       </div>
     `;

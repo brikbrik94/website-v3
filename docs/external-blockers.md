@@ -22,6 +22,17 @@ auf den Tile-Server liegt außerhalb der Reichweite eines Coding-Agenten in dies
   unverändert/korrekt (gegen `master` verglichen). Entdeckt bei der Browser-Verifikation von
   U7+U1b (`/coords` Wanderwege-Toggle, 2026-07-06). Erneut gegengetestet (2026-07-09): weiterhin
   404.
+- **AIS-Sprite (`/tracking`) — nur die `@2x`-Variante fehlt.** `TrackingMapLayers.ts` lädt über
+  denselben `MapCore.loadSprites`-Pfad wie das (funktionierende) ADS-B-Sprite auch
+  `https://tiles.oe5ith.at/assets/sprites/ais/sprite@2x.png`/`.json` — beide liefern 404, während
+  `assets/sprites/ais/sprite.png` (1x, ohne `@2x`) und alle `adsb/`-Varianten `200` liefern
+  (verifiziert per `curl`, 2026-08-11). Code-Pfad ist identisch/korrekt zum funktionierenden
+  ADS-B-Fall, nur das serverseitige `@2x`-Asset für AIS fehlt. **Funktional unkritisch:**
+  `MapCore.loadSprites` hat bereits einen `@2x`→`1x`-Fallback bei Ladefehler, die App zeigt die
+  AIS-Icons also vermutlich trotzdem korrekt (in geringerer Auflösung) — der 404 ist reines
+  Konsolenrauschen (fällt bei Lighthouses `errors-in-console`-Audit auf, siehe
+  `docs/performance/2026-07-28-baseline-audit.md`, Befund 3 / TODO.md „Performance"-Sektion).
+  Entdeckt beim Performance-Baseline-Audit (2026-07-28), Root-Cause bestätigt 2026-08-11.
 
 **Fix erfordert:** Zugriff auf den Tile-Server (`tiles.oe5ith.at`), um die fehlenden
 `sprite.json`/`sprite.png`-Assets unter `assets/sprites/basemaps/` bzw. `assets/sprites/overlays/`
