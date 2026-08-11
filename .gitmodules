@@ -1,3 +1,6 @@
 [submodule "oe5ith-ci"]
 	path = oe5ith-ci
 	url = git@github.com:brikbrik94/oe5ith-ci.git
+[submodule "oe5ith-coding-rules"]
+	path = oe5ith-coding-rules
+	url = git@github.com:brikbrik94/oe5ith-coding-rules.git
