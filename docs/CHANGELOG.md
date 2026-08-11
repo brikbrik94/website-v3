@@ -2,9 +2,21 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased] - 2026-08-11 09:24
+## [3.13.1] - 2026-08-11
+
+### Hinzugefügt
+- **Lokales Performance-Audit-Tooling.** `npm run perf:audit` (Lighthouse gegen alle 6
+  Kartenseiten, startet Vite+PHP-Dev-Server selbst) und `npm run perf:bundle`
+  (Bundle-Größen-Analyse via `rollup-plugin-visualizer`, hinter `ANALYZE=1` gated, kein Einfluss
+  auf `npm run build`). Erster Baseline-Report:
+  [docs/performance/2026-07-28-baseline-audit.md](./performance/2026-07-28-baseline-audit.md),
+  Folge-Punkte in TODO.md. Spec:
+  [docs/superpowers/specs/2026-07-28-perf-audit-tooling-design.md](./superpowers/specs/2026-07-28-perf-audit-tooling-design.md).
 
 ### Geändert
+- **`/graph`-Seite: gezeichnete Bbox transparenter.** `fill-opacity` der per `terra-draw`
+  gezeichneten/angezeigten Bbox von `0.3` (Library-Default) auf `0.15` reduziert
+  (`src/features/graph/GraphSidebarAdapter.ts`, sowohl Render- als auch Rectangle-Mode).
 - **`AGENT_INSTRUCTIONS.md` als Git-Submodul ausgelagert.** Die bisher lokal gepflegte Datei
   lebt jetzt im eigenständigen Repo [`oe5ith-coding-rules`](https://github.com/brikbrik94/oe5ith-coding-rules)
   (analog `oe5ith-ci`) und wird hier als Submodul unter `oe5ith-coding-rules/` konsumiert,
@@ -14,8 +26,6 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   zentrales, versioniertes Repo löst das für künftige Änderungen. Migration der übrigen drei
   Repos ist ein separater, späterer Schritt (siehe `oe5ith-coding-rules`s README,
   Migrations-Status-Tabelle).
-
-## [Unreleased] - 2026-08-11 08:53
 
 ### Behoben
 - **Erste 3 priorisierte Befunde aus dem Performance-Baseline-Audit umgesetzt.** (1)
@@ -35,31 +45,11 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   `docs/ci/bug-reports.md` Punkt 3) und AIS-Sprite-404 auf `/tracking` (Tile-Server, siehe
   `docs/external-blockers.md`).
 
-## [Unreleased] - 2026-07-28 11:35
-
-### Hinzugefügt
-- **Lokales Performance-Audit-Tooling.** `npm run perf:audit` (Lighthouse gegen alle 6
-  Kartenseiten, startet Vite+PHP-Dev-Server selbst) und `npm run perf:bundle`
-  (Bundle-Größen-Analyse via `rollup-plugin-visualizer`, hinter `ANALYZE=1` gated, kein Einfluss
-  auf `npm run build`). Erster Baseline-Report:
-  [docs/performance/2026-07-28-baseline-audit.md](./performance/2026-07-28-baseline-audit.md),
-  7 priorisierte Folge-Punkte in TODO.md. Spec:
-  [docs/superpowers/specs/2026-07-28-perf-audit-tooling-design.md](./superpowers/specs/2026-07-28-perf-audit-tooling-design.md).
-
-## [Unreleased] - 2026-07-28 07:05
-
 ### Sicherheit
 - **`curl_request()` (`api/config.php`) hat jetzt einen Timeout.** `CURLOPT_TIMEOUT` auf 5s gesetzt
   (analog `adsb.php`/`ais.php`), behebt die beim OWASP-Re-Audit (2026-07-25) gefundene
   Inkonsistenz — ein hängender Upstream (ORS/Nominatim) konnte zuvor einen PHP-FPM-Worker
   unbegrenzt blockieren.
-
-## [Unreleased] - 2026-07-28 06:24
-
-### Geändert
-- **`/graph`-Seite: gezeichnete Bbox transparenter.** `fill-opacity` der per `terra-draw`
-  gezeichneten/angezeigten Bbox von `0.3` (Library-Default) auf `0.15` reduziert
-  (`src/features/graph/GraphSidebarAdapter.ts`, sowohl Render- als auch Rectangle-Mode).
 
 ## [3.13.0] - 2026-07-27
 
