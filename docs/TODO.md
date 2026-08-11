@@ -156,14 +156,13 @@ alle vier auf einmal anfassen.
   Ansatz (z.B. Dummy-Sources mit den `td-*`-IDs vor `stop()` anlegen, damit `removeSource()` nicht
   ins Leere greift) — mehr Aufwand, hängt an internen, nicht offiziell dokumentierten
   terra-draw-Source-IDs. Weiterhin bewusst nicht umgesetzt, da bestätigt harmlos.
-- [ ] **`curl_request()` (`api/config.php`) ohne Timeout.** Gefunden beim OWASP-Re-Audit
-  (2026-07-25): die gemeinsame Helper-Funktion für `ors.php`/`geocoder.php` setzt kein
-  `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT`, im Unterschied zu `adsb.php`/`ais.php`, die beide 5s
-  Timeout setzen (inkonsistentes Pattern). Ein hängender Upstream (ORS/Nominatim) kann einen
-  PHP-FPM-Worker unbegrenzt blockieren. Details:
+- [x] **`curl_request()` (`api/config.php`) ohne Timeout** (2026-07-28) — ✅ ERLEDIGT. Gefunden
+  beim OWASP-Re-Audit (2026-07-25): die gemeinsame Helper-Funktion für `ors.php`/`geocoder.php`
+  setzte kein `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT`, im Unterschied zu `adsb.php`/`ais.php`,
+  die beide 5s Timeout setzen (inkonsistentes Pattern). Ein hängender Upstream (ORS/Nominatim)
+  konnte einen PHP-FPM-Worker unbegrenzt blockieren. Fix: `CURLOPT_TIMEOUT, 5` ergänzt (analog
+  `adsb.php`/`ais.php`), Commit `8b73bde`. Details:
   [docs/security/owasp-top10-checklist.md](./security/owasp-top10-checklist.md) Kategorie A05.
-  Mechanischer Fix: `CURLOPT_TIMEOUT` (z.B. 5s, analog zu `adsb.php`/`ais.php`) in `curl_request()`
-  ergänzen.
 - [x] **DOM-Testumgebung (jsdom/happy-dom) einrichten** (2026-07-18) — ✅ ERLEDIGT. `happy-dom`
   als Dev-Dependency ergänzt, aber bewusst **nicht** global konfiguriert — nur
   `GeocoderSearchField.test.ts` aktiviert es per `// @vitest-environment happy-dom`-Kommentar,
@@ -318,6 +317,11 @@ Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
   abschließend bestimmbar (denkbar: Live-ADS-B/AIS-Verbindungsaufbau) — braucht gezielte
   Nachuntersuchung (z. B. Chrome-Performance-Profil) vor einem Fix. Details:
   `docs/performance/2026-07-28-baseline-audit.md`, Befund 6.
+  **Nicht reproduziert (2026-08-11):** erneuter `npm run perf:audit`-Lauf zeigt `/tracking` bei
+  2.910 ms TBT — unauffällig im Bereich der übrigen Seiten (1.990–3.490 ms). Der ursprüngliche
+  5.840-ms-Ausreißer war vermutlich Messrauschen (z.B. Timing des Live-ADS-B/AIS-Verbindungsaufbaus
+  während des Audits), kein stabiler Befund. Vor einer echten Untersuchung mehrere Läufe
+  gegenprüfen, nicht auf Basis des einzelnen Baseline-Werts vorgehen.
 - [ ] **Wiederholungslauf gegen echten Produktiv-Build (`vite preview`) statt Dev-Server.** Der
   bisherige `npm run perf:audit`-Lauf misst gegen den unminifizierten Vite-Dev-Server (bewusste
   Design-Entscheidung, siehe Spec) — LCP/TBT-Absolutwerte und die „Minify JavaScript"/„Reduce
