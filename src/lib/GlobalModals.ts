@@ -19,6 +19,14 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.13.1] - 2026-08-11</h2>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Barrierefreiheit verbessert:</strong> Schließen-Buttons in Dialogfenstern, alle Eingabefelder auf der Koordinaten-Umrechner-Seite sowie ein fehlerhaft dargestelltes Text-Label auf der Rettungsstationen-Seite sind jetzt korrekt für Screenreader zugänglich.</li>
+            <li><strong>Sicherheit:</strong> Eine interne Netzwerk-Anfrage im Hintergrund konnte bei einem hängenden externen Dienst unbegrenzt blockieren — hat jetzt eine Zeitbegrenzung.</li>
+            <li><strong>Karten-Werkzeug „/graph":</strong> die gezeichnete Auswahlfläche wird jetzt dezenter/transparenter dargestellt.</li>
+          </ul>
+
           <h2>[3.13.0] - 2026-07-27</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>
