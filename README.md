@@ -6,7 +6,7 @@ Flugzeugen/Schiffen. Der Name (`oe5ith.at`) leitet sich vom Amateurfunk-Rufzeich
 **OE5** (Österreich, Region 5) ab.
 
 Für KI-Coding-Agenten: die verbindlichen Arbeitsanweisungen stehen in [CLAUDE.md](./CLAUDE.md)
-(repo-spezifisch) und [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) (generisch). Dieses
+(repo-spezifisch) und [AGENT_INSTRUCTIONS.md](./oe5ith-coding-rules/AGENT_INSTRUCTIONS.md) (generisch). Dieses
 Dokument hier ist die produkt-/funktionsorientierte Übersicht für Menschen.
 
 ## Tech-Stack
