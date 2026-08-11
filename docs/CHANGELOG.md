@@ -2,6 +2,19 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-11 09:24
+
+### Geändert
+- **`AGENT_INSTRUCTIONS.md` als Git-Submodul ausgelagert.** Die bisher lokal gepflegte Datei
+  lebt jetzt im eigenständigen Repo [`oe5ith-coding-rules`](https://github.com/brikbrik94/oe5ith-coding-rules)
+  (analog `oe5ith-ci`) und wird hier als Submodul unter `oe5ith-coding-rules/` konsumiert,
+  gepinnt auf `v1.0.0`. Inhalt unverändert. `CLAUDE.md`/`README.md`-Verweise auf den neuen Pfad
+  umgebogen. Hintergrund: `AGENT_INSTRUCTIONS.md` war unabhängig in vier Repos
+  (website-v3, vdl-tracker-ui, tracking-gateway, geodata-osmdb) auseinandergedriftet — ein
+  zentrales, versioniertes Repo löst das für künftige Änderungen. Migration der übrigen drei
+  Repos ist ein separater, späterer Schritt (siehe `oe5ith-coding-rules`s README,
+  Migrations-Status-Tabelle).
+
 ## [Unreleased] - 2026-08-11 08:53
 
 ### Behoben

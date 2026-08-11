@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 OE5ITH GeoPortal — a multi-page geo web app (interactive maps, routing, air-rescue status, coordinate conversion, live ADS-B/AIS tracking). Vanilla TypeScript + Vite frontend with a thin PHP backend proxy.
 
 Bevor du nach den hier ergänzten, repo-spezifischen Angaben handelst: lies zuerst
-[AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) vollständig — die dortigen Mandate sind
+[AGENT_INSTRUCTIONS.md](./oe5ith-coding-rules/AGENT_INSTRUCTIONS.md) vollständig — die dortigen Mandate sind
 verbindlich und werden hier nicht wiederholt.
 
 ## Commands
@@ -51,7 +51,7 @@ Vite dev server proxies `/api/*` → the PHP server and strips the `/api` prefix
 
 Generische, repo-unabhängige Standards (SemVer, Keep a Changelog, Conventional Commits, PSR-12,
 EditorConfig, WCAG, ARIA APG, OWASP Top 10, Twelve-Factor Config) samt Pflege-Regel für neue
-Standards sind in [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md) referenziert (dort auch, warum
+Standards sind in [AGENT_INSTRUCTIONS.md](./oe5ith-coding-rules/AGENT_INSTRUCTIONS.md) referenziert (dort auch, warum
 referenzieren statt neu erfinden). Was folgt, ergänzt nur, was **spezifisch für dieses Repo**
 ist: Domäne (Geodaten), Submodule (`oe5ith-ci`), und die konkrete Anwendung/der Umsetzungsstand
 der generischen Standards hier.
@@ -163,7 +163,7 @@ before assuming a directive is safe to omit.
 ## TODO vs. Roadmap
 
 The generic TODO/Roadmap split convention (file pairs, criteria, archive handling) is defined in
-[AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md#3-todo-vs-roadmap). Repo-specific note: those
+[AGENT_INSTRUCTIONS.md](./oe5ith-coding-rules/AGENT_INSTRUCTIONS.md#3-todo-vs-roadmap). Repo-specific note: those
 files are self-contained and readable without opening `docs/superpowers/plans/*` — those design
 docs remain optional deep-dive context/history, never the sole source of truth for "what needs
 doing".
@@ -172,7 +172,7 @@ doing".
 
 The generic release/versioning/git convention (SemVer + Keep a Changelog + Conventional Commits,
 version-bump timing, commit/tag format, release checklist, scratch hygiene) is defined in
-[AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md#4-releases-versionierung--git). What follows is
+[AGENT_INSTRUCTIONS.md](./oe5ith-coding-rules/AGENT_INSTRUCTIONS.md#4-releases-versionierung--git). What follows is
 this repo's concrete implementation of that convention.
 
 **Two changelogs exist here and BOTH must be kept current — they have different audiences and neither is generated from the other:**
@@ -189,5 +189,5 @@ this repo's concrete implementation of that convention.
 ## Working style
 
 Core mandates (no independent interpretation, ask when uncertain, research before fixing, verify
-exhaustively) are defined in [AGENT_INSTRUCTIONS.md](./AGENT_INSTRUCTIONS.md#1-core-mandates) and
+exhaustively) are defined in [AGENT_INSTRUCTIONS.md](./oe5ith-coding-rules/AGENT_INSTRUCTIONS.md#1-core-mandates) and
 have priority in this repo. Repo-specific verification commands: see **Commands** above.
