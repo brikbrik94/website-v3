@@ -7,7 +7,10 @@ Vollständig abgeschlossene Anfragen/Handoffs (Detaildatei + dieser Eintrag) wan
 gerade alle Einträge behoben sind) — es ist die fortlaufende Sammeldatei für künftige Funde, kein
 einzelner, abschließbarer Punkt.
 
-**Aktuell keine offenen Punkte.**
+## Offen
+
+- **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet
+  2026-08-11 (Performance-Baseline-Audit). Detaildatei: `bug-reports.md` (Punkt 3).
 
 ## Erledigt (archiviert)
 

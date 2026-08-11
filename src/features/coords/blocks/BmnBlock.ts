@@ -12,7 +12,7 @@ export class BmnBlock extends CoordSystemBlock {
         </div>
         <div class="coord-row">
           <span class="coord-label">M</span>
-          <select class="coord-select" data-field="m" disabled>
+          <select class="coord-select" data-field="m" aria-label="Meridianstreifen" disabled>
             <option value="M28">M28</option>
             <option value="M31">M31</option>
             <option value="M34">M34</option>
@@ -20,11 +20,11 @@ export class BmnBlock extends CoordSystemBlock {
         </div>
         <div class="coord-row">
           <span class="coord-label">RW</span>
-          <input class="coord-input" type="text" data-field="rw" readonly>
+          <input class="coord-input" type="text" data-field="rw" aria-label="RW" readonly>
         </div>
         <div class="coord-row">
           <span class="coord-label">HW</span>
-          <input class="coord-input" type="text" data-field="hw" readonly>
+          <input class="coord-input" type="text" data-field="hw" aria-label="HW" readonly>
         </div>
       </div>
     `;

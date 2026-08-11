@@ -16,7 +16,7 @@ export const initGlobalModals = () => {
       <div class="modal">
         <div class="modal-header">
           <span class="modal-title">Changelog</span>
-          <button class="modal-close" data-close="changelog-modal"><i class="fa-solid fa-xmark"></i></button>
+          <button class="modal-close" data-close="changelog-modal" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
           <h2>[3.13.0] - 2026-07-27</h2>
@@ -241,7 +241,7 @@ export const initGlobalModals = () => {
       <div class="modal">
         <div class="modal-header">
           <span class="modal-title">Copyright & Lizenzen</span>
-          <button class="modal-close" data-close="copyright-modal"><i class="fa-solid fa-xmark"></i></button>
+          <button class="modal-close" data-close="copyright-modal" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body">
           <h2>Karten & Daten</h2>
@@ -291,7 +291,7 @@ export const initGlobalModals = () => {
       <div class="modal">
         <div class="modal-header">
           <span class="modal-title" id="help-modal-title"></span>
-          <button class="modal-close" data-close="help-modal"><i class="fa-solid fa-xmark"></i></button>
+          <button class="modal-close" data-close="help-modal" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="help-modal-body"></div>
       </div>

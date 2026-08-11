@@ -11,17 +11,17 @@ export class MgrsBlock extends CoordSystemBlock {
         </div>
         <div class="coord-row-inline">
           <span class="coord-label">GZD</span>
-          <input class="coord-input-short" type="text" data-field="gzd" readonly>
+          <input class="coord-input-short" type="text" data-field="gzd" aria-label="GZD" readonly>
           <span class="coord-label">100km</span>
-          <input class="coord-input-short" type="text" data-field="sq" readonly>
+          <input class="coord-input-short" type="text" data-field="sq" aria-label="100km-Quadrat" readonly>
         </div>
         <div class="coord-row">
           <span class="coord-label">E</span>
-          <input class="coord-input" type="text" data-field="e" readonly>
+          <input class="coord-input" type="text" data-field="e" aria-label="E" readonly>
         </div>
         <div class="coord-row">
           <span class="coord-label">N</span>
-          <input class="coord-input" type="text" data-field="n" readonly>
+          <input class="coord-input" type="text" data-field="n" aria-label="N" readonly>
         </div>
       </div>
     `;

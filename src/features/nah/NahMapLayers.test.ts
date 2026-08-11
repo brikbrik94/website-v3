@@ -32,6 +32,20 @@ describe('NahMapLayers.getStationsLayerDefinition', () => {
   });
 });
 
+describe('NahMapLayers.getStationsCountLayerDefinition', () => {
+  it('sets an explicit text-font instead of relying on the MapLibre default', () => {
+    const def = NahMapLayers.getStationsCountLayerDefinition();
+    expect(def.id).toBe('nah-stations-count-label');
+    expect(def.type).toBe('symbol');
+    const layout = def.layout as Record<string, unknown>;
+    // Ohne explizites text-font fällt MapLibre auf seinen Style-Spec-Default
+    // ["Open Sans Regular","Arial Unicode MS Regular"] zurück, den der Tile-Server nicht unter
+    // diesem (Leerzeichen-)Namen hostet -> 404 (siehe docs/performance/2026-07-28-baseline-audit.md,
+    // Befund 3). 'Open-Sans-Regular' (Bindestrich) ist der auf tiles.oe5ith.at gehostete Name.
+    expect(layout['text-font']).toEqual(['Open-Sans-Regular']);
+  });
+});
+
 describe('NahMapLayers.computeGroupStatus', () => {
   it('returns "active" when at least one station is active and in season', () => {
     const stations: NahStation[] = [

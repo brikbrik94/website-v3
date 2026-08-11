@@ -2,6 +2,26 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-11 08:53
+
+### Behoben
+- **Erste 3 priorisierte Befunde aus dem Performance-Baseline-Audit umgesetzt.** (1)
+  `button-name`-Audit schlug global auf allen 6 Kartenseiten fehl — Root Cause waren 3
+  Modal-Close-Buttons ohne `aria-label` (`src/lib/GlobalModals.ts`, Changelog-/Copyright-/
+  Hilfe-Modal), nicht der ursprünglich vermutete Topbar-Mobile-Toggle (der vorsorglich trotzdem
+  ein `aria-label` bekam). (2) `/coords`: alle Eingabefelder/Selects in
+  `src/features/coords/blocks/*.ts` (7 Dateien) hatten nur ein rein visuelles Label, kein
+  `aria-label` — ergänzt. (3) `/nah`: fehlendes `text-font` im Stations-Count-Label-Layer
+  (`src/features/nah/NahMapLayers.ts`) ließ MapLibre auf einen beim Tile-Server nicht gehosteten
+  Font-Namen zurückfallen (404) — ergänzt, Layer-Definition dabei in eine eigene testbare
+  Funktion extrahiert. Accessibility-Scores gestiegen: `/coords` 0,82→0,97, übrige Seiten
+  0,91–0,92→0,96–0,97 (per `npm run perf:audit`-Re-Lauf verifiziert). Details:
+  [docs/performance/2026-07-28-baseline-audit.md](./performance/2026-07-28-baseline-audit.md),
+  TODO.md „Performance"-Sektion. Zwei Funde bewusst nicht hier gefixt (dokumentiert statt
+  behoben): Farbkontrast `.topbar-search-btn` (Ursache in `oe5ith-ci`, siehe
+  `docs/ci/bug-reports.md` Punkt 3) und AIS-Sprite-404 auf `/tracking` (Tile-Server, siehe
+  `docs/external-blockers.md`).
+
 ## [Unreleased] - 2026-07-28 11:35
 
 ### Hinzugefügt

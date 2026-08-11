@@ -15,7 +15,7 @@ export class PlusCodeBlock extends CoordSystemBlock {
           <button class="coord-copy" title="Kopieren"><i class="fa-solid fa-copy"></i></button>
         </div>
         <div class="coord-row">
-          <input class="coord-input-full" type="text" data-field="code" readonly>
+          <input class="coord-input-full" type="text" data-field="code" aria-label="Plus Code" readonly>
         </div>
       </div>
     `;

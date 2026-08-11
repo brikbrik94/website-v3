@@ -103,7 +103,7 @@ export const initTopbar = (
 
         ${hasMap ? `
           <!-- Mobile Toggle -->
-          <button class="controls-toggle mobile-only" id="controls-toggle-mobile">
+          <button class="controls-toggle mobile-only" id="controls-toggle-mobile" aria-label="Tools">
             <div class="slider-icon"><span></span><span></span><span></span></div>
           </button>
         ` : ''}

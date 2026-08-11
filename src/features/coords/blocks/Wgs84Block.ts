@@ -37,8 +37,11 @@ export class Wgs84Block extends CoordSystemBlock {
           <span class="coord-suffix cursor-pointer" data-field="${axis}-suffix">${suffix}</span>
         </div>`;
 
-    const field = (name: string, decimal = false) =>
-      `<input class="coord-input-dms" type="text"${decimal ? ' inputmode="decimal"' : ''} data-field="${name}" readonly>`;
+    const field = (name: string, decimal = false) => {
+      const axisLabel = name.startsWith('lat') ? 'Breite' : 'Länge';
+      const subLabel = name.endsWith('-d') ? ' Grad' : name.endsWith('-m') ? ' Minuten' : name.endsWith('-s') ? ' Sekunden' : '';
+      return `<input class="coord-input-dms" type="text"${decimal ? ' inputmode="decimal"' : ''} data-field="${name}" aria-label="${axisLabel}${subLabel}" readonly>`;
+    };
 
     if (this.format === 'dd') {
       return (

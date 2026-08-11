@@ -259,22 +259,47 @@ Kartenseiten. Details (Zahlen, Methodik-Einschränkungen des Dev-Server-Laufs, a
 Dev-Server-Artefakte) in [docs/performance/2026-07-28-baseline-audit.md](./performance/2026-07-28-baseline-audit.md).
 Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
 
-- [ ] **Fehlende Accessible Names bei Buttons + unzureichender Farbkontrast.** `button-name`- und
-  `color-contrast`-Lighthouse-Audits schlagen global auf allen 6 Kartenseiten (`/karte`,
-  `/routing`, `/nah`, `/coords`, `/tracking`, `/isochrones`) fehl. Details:
-  `docs/performance/2026-07-28-baseline-audit.md`, Befund 1.
-- [ ] **`/coords`: Formularelemente ohne Label.** Zusätzlich zum globalen Befund oben schlagen auf
-  `/coords` die Audits `label` (Formularelemente ohne zugeordnetes Label) und `select-name`
-  (Select ohne zugeordnetes Label) fehl — erklärt den niedrigeren Accessibility-Score dort (0,82
-  vs. 0,91–0,92 auf den übrigen Seiten). Details: `docs/performance/2026-07-28-baseline-audit.md`,
-  Befund 2.
-- [ ] **Kaputte externe Assets (404) auf `/nah` und `/tracking`.** `/nah` lädt die Glyph-Schrift
-  „Open Sans Regular,Arial Unicode MS Regular" (`0-255.pbf`) von `tiles.oe5ith.at` mit 404;
-  `/tracking` lädt das AIS-Sprite (`sprite@2x.png` und `sprite@2x.json`) mit 404. Beides reale
-  Browser-Konsolenfehler, kein Audit-Artefakt. Betrifft den Tile-Server (`tiles.oe5ith.at`), nicht
-  dieses Repo direkt — vor Fix prüfen, ob das ein reines Asset-Problem auf dem Tile-Server ist
-  oder website-v3 einen falschen Pfad anfragt. Details:
-  `docs/performance/2026-07-28-baseline-audit.md`, Befund 3.
+- [x] **Fehlende Accessible Names bei Buttons** (2026-08-11) — ✅ ERLEDIGT (Farbkontrast-Teil
+  weiterhin offen, siehe eigener Punkt unten). `button-name`-Lighthouse-Audit schlug global auf
+  allen 6 Kartenseiten fehl. **Root-Cause-Korrektur:** die ursprüngliche Vermutung (Topbar
+  Mobile-Hamburger-Button ohne Label, `Topbar.ts:106-108`) war falsch — dieser Button wurde zwar
+  vorsorglich mit `aria-label="Tools"` versehen (eigener Test:
+  `src/components/Topbar.test.ts`), war aber laut Lighthouses `details.items` nie das tatsächlich
+  fehlschlagende Element. Echte Ursache: die 3 Modal-Close-Buttons in `src/lib/GlobalModals.ts`
+  (Changelog-/Copyright-/Hilfe-Modal, global auf jeder Seite gemountet) hatten nur ein
+  Icon (`<i class="fa-xmark">`) ohne Text/`aria-label`. Fix: `aria-label="Schließen"` auf allen
+  3 Buttons ergänzt (`GlobalModals.ts:19,244,294`), Test: `src/lib/GlobalModals.test.ts`. Per
+  echtem `npm run perf:audit`-Re-Lauf verifiziert: `button-name` jetzt `1` auf allen 6 Seiten
+  (vorher `0`), Accessibility-Score global von 0,91–0,92 auf 0,96–0,97 gestiegen. 284 Tests grün,
+  0 TypeScript-Fehler.
+- [ ] **Farbkontrast `.topbar-search-btn` (~2,06:1).** Weiterhin offen — Root Cause liegt in
+  `oe5ith-ci`s `topbar.css` (hardcodiertes `color: #555`, gesynct nach
+  `src/styles/topbar.css`), nicht in website-v3-eigenem Code. Nicht hier gefixt, siehe
+  `docs/ci/bug-reports.md` (Punkt 3).
+- [x] **`/coords`: Formularelemente ohne Label** (2026-08-11) — ✅ ERLEDIGT. `label`-/
+  `select-name`-Audits schlugen auf `/coords` fehl (0,82 statt 0,91–0,92 Accessibility-Score).
+  Alle Inputs/Selects in `src/features/coords/blocks/*.ts` (7 Dateien, `BmnBlock`/`UtmBlock`/
+  `MgrsBlock`/`Wgs84Block`/`MaidenheadBlock`/`PlusCodeBlock`/`AddressBlock`) hatten bisher nur ein
+  rein visuelles `<span class="coord-label">`, kein `<label>`/`aria-label`. `aria-label` ergänzt,
+  Text entspricht dem sichtbaren Label (WCAG 2.5.3 „Label in Name"); `AddressBlock`s
+  `placeholder`-only-Input bekam zusätzlich `aria-label="Adresse"` (Placeholder allein erfüllt die
+  Accessible-Name-Anforderung nicht). Test: `src/features/coords/blocks/accessibleNames.test.ts`
+  (7 Fälle, ein Test pro Block). Per echtem `npm run perf:audit`-Re-Lauf verifiziert: `label`/
+  `select-name` jetzt `1` auf `/coords` (vorher `0`), Accessibility-Score dort von 0,82 auf 0,97
+  gestiegen.
+- [x] **Kaputte externe Assets (404) — `/nah`-Teil** (2026-08-11) — ✅ ERLEDIGT (`/tracking`-Teil
+  extern, siehe `docs/external-blockers.md`). `/nah` lud die Glyph-Schrift „Open Sans
+  Regular,Arial Unicode MS Regular" (`0-255.pbf`) von `tiles.oe5ith.at` mit 404 — Root Cause:
+  `NahMapLayers.ts`s `nah-stations-count-label`-Symbol-Layer setzte `text-field`, aber kein
+  `text-font`, wodurch MapLibre auf seinen Style-Spec-Default (Leerzeichen-Variante des Namens)
+  zurückfiel, den der Tile-Server nicht hostet. Fix: `'text-font': ['Open-Sans-Regular']` ergänzt
+  (Bindestrich-Variante, analog zum bereits korrekten `TrackingMapLayers.ts`). Layer-Definition
+  dabei aus `initLayers()` in eine eigene, testbare `buildStationsCountLayerDef()`-Funktion +
+  `NahMapLayers.getStationsCountLayerDefinition()`-Getter extrahiert (analog
+  `getStationsLayerDefinition()`). Test: `src/features/nah/NahMapLayers.test.ts`. Per echtem
+  `npm run perf:audit`-Re-Lauf verifiziert: `/nah`s `errors-in-console`-Audit jetzt `1` (vorher
+  `0`, 0 statt 1 Konsolenfehler). `/tracking`s AIS-Sprite-404 bleibt bestehen (externes
+  Tile-Server-Problem, keine Repo-Code-Ursache) — dokumentiert in `docs/external-blockers.md`.
 - [ ] **`maplibre-gl` lädt eager auf jeder Route, auch ohne Karte.** `src/main.ts` importiert
   `OverlayLoader` statisch statt per `import()`; `OverlayLoader.ts` importiert `maplibre-gl` und
   `MapCore` direkt — dadurch landet `maplibre-gl` (265,53 KB gzip, 91 % des Haupt-Entry-Chunks)
