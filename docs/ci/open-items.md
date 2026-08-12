@@ -17,23 +17,23 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
 
 - **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet
   2026-08-11 (Performance-Baseline-Audit). Detaildatei: `bug-reports.md` (Punkt 3).
-- **Neue `MapLegend`-Swatch-Varianten: Linienbreite/-strichelung, Linie-mit-Casing,
-  Fläche-mit-Rand** — gemeldet 2026-08-12, deckt die aus der `legend_scale_id`/`legend_sections`/
-  `icon`-Runde bewusst zurückgestellten `width`/`dasharray`/`outline_color`/`outline_width`-Felder
-  aus `layers.json` ab (`geodata-plugin-standard` v1.1.0). Issue:
-  [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1) — **oe5ith-ci-seitig
-  umgesetzt und geschlossen** (v1.25.0 + Doku-Nachbesserung `0092387`): neuer Typ
-  `type: 'line-cased'` (Innen-/Außenfarbe für Casing-Linien wie Skilifte), `width`/`dasharray`
-  bei `type: 'line'`, `outline_color`/`outline_width` bei `type: 'area'`, vollständige
-  Validierung + `docs/map-legend.md` aktualisiert. Submodul-Pointer hier auf `0092387`
-  aktualisiert. **website-v3-seitige Konsumierung steht noch aus** — eigener
-  Brainstorming-/Plan-Durchgang folgt (analog zur `legend_scale_id`-Runde), da `type: 'line'` +
-  `outline_*` laut `oe5ith-ci`-Doku vom Aufrufer explizit auf `type: 'line-cased'` gemappt werden
-  muss (sonst werden `outline_*` bei `type: 'line'` stillschweigend ignoriert).
 
 ## Erledigt (archiviert)
 
 Detaildateien liegen in `archive/`, keine website-v3-seitige Restarbeit mehr offen:
+
+- **Neue `MapLegend`-Swatch-Varianten: Linienbreite/-strichelung, Linie-mit-Casing,
+  Fläche-mit-Rand** — gemeldet 2026-08-12, deckte die aus der `legend_scale_id`/`legend_sections`/
+  `icon`-Runde bewusst zurückgestellten `width`/`dasharray`/`outline_color`/`outline_width`-Felder
+  aus `layers.json` ab (`geodata-plugin-standard` v1.1.0). Issue:
+  [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1) — umgesetzt und geschlossen in
+  `oe5ith-ci` v1.25.0 + Doku-Nachbesserung `0092387` (neuer Typ `type: 'line-cased'`,
+  `width`/`dasharray` bei `type: 'line'`, `outline_color`/`outline_width` bei `type: 'area'`).
+  **website-v3-seitig konsumiert** (2026-08-12,
+  `docs/superpowers/plans/2026-08-12-legend-line-cased-outline-fields.md`): Entscheidungsbaum in
+  `resolveSwatchFromLayersMetaColor()`, `MapLegend.addEntry()` 1:1 nach der `oe5ith-ci`-Referenz
+  portiert, End-to-End per Playwright-Netzwerk-Mock verifiziert. Details:
+  `docs/ROADMAP.md` → „Karten-Legende: weitere Optimierung".
 
 - **Modal-Backdrop wird von der Topbar überdeckt (Stacking-Context)** — behoben in `oe5ith-ci`
   v1.18.1 (2026-07-06, Commit `558f531`). Detaildatei: `bug-reports.md` (Punkt 1, dort weiterhin

@@ -303,13 +303,24 @@ konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
   Linie-mit-Casing, Fläche-mit-Rand), die noch nicht existieren; Inline-Styles dafür sind laut
   `oe5ith-ci/docs/for-coding-agents.md` nicht zulässig (neues visuelles Muster, keine zur
   Laufzeit berechnete Größe). Folgt als separates `oe5ith-ci`-Issue + Folge-Runde.
-- [ ] **`width`/`dasharray`/`outline_color`/`outline_width` aus `layers.json` in der Legende
-  darstellen** — im vorigen Punkt bewusst zurückgestellt, da die dafür nötigen `MapLegend`-
-  Swatch-Varianten (gestrichelte/breitere Linie, Linie-mit-Casing, Fläche-mit-Rand) noch nicht in
-  `oe5ith-ci` existieren. GitHub-Issue mit Belegen aus echten Live-Daten (`ski-lifts`/`bezirke`)
-  gestellt: [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1). Tracking-Eintrag:
-  `docs/ci/open-items.md`. Umsetzung hier erst möglich, nachdem `oe5ith-ci` die neuen Varianten
-  liefert.
+- [x] **`width`/`dasharray`/`outline_color`/`outline_width` aus `layers.json` in der Legende
+  darstellen** (2026-08-12) — ✅ ERLEDIGT
+  (`docs/superpowers/plans/2026-08-12-legend-line-cased-outline-fields.md`), nachdem `oe5ith-ci`
+  v1.25.0 (+ Doku-Fix `0092387`) die nötigen Swatch-Varianten lieferte (schließt
+  [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1)).
+  `resolveSwatchFromLayersMetaColor()` (`resolveLegendSwatch.ts`) entscheidet zwischen einem
+  neuen Typ `line-cased` (Innen-/Außenfarbe, z.B. Skilift-Symbole) und einfachem `line`
+  (`width`/`dasharray`) — `line-cased` nur, wenn ALLE 4 Felder auflösbar sind, sonst Fallback auf
+  `line` ohne die Umrandung zu erfinden (z.B. `ski-lifts`, wo `color` durch eine
+  Zoom-`interpolate`-Expression unauflösbar ist). `area` bekommt `outline_color`/`outline_width`
+  nur, wenn beide gesetzt sind (ein einzelnes Feld — wie live bei `ski-runs-downhill`/`-nordic`
+  — wird verworfen statt zu werfen). `MapLegend.addEntry()` 1:1 nach der `oe5ith-ci`-
+  Referenzimplementierung portiert (gleiche Clamp-Bereiche, gleiche Dasharray-Skalierung, gleiche
+  Validierung). `computeSwatchDedupKey()` erweitert um die 4 neuen Felder. Wie beim
+  `legend_scale_id`/`icon`-Punkt zuvor: keine Live-Gruppe erreicht aktuell den
+  Einzel-Swatch-Pfad mit diesen Feldern (alle 3 realen Kandidaten gehen über `legend_items`/
+  `legend_scale_id`) — End-to-End per Playwright-Netzwerk-Mock verifiziert (line-cased-DOM-
+  Struktur, Dasharray-Gradient, Flächen-Rand), Unit-Tests decken die Entscheidungslogik ab.
 - [ ] **Legenden-Gruppierung/Section-Header** — `MapLegend.ts` kennt aktuell nur eine flache
   Liste von Einträgen ohne Überschriften. Bei vielen gleichzeitig aktiven Overlays (z.B. mehrere
   Autobahnen + Anfahrtszeit-Ringe + Bezirke) könnte eine Legende ohne erkennbare Gruppierung
