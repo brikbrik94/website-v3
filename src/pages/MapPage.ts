@@ -89,6 +89,7 @@ export class MapPageController extends BasePageController {
                 undefined,
                 undefined,
                 layersMeta.layers,
+                layersMeta.legend_sections ?? [],
                 (selection) => this._handleSearchSelect(selection),
                 this.signal
             );
@@ -166,15 +167,16 @@ export class MapPageController extends BasePageController {
             if (event.checked) {
                 await OverlayLoader.add(m, event.overlayId, event.overlayUrl, { signal: this.signal, layerIds: event.layerIds });
                 if (event.legendItems) {
-                    // Mehrere Gruppen desselben Overlays (z.B. die 6 Anfahrtszeit-Ringe) teilen
-                    // dieselbe kuratierte Farbskala — nur beim Übergang 0→1 aktiven Gruppen
-                    // tatsächlich rendern, sonst Duplikate.
-                    const count = (this.legendItemsRefCount.get(event.overlayId) ?? 0) + 1;
-                    this.legendItemsRefCount.set(event.overlayId, count);
+                    // Mehrere Gruppen (z.B. die 6 Anfahrtszeit-Ringe, oder mehrere Overlays mit
+                    // derselben legend_scale_id) teilen sich dieselbe Legenden-Zeile — nur beim
+                    // Übergang 0→1 aktiven Gruppen tatsächlich rendern, sonst Duplikate.
+                    const groupKey = event.legendGroupKey ?? event.overlayId;
+                    const count = (this.legendItemsRefCount.get(groupKey) ?? 0) + 1;
+                    this.legendItemsRefCount.set(groupKey, count);
                     if (count === 1) {
                         event.legendItems.forEach((item, idx) => {
                             legend.addEntry({
-                                id: `${event.overlayId}:legend-item:${idx}`,
+                                id: `${groupKey}:legend-item:${idx}`,
                                 label: item.label,
                                 type: item.type,
                                 color: item.color,
@@ -195,6 +197,7 @@ export class MapPageController extends BasePageController {
                             label: event.overlayLabel,
                             type: event.swatch.type,
                             color: event.swatch.color,
+                            icon: event.swatch.icon,
                             opacity: event.opacity ?? undefined,
                         });
                     }
@@ -204,6 +207,7 @@ export class MapPageController extends BasePageController {
                         label: event.legendLabel,
                         type: event.swatch.type,
                         color: event.swatch.color,
+                        icon: event.swatch.icon,
                         opacity: event.opacity ?? undefined,
                         onRemove: () => event.itemEl.click()
                     });
@@ -211,10 +215,11 @@ export class MapPageController extends BasePageController {
             } else {
                 OverlayLoader.remove(m, event.overlayId, { layerIds: event.layerIds });
                 if (event.legendItems) {
-                    const count = Math.max(0, (this.legendItemsRefCount.get(event.overlayId) ?? 1) - 1);
-                    this.legendItemsRefCount.set(event.overlayId, count);
+                    const groupKey = event.legendGroupKey ?? event.overlayId;
+                    const count = Math.max(0, (this.legendItemsRefCount.get(groupKey) ?? 1) - 1);
+                    this.legendItemsRefCount.set(groupKey, count);
                     if (count === 0) {
-                        event.legendItems.forEach((_, idx) => legend.removeEntry(`${event.overlayId}:legend-item:${idx}`));
+                        event.legendItems.forEach((_, idx) => legend.removeEntry(`${groupKey}:legend-item:${idx}`));
                     }
                 } else if (event.dedupKey) {
                     const count = Math.max(0, (this.swatchRefCount.get(event.dedupKey) ?? 1) - 1);
