@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 07:45
+
+### Hinzugefügt
+- **`geodata-plugin-standard` als Git-Submodul eingebunden.** Dokumentiert den Architektur-/
+  Layer-Metadaten-Standard der `geodata-updater`-Ökosystem-Repos, die die von diesem Repo
+  konsumierten Tile-Server-Daten (`tiles.oe5ith.at`) erzeugen — analog `oe5ith-ci`/
+  `oe5ith-coding-rules`, extern gepflegt, nicht hier geändert. Neue `docs/geodata/`-Konvention
+  (`bug-reports.md`, `open-items.md`, `archive/`) für gezielte Änderungsanfragen, analog
+  `docs/ci/`. `CLAUDE.md` entsprechend ergänzt.
+
 ## [Unreleased] - 2026-08-12 07:25
 
 ### Geändert

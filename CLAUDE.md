@@ -53,8 +53,8 @@ Generische, repo-unabhängige Standards (SemVer, Keep a Changelog, Conventional 
 EditorConfig, WCAG, ARIA APG, OWASP Top 10, Twelve-Factor Config) samt Pflege-Regel für neue
 Standards sind in [AGENT_INSTRUCTIONS.md](./oe5ith-coding-rules/AGENT_INSTRUCTIONS.md) referenziert (dort auch, warum
 referenzieren statt neu erfinden). Was folgt, ergänzt nur, was **spezifisch für dieses Repo**
-ist: Domäne (Geodaten), Submodule (`oe5ith-ci`), und die konkrete Anwendung/der Umsetzungsstand
-der generischen Standards hier.
+ist: Domäne (Geodaten), Submodule (`oe5ith-ci`, `oe5ith-coding-rules`, `geodata-plugin-standard`),
+und die konkrete Anwendung/der Umsetzungsstand der generischen Standards hier.
 
 ### Code-Stil & Formatierung (repo-spezifisch)
 
@@ -116,6 +116,8 @@ Pflege-Regel.
 
 - **Design system / CI compliance:** All UI/CSS must follow the `oe5ith-ci` git submodule (a shared design system). **Read `oe5ith-ci/docs/for-coding-agents.md` before any UI change.** Do not invent visual patterns if one already exists there (page types, components, tokens).
 - **Never fix bugs inside `oe5ith-ci` from this repo.** The submodule is maintained externally with its own review/checks process. If a bug in the shared design system (tokens, components) is found while working here, document it — don't fix it — in `docs/ci/bug-reports.md` (context, root cause, reproduction, the fix already validated locally in website-v3 if any, impact on other OE5ITH portals), analogous to `docs/ci/*-request.md` files used for feature requests and `docs/ci/handoff-*.md` files used for ready-to-implement handoffs. These files are committed normally in this repo (unlike the previous convention of leaving them uncommitted in the submodule's working tree) — reference them from `TODO.md` with a short pointer, not a full description.
+- **Geodata plugin standard:** `geodata-plugin-standard` git submodule documents the architecture/layer-metadata standard (`GEODATA_PLUGIN_STANDARD.md`) of the `geodata-updater` ecosystem repos that produce the tile-server data this repo consumes (`tiles.oe5ith.at`). website-v3 does not implement this standard itself, only consumes its output (`layers.json`/`layer-list.json` schema — see §5 "Layer-Listen-Spezifikation" for the legend metadata that `resolveSwatchFromLayersMetaColor()` in `src/lib/resolveLegendSwatch.ts` reads).
+- **Never fix/change `geodata-plugin-standard` from this repo.** Same rule as `oe5ith-ci`: maintained externally. If a schema gap or desired extension is found while working here (e.g. for legend improvements), document it — don't change the submodule — in `docs/geodata/bug-reports.md` or as `docs/geodata/*-request.md`/`docs/geodata/handoff-*.md`, analogous to the `docs/ci/*` convention above; reference from `TODO.md`/`ROADMAP.md` with a short pointer.
 - **No hardcoded values:** Never hardcode colors, radii, shadows, z-index, etc. In CSS use CI tokens (`var(--accent)`, `var(--z-topbar)`, …) from `src/styles/common.css`. In JS/TS map code use the dynamic getters in `src/lib/MapStyles.ts` (`MAP_COLORS`, `MAP_ROUTE_STYLES`), which resolve CI CSS tokens at runtime with fallbacks — never write hex values.
 - **Styling:** Vanilla CSS, one file per concern under `src/styles/`, imported via `src/app.css`. No CSS framework.
 - **Versioning & changelogs & releases:** See the dedicated **Releases, versioning & git** section below. Short version: `src/version.ts` is the SemVer single source of truth (shown in the sidebar), **both** changelogs must be updated on every release, and releases follow a fixed checklist.
