@@ -2,6 +2,20 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 12:47
+
+### Behoben
+- **`geodata-updater`-Submodul auf den nachgezogenen Stand aktualisiert** (Commit `c406f4d`).
+  Der zuvor dokumentierte Widerspruch (`docs/geodata/bug-reports.md` Punkt 1: committeter Code
+  verwarf `type`/`color`/`opacity`/`legend_items`, Live-Daten hatten sie trotzdem) ist geklärt:
+  der Fix lief bereits produktiv, war nur nicht gepusht. Jetzt nachgezogen — als behoben markiert.
+
+### Bekannte Einschränkung
+- **`geodata-updater` reicht die neuen v1.1.0-Legend-Felder noch nicht durch** (`width`,
+  `dasharray`, `outline_color`/`outline_width`, `icon`, `legend_scale_id`, `legend_sections`).
+  Neuer Punkt 2 in `docs/geodata/bug-reports.md` — noch kein GitHub-Issue, da die
+  website-v3-seitige Konsumierung ohnehin noch aussteht.
+
 ## [Unreleased] - 2026-08-12 12:07
 
 ### Hinzugefügt

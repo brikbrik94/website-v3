@@ -27,10 +27,12 @@ selbst**, die auf echte Live-Daten wartet (siehe „Blockiert" unten).
   dann in `legend_sections`); `version` muss numerisch als `major.minor` verglichen werden
   (`>= 1.1`), nicht als String.
 - **Live-`layers.json` liefert `v1.1.0` des Schemas noch nicht** — geprüft 2026-08-12: kein
-  `version`-Feld, kein `legend_sections`-Block, unverändert gegenüber vorher. Die produzierenden
-  Repos (die die tatsächliche `dist/layer-list.json` bauen, laut Standard-README u.a.
-  `geodata-osmdb`/`overlays`) müssen erst gegen `v1.1.0` neu gebaut/deployed werden — außerhalb
-  der Reichweite dieses Repos.
+  `version`-Feld, kein `legend_sections`-Block, unverändert gegenüber vorher. Zwei Voraussetzungen
+  dafür offen: (1) die produzierenden Plugin-Repos (`geodata-osmdb`/`overlays`) müssen ihre
+  `dist/layer-list.json` gegen `v1.1.0` neu bauen; (2) `geodata-updater`s
+  `scripts/inventory/layers.py` muss die neuen Felder beim Aggregieren durchreichen — aktuell
+  noch nicht der Fall, siehe `docs/geodata/bug-reports.md` Punkt 2. Beides außerhalb der
+  Reichweite dieses Repos.
 
 ## Erledigt (archiviert)
 
