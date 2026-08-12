@@ -21,7 +21,15 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
   Fläche-mit-Rand** — gemeldet 2026-08-12, deckt die aus der `legend_scale_id`/`legend_sections`/
   `icon`-Runde bewusst zurückgestellten `width`/`dasharray`/`outline_color`/`outline_width`-Felder
   aus `layers.json` ab (`geodata-plugin-standard` v1.1.0). Issue:
-  [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1).
+  [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1) — **oe5ith-ci-seitig
+  umgesetzt und geschlossen** (v1.25.0 + Doku-Nachbesserung `0092387`): neuer Typ
+  `type: 'line-cased'` (Innen-/Außenfarbe für Casing-Linien wie Skilifte), `width`/`dasharray`
+  bei `type: 'line'`, `outline_color`/`outline_width` bei `type: 'area'`, vollständige
+  Validierung + `docs/map-legend.md` aktualisiert. Submodul-Pointer hier auf `0092387`
+  aktualisiert. **website-v3-seitige Konsumierung steht noch aus** — eigener
+  Brainstorming-/Plan-Durchgang folgt (analog zur `legend_scale_id`-Runde), da `type: 'line'` +
+  `outline_*` laut `oe5ith-ci`-Doku vom Aufrufer explizit auf `type: 'line-cased'` gemappt werden
+  muss (sonst werden `outline_*` bei `type: 'line'` stillschweigend ignoriert).
 
 ## Erledigt (archiviert)
 
@@ -46,7 +54,7 @@ Detaildateien liegen in `archive/`, keine website-v3-seitige Restarbeit mehr off
 ---
 
 Submodul-Pointer-Historie: `dca22e5` (v1.18.0) → `c92fb77` (2026-07-06) → `v1.21.0`/`bb4e415`
-(2026-07-18). Details siehe `TODO_ARCHIVE.md`.
+(2026-07-18) → `0092387` (v1.25.0 + Doku-Fix, 2026-08-12). Details siehe `TODO_ARCHIVE.md`.
 
 Diese Übersicht (und die Detaildateien) lagen bis 2026-07-18 unversioniert im Arbeitsverzeichnis
 des `oe5ith-ci`-Submoduls und wurden dann nach `docs/ci/` in website-v3 übertragen (siehe

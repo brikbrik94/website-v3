@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 22:56
+
+### Geändert
+- **`oe5ith-ci` Submodul auf `0092387` aktualisiert** (v1.25.0 + Doku-Nachbesserung). Liefert
+  die bei der `legend_scale_id`/`legend_sections`-Runde zurückgestellten `MapLegend`-Swatch-
+  Erweiterungen: `type: 'line-cased'` (Innen-/Außenfarbe für Casing-Linien, z.B. Skilifte),
+  `width`/`dasharray` bei `type: 'line'`, `outline_color`/`outline_width` bei `type: 'area'`.
+  Schließt [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1). **website-v3-seitige
+  Konsumierung steht noch aus**, eigener Brainstorming-/Plan-Durchgang folgt — `type: 'line'` +
+  `outline_*` muss laut `oe5ith-ci`-Doku vom Aufrufer explizit auf `type: 'line-cased'` gemappt
+  werden. Details: `docs/ci/open-items.md`.
+
 ## [Unreleased] - 2026-08-12 20:35
 
 ### Hinzugefügt
