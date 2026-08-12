@@ -13,6 +13,10 @@ export interface LayerMetaGroup {
   opacity?: number;
   legend_items?: { label: string; color: string }[] | null;
   legend_scale_id?: string | null;
+  width?: number | null;
+  dasharray?: [number, number] | null;
+  outline_color?: string | null;
+  outline_width?: number | null;
 }
 
 export interface LayerMetaEntry {
@@ -243,7 +247,14 @@ export const initSidebar = (
         legendItems = resolvedItems.items.map(li => ({ ...li, type: itemType }));
         legendGroupKey = resolvedItems.groupKey;
       } else if (metaGroup.color !== undefined) {
-        swatch = resolveSwatchFromLayersMetaColor(metaGroup.type, metaGroup.color);
+        swatch = resolveSwatchFromLayersMetaColor(
+          metaGroup.type,
+          metaGroup.color,
+          metaGroup.width,
+          metaGroup.dasharray,
+          metaGroup.outline_color,
+          metaGroup.outline_width
+        );
         if (swatch) {
           dedupKey = computeSwatchDedupKey(overlayId, metaGroup.template, swatch);
         }
