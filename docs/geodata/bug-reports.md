@@ -21,13 +21,17 @@ Feature-Anfragen und `docs/geodata/handoff-*.md`-Dateien für Handoffs (abgeschl
 Request-/Handoff-Dateien wandern nach `docs/geodata/archive/`, diese Sammeldatei selbst bleibt
 dauerhaft hier).
 
-**Aktueller Stand: 1 offener Bug** (Punkt 1, `geodata-updater`).
+**Aktueller Stand: keine offenen Bugs** (Punkt 1 behoben, Punkt 2 als Roadmap-Anschluss offen,
+siehe `docs/geodata/open-items.md`).
 
 ---
 
-## 1. `layers.py` verwirft `type`/`color`/`opacity`/`legend_items` beim Aggregieren
+## 1. `layers.py` verwarf `type`/`color`/`opacity`/`legend_items` beim Aggregieren
 
-**Status:** 🔴 Offen — noch nicht als GitHub-Issue gemeldet, siehe Hinweis unten
+**Status:** ✅ Behoben in `geodata-updater` Commit `f60eaf0` (2026-08-12, „feat: pass through
+legend metadata in layers_info.json") — Root Cause war tatsächlich, dass der Fix zwar auf dem
+Server lief, aber nicht ins Repo committet/gepusht war (kein zusätzlicher Verarbeitungsschritt,
+wie zunächst vermutet). Submodul-Pointer hier aktualisiert.
 **Gemeldet von:** website-v3 (2026-08-12, beim Einbinden von `geodata-updater` als Submodul zum
 Nachvollziehen der Pipeline)
 
@@ -63,23 +67,47 @@ keine davon von uns verifizierbar (kein Server-Zugriff von hier aus):
 - Es gibt einen weiteren Verarbeitungsschritt zwischen `layers.py` und der öffentlich
   ausgelieferten Datei, den wir in diesem Checkout nicht gefunden haben.
 
-### Warum das trotzdem relevant ist
+### Warum das relevant war
 
-Falls `layers.py` tatsächlich der produktiv laufende Code ist (z.B. weil ein künftiger
-Deploy/Neuinstallation den unveränderten Git-Stand verwendet), würde ein Redeploy die
-**aktuell funktionierenden** `type`/`color`/`opacity`/`legend_items`-Felder **entfernen** —
-website-v3s gesamte Legenden-Darstellung für Overlay-Layer würde brechen. Das macht dies zu
-einem Findings mit hoher Priorität, *bevor* irgendjemand versucht, die neuen v1.1.0-Felder
-(Breite, Strichmuster, Umrandung, …) auszurollen — die haben denselben Aggregations-Pfad.
+Da unklar war, ob der committete Code (ohne die 4 Felder) tatsächlich produktiv lief, hätte ein
+künftiges Redeploy sonst die aktuell funktionierende Legenden-Darstellung brechen können —
+deshalb bewusst noch kein GitHub-Issue eingereicht, bevor die Diskrepanz geklärt war (hätte sonst
+einen möglicherweise falschen Root-Cause-Vorschlag enthalten). Nutzer hat den fehlenden Commit
+direkt nachgezogen, kein Issue mehr nötig.
+
+---
+
+## 2. `layers.py` reicht die neuen v1.1.0-Felder noch nicht durch
+
+**Status:** 🔴 Offen
+**Gemeldet von:** website-v3 (2026-08-12, direkter Anschluss an Punkt 1 — geprüft, nachdem Punkt 1
+behoben war)
+
+### Symptom
+
+`layers.py`s Group-Kopierlogik (siehe Punkt 1) übernimmt nach dem Fix `source_layer`/`name`/
+`template`/`style_layers`/`type`/`color`/`opacity`/`legend_items` — aber **nicht** die mit
+`geodata-plugin-standard` v1.1.0 neu spezifizierten Felder `width`, `dasharray`,
+`outline_color`, `outline_width`, `icon`, `legend_scale_id`, und den Top-Level-Block
+`legend_sections` (verifiziert: `grep -n "width\|dasharray\|outline\|legend_scale"
+scripts/inventory/layers.py` liefert keinen Treffer im aktuellen Stand).
+
+### Root Cause
+
+Naheliegend: Commit `f60eaf0` wurde vor der v1.1.0-Standard-Erweiterung geschrieben (Issue
+[geodata-plugin-standard#1](https://github.com/brikbrik94/geodata-plugin-standard/issues/1) kam
+zeitlich danach) und deckt entsprechend nur den damaligen Feldstand ab.
 
 ### Vorschlag
 
-`layers.py`s Group-Kopierlogik auf alle in `geodata-plugin-standard` §5.3 spezifizierten Felder
-erweitern (mit `.get(..., default)` für Abwärtskompatibilität zu Plugins, die noch nicht auf
-v1.1.0 aktualisiert haben).
+`layers.py`s Group-Kopierlogik um die 6 neuen Felder ergänzen (mit `.get(field)` → `None`-Default
+für Plugins, die ihre `dist/layer-list.json` noch nicht auf v1.1.0 aktualisiert haben) sowie den
+neuen Top-Level-Block `legend_sections` aus den Plugin-`layer-list.json`-Dateien einsammeln und
+dedupliziert weiterreichen (mehrere Plugins können denselben `legend_scale_id` liefern, siehe
+Standard §5.5 „Invariante").
 
 ### Nächster Schritt
 
-**Noch nicht als GitHub-Issue gemeldet** — die Diskrepanz zwischen Code und Live-Verhalten sollte
-erst geklärt werden (läuft dort wirklich dieser Code, oder ist unser Checkout nicht der aktuelle
-Stand?), bevor wir einen möglicherweise falschen Root-Cause-Vorschlag einreichen.
+Noch nicht als GitHub-Issue gemeldet — website-v3-seitig ist die Konsumierung dieser Felder
+ohnehin noch nicht gebaut (siehe `docs/geodata/open-items.md` → „Blockiert"), also keine Eile.
+Gemeinsam mit der Client-Umsetzung einplanen, dann als ein zusammenhängendes Issue melden.
