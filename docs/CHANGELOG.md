@@ -2,6 +2,30 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 20:35
+
+### Hinzugefügt
+- **Geteilte Farbskalen (`legend_scale_id`/`legend_sections`) und `icon`-Fallback in der
+  Karten-Legende konsumiert** — Ski-Pisten/-Loipen zeigen jetzt die volle
+  Schwierigkeitsgrad-Skala (8 Stufen) als eine gemeinsame, über Overlay-Grenzen hinweg
+  deduplizierte Zeilengruppe statt gar keiner Legende. Neues Modul
+  `src/lib/legendSchemaVersion.ts` (`isLegendSchemaAtLeast()`, numerischer `major.minor`-Vergleich
+  laut `geodata-plugin-standard` §5.6) gated die Interpretation von `legend_scale_id`.
+  `type: "icon"`-Gruppen bekommen einen generischen Fallback-Marker
+  (`fa-solid fa-location-dot`), da `layers.json` nur einen Tile-Server-Sprite-Namen liefert, kein
+  in der Legende renderbares Bild. Details: `docs/superpowers/plans/2026-08-12-legend-v1.1-fields.md`.
+
+### Behoben
+- **`MapLegend.ts`: Icon-Einträge mit `color: null` rendern jetzt das Icon** statt fälschlich den
+  „Farbe nicht auflösbar"-Fallback (Reihenfolge-Bug — der Color-null-Check lief vor dem
+  Icon-Type-Check, obwohl `color: null` laut Standard-Beispiel der Normalfall für `type: "icon"`
+  ist).
+
+### Bekannte Einschränkung
+- **`width`/`dasharray`/`outline_color`/`outline_width` weiterhin nicht konsumiert** — brauchen
+  neue `oe5ith-ci`-Swatch-Varianten (gestrichelte Linie, Linie-mit-Casing, Fläche-mit-Rand), die
+  noch nicht existieren. Separates `oe5ith-ci`-Issue folgt.
+
 ## [Unreleased] - 2026-08-12 19:32
 
 ### Behoben
