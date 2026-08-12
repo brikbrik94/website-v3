@@ -21,11 +21,13 @@ Feature-Anfragen und `docs/geodata/handoff-*.md`-Dateien für Handoffs (abgeschl
 Request-/Handoff-Dateien wandern nach `docs/geodata/archive/`, diese Sammeldatei selbst bleibt
 dauerhaft hier).
 
-**Aktueller Stand: 2 offene Punkte** (Punkt 1 behoben; Punkt 2 als
-[geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97) gemeldet — aktive
-Regression, hohe Priorität; Punkt 3 als
-[geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96) code-seitig
-behoben, aber laut Live-Check noch nicht deployed. Tracking dazu in `docs/geodata/open-items.md`).
+**Aktueller Stand: 2 offene Punkte, beide code-seitig behoben, beide noch nicht live deployed**
+(Punkt 1 vollständig behoben; Punkt 2 als
+[geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97) und Punkt 3 als
+[geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96) gemeldet — beide
+Fixes im Submodul verifiziert (`72349a0` bzw. `e9a6b59`), laut Live-Check aber noch nicht auf dem
+Server aktiv; siehe „Deploy-Lücke" bei Punkt 2 für den jetzt bekannten Grund. Tracking dazu in
+`docs/geodata/open-items.md`).
 
 ---
 
@@ -82,13 +84,35 @@ direkt nachgezogen, kein Issue mehr nötig.
 
 ## 2. `layers.py` reicht die neuen v1.1.0-Felder noch nicht durch
 
-**Status:** 🔴 Offen, gemeldet als [geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97)
+**Status:** 🟡 Code-seitig behoben (Commit `72349a0`, „fix: v1.1-Legendenfelder und
+legend_sections in layers_info.json durchreichen", explizit „Fixes #97"). Diff geprüft: ergänzt
+`width`/`dasharray`/`outline_color`/`outline_width`/`icon`/`legend_scale_id` im Group-Eintrag
+sowie einen neuen `legend_sections`-Aggregationsschritt (dedupliziert über `id`, erste Definition
+gewinnt) — deckt sich exakt mit dem in Issue #97 vorgeschlagenen Fix. Submodul-Pointer hier auf
+`72349a0` aktualisiert. **Laut Live-Check (2026-08-12, `generated_at` frisch) trotzdem noch nicht
+deployed:** `openskimap`-Einträge in `https://tiles.oe5ith.at/layers.json` haben weiterhin
+`legend_scale_id: null`, kein `legend_sections`-Block, kein `width`/`outline_width`. Grund jetzt
+bekannt (siehe „Deploy-Lücke" unten) — kein neuer Widerspruch wie bei Punkt 1, sondern erwartetes
+Verhalten der Architektur.
 **Gemeldet von:** website-v3 (2026-08-12, direkter Anschluss an Punkt 1 — geprüft, nachdem Punkt 1
 behoben war). **Dringlichkeit hochgestuft (2026-08-12, nach `openskimap`-Rebuild):** ist keine
 reine Vorbereitung mehr, sondern eine aktive Regression — `geodata-openskimap/dist/layer-list.json`
 ist bereits korrekt gegen v1.1.0 gebaut (`legend_scale_id`/`legend_sections` für die
 Ski-Schwierigkeitsgrade), aber die Aggregation verwirft das weiterhin, wodurch die
 Pisten/Loipen-Legende auf der Live-Seite jetzt leer ist statt wie vorher gefüllt.
+
+### Deploy-Lücke (Architektur, nicht Bug)
+
+`geodata-updater/CLAUDE.md` stellt klar: das Git-Repo ist nur die Quelle — die tatsächlich
+laufende Pipeline lebt unter `/srv` auf dem Server, dorthin gelangen Code-Änderungen erst über
+`scripts/tools/deploy_scripts.sh` (rsync `scripts/` → `/srv/scripts`). Ein reiner `git push`
+verändert das Live-Verhalten also nie von selbst — zusätzlich muss die Pipeline (`run_deploy.sh`
+bzw. `run_inventory.py`) auf dem Server erneut laufen, damit `layers_info.json` mit dem neuen
+`layers.py` neu gebaut wird. Das erklärt rückblickend auch die wiederholt beobachtete Lücke
+zwischen „Commit vorhanden" und „live sichtbar" in dieser Session (siehe auch Punkt 1: dort lag es
+zusätzlich am fehlenden Push, hier ist der Push da, der Server-seitige Sync+Re-Run aber offenbar
+noch nicht erfolgt). Kein Punkt, den website-v3 selbst auslösen kann — reine Info für die nächste
+Rückfrage beim Maintainer.
 
 ### Symptom
 
