@@ -2,8 +2,6 @@ import './app.css';
 import { initGlobalModals } from './lib/GlobalModals';
 import { APP_VERSION } from './version';
 
-import { MapRegistry } from './lib/MapRegistry';
-import { OverlayLoader } from './lib/OverlayLoader';
 import type { PageController } from './core/PageController';
 import { renderTopbarNav } from './components/TopbarNav';
 
@@ -120,6 +118,11 @@ const renderLandingPage = () => {
 
 let currentPage: PageController | null = null;
 
+// War die zuletzt gemountete Seite eine Kartenseite? Steuert, ob MapRegistry/OverlayLoader
+// (ziehen beide maplibre-gl nach sich, ~265 KB gzip) überhaupt geladen werden müssen — siehe
+// Kommentar bei ihrem Aufruf unten.
+let previousPageUsedMap = false;
+
 // Einfacher Path-Router
 const router = async () => {
   const path = window.location.pathname;
@@ -130,30 +133,45 @@ const router = async () => {
     currentPage = null;
   }
 
-  // Registry leeren beim Seitenwechsel, um Ressourcen-Verschmutzung zu vermeiden.
-  // Neue Seiten registrieren ihre benötigten Ressourcen während der Initialisierung.
-  MapRegistry.clear();
-  OverlayLoader.reset();
+  // Registry leeren beim Seitenwechsel, um Ressourcen-Verschmutzung zu vermeiden. Neue Seiten
+  // registrieren ihre benötigten Ressourcen während der Initialisierung. MapRegistry/OverlayLoader
+  // werden bewusst nur dynamisch importiert, und auch das nur, wenn die vorherige Seite
+  // tatsächlich eine Karte genutzt hat — sonst gibt es nichts aufzuräumen, und z.B. /info lädt
+  // dadurch nie das maplibre-gl-Bundle (siehe docs/performance/2026-07-28-baseline-audit.md,
+  // Befund 4).
+  if (previousPageUsedMap) {
+    const [{ MapRegistry }, { OverlayLoader }] = await Promise.all([
+      import('./lib/MapRegistry'),
+      import('./lib/OverlayLoader')
+    ]);
+    MapRegistry.clear();
+    OverlayLoader.reset();
+  }
 
   if (!app) return;
 
   if (path === '/karte') {
+    previousPageUsedMap = true;
     const { MapPageController } = await import('./pages/MapPage');
     currentPage = new MapPageController();
     await currentPage.mount(app);
   } else if (path === '/routing') {
+    previousPageUsedMap = true;
     const { RoutingPageController } = await import('./pages/RoutingPage');
     currentPage = new RoutingPageController();
     await currentPage.mount(app);
   } else if (path === '/nah') {
+    previousPageUsedMap = true;
     const { NahPageController } = await import('./pages/NahPage');
     currentPage = new NahPageController();
     await currentPage.mount(app);
   } else if (path === '/coords') {
+    previousPageUsedMap = true;
     const { CoordsPageController } = await import('./pages/CoordsPage');
     currentPage = new CoordsPageController();
     await currentPage.mount(app);
   } else if (path === '/tracking') {
+    previousPageUsedMap = true;
     const { TrackingPageController } = await import('./features/tracking/TrackingPage');
     currentPage = new TrackingPageController();
     await currentPage.mount(app);
@@ -163,19 +181,23 @@ const router = async () => {
     window.history.replaceState({}, '', '/isochrones');
     await router();
   } else if (path === '/isochrones') {
+    previousPageUsedMap = true;
     const { IsochronesPageController } = await import('./pages/IsochronesPage');
     currentPage = new IsochronesPageController();
     await currentPage.mount(app);
   } else if (path === '/graph') {
+    previousPageUsedMap = true;
     const { GraphPageController } = await import('./pages/GraphPage');
     currentPage = new GraphPageController();
     await currentPage.mount(app);
   } else if (path.startsWith('/info')) {
+    previousPageUsedMap = false;
     const subpath = path.split('/')[2] || 'nah';
     const { InfoPageController } = await import('./pages/InfoPage');
     currentPage = new InfoPageController();
     await currentPage.mount(app, subpath);
   } else {
+    previousPageUsedMap = false;
     renderLandingPage();
   }
 };
