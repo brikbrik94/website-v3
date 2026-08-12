@@ -18,11 +18,19 @@ export interface ContextMenuItem {
 
 export interface LegendEntry {
     id?: string;
-    type: 'dot' | 'line' | 'area' | 'icon';
+    type: 'dot' | 'line' | 'area' | 'icon' | 'line-cased';
     color: string | null;
     label: string;
     /** FontAwesome-Klassen (z.B. 'fa-solid fa-helicopter'), nur bei type: 'icon' relevant. */
     icon?: string;
+    /** type:'line' (Höhe, geclampt 1-6px in MapLegend.ts) | type:'line-cased' (Pflicht, Innenbreite) */
+    width?: number;
+    /** type:'line' — [Strich, Lücke], proportional auf 8px-Zyklus skaliert in MapLegend.ts */
+    dasharray?: [number, number];
+    /** type:'area' (mit outline_width) | type:'line-cased' (Pflicht) */
+    outline_color?: string;
+    /** type:'area' (geclampt 1-3px) | type:'line-cased' (Pflicht, geclampt 2-8px) */
+    outline_width?: number;
     /** Deckkraft (0-1) aus den echten Layer-Paint-Daten, z.B. layers.json `opacity`-Feld — spiegelt
      *  die tatsächliche Kartendarstellung, statt den Swatch immer volldeckend zu zeigen. */
     opacity?: number;
