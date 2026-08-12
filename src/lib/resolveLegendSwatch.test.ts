@@ -173,6 +173,58 @@ describe('resolveSwatchFromLayersMetaColor', () => {
   it('does not set icon for non-icon swatch types', () => {
     expect(resolveSwatchFromLayersMetaColor('fill', '#3b82f6')).toEqual({ type: 'area', color: '#3b82f6' });
   });
+
+  it('resolves a full line-cased swatch when all 4 fields are present', () => {
+    expect(resolveSwatchFromLayersMetaColor('line', '#3b82f6', 3, null, 'hsl(0, 0%, 100%)', 5)).toEqual({
+      type: 'line-cased',
+      color: '#3b82f6',
+      width: 3,
+      outline_color: 'hsl(0, 0%, 100%)',
+      outline_width: 5,
+    });
+  });
+
+  it('falls back to plain line when outline is set but color is unresolvable (ski-lifts case: zoom-interpolate expression)', () => {
+    const color = ['interpolate', ['linear'], ['zoom'], 0, '#000000', 10, '#ffffff'];
+    expect(resolveSwatchFromLayersMetaColor('line', color, 3, null, 'hsl(0, 0%, 100%)', 5)).toEqual({
+      type: 'line',
+      color: null,
+      width: 3,
+    });
+  });
+
+  it('falls back to plain line when outline is set but width is missing', () => {
+    expect(resolveSwatchFromLayersMetaColor('line', '#3b82f6', null, null, 'hsl(0, 0%, 100%)', 5)).toEqual({
+      type: 'line',
+      color: '#3b82f6',
+    });
+  });
+
+  it('resolves a plain line swatch with only width', () => {
+    expect(resolveSwatchFromLayersMetaColor('line', '#3b82f6', 5)).toEqual({ type: 'line', color: '#3b82f6', width: 5 });
+  });
+
+  it('resolves a plain line swatch with only dasharray', () => {
+    expect(resolveSwatchFromLayersMetaColor('line', '#3b82f6', null, [2, 1])).toEqual({
+      type: 'line', color: '#3b82f6', dasharray: [2, 1],
+    });
+  });
+
+  it('resolves an area swatch with both outline fields', () => {
+    expect(resolveSwatchFromLayersMetaColor('fill', '#3b82f6', null, null, '#1d4ed8', 1)).toEqual({
+      type: 'area', color: '#3b82f6', outline_color: '#1d4ed8', outline_width: 1,
+    });
+  });
+
+  it('drops a lone outline_width without outline_color for area (ski-runs-downhill/-nordic case)', () => {
+    expect(resolveSwatchFromLayersMetaColor('fill', null, null, null, null, 5)).toEqual({ type: 'area', color: null });
+  });
+
+  it('drops a lone outline_color without outline_width for area', () => {
+    expect(resolveSwatchFromLayersMetaColor('fill', '#3b82f6', null, null, '#1d4ed8', null)).toEqual({
+      type: 'area', color: '#3b82f6',
+    });
+  });
 });
 
 describe('computeSwatchDedupKey', () => {
@@ -197,7 +249,25 @@ describe('computeSwatchDedupKey', () => {
   });
 
   it('handles a null color without throwing', () => {
-    expect(computeSwatchDedupKey('rd', 'rd', { type: 'dot', color: null })).toBe('rd:rd:dot:null');
+    expect(computeSwatchDedupKey('rd', 'rd', { type: 'dot', color: null })).toBe('rd:rd:dot:null:null:null:null:null');
+  });
+
+  it('keeps different widths within the same overlay+template+type+color distinct', () => {
+    const key1 = computeSwatchDedupKey('x', 'y', { type: 'line', color: '#111111', width: 3 });
+    const key2 = computeSwatchDedupKey('x', 'y', { type: 'line', color: '#111111', width: 5 });
+    expect(key1).not.toBe(key2);
+  });
+
+  it('keeps different dasharrays distinct', () => {
+    const key1 = computeSwatchDedupKey('x', 'y', { type: 'line', color: '#111111', dasharray: [2, 1] });
+    const key2 = computeSwatchDedupKey('x', 'y', { type: 'line', color: '#111111', dasharray: [4, 2] });
+    expect(key1).not.toBe(key2);
+  });
+
+  it('keeps different outline fields distinct', () => {
+    const key1 = computeSwatchDedupKey('x', 'y', { type: 'area', color: '#111111', outline_color: '#fff', outline_width: 1 });
+    const key2 = computeSwatchDedupKey('x', 'y', { type: 'area', color: '#111111', outline_color: '#fff', outline_width: 2 });
+    expect(key1).not.toBe(key2);
   });
 });
 

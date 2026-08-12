@@ -1,7 +1,7 @@
 import type { LayerSpecification } from 'maplibre-gl';
 import { isLegendSchemaAtLeast } from './legendSchemaVersion';
 
-export type SwatchType = 'dot' | 'line' | 'area' | 'icon';
+export type SwatchType = 'dot' | 'line' | 'area' | 'icon' | 'line-cased';
 
 export interface LegendSwatch {
   type: SwatchType;
@@ -11,6 +11,14 @@ export interface LegendSwatch {
    *  der Legende — dieses Feld trägt stattdessen einen generischen Fallback-Marker (siehe
    *  resolveSwatchFromLayersMetaColor()). */
   icon?: string;
+  /** type:'line' (Höhe, geclampt 1-6px in MapLegend.ts) | type:'line-cased' (Pflicht, Innenbreite) */
+  width?: number;
+  /** type:'line' — [Strich, Lücke], proportional auf 8px-Zyklus skaliert in MapLegend.ts */
+  dasharray?: [number, number];
+  /** type:'area' (mit outline_width) | type:'line-cased' (Pflicht) */
+  outline_color?: string;
+  /** type:'area' (geclampt 1-3px) | type:'line-cased' (Pflicht, geclampt 2-8px) */
+  outline_width?: number;
 }
 
 // Fallback-Arm von match/case ist laut MapLibre-Style-Spec verpflichtend und immer der letzte
@@ -136,11 +144,46 @@ const GENERIC_ICON_SWATCH_CLASS = 'fa-solid fa-location-dot';
  * Wie resolveLegendSwatch(), aber für layers.json-Metadata (LayerMetaGroup), wo `type`/`color`
  * bereits direkt mitgeliefert werden statt aus einer echten LayerSpecification mit `paint`
  * extrahiert werden zu müssen (siehe docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
+ *
+ * Entscheidet für `type: 'line'`-Gruppen zwischen `line-cased` (nur wenn ALLE 4 Felder — color,
+ * width, outline_color, outline_width — auflösbar sind) und plain `line` (Fallback, verwirft
+ * dabei outline_*, statt Daten zu erfinden — siehe
+ * docs/superpowers/specs/2026-08-12-legend-line-cased-outline-fields-design.md). Für
+ * `type: 'area'`-Gruppen wird outline_color/outline_width nur übernommen, wenn BEIDE gesetzt
+ * sind (ein einzelnes Feld wird verworfen, sonst würde MapLegend.addEntry() werfen).
  */
-export function resolveSwatchFromLayersMetaColor(type: string | undefined, color: unknown): LegendSwatch | null {
+export function resolveSwatchFromLayersMetaColor(
+  type: string | undefined,
+  color: unknown,
+  width?: number | null,
+  dasharray?: [number, number] | null,
+  outline_color?: string | null,
+  outline_width?: number | null
+): LegendSwatch | null {
   const swatchType = swatchTypeForLayerType(type ?? '');
   if (!swatchType) return null;
-  const resolved: LegendSwatch = { type: swatchType, color: extractLiteralColor(color) };
+  const resolvedColor = extractLiteralColor(color);
+
+  if (swatchType === 'line') {
+    if (outline_color != null && outline_width != null && resolvedColor !== null && width != null) {
+      return { type: 'line-cased', color: resolvedColor, width, outline_color, outline_width };
+    }
+    const resolved: LegendSwatch = { type: 'line', color: resolvedColor };
+    if (width != null) resolved.width = width;
+    if (dasharray != null) resolved.dasharray = dasharray;
+    return resolved;
+  }
+
+  if (swatchType === 'area') {
+    const resolved: LegendSwatch = { type: 'area', color: resolvedColor };
+    if (outline_color != null && outline_width != null) {
+      resolved.outline_color = outline_color;
+      resolved.outline_width = outline_width;
+    }
+    return resolved;
+  }
+
+  const resolved: LegendSwatch = { type: swatchType, color: resolvedColor };
   if (swatchType === 'icon') resolved.icon = GENERIC_ICON_SWATCH_CLASS;
   return resolved;
 }
@@ -156,7 +199,8 @@ export function resolveSwatchFromLayersMetaColor(type: string | undefined, color
  * reduzieren (siehe docs/geodata/open-items.md für die Live-Daten-Belege beider Fälle).
  */
 export function computeSwatchDedupKey(overlayId: string, template: string, swatch: LegendSwatch): string {
-  return `${overlayId}:${template}:${swatch.type}:${swatch.color ?? 'null'}`;
+  const dasharrayKey = swatch.dasharray ? swatch.dasharray.join(',') : 'null';
+  return `${overlayId}:${template}:${swatch.type}:${swatch.color ?? 'null'}:${swatch.width ?? 'null'}:${dasharrayKey}:${swatch.outline_color ?? 'null'}:${swatch.outline_width ?? 'null'}`;
 }
 
 export interface LegendSection {

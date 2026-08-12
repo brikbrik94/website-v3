@@ -44,7 +44,7 @@ export class MapLegend {
     const div = document.createElement('div');
     div.className = 'map-legend-entry';
 
-    const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', area: 'map-legend-area', icon: 'map-legend-icon' }[entry.type];
+    const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', 'line-cased': 'map-legend-line', area: 'map-legend-area', icon: 'map-legend-icon' }[entry.type];
 
     if (entry.type === 'icon' && entry.icon) {
       const marker = document.createElement('i');
