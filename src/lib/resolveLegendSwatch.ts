@@ -1,10 +1,15 @@
 import type { LayerSpecification } from 'maplibre-gl';
 
-export type SwatchType = 'dot' | 'line' | 'area';
+export type SwatchType = 'dot' | 'line' | 'area' | 'icon';
 
 export interface LegendSwatch {
   type: SwatchType;
   color: string | null;
+  /** FontAwesome-Klasse, nur bei type: 'icon' relevant. layers.json liefert nur einen
+   *  Tile-Server-Sprite-Namen (z.B. "aerialway-station-11"), kein echtes Sprite-Rendering in
+   *  der Legende — dieses Feld trägt stattdessen einen generischen Fallback-Marker (siehe
+   *  resolveSwatchFromLayersMetaColor()). */
+  icon?: string;
 }
 
 // Fallback-Arm von match/case ist laut MapLibre-Style-Spec verpflichtend und immer der letzte
@@ -108,6 +113,7 @@ const SWATCH_TYPE_BY_LAYER_TYPE: Record<string, SwatchType> = {
   'fill-extrusion': 'area',
   circle: 'dot',
   symbol: 'dot',
+  icon: 'icon',
 };
 
 /**
@@ -119,6 +125,12 @@ export function swatchTypeForLayerType(layerType: string): SwatchType | null {
   return SWATCH_TYPE_BY_LAYER_TYPE[layerType] ?? null;
 }
 
+// layers.json's `icon`-Feld ist nur ein Tile-Server-Sprite-Name (z.B. "aerialway-station-11"),
+// kein für die Legende renderbares Bild — generischer Fallback-Marker statt echtem
+// Sprite-Rendering (siehe docs/superpowers/specs/2026-08-12-legend-v1.1-fields-design.md).
+// Gleiche Klasse wie der bestehende generische Marker in CoordsPage.ts/HealthModule.ts.
+const GENERIC_ICON_SWATCH_CLASS = 'fa-solid fa-location-dot';
+
 /**
  * Wie resolveLegendSwatch(), aber für layers.json-Metadata (LayerMetaGroup), wo `type`/`color`
  * bereits direkt mitgeliefert werden statt aus einer echten LayerSpecification mit `paint`
@@ -127,7 +139,9 @@ export function swatchTypeForLayerType(layerType: string): SwatchType | null {
 export function resolveSwatchFromLayersMetaColor(type: string | undefined, color: unknown): LegendSwatch | null {
   const swatchType = swatchTypeForLayerType(type ?? '');
   if (!swatchType) return null;
-  return { type: swatchType, color: extractLiteralColor(color) };
+  const resolved: LegendSwatch = { type: swatchType, color: extractLiteralColor(color) };
+  if (swatchType === 'icon') resolved.icon = GENERIC_ICON_SWATCH_CLASS;
+  return resolved;
 }
 
 /**

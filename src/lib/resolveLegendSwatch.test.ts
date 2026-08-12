@@ -122,6 +122,10 @@ describe('swatchTypeForLayerType', () => {
     expect(swatchTypeForLayerType('symbol')).toBe('dot');
   });
 
+  it("maps 'icon' to 'icon'", () => {
+    expect(swatchTypeForLayerType('icon')).toBe('icon');
+  });
+
   it("returns null for 'raster'", () => {
     expect(swatchTypeForLayerType('raster')).toBeNull();
   });
@@ -156,6 +160,18 @@ describe('resolveSwatchFromLayersMetaColor', () => {
 
   it('returns null when type is undefined', () => {
     expect(resolveSwatchFromLayersMetaColor(undefined, '#ffffff')).toBeNull();
+  });
+
+  it('resolves an icon group to a generic fallback FA marker, not the raw sprite name', () => {
+    expect(resolveSwatchFromLayersMetaColor('icon', null)).toEqual({
+      type: 'icon',
+      color: null,
+      icon: 'fa-solid fa-location-dot',
+    });
+  });
+
+  it('does not set icon for non-icon swatch types', () => {
+    expect(resolveSwatchFromLayersMetaColor('fill', '#3b82f6')).toEqual({ type: 'area', color: '#3b82f6' });
   });
 });
 
