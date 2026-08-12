@@ -105,8 +105,12 @@ vorhanden).
 
 `addEntry()` gewinnt, exakt nach `oe5ith-ci/components/modal.html`s Referenz (gleiche
 Clamp-Bereiche, gleiche Dasharray-Skalierung auf einen 8px-Zyklus, gleiche Validierungsfehler —
-identischer Vertrag für jeden Aufrufer, nicht nur den `layers.json`-Pfad, da `NahPage.ts`/
-`RoutingPage.ts` bereits von Hand `LegendEntry`-Objekte bauen):
+für den `line-cased`-Zweig unbedingt derselbe Vertrag für jeden Aufrufer, nicht nur den
+`layers.json`-Pfad, da `NahPage.ts`/`RoutingPage.ts` bereits von Hand `LegendEntry`-Objekte
+bauen; die `dasharray`-Längenprüfung und die `area`-Outline-Paar-Prüfung greifen dagegen nur,
+wenn `entry.color !== null` ist — ein Aufrufer, der `color: null` zusammen mit einem
+unvollständigen Outline-Paar übergibt, fällt stattdessen unvalidiert in den bestehenden
+„Farbe nicht auflösbar"-Fallback):
 
 - **`line-cased`-Zweig**: Wrapper (`.map-legend-line-cased`) mit zwei gestapelten Balken
   (`.map-legend-line-cased-outline`, `.map-legend-line-cased-inner`), Outline zuerst im DOM.

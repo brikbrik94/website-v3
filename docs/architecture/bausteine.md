@@ -203,8 +203,9 @@ Exports:
 ## `MapLegend.ts`
 
 Steuert das Legende-Panel einer Kartenseite (`.map-legend`-DOM-Struktur aus `oe5ith-ci`).
-Einträge (`dot`/`line`/`area`/`icon`) werden rein clientseitig verwaltet — welche Layer/Farben
-das sind, entscheidet der Aufrufer (z.B. per `resolveLegendSwatch()`), nicht diese Klasse.
+Einträge (`dot`/`line`/`area`/`icon`/`line-cased`) werden rein clientseitig verwaltet — welche
+Layer/Farben das sind, entscheidet der Aufrufer (z.B. per `resolveLegendSwatch()`), nicht diese
+Klasse.
 
 Import: `from '.../lib/MapLegend'` (Pfad relativ zum aufrufenden Modul anpassen)
 
