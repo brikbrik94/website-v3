@@ -2,6 +2,20 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 23:58
+
+### Hinzugefügt
+- **`width`/`dasharray`/`outline_color`/`outline_width` in der Karten-Legende konsumiert**,
+  nachdem `oe5ith-ci` v1.25.0 (+ Doku-Fix `0092387`) die nötigen Swatch-Varianten lieferte —
+  schließt [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1) vollständig.
+  `resolveSwatchFromLayersMetaColor()` (`src/lib/resolveLegendSwatch.ts`) entscheidet zwischen
+  einem neuen `line-cased`-Typ (Innen-/Außenfarbe, z.B. Skilift-Symbole) und einfachem `line`
+  (`width`/`dasharray`) — `line-cased` nur, wenn alle 4 nötigen Felder auflösbar sind, sonst
+  Fallback auf `line` ohne die fehlende Umrandung zu erfinden. `area` bekommt
+  `outline_color`/`outline_width` nur bei vollständigem Paar. `MapLegend.addEntry()` 1:1 nach der
+  `oe5ith-ci`-Referenzimplementierung portiert. `computeSwatchDedupKey()` erweitert um die 4
+  neuen Felder. Details: `docs/superpowers/plans/2026-08-12-legend-line-cased-outline-fields.md`.
+
 ## [Unreleased] - 2026-08-12 22:56
 
 ### Geändert
