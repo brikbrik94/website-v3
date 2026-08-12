@@ -2,7 +2,7 @@ import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, computeSwatchDedupKey, type LegendSwatch, type SwatchType } from '../lib/resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, computeSwatchDedupKey, resolveLegendItemsForGroup, type LegendSwatch, type SwatchType, type LegendSection } from '../lib/resolveLegendSwatch';
 
 export interface LayerMetaGroup {
   name: string;
@@ -12,10 +12,12 @@ export interface LayerMetaGroup {
   color?: unknown;
   opacity?: number;
   legend_items?: { label: string; color: string }[] | null;
+  legend_scale_id?: string | null;
 }
 
 export interface LayerMetaEntry {
   id: string;
+  version?: string | null;
   groups: LayerMetaGroup[];
 }
 
@@ -34,6 +36,14 @@ export interface LayerToggleEvent {
   legendItems: { label: string; type: SwatchType; color: string }[] | null;
   /** Deckkraft aus layers.json (`opacity`-Feld), zur Anzeige im Legenden-Swatch. */
   opacity: number | null;
+  /**
+   * Schlüssel, mit dem MapPage.ts geteilte Legenden-Zeilen ref-zählt/mit id versieht.
+   * `overlayId` für den klassischen Pro-Overlay-legend_items-Fall; `scale:<legend_scale_id>`,
+   * wenn die Zeile eine geteilte Farbskala ist, die mehrere Overlays betreffen kann (siehe
+   * geodata-plugin-standard §5.5 „Invariante"). `null`, wenn weder legendItems noch eine
+   * geteilte Skala vorliegt.
+   */
+  legendGroupKey: string | null;
   /**
    * Dedup-Schlüssel für Overlays, bei denen mehrere Gruppen (z.B. jede Autobahn einzeln) exakt
    * denselben Swatch ergeben — nur gesetzt für den layers.json-Metadaten-Pfad mit echtem
@@ -59,9 +69,11 @@ export const initSidebar = (
   onBulkToggle?: BulkToggleCallback,
   onGroupExpand?: (overlayId: string) => Promise<void>,
   layersMeta: LayerMetaEntry[] = [],
+  legendSections: LegendSection[] = [],
   onSearchSelect?: (selection: GeocoderSelection) => void,
   signal?: AbortSignal
 ) => {
+  const legendSectionsById = new Map(legendSections.map(s => [s.id, s]));
   const loadedLayers = new Map<string, LayerMetaGroup[] | LayerSpecification[]>();
 
   // Separater Cache für den layersMeta-Pfad: layers.json liefert Gruppierung/Namen, aber keine
@@ -214,6 +226,7 @@ export const initSidebar = (
     let legendItems: { label: string; type: SwatchType; color: string }[] | null = null;
     let opacity: number | null = null;
     let dedupKey: string | null = null;
+    let legendGroupKey: string | null = null;
 
     const loaded = loadedLayers.get(overlayId);
     const isMetaPath = !!loaded && loaded.length > 0 && 'style_layers' in loaded[0];
@@ -223,9 +236,12 @@ export const initSidebar = (
       const metaGroup = (loaded as LayerMetaGroup[])[idx];
       opacity = typeof metaGroup.opacity === 'number' ? metaGroup.opacity : null;
 
-      if (metaGroup.legend_items && metaGroup.legend_items.length > 0) {
+      const styleEntry = layersMeta.find(l => l.id === overlayId);
+      const resolvedItems = resolveLegendItemsForGroup(metaGroup, overlayId, styleEntry?.version, legendSectionsById);
+      if (resolvedItems) {
         const itemType = swatchTypeForLayerType(metaGroup.type ?? layerType) ?? 'dot';
-        legendItems = metaGroup.legend_items.map(li => ({ label: li.label, type: itemType, color: li.color }));
+        legendItems = resolvedItems.items.map(li => ({ ...li, type: itemType }));
+        legendGroupKey = resolvedItems.groupKey;
       } else if (metaGroup.color !== undefined) {
         swatch = resolveSwatchFromLayersMetaColor(metaGroup.type, metaGroup.color);
         if (swatch) {
@@ -265,6 +281,7 @@ export const initSidebar = (
       swatch,
       legendItems,
       opacity,
+      legendGroupKey,
       dedupKey,
       itemEl
     };
