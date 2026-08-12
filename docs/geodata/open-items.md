@@ -17,33 +17,35 @@ Submodul-Update wird die Checkliste gegen den neuen Stand geprüft.
 
 ### [geodata-updater#96 — layers.py reicht Schema-„version" nicht durch](https://github.com/brikbrik94/geodata-updater/issues/96)
 
-Gemeldet 2026-08-12. `version` (§5.1) fehlt komplett in der aggregierten `layers_info.json` —
-ohne sie kann ein Client die Breaking-Change-Regel aus §5.6 (`legend_items` → `null` bei
-gesetztem `legend_scale_id`) nicht sicher erkennen. Offene Designfrage mitgegeben: Aggregation
-mehrerer Plugin-Versionen zu einer Top-Level-`version` — unser Vorschlag: Minimum aller
-aggregierten Versionen.
+Gemeldet 2026-08-12. **Code-seitig behoben** (Commit `e9a6b59`, `version` pro Style-Eintrag statt
+global — sinnvollere Lösung als unser Minimum-Vorschlag für gestaffeltes Rollout). **Laut
+Live-Check noch nicht deployed** (`openskimap` hat quellseitig `version: "1.1"`, live weiterhin
+`null`).
 
-- [ ] `version`-Feld (String, `"major.minor"`) im Top-Level der aggregierten `layers_info.json`
-- [ ] Aggregationsregel bei unterschiedlichen Plugin-Versionen geklärt (Minimum-Vorschlag
-  angenommen oder Alternative)
+- [x] `version`-Feld (String) pro Style-Eintrag in der aggregierten `layers_info.json` (Code)
+- [ ] Live deployed (geprüft 2026-08-12: noch nicht)
+
+### [geodata-updater#97 — layers.py reicht v1.1.0-Legend-Felder nicht durch](https://github.com/brikbrik94/geodata-updater/issues/97)
+
+Gemeldet 2026-08-12, **hohe Priorität — aktive Regression**: `geodata-openskimap`s Quelldatei ist
+bereits korrekt gegen v1.1.0 gebaut, die Aggregation verwirft `legend_scale_id`+`legend_sections`
+aber weiterhin, wodurch die Ski-Pisten/Loipen-Legende auf der Live-Seite aktuell **leer** ist
+(vorher hatte sie die volle Schwierigkeitsgrad-Skala über `legend_items`).
+
+- [ ] `width` (Number\|null) im Group-Eintrag
+- [ ] `dasharray` ([Number,Number]\|null) im Group-Eintrag
+- [ ] `outline_color`/`outline_width` im Group-Eintrag
+- [ ] `icon` (String\|null) im Group-Eintrag
+- [ ] `legend_scale_id` im Group-Eintrag
+- [ ] Top-Level `legend_sections`-Block (dedupliziert über alle aggregierten Quellen)
 
 ## Blockiert (wartet auf externe Umsetzung)
 
-- **Client-seitige Konsumierung der neuen Felder (`width`, `dasharray`, `outline_color`/
-  `outline_width`, `type: "icon"`+`icon`, `legend_scale_id`, `legend_sections`) in
-  `Sidebar.ts`/`MapLegend.ts`/`MapPage.ts`.** Noch nicht begonnen — macht erst Sinn, sobald echte
-  Daten damit ankommen (aktuell testbar nur gegen synthetische Beispiele aus der Standard-Doku,
-  nicht gegen den echten Tile-Server). **Wichtig, sobald es losgeht:** die Breaking-Change-Regel
-  aus §5.6 beachten — `legend_items` wird `null`, sobald eine Gruppe `legend_scale_id` trägt (Werte
-  dann in `legend_sections`); `version` muss numerisch als `major.minor` verglichen werden
-  (`>= 1.1`), nicht als String.
-- **Live-`layers.json` liefert `v1.1.0` des Schemas noch nicht** — geprüft 2026-08-12: kein
-  `version`-Feld, kein `legend_sections`-Block, unverändert gegenüber vorher. Zwei Voraussetzungen
-  dafür offen: (1) die produzierenden Plugin-Repos (`geodata-osmdb`/`overlays`) müssen ihre
-  `dist/layer-list.json` gegen `v1.1.0` neu bauen; (2) `geodata-updater`s
-  `scripts/inventory/layers.py` muss die neuen Felder beim Aggregieren durchreichen — aktuell
-  noch nicht der Fall, siehe `docs/geodata/bug-reports.md` Punkt 2. Beides außerhalb der
-  Reichweite dieses Repos.
+- **Client-seitige Konsumierung der neuen Felder** in `Sidebar.ts`/`MapLegend.ts`/`MapPage.ts` —
+  wartet auf #96 (deployed) + #97 (Felder überhaupt in der Ausgabe). **Wichtig, sobald es
+  losgeht:** die Breaking-Change-Regel aus §5.6 beachten — `legend_items` wird `null`, sobald eine
+  Gruppe `legend_scale_id` trägt (Werte dann in `legend_sections`); `version` muss numerisch als
+  `major.minor` verglichen werden (`>= 1.1`), nicht als String.
 
 ## Erledigt (archiviert)
 

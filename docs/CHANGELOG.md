@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 14:29
+
+### Sicherheit
+- **`geodata-updater` reicht v1.1.0-Legend-Felder nicht durch (aktive Regression)** — gemeldet
+  als [geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97), mit
+  `geodata-openskimap`s echter Quelldatei als Beleg. Die Ski-Pisten/Loipen-Legende ist dadurch auf
+  der Live-Seite aktuell leer statt wie vorher gefüllt. `#96` (`version`-Feld) ist code-seitig
+  behoben (Commit `e9a6b59`, pro Style-Eintrag statt global), aber laut Live-Check noch nicht
+  deployed. Details: `docs/geodata/bug-reports.md`, Punkte 2+3.
+
 ## [Unreleased] - 2026-08-12 12:55
 
 ### Sicherheit

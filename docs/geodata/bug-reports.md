@@ -21,9 +21,11 @@ Feature-Anfragen und `docs/geodata/handoff-*.md`-Dateien für Handoffs (abgeschl
 Request-/Handoff-Dateien wandern nach `docs/geodata/archive/`, diese Sammeldatei selbst bleibt
 dauerhaft hier).
 
-**Aktueller Stand: 2 offene Punkte** (Punkt 1 behoben; Punkt 2 als Roadmap-Anschluss ohne Issue
-offen; Punkt 3 als [geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96)
-gemeldet, Tracking dazu in `docs/geodata/open-items.md`).
+**Aktueller Stand: 2 offene Punkte** (Punkt 1 behoben; Punkt 2 als
+[geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97) gemeldet — aktive
+Regression, hohe Priorität; Punkt 3 als
+[geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96) code-seitig
+behoben, aber laut Live-Check noch nicht deployed. Tracking dazu in `docs/geodata/open-items.md`).
 
 ---
 
@@ -80,9 +82,13 @@ direkt nachgezogen, kein Issue mehr nötig.
 
 ## 2. `layers.py` reicht die neuen v1.1.0-Felder noch nicht durch
 
-**Status:** 🔴 Offen
+**Status:** 🔴 Offen, gemeldet als [geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97)
 **Gemeldet von:** website-v3 (2026-08-12, direkter Anschluss an Punkt 1 — geprüft, nachdem Punkt 1
-behoben war)
+behoben war). **Dringlichkeit hochgestuft (2026-08-12, nach `openskimap`-Rebuild):** ist keine
+reine Vorbereitung mehr, sondern eine aktive Regression — `geodata-openskimap/dist/layer-list.json`
+ist bereits korrekt gegen v1.1.0 gebaut (`legend_scale_id`/`legend_sections` für die
+Ski-Schwierigkeitsgrade), aber die Aggregation verwirft das weiterhin, wodurch die
+Pisten/Loipen-Legende auf der Live-Seite jetzt leer ist statt wie vorher gefüllt.
 
 ### Symptom
 
@@ -109,15 +115,20 @@ Standard §5.5 „Invariante").
 
 ### Nächster Schritt
 
-Noch nicht als GitHub-Issue gemeldet — website-v3-seitig ist die Konsumierung dieser Felder
-ohnehin noch nicht gebaut (siehe `docs/geodata/open-items.md` → „Blockiert"), also keine Eile.
+Gemeldet als [geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97), mit
+der echten `openskimap`-Quelldatei als Beleg. Tracking dazu in `docs/geodata/open-items.md`.
 Gemeinsam mit der Client-Umsetzung einplanen, dann als ein zusammenhängendes Issue melden.
 
 ---
 
 ## 3. `layers.py` reicht das Top-Level-Feld `version` nicht durch
 
-**Status:** 🔴 Offen, gemeldet als [geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96)
+**Status:** 🟡 Code-seitig behoben (Commit `e9a6b59`, „durchreichen des Schema-`version`-Felds pro
+Quelle" — abweichend vom hier vorgeschlagenen Minimum-Ansatz: `version` wird pro Style-Eintrag aus
+der jeweiligen Quelldatei übernommen, nicht global aggregiert — sinnvollere Lösung für
+gestaffeltes Rollout). Laut Live-Check (2026-08-12, `generated_at` frisch) **noch nicht
+deployed**: `openskimap`s eigene Quelldatei hat `"version": "1.1"`, die live ausgelieferte
+`layers.json` zeigt für denselben Eintrag weiterhin `version: null`.
 **Gemeldet von:** website-v3 (2026-08-12, beim Prüfen, ob die für §5.6s Breaking-Change-Regel
 nötige `version`-Erkennung überhaupt möglich ist)
 
