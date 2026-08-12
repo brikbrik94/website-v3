@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 17:05
+
+### Behoben
+- **`geodata-updater`-Submodul auf `72349a0` aktualisiert** — „fix: v1.1-Legendenfelder und
+  legend_sections in layers_info.json durchreichen", schließt
+  [geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97). Diff geprüft:
+  deckt sich exakt mit dem im Issue vorgeschlagenen Fix.
+
+### Bekannte Einschränkung
+- **Fix noch nicht live:** Frischer Fetch von `https://tiles.oe5ith.at/layers.json` zeigt für
+  `openskimap` weiterhin `legend_scale_id: null`, keinen `legend_sections`-Block, kein
+  `width`/`outline_width` — trotz korrektem Code-Fix. Grund geklärt:
+  `geodata-updater/CLAUDE.md` beschreibt, dass Git-Repo und die produktiv laufende `/srv`-Kopie
+  auf dem Server getrennte Stände sind; ein reiner `git push` löst keinen Sync/Re-Run aus, dafür
+  sind `deploy_scripts.sh` + ein erneuter Pipeline-Lauf nötig. Gilt vermutlich auch für
+  [geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96) (`version`-Feld).
+  Details: `docs/geodata/bug-reports.md` Punkt 2 „Deploy-Lücke".
+
 ## [Unreleased] - 2026-08-12 14:29
 
 ### Sicherheit

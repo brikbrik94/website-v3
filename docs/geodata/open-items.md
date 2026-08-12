@@ -20,7 +20,7 @@ Submodul-Update wird die Checkliste gegen den neuen Stand geprüft.
 Gemeldet 2026-08-12. **Code-seitig behoben** (Commit `e9a6b59`, `version` pro Style-Eintrag statt
 global — sinnvollere Lösung als unser Minimum-Vorschlag für gestaffeltes Rollout). **Laut
 Live-Check noch nicht deployed** (`openskimap` hat quellseitig `version: "1.1"`, live weiterhin
-`null`).
+`null`) — vermutlich derselbe Deploy-Lücke-Grund wie bei #97 (siehe dort).
 
 - [x] `version`-Feld (String) pro Style-Eintrag in der aggregierten `layers_info.json` (Code)
 - [ ] Live deployed (geprüft 2026-08-12: noch nicht)
@@ -30,14 +30,19 @@ Live-Check noch nicht deployed** (`openskimap` hat quellseitig `version: "1.1"`,
 Gemeldet 2026-08-12, **hohe Priorität — aktive Regression**: `geodata-openskimap`s Quelldatei ist
 bereits korrekt gegen v1.1.0 gebaut, die Aggregation verwirft `legend_scale_id`+`legend_sections`
 aber weiterhin, wodurch die Ski-Pisten/Loipen-Legende auf der Live-Seite aktuell **leer** ist
-(vorher hatte sie die volle Schwierigkeitsgrad-Skala über `legend_items`).
+(vorher hatte sie die volle Schwierigkeitsgrad-Skala über `legend_items`). **Code-seitig behoben**
+(Commit `72349a0`, Diff geprüft — deckt sich exakt mit der unten stehenden Checkliste). **Laut
+Live-Check noch nicht deployed** — bekannter Grund: Git-Push allein reicht bei `geodata-updater`
+nicht, `/srv` auf dem Server braucht zusätzlich `deploy_scripts.sh` (rsync) + einen erneuten
+Pipeline-Lauf (`run_deploy.sh`), siehe `docs/geodata/bug-reports.md` Punkt 2 „Deploy-Lücke".
 
-- [ ] `width` (Number\|null) im Group-Eintrag
-- [ ] `dasharray` ([Number,Number]\|null) im Group-Eintrag
-- [ ] `outline_color`/`outline_width` im Group-Eintrag
-- [ ] `icon` (String\|null) im Group-Eintrag
-- [ ] `legend_scale_id` im Group-Eintrag
-- [ ] Top-Level `legend_sections`-Block (dedupliziert über alle aggregierten Quellen)
+- [x] `width` (Number\|null) im Group-Eintrag (Code)
+- [x] `dasharray` ([Number,Number]\|null) im Group-Eintrag (Code)
+- [x] `outline_color`/`outline_width` im Group-Eintrag (Code)
+- [x] `icon` (String\|null) im Group-Eintrag (Code)
+- [x] `legend_scale_id` im Group-Eintrag (Code)
+- [x] Top-Level `legend_sections`-Block, dedupliziert über alle aggregierten Quellen (Code)
+- [ ] Live deployed (geprüft 2026-08-12: noch nicht)
 
 ## Blockiert (wartet auf externe Umsetzung)
 
