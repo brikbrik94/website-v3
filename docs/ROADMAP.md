@@ -281,6 +281,28 @@ konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
   `oe5ith-ci`s bis dahin statisch fixe `opacity: 0.8` auf `.map-legend-area`, die unabhängig von
   echten Daten war). Live verifiziert: Leitstellen-Bereiche-Swatch zeigt echte `opacity: 0.25` statt
   fix 0.8. 7 neue Tests (`MapLegend.test.ts`, `resolveLegendSwatch.test.ts`).
+- [x] **Geteilte Farbskalen (`legend_scale_id`/`legend_sections`) + `icon`-Feld konsumiert**
+  (2026-08-12) — ✅ ERLEDIGT (`docs/superpowers/plans/2026-08-12-legend-v1.1-fields.md`). Löst
+  die im vorigen Punkt aufgeschobene „echte Kuratierung" für kategorisierte Mehrfarb-Skalen
+  (`geodata-plugin-standard`-Issue #1, Punkt 5/7): `resolveLegendItemsForGroup()`
+  (`resolveLegendSwatch.ts`) löst `legend_scale_id` gegen den Top-Level-`legend_sections`-Block
+  auf (gated durch `isLegendSchemaAtLeast(version, 1, 1)`, numerisch verglichen laut Standard
+  §5.6), mit Fallback auf klassische `legend_items`, wenn Version/Skala fehlt. Ref-Zählung
+  generalisiert von `overlayId` auf `legendGroupKey` (`scale:<id>` für geteilte Skalen) — dedupliziert
+  jetzt auch **über Overlay-Grenzen hinweg** (mehrere Datasets mit derselben `legend_scale_id`
+  ergeben eine Zeile, nicht eine pro Overlay). Live per Playwright gegen `/karte` verifiziert:
+  Ski-Pisten+Loipen zeigen 8 Schwierigkeitsgrad-Zeilen (nicht 16), Zeilen bleiben erhalten
+  solange mindestens ein beitragendes Overlay aktiv ist. `type: "icon"`-Gruppen bekommen einen
+  generischen Fallback-Marker (`fa-solid fa-location-dot`) statt echtem Sprite-Rendering (kein
+  Sprite-Name in `layers.json` ist für die Legende auflösbar); Live-Daten haben aktuell noch
+  keine `type: "icon"`-Gruppe, daher End-to-End nur per Netzwerk-Mock verifiziert (Unit-Tests
+  decken die Logik ab). Nebenbei ein Bug in `MapLegend.ts` gefixt: Icon-Einträge mit `color: null`
+  (laut Standard-Beispiel der Normalfall) rendern jetzt das Icon statt den „Farbe nicht
+  auflösbar"-Fallback. **`width`/`dasharray`/`outline_color`/`outline_width` bewusst NICHT
+  Teil dieser Runde** — brauchen neue `oe5ith-ci`-Swatch-Varianten (gestrichelte Linie,
+  Linie-mit-Casing, Fläche-mit-Rand), die noch nicht existieren; Inline-Styles dafür sind laut
+  `oe5ith-ci/docs/for-coding-agents.md` nicht zulässig (neues visuelles Muster, keine zur
+  Laufzeit berechnete Größe). Folgt als separates `oe5ith-ci`-Issue + Folge-Runde.
 - [ ] **Legenden-Gruppierung/Section-Header** — `MapLegend.ts` kennt aktuell nur eine flache
   Liste von Einträgen ohne Überschriften. Bei vielen gleichzeitig aktiven Overlays (z.B. mehrere
   Autobahnen + Anfahrtszeit-Ringe + Bezirke) könnte eine Legende ohne erkennbare Gruppierung
