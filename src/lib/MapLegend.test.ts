@@ -12,7 +12,7 @@ function makeLegendFixture(): HTMLElement {
   return el;
 }
 
-describe('MapLegend.addEntry — opacity', () => {
+describe('MapLegend.addEntry', () => {
   let legend: MapLegend;
 
   beforeEach(() => {
@@ -36,5 +36,20 @@ describe('MapLegend.addEntry — opacity', () => {
     legend.addEntry({ id: 'c', type: 'dot', color: null, label: 'Unbekannt', opacity: 0.5 });
     expect(document.querySelector('.map-legend-unknown')).not.toBeNull();
     expect(document.querySelector('.map-legend-dot')).toBeNull();
+  });
+
+  it('renders the icon (not the "unknown color" fallback) for type: icon with color: null', () => {
+    legend.addEntry({ id: 'd', type: 'icon', color: null, label: 'Liftstation', icon: 'fa-solid fa-location-dot' });
+    expect(document.querySelector('.map-legend-unknown')).toBeNull();
+    const marker = document.querySelector('.map-legend-icon') as HTMLElement;
+    expect(marker).not.toBeNull();
+    expect(marker.className).toContain('fa-solid fa-location-dot');
+    expect(marker.style.color).toBe('');
+  });
+
+  it('applies entry.color as the icon color when set', () => {
+    legend.addEntry({ id: 'e', type: 'icon', color: '#ff0000', label: 'Helikopter', icon: 'fa-solid fa-helicopter' });
+    const marker = document.querySelector('.map-legend-icon') as HTMLElement;
+    expect(marker.style.color).toBe('#ff0000');
   });
 });
