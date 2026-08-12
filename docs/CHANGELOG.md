@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 12:07
+
+### Hinzugefügt
+- **`geodata-updater` als Git-Submodul eingebunden** — die Pipeline, die die Geodata-Plugin-Repos
+  orchestriert und deren `dist/layer-list.json` zur unter `tiles.oe5ith.at` ausgelieferten
+  `layers.json` aggregiert. Rein zum Nachvollziehen der Pipeline, nicht zur Ausführung von hier.
+  `CLAUDE.md`/`docs/geodata/` entsprechend erweitert (deckt jetzt beide Geodata-Repos ab, mit
+  Hinweis pro Fund, welches Repo betroffen ist).
+
+### Sicherheit
+- **Widerspruch zwischen `geodata-updater`-Code und Live-Verhalten gefunden** (nicht in diesem
+  Repo behebbar): `scripts/inventory/layers.py` verwirft laut Git-Historie beim Aggregieren
+  `type`/`color`/`opacity`/`legend_items` (und die neuen v1.1.0-Felder) — die live ausgelieferte
+  `layers.json` hat diese Felder aber. Falls der committete Code tatsächlich produktiv läuft,
+  würde ein künftiges Redeploy die aktuell funktionierende Legenden-Darstellung brechen. Details:
+  `docs/geodata/bug-reports.md`, Punkt 1 — bewusst noch nicht als GitHub-Issue gemeldet, da die
+  Diskrepanz erst geklärt werden muss.
+
 ## [Unreleased] - 2026-08-12 11:42
 
 ### Geändert

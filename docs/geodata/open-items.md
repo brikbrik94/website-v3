@@ -1,9 +1,10 @@
-# Geodata-Plugin-Standard — Offene Punkte (Übersicht)
+# Geodata-Ökosystem — Offene Punkte (Übersicht)
 
-Sammel-Einstieg über die aus `website-v3` gemeldeten Punkte gegen
-[`geodata-plugin-standard`](../../geodata-plugin-standard/GEODATA_PLUGIN_STANDARD.md) (den
-Architektur-/Layer-Metadaten-Standard der `geodata-updater`-Ökosystem-Repos, die die von diesem
-Repo konsumierten Tile-Server-Daten erzeugen). Analog zu `docs/ci/open-items.md`.
+Sammel-Einstieg über die aus `website-v3` gemeldeten Punkte gegen die beiden Geodata-Submodule
+[`geodata-plugin-standard`](../../geodata-plugin-standard/GEODATA_PLUGIN_STANDARD.md) (der
+Architektur-/Layer-Metadaten-**Standard**) und [`geodata-updater`](../../geodata-updater/README.md)
+(die **Pipeline**, die Plugin-Repos orchestriert und zu `tiles.oe5ith.at` aggregiert — siehe
+`docs/geodata/bug-reports.md` Punkt 1 für den Unterschied). Analog zu `docs/ci/open-items.md`.
 
 **Workflow:** Vollständige Änderungsanfragen gehen als GitHub-Issue direkt ans jeweilige Repo;
 diese Datei hält nur einen schlanken Tracking-Eintrag (Issue-Link + Checkliste). Nach jedem
