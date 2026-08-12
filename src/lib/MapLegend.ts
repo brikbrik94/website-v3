@@ -6,8 +6,9 @@ export interface AddLegendEntryOptions extends LegendEntry {
 
 /**
  * Steuert das Legende-Panel einer Kartenseite (`.map-legend`-DOM-Struktur aus `oe5ith-ci`).
- * Einträge (`dot`/`line`/`area`/`icon`) werden rein clientseitig verwaltet — welche Layer/Farben
- * das sind, entscheidet der Aufrufer (z.B. per `resolveLegendSwatch()`), nicht diese Klasse.
+ * Einträge (`dot`/`line`/`area`/`icon`/`line-cased`) werden rein clientseitig verwaltet — welche
+ * Layer/Farben das sind, entscheidet der Aufrufer (z.B. per `resolveLegendSwatch()`), nicht diese
+ * Klasse.
  */
 export class MapLegend {
   private _el: HTMLElement;
@@ -48,7 +49,7 @@ export class MapLegend {
       if (entry.color == null || entry.width == null || entry.outline_color == null || entry.outline_width == null) {
         throw new Error("MapLegend.addEntry: type 'line-cased' benötigt color, width, outline_color, outline_width");
       }
-      div.appendChild(this._buildLineCased(entry.color, entry.width, entry.outline_color, entry.outline_width));
+      div.appendChild(this._buildLineCased(entry.color, entry.width, entry.outline_color, entry.outline_width, entry.opacity));
     } else {
       const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', area: 'map-legend-area', icon: 'map-legend-icon' }[entry.type];
 
@@ -119,7 +120,7 @@ export class MapLegend {
     if (entry.id) this._entryNodes.set(entry.id, div);
   }
 
-  private _buildLineCased(color: string, width: number, outline_color: string, outline_width: number): HTMLElement {
+  private _buildLineCased(color: string, width: number, outline_color: string, outline_width: number, opacity?: number): HTMLElement {
     const oW = Math.max(2, Math.min(8, outline_width));
     let iW = Math.max(1, Math.min(6, width));
     if (iW >= oW) iW = Math.max(1, oW - 1);
@@ -127,6 +128,9 @@ export class MapLegend {
     const wrapper = document.createElement('div');
     wrapper.className = 'map-legend-line-cased';
     wrapper.style.height = `${oW}px`;
+    // Spiegelt dieselbe Deckkraft-Logik wie der dot/line/area-Zweig oben — line-cased hat einen
+    // eigenen Wrapper statt eines einzelnen marker-Elements, braucht die Zuweisung daher hier.
+    if (opacity !== undefined) wrapper.style.opacity = String(opacity);
 
     const outline = document.createElement('div');
     outline.className = 'map-legend-line-cased-outline';

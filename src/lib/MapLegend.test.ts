@@ -99,6 +99,12 @@ describe('MapLegend.addEntry', () => {
       .toThrow("MapLegend.addEntry: type 'line-cased' benötigt color, width, outline_color, outline_width");
   });
 
+  it('applies entry.opacity as an inline style on the line-cased wrapper', () => {
+    legend.addEntry({ id: 'lc4', type: 'line-cased', color: '#3b82f6', width: 3, outline_color: '#fff', outline_width: 5, opacity: 0.6, label: 'Test' });
+    const wrapper = document.querySelector('.map-legend-line-cased') as HTMLElement;
+    expect(wrapper.style.opacity).toBe('0.6');
+  });
+
   it('applies line width as a clamped height', () => {
     legend.addEntry({ id: 'lw1', type: 'line', color: '#000000', width: 20, label: 'Breit' });
     const marker = document.querySelector('.map-legend-line') as HTMLElement;
@@ -114,6 +120,12 @@ describe('MapLegend.addEntry', () => {
   it('throws when dasharray does not have exactly 2 values', () => {
     expect(() => legend.addEntry({ id: 'ld2', type: 'line', color: '#000000', dasharray: [1, 2, 3] as never, label: 'Test' }))
       .toThrow('MapLegend.addEntry: dasharray muss genau 2 Werte [dash, gap] enthalten');
+  });
+
+  it('renders the "unknown color" fallback (not a styled line) for the ski-lifts-style resolver fallback {type: line, color: null, width}', () => {
+    legend.addEntry({ id: 'skilift-fallback', type: 'line', color: null, width: 3, label: 'Test' });
+    expect(document.querySelector('.map-legend-unknown')).not.toBeNull();
+    expect(document.querySelector('.map-legend-line')).toBeNull();
   });
 
   it('applies area outline as a border', () => {
