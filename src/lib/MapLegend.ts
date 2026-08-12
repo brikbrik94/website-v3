@@ -46,12 +46,12 @@ export class MapLegend {
 
     const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', area: 'map-legend-area', icon: 'map-legend-icon' }[entry.type];
 
-    if (entry.type === 'icon') {
+    if (entry.type === 'icon' && entry.icon) {
       const marker = document.createElement('i');
       marker.className = `${entry.icon} ${typeClass}`;
       if (entry.color) marker.style.color = entry.color;
       div.appendChild(marker);
-    } else if (entry.color === null) {
+    } else if (entry.type === 'icon' || entry.color === null) {
       const unknown = document.createElement('i');
       unknown.className = 'fa-solid fa-circle-question map-legend-unknown';
       unknown.title = 'Farbe nicht auflösbar';

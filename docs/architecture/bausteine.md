@@ -337,6 +337,19 @@ Exports:
 - `renderGeocodeItemHtml` (const)
 - `formatTime` (const)
 
+## `legendSchemaVersion.ts`
+
+Vergleicht einen Schema-"version"-String (z.B. "1.1") numerisch gegen ein Minimum
+major.minor — nicht als String (geodata-plugin-standard §5.6: ein Client muss `version`
+numerisch nach major.minor vergleichen). Fehlender/kaputter Wert gilt als vor der
+angefragten Version (Gate schlägt fehl) — ein Client darf neues Verhalten nur bei
+explizitem Versions-Signal annehmen.
+
+Import: `from '.../lib/legendSchemaVersion'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `isLegendSchemaAtLeast` (function)
+
 ## `resolveLegendSwatch.ts`
 
 Löst die Legenden-Swatch-Farbe eines MapLibre-Layers auf — deckt nur die im Projekt
@@ -354,3 +367,7 @@ Exports:
 - `resolveLegendSwatchBranches` (function)
 - `swatchTypeForLayerType` (function)
 - `resolveSwatchFromLayersMetaColor` (function)
+- `computeSwatchDedupKey` (function)
+- `LegendSection` (interface)
+- `ResolvedLegendItems` (interface)
+- `resolveLegendItemsForGroup` (function)

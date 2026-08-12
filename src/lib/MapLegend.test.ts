@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MapLegend } from './MapLegend';
+import { MapLegend, type AddLegendEntryOptions } from './MapLegend';
 
 function makeLegendFixture(): HTMLElement {
   const el = document.createElement('div');
@@ -51,5 +51,13 @@ describe('MapLegend.addEntry', () => {
     legend.addEntry({ id: 'e', type: 'icon', color: '#ff0000', label: 'Helikopter', icon: 'fa-solid fa-helicopter' });
     const marker = document.querySelector('.map-legend-icon') as HTMLElement;
     expect(marker.style.color).toBe('#ff0000');
+  });
+
+  it('renders the "unknown color" fallback (not class="undefined ...") for type: icon with icon: undefined', () => {
+    legend.addEntry({ id: 'f', type: 'icon', color: null, label: 'Ohne Icon' } as AddLegendEntryOptions);
+    expect(document.querySelector('.map-legend-icon')).toBeNull();
+    const unknown = document.querySelector('.map-legend-unknown') as HTMLElement;
+    expect(unknown).not.toBeNull();
+    expect(unknown.className).not.toContain('undefined');
   });
 });

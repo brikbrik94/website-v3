@@ -17,6 +17,11 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
 
 - **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet
   2026-08-11 (Performance-Baseline-Audit). Detaildatei: `bug-reports.md` (Punkt 3).
+- **Neue `MapLegend`-Swatch-Varianten: Linienbreite/-strichelung, Linie-mit-Casing,
+  Fläche-mit-Rand** — gemeldet 2026-08-12, deckt die aus der `legend_scale_id`/`legend_sections`/
+  `icon`-Runde bewusst zurückgestellten `width`/`dasharray`/`outline_color`/`outline_width`-Felder
+  aus `layers.json` ab (`geodata-plugin-standard` v1.1.0). Issue:
+  [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1).
 
 ## Erledigt (archiviert)
 
