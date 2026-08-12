@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 19:32
+
+### Behoben
+- **`geodata-updater`#96 und #97 live verifiziert und geschlossen.** Frischer Fetch von
+  `https://tiles.oe5ith.at/layers.json` (generated_at 19:27) zeigt jetzt für `openskimap`:
+  `version: "1.1"`, `legend_scale_id: "ski-difficulty-v1"` bei den Ski-Runs-Gruppen,
+  `width`/`outline_width` bei `ski-lifts`, und den vollständigen `legend_sections`-Block —
+  deckt sich exakt mit `geodata-openskimap/dist/layer-list.json`. Damit ist der Server-seitige
+  Sync (`deploy_scripts.sh`) + Pipeline-Re-Run, der in `[Unreleased] 17:05` als fehlend
+  dokumentiert war, zwischenzeitlich erfolgt. Beide Issues sind geschlossen, Details in
+  `docs/geodata/open-items.md`/`bug-reports.md`.
+
 ## [Unreleased] - 2026-08-12 17:05
 
 ### Behoben

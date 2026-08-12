@@ -21,13 +21,12 @@ Feature-Anfragen und `docs/geodata/handoff-*.md`-Dateien für Handoffs (abgeschl
 Request-/Handoff-Dateien wandern nach `docs/geodata/archive/`, diese Sammeldatei selbst bleibt
 dauerhaft hier).
 
-**Aktueller Stand: 2 offene Punkte, beide code-seitig behoben, beide noch nicht live deployed**
-(Punkt 1 vollständig behoben; Punkt 2 als
-[geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97) und Punkt 3 als
-[geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96) gemeldet — beide
-Fixes im Submodul verifiziert (`72349a0` bzw. `e9a6b59`), laut Live-Check aber noch nicht auf dem
-Server aktiv; siehe „Deploy-Lücke" bei Punkt 2 für den jetzt bekannten Grund. Tracking dazu in
-`docs/geodata/open-items.md`).
+**Aktueller Stand: alle 3 Punkte behoben und live verifiziert** (2026-08-12 19:27). Punkt 2
+([geodata-updater#97](https://github.com/brikbrik94/geodata-updater/issues/97)) und Punkt 3
+([geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96)) waren zwischen
+14:29 und 19:27 code-seitig fertig, aber noch nicht deployed (siehe „Deploy-Lücke" unten) — der
+Server-Sync + Pipeline-Re-Run ist seither erfolgt, beide Issues sind geschlossen. Tracking-Details
+in `docs/geodata/open-items.md` (Erledigt-Sektion).
 
 ---
 
@@ -84,16 +83,16 @@ direkt nachgezogen, kein Issue mehr nötig.
 
 ## 2. `layers.py` reicht die neuen v1.1.0-Felder noch nicht durch
 
-**Status:** 🟡 Code-seitig behoben (Commit `72349a0`, „fix: v1.1-Legendenfelder und
-legend_sections in layers_info.json durchreichen", explizit „Fixes #97"). Diff geprüft: ergänzt
+**Status:** ✅ Behoben und live verifiziert (Commit `72349a0`, „fix: v1.1-Legendenfelder und
+legend_sections in layers_info.json durchreichen", schließt #97). Diff geprüft: ergänzt
 `width`/`dasharray`/`outline_color`/`outline_width`/`icon`/`legend_scale_id` im Group-Eintrag
 sowie einen neuen `legend_sections`-Aggregationsschritt (dedupliziert über `id`, erste Definition
 gewinnt) — deckt sich exakt mit dem in Issue #97 vorgeschlagenen Fix. Submodul-Pointer hier auf
-`72349a0` aktualisiert. **Laut Live-Check (2026-08-12, `generated_at` frisch) trotzdem noch nicht
-deployed:** `openskimap`-Einträge in `https://tiles.oe5ith.at/layers.json` haben weiterhin
-`legend_scale_id: null`, kein `legend_sections`-Block, kein `width`/`outline_width`. Grund jetzt
-bekannt (siehe „Deploy-Lücke" unten) — kein neuer Widerspruch wie bei Punkt 1, sondern erwartetes
-Verhalten der Architektur.
+`72349a0` aktualisiert. **Live verifiziert 2026-08-12 19:27** (`generated_at` frisch,
+`https://tiles.oe5ith.at/layers.json`): `openskimap`-Runs-Gruppen haben jetzt
+`legend_scale_id: "ski-difficulty-v1"`, `ski-lifts` hat `width: 3.0`/`outline_width: 5.0`, und der
+Top-Level-`legend_sections`-Block ist vorhanden (8 Items „Schwierigkeitsgrade", deckt sich exakt
+mit `geodata-openskimap/dist/layer-list.json`). Issue geschlossen.
 **Gemeldet von:** website-v3 (2026-08-12, direkter Anschluss an Punkt 1 — geprüft, nachdem Punkt 1
 behoben war). **Dringlichkeit hochgestuft (2026-08-12, nach `openskimap`-Rebuild):** ist keine
 reine Vorbereitung mehr, sondern eine aktive Regression — `geodata-openskimap/dist/layer-list.json`
@@ -147,12 +146,11 @@ Gemeinsam mit der Client-Umsetzung einplanen, dann als ein zusammenhängendes Is
 
 ## 3. `layers.py` reicht das Top-Level-Feld `version` nicht durch
 
-**Status:** 🟡 Code-seitig behoben (Commit `e9a6b59`, „durchreichen des Schema-`version`-Felds pro
-Quelle" — abweichend vom hier vorgeschlagenen Minimum-Ansatz: `version` wird pro Style-Eintrag aus
-der jeweiligen Quelldatei übernommen, nicht global aggregiert — sinnvollere Lösung für
-gestaffeltes Rollout). Laut Live-Check (2026-08-12, `generated_at` frisch) **noch nicht
-deployed**: `openskimap`s eigene Quelldatei hat `"version": "1.1"`, die live ausgelieferte
-`layers.json` zeigt für denselben Eintrag weiterhin `version: null`.
+**Status:** ✅ Behoben und live verifiziert (Commit `e9a6b59`, „durchreichen des Schema-`version`-
+Felds pro Quelle" — abweichend vom hier vorgeschlagenen Minimum-Ansatz: `version` wird pro
+Style-Eintrag aus der jeweiligen Quelldatei übernommen, nicht global aggregiert — sinnvollere
+Lösung für gestaffeltes Rollout). **Live verifiziert 2026-08-12 19:27**: `openskimap`-Eintrag in
+`tiles.oe5ith.at/layers.json` hat jetzt `version: "1.1"`. Issue geschlossen.
 **Gemeldet von:** website-v3 (2026-08-12, beim Prüfen, ob die für §5.6s Breaking-Change-Regel
 nötige `version`-Erkennung überhaupt möglich ist)
 
