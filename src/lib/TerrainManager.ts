@@ -1,5 +1,4 @@
-import { Map } from 'maplibre-gl';
-import { OverlayLoader } from './OverlayLoader';
+import type { Map } from 'maplibre-gl';
 
 /**
  * Verwaltet 3D-Terrain (Elevation), Hillshading und das Höhenlinien-Overlay für eine
@@ -98,7 +97,14 @@ export async function applyTerrainInfrastructure() {
         _map.removeLayer(HILLSHADE_LAYER_ID);
     }
 
-    // 3. Contours – via gemeinsamem OverlayLoader (lädt/entfernt den kompletten Style).
+    // 3. Contours – via gemeinsamem OverlayLoader (lädt/entfernt den kompletten Style). Dynamischer
+    // Import statt Modul-Top-Level-Import: OverlayLoader zieht maplibre-gl/MapCore/MapRegistry nach
+    // sich (~265 KB gzip) — TerrainManager.ts wird aber bereits von TerrainControls.ts importiert,
+    // das wiederum von Topbar.ts auf JEDER Seite (auch /info, ohne Karte) statisch eingebunden wird.
+    // Ohne diesen dynamischen Import würde /info das komplette Karten-Bundle mitladen, obwohl
+    // applyTerrainInfrastructure() dort nie aufgerufen wird (siehe
+    // docs/performance/2026-07-28-baseline-audit.md, Befund 4).
+    const { OverlayLoader } = await import('./OverlayLoader');
     if (contoursEnabled) {
         if (!OverlayLoader.isLoaded(CONTOURS_OVERLAY.id)) {
             try {

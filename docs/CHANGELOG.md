@@ -2,6 +2,19 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 07:25
+
+### Geändert
+- **`maplibre-gl` lädt nicht mehr eager auf kartenlosen Seiten (`/info`).** Zwei unabhängige
+  Ursachen behoben: `src/main.ts` importierte `MapRegistry`/`OverlayLoader` statisch und rief sie
+  auf jedem Routenwechsel unbedingt auf — jetzt dynamischer Import, nur wenn die vorherige Seite
+  eine Kartenseite war. Haupttreiber war aber `TerrainManager.ts` (via `Topbar.ts` →
+  `TerrainControls.ts` auf jeder Seite eingebunden): ein ungenutzter Wert-Import von `Map` aus
+  `maplibre-gl` (jetzt `import type`) sowie ein Modul-Top-Level-Import von `OverlayLoader` (jetzt
+  dynamischer Import nur innerhalb der einen Funktion, die ihn braucht). Haupt-Entry-Chunk:
+  271,07 KB gzip → 10,94 KB gzip. Per echtem Playwright-Netzwerk-Trace verifiziert: `/info` lädt
+  jetzt null Karten-bezogene Requests. Details: `docs/TODO.md`.
+
 ## [3.13.1] - 2026-08-11
 
 ### Hinzugefügt

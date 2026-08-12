@@ -309,11 +309,30 @@ Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
   `npm run perf:audit`-Re-Lauf verifiziert: `/nah`s `errors-in-console`-Audit jetzt `1` (vorher
   `0`, 0 statt 1 Konsolenfehler). `/tracking`s AIS-Sprite-404 bleibt bestehen (externes
   Tile-Server-Problem, keine Repo-Code-Ursache) — dokumentiert in `docs/external-blockers.md`.
-- [ ] **`maplibre-gl` lädt eager auf jeder Route, auch ohne Karte.** `src/main.ts` importiert
-  `OverlayLoader` statisch statt per `import()`; `OverlayLoader.ts` importiert `maplibre-gl` und
-  `MapCore` direkt — dadurch landet `maplibre-gl` (265,53 KB gzip, 91 % des Haupt-Entry-Chunks)
-  auch im Bundle für `/info/*`, obwohl diese Seiten keine Karte rendern. Bei Umsetzung eigens
-  verifizieren, ob `/info/*` wirklich betroffen ist (war nicht Teil des 6-Seiten-Audit-Scopes).
+- [x] **`maplibre-gl` lädt eager auf jeder Route, auch ohne Karte** (2026-08-12) — ✅ ERLEDIGT.
+  Verifiziert per echtem Netzwerk-Trace (Playwright gegen Produktions-Build via `vite preview`):
+  `/info` fetchte tatsächlich `MapCore-*.js`/`MapRegistry-*.js` (~259 KB gzip), trotz `hasMap =
+  false`. **Zwei unabhängige Ursachen gefunden, beide gefixt:**
+  1. `src/main.ts` importierte `MapRegistry`/`OverlayLoader` statisch statt per `import()` und
+     rief sie auf jedem Routenwechsel unbedingt auf (`MapRegistry.clear()`/`OverlayLoader.reset()`).
+     Fix: beide Module werden jetzt nur noch dynamisch importiert, und nur dann, wenn die
+     *vorherige* Seite tatsächlich eine Kartenseite war (neues `previousPageUsedMap`-Flag,
+     pro Route gesetzt) — sonst gibt es nichts aufzuräumen.
+  2. **Der eigentliche Haupttreiber, in der ursprünglichen Analyse nicht erkannt:** `Topbar.ts`
+     (auf jeder Seite mit `initTopbar()` eingebunden, auch `/info`) importiert `TerrainControls.ts`
+     statisch. `TerrainControls.ts` importierte `TerrainManager.ts`, das wiederum `Map` aus
+     `maplibre-gl` als **Wert**-Import (nie zur Laufzeit gebraucht, nur als TS-Typ verwendet) und
+     `OverlayLoader` als Modul-Top-Level-Import zog — Letzteres zieht `MapCore`/`MapRegistry`/
+     `maplibre-gl` nach sich. Fix in `TerrainManager.ts`: `import { Map }` → `import type { Map }`
+     (laufzeitfrei); `OverlayLoader`-Import in die einzige Stelle verschoben, die ihn braucht
+     (`applyTerrainInfrastructure()`, dynamischer `import()`, Funktion war bereits async/awaited).
+     `Topbar.ts`/`initTopbar()` selbst musste dadurch **nicht** angefasst werden (keine
+     Async-Signatur-Änderung, kein Risiko für die 8 Call-Sites).
+  **Ergebnis** (Produktions-Build, `npm run build`): Haupt-Entry-Chunk 271,07 KB gzip →
+  **10,94 KB gzip**; `/info` lädt laut echtem Playwright-Netzwerk-Trace (Dev- und Preview-Server)
+  **null** Karten-bezogene Requests mehr. Funktionscheck bestanden: `/karte` rendert weiterhin
+  einen Canvas, Terrain-Button-Klick funktioniert live (dynamischer `OverlayLoader`-Import greift
+  korrekt), Client-Navigation `/karte` ↔ `/info` fehlerfrei. 284 Tests grün, 0 TypeScript-Fehler.
   Details: `docs/performance/2026-07-28-baseline-audit.md`, Befund 4.
 - [ ] **`/routing` + `/isochrones`: identischer CLS von 0,063.** Beide Seiten liefern exakt
   denselben Layout-Shift-Wert — gemeinsame Ursache noch nicht abschließend lokalisiert; beide
