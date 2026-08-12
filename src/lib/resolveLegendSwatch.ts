@@ -1,4 +1,5 @@
 import type { LayerSpecification } from 'maplibre-gl';
+import { isLegendSchemaAtLeast } from './legendSchemaVersion';
 
 export type SwatchType = 'dot' | 'line' | 'area' | 'icon';
 
@@ -156,4 +157,53 @@ export function resolveSwatchFromLayersMetaColor(type: string | undefined, color
  */
 export function computeSwatchDedupKey(overlayId: string, template: string, swatch: LegendSwatch): string {
   return `${overlayId}:${template}:${swatch.type}:${swatch.color ?? 'null'}`;
+}
+
+export interface LegendSection {
+  id: string;
+  label: string;
+  items: { label: string; color: string }[];
+}
+
+interface LegendItemsSource {
+  legend_scale_id?: string | null;
+  legend_items?: { label: string; color: string }[] | null;
+}
+
+export interface ResolvedLegendItems {
+  items: { label: string; color: string }[];
+  groupKey: string;
+}
+
+/**
+ * Löst die Legenden-Einträge einer layers.json-Gruppe auf: entweder aus einer geteilten
+ * Farbskala (`legend_scale_id` + `legend_sections`, ab Schema-Version 1.1, siehe
+ * geodata-plugin-standard §5.5/5.6) oder aus den klassischen Pro-Gruppe `legend_items`. Pure
+ * Funktion (kein DOM/fetch) für Testbarkeit — der Swatch-Typ pro Item wird bewusst NICHT hier
+ * gesetzt (hängt von metaGroup.type/layerType ab, die dieser Funktion unbekannt sind); der
+ * Aufrufer (Sidebar.ts) mappt das Ergebnis danach.
+ */
+export function resolveLegendItemsForGroup(
+  metaGroup: LegendItemsSource,
+  overlayId: string,
+  styleVersion: string | null | undefined,
+  legendSectionsById: Map<string, LegendSection>
+): ResolvedLegendItems | null {
+  if (metaGroup.legend_scale_id) {
+    if (isLegendSchemaAtLeast(styleVersion, 1, 1)) {
+      const section = legendSectionsById.get(metaGroup.legend_scale_id);
+      if (section) {
+        return { items: section.items, groupKey: `scale:${section.id}` };
+      }
+      console.warn('[resolveLegendItemsForGroup] legend_scale_id ohne passenden legend_sections-Eintrag:', metaGroup.legend_scale_id);
+    } else {
+      console.warn('[resolveLegendItemsForGroup] legend_scale_id gesetzt, aber version-Gate (>=1.1) nicht erfüllt:', styleVersion);
+    }
+  }
+
+  if (metaGroup.legend_items && metaGroup.legend_items.length > 0) {
+    return { items: metaGroup.legend_items, groupKey: overlayId };
+  }
+
+  return null;
 }
