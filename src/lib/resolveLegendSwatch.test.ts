@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, resolveLegendSwatchBranches, computeSwatchDedupKey } from './resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, resolveLegendSwatchBranches, computeSwatchDedupKey, resolveLegendItemsForGroup } from './resolveLegendSwatch';
 
 describe('resolveLegendSwatch', () => {
   it('resolves a literal line-color as type line', () => {
@@ -282,5 +282,73 @@ describe('resolveLegendSwatchBranches', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(resolveLegendSwatchBranches(layer, { unrelated: 'X' })).toBeNull();
     warnSpy.mockRestore();
+  });
+});
+
+describe('resolveLegendItemsForGroup', () => {
+  const skiSections = new Map([
+    ['ski-difficulty-v1', {
+      id: 'ski-difficulty-v1',
+      label: 'Schwierigkeitsgrade',
+      items: [
+        { label: 'Novice', color: 'hsl(125, 100%, 33%)' },
+        { label: 'Easy', color: 'hsl(208, 100%, 33%)' },
+      ],
+    }],
+  ]);
+
+  it('resolves items from legend_sections when legend_scale_id is set and version >= 1.1', () => {
+    const metaGroup = { legend_scale_id: 'ski-difficulty-v1', legend_items: null };
+    expect(resolveLegendItemsForGroup(metaGroup, 'openskimap', '1.1', skiSections)).toEqual({
+      items: [
+        { label: 'Novice', color: 'hsl(125, 100%, 33%)' },
+        { label: 'Easy', color: 'hsl(208, 100%, 33%)' },
+      ],
+      groupKey: 'scale:ski-difficulty-v1',
+    });
+  });
+
+  it('falls back to legend_items and warns when legend_scale_id is set but version is below 1.1', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const metaGroup = { legend_scale_id: 'ski-difficulty-v1', legend_items: [{ label: 'Alt', color: '#fff' }] };
+    expect(resolveLegendItemsForGroup(metaGroup, 'openskimap', '1.0', skiSections)).toEqual({
+      items: [{ label: 'Alt', color: '#fff' }],
+      groupKey: 'openskimap',
+    });
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[resolveLegendItemsForGroup] legend_scale_id gesetzt, aber version-Gate (>=1.1) nicht erfüllt:', '1.0'
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('falls back to legend_items and warns when legend_scale_id has no matching legend_sections entry', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const metaGroup = { legend_scale_id: 'unknown-scale', legend_items: [{ label: 'Alt', color: '#fff' }] };
+    expect(resolveLegendItemsForGroup(metaGroup, 'openskimap', '1.1', skiSections)).toEqual({
+      items: [{ label: 'Alt', color: '#fff' }],
+      groupKey: 'openskimap',
+    });
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[resolveLegendItemsForGroup] legend_scale_id ohne passenden legend_sections-Eintrag:', 'unknown-scale'
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('uses classic legend_items when legend_scale_id is not set (unchanged pre-1.1 behavior)', () => {
+    const metaGroup = { legend_scale_id: null, legend_items: [{ label: '0-15 min', color: '#22c55e' }] };
+    expect(resolveLegendItemsForGroup(metaGroup, 'anfahrtszeit', '1.1', skiSections)).toEqual({
+      items: [{ label: '0-15 min', color: '#22c55e' }],
+      groupKey: 'anfahrtszeit',
+    });
+  });
+
+  it('returns null when neither legend_scale_id nor legend_items is set', () => {
+    const metaGroup = { legend_scale_id: null, legend_items: null };
+    expect(resolveLegendItemsForGroup(metaGroup, 'bezirke', '1.1', skiSections)).toBeNull();
+  });
+
+  it('returns null for an empty legend_items array', () => {
+    const metaGroup = { legend_scale_id: null, legend_items: [] };
+    expect(resolveLegendItemsForGroup(metaGroup, 'bezirke', '1.1', skiSections)).toBeNull();
   });
 });
