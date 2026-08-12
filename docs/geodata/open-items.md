@@ -12,9 +12,20 @@ Submodul-Update wird die Checkliste gegen den neuen Stand geprüft.
 
 ## Offen
 
-**Aktuell keine offenen Anfragen an den Standard selbst.** Issue #1 ist spezifikationsseitig
-vollständig umgesetzt (siehe „Erledigt" unten) — offen ist nur noch die **Umsetzung in website-v3
-selbst**, die auf echte Live-Daten wartet (siehe „Blockiert" unten).
+**Am Standard selbst nichts offen** — Issue #1 ist spezifikationsseitig vollständig umgesetzt
+(siehe „Erledigt" unten).
+
+### [geodata-updater#96 — layers.py reicht Schema-„version" nicht durch](https://github.com/brikbrik94/geodata-updater/issues/96)
+
+Gemeldet 2026-08-12. `version` (§5.1) fehlt komplett in der aggregierten `layers_info.json` —
+ohne sie kann ein Client die Breaking-Change-Regel aus §5.6 (`legend_items` → `null` bei
+gesetztem `legend_scale_id`) nicht sicher erkennen. Offene Designfrage mitgegeben: Aggregation
+mehrerer Plugin-Versionen zu einer Top-Level-`version` — unser Vorschlag: Minimum aller
+aggregierten Versionen.
+
+- [ ] `version`-Feld (String, `"major.minor"`) im Top-Level der aggregierten `layers_info.json`
+- [ ] Aggregationsregel bei unterschiedlichen Plugin-Versionen geklärt (Minimum-Vorschlag
+  angenommen oder Alternative)
 
 ## Blockiert (wartet auf externe Umsetzung)
 

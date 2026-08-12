@@ -2,6 +2,15 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 12:55
+
+### Sicherheit
+- **`geodata-updater` reicht das Schema-`version`-Feld nicht durch** — gemeldet als
+  [geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96). Ohne `version`
+  in der öffentlichen `layers.json` kann kein Client die Breaking-Change-Regel aus
+  `geodata-plugin-standard` §5.6 sicher erkennen (`legend_items` → `null` bei gesetztem
+  `legend_scale_id`). Details: `docs/geodata/bug-reports.md`, Punkt 3.
+
 ## [Unreleased] - 2026-08-12 12:47
 
 ### Behoben

@@ -21,8 +21,9 @@ Feature-Anfragen und `docs/geodata/handoff-*.md`-Dateien für Handoffs (abgeschl
 Request-/Handoff-Dateien wandern nach `docs/geodata/archive/`, diese Sammeldatei selbst bleibt
 dauerhaft hier).
 
-**Aktueller Stand: keine offenen Bugs** (Punkt 1 behoben, Punkt 2 als Roadmap-Anschluss offen,
-siehe `docs/geodata/open-items.md`).
+**Aktueller Stand: 2 offene Punkte** (Punkt 1 behoben; Punkt 2 als Roadmap-Anschluss ohne Issue
+offen; Punkt 3 als [geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96)
+gemeldet, Tracking dazu in `docs/geodata/open-items.md`).
 
 ---
 
@@ -111,3 +112,30 @@ Standard §5.5 „Invariante").
 Noch nicht als GitHub-Issue gemeldet — website-v3-seitig ist die Konsumierung dieser Felder
 ohnehin noch nicht gebaut (siehe `docs/geodata/open-items.md` → „Blockiert"), also keine Eile.
 Gemeinsam mit der Client-Umsetzung einplanen, dann als ein zusammenhängendes Issue melden.
+
+---
+
+## 3. `layers.py` reicht das Top-Level-Feld `version` nicht durch
+
+**Status:** 🔴 Offen, gemeldet als [geodata-updater#96](https://github.com/brikbrik94/geodata-updater/issues/96)
+**Gemeldet von:** website-v3 (2026-08-12, beim Prüfen, ob die für §5.6s Breaking-Change-Regel
+nötige `version`-Erkennung überhaupt möglich ist)
+
+### Symptom
+
+`layers.py` liest `data.get("styles", [])` je Plugin-Datei, aber nirgends `data.get("version")` —
+das Top-Level-`version`-Feld aus `geodata-plugin-standard` §5.1 fehlt in der aggregierten
+Ausgabe komplett.
+
+### Warum das wichtig ist
+
+§5.6 macht `version` zum verbindlichen Signal dafür, ob `legend_items: null` „unkategorisiert"
+(alte Bedeutung) oder „Werte liegen in `legend_sections`" (neue, `v1.1`-Bedeutung) heißt. Ohne
+`version` in der öffentlichen Datei kann ein Client diesen Unterschied nicht sicher erkennen.
+
+### Offene Designfrage im Issue mitgegeben
+
+`layers.py` aggregiert mehrere Plugin-Dateien mit potenziell unterschiedlichen `version`-Werten
+(gestaffeltes Rollout) zu einer Ausgabe — unser Vorschlag im Issue: das Minimum aller
+aggregierten Versionen verwenden, damit nie fälschlich neueres Verhalten angenommen wird. Bewusst
+nicht selbst entschieden, sondern als offene Frage an `geodata-updater` gestellt.
