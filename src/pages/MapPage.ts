@@ -205,6 +205,10 @@ export class MapPageController extends BasePageController {
                             type: event.swatch.type,
                             color: event.swatch.color,
                             icon: event.swatch.icon,
+                            width: event.swatch.width,
+                            dasharray: event.swatch.dasharray,
+                            outline_color: event.swatch.outline_color,
+                            outline_width: event.swatch.outline_width,
                             opacity: event.opacity ?? undefined,
                         });
                     }
@@ -215,6 +219,10 @@ export class MapPageController extends BasePageController {
                         type: event.swatch.type,
                         color: event.swatch.color,
                         icon: event.swatch.icon,
+                        width: event.swatch.width,
+                        dasharray: event.swatch.dasharray,
+                        outline_color: event.swatch.outline_color,
+                        outline_width: event.swatch.outline_width,
                         opacity: event.opacity ?? undefined,
                         onRemove: () => event.itemEl.click()
                     });
