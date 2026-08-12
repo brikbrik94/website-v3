@@ -7,3 +7,6 @@
 [submodule "geodata-plugin-standard"]
 	path = geodata-plugin-standard
 	url = git@github.com:brikbrik94/geodata-plugin-standard.git
+[submodule "geodata-updater"]
+	path = geodata-updater
+	url = git@github.com:brikbrik94/geodata-updater.git
