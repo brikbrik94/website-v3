@@ -44,26 +44,60 @@ export class MapLegend {
     const div = document.createElement('div');
     div.className = 'map-legend-entry';
 
-    const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', 'line-cased': 'map-legend-line', area: 'map-legend-area', icon: 'map-legend-icon' }[entry.type];
-
-    if (entry.type === 'icon' && entry.icon) {
-      const marker = document.createElement('i');
-      marker.className = `${entry.icon} ${typeClass}`;
-      if (entry.color) marker.style.color = entry.color;
-      div.appendChild(marker);
-    } else if (entry.type === 'icon' || entry.color === null) {
-      const unknown = document.createElement('i');
-      unknown.className = 'fa-solid fa-circle-question map-legend-unknown';
-      unknown.title = 'Farbe nicht auflösbar';
-      div.appendChild(unknown);
+    if (entry.type === 'line-cased') {
+      if (entry.color == null || entry.width == null || entry.outline_color == null || entry.outline_width == null) {
+        throw new Error("MapLegend.addEntry: type 'line-cased' benötigt color, width, outline_color, outline_width");
+      }
+      div.appendChild(this._buildLineCased(entry.color, entry.width, entry.outline_color, entry.outline_width));
     } else {
-      const marker = document.createElement('div');
-      marker.className = typeClass;
-      marker.style.background = entry.color;
-      // Inline-Style überschreibt CI-Defaults (z.B. .map-legend-area's statische opacity: 0.8) —
-      // spiegelt die echte Deckkraft der Kartendarstellung statt sie zu erfinden.
-      if (entry.opacity !== undefined) marker.style.opacity = String(entry.opacity);
-      div.appendChild(marker);
+      const typeClass = { dot: 'map-legend-dot', line: 'map-legend-line', area: 'map-legend-area', icon: 'map-legend-icon' }[entry.type];
+
+      if (entry.type === 'icon' && entry.icon) {
+        const marker = document.createElement('i');
+        marker.className = `${entry.icon} ${typeClass}`;
+        if (entry.color) marker.style.color = entry.color;
+        div.appendChild(marker);
+      } else if (entry.type === 'icon' || entry.color === null) {
+        const unknown = document.createElement('i');
+        unknown.className = 'fa-solid fa-circle-question map-legend-unknown';
+        unknown.title = 'Farbe nicht auflösbar';
+        div.appendChild(unknown);
+      } else {
+        const marker = document.createElement('div');
+        marker.className = typeClass;
+        marker.style.background = entry.color;
+        // Inline-Style überschreibt CI-Defaults (z.B. .map-legend-area's statische opacity: 0.8) —
+        // spiegelt die echte Deckkraft der Kartendarstellung statt sie zu erfinden.
+        if (entry.opacity !== undefined) marker.style.opacity = String(entry.opacity);
+
+        if (entry.type === 'line' && entry.width != null) {
+          marker.style.height = `${Math.max(1, Math.min(6, entry.width))}px`;
+        }
+
+        if (entry.type === 'line' && entry.dasharray != null) {
+          if (entry.dasharray.length !== 2) {
+            throw new Error('MapLegend.addEntry: dasharray muss genau 2 Werte [dash, gap] enthalten');
+          }
+          const [dash, gap] = entry.dasharray;
+          const cycle = dash + gap;
+          const scale = 8 / cycle;
+          const dashPx = dash * scale;
+          const gapPx = gap * scale;
+          marker.style.background = 'transparent';
+          marker.style.backgroundImage =
+            `repeating-linear-gradient(to right, ${entry.color} 0 ${dashPx}px, transparent ${dashPx}px ${dashPx + gapPx}px)`;
+        }
+
+        if (entry.type === 'area' && (entry.outline_color != null || entry.outline_width != null)) {
+          if (entry.outline_color == null || entry.outline_width == null) {
+            throw new Error("MapLegend.addEntry: 'area' benötigt outline_color UND outline_width zusammen");
+          }
+          const w = Math.max(1, Math.min(3, entry.outline_width));
+          marker.style.border = `${w}px solid ${entry.outline_color}`;
+        }
+
+        div.appendChild(marker);
+      }
     }
 
     const label = document.createElement('span');
@@ -83,6 +117,29 @@ export class MapLegend {
 
     this._entriesEl.appendChild(div);
     if (entry.id) this._entryNodes.set(entry.id, div);
+  }
+
+  private _buildLineCased(color: string, width: number, outline_color: string, outline_width: number): HTMLElement {
+    const oW = Math.max(2, Math.min(8, outline_width));
+    let iW = Math.max(1, Math.min(6, width));
+    if (iW >= oW) iW = Math.max(1, oW - 1);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'map-legend-line-cased';
+    wrapper.style.height = `${oW}px`;
+
+    const outline = document.createElement('div');
+    outline.className = 'map-legend-line-cased-outline';
+    outline.style.height = `${oW}px`;
+    outline.style.background = outline_color;
+
+    const inner = document.createElement('div');
+    inner.className = 'map-legend-line-cased-inner';
+    inner.style.height = `${iW}px`;
+    inner.style.background = color;
+
+    wrapper.append(outline, inner);
+    return wrapper;
   }
 
   removeEntry(id: string): void {
