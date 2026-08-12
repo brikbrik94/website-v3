@@ -2,6 +2,16 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 11:42
+
+### Geändert
+- **`geodata-plugin-standard` Submodul auf v1.1.0 aktualisiert.** Deckt alle 6 Punkte aus
+  [geodata-plugin-standard#1](https://github.com/brikbrik94/geodata-plugin-standard/issues/1) ab
+  (`width`, `dasharray`, `outline_color`/`outline_width`, `type: "icon"`+`icon`,
+  `legend_scale_id`, `legend_sections`-Block) — Issue geschlossen. Live-`tiles.oe5ith.at/layers.json`
+  liefert dieses Schema noch nicht (kein `version`-Feld, kein `legend_sections`); website-v3-seitige
+  Konsumierung bleibt daher zurückgestellt, siehe `docs/geodata/open-items.md`.
+
 ## [Unreleased] - 2026-08-12 08:33
 
 ### Hinzugefügt
