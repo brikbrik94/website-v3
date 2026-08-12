@@ -7,6 +7,12 @@ Vollständig abgeschlossene Anfragen/Handoffs (Detaildatei + dieser Eintrag) wan
 gerade alle Einträge behoben sind) — es ist die fortlaufende Sammeldatei für künftige Funde, kein
 einzelner, abschließbarer Punkt.
 
+**Workflow-Änderung (2026-08-12):** Neue Anfragen gehen als vollständiges **GitHub-Issue** direkt
+an `brikbrik94/oe5ith-ci` (siehe `CLAUDE.md` → Project conventions); hier landet nur noch ein
+schlanker Tracking-Eintrag (Issue-Link + Checkliste), analog `docs/geodata/open-items.md`. Die
+bestehenden `archive/*-request.md`/`archive/handoff-*.md`-Dateien unten sind älter als diese
+Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als Historie stehen.
+
 ## Offen
 
 - **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet

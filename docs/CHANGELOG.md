@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 08:22
+
+### Geändert
+- **Änderungsanfragen an externe Submodule (`oe5ith-ci`, `geodata-plugin-standard`) laufen jetzt
+  primär über GitHub Issues** statt nur lokale Markdown-Dateien — geräteunabhängig lösbar. Lokale
+  `docs/ci/`/`docs/geodata/`-Dateien werden zu schlanken Tracking-Einträgen (Issue-Link +
+  Checkliste), keine Volltext-Duplikate mehr. `CLAUDE.md` entsprechend aktualisiert. Erste Anfrage
+  nach diesem Muster: [geodata-plugin-standard#1](https://github.com/brikbrik94/geodata-plugin-standard/issues/1)
+  (Legend-Rendering-Erweiterungen: Linienbreite, Strichmuster, Umrandung/Casing, Icon-Auflösung,
+  geteilte Farbskalen) — Ergebnis der Prüfung, ob die live ausgelieferte `layers.json` dem
+  `geodata-plugin-standard`-Schema entspricht (ja, strukturell nahezu identisch).
+
 ## [Unreleased] - 2026-08-12 07:45
 
 ### Hinzugefügt
