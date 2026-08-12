@@ -2,7 +2,7 @@ import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, type LegendSwatch, type SwatchType } from '../lib/resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, computeSwatchDedupKey, type LegendSwatch, type SwatchType } from '../lib/resolveLegendSwatch';
 
 export interface LayerMetaGroup {
   name: string;
@@ -10,6 +10,7 @@ export interface LayerMetaGroup {
   template: string;
   type?: string;
   color?: unknown;
+  opacity?: number;
   legend_items?: { label: string; color: string }[] | null;
 }
 
@@ -26,8 +27,20 @@ export interface LayerToggleEvent {
   checked: boolean;
   legendId: string;
   legendLabel: string;
+  /** Overlay-Titel (z.B. "Autobahnen"), unabhängig von der einzelnen Instanz — für deduplizierte
+   *  Legenden-Zeilen (siehe dedupKey) die passendere Beschriftung als legendLabel. */
+  overlayLabel: string;
   swatch: LegendSwatch | null;
   legendItems: { label: string; type: SwatchType; color: string }[] | null;
+  /** Deckkraft aus layers.json (`opacity`-Feld), zur Anzeige im Legenden-Swatch. */
+  opacity: number | null;
+  /**
+   * Dedup-Schlüssel für Overlays, bei denen mehrere Gruppen (z.B. jede Autobahn einzeln) exakt
+   * denselben Swatch ergeben — nur gesetzt für den layers.json-Metadaten-Pfad mit echtem
+   * `template`/`color` (siehe computeSwatchDedupKey()); `null` beim style.json-Fallback-Pfad, wo
+   * kein verlässliches `template` vorliegt und deshalb keine Dedup-Annahme getroffen werden darf.
+   */
+  dedupKey: string | null;
   itemEl: HTMLElement;
 }
 
@@ -188,6 +201,10 @@ export const initSidebar = (
     const layerIds: string[] = JSON.parse(itemEl.getAttribute('data-layer-ids')!);
     const layerType = itemEl.getAttribute('data-layer-type')!;
     const legendLabel = itemEl.querySelector('.acc-item-label')?.textContent ?? layerType;
+    // Für deduplizierte Zeilen (mehrere Instanzen -> eine Legenden-Zeile, siehe dedupKey unten)
+    // ist der Overlay-Name ("Autobahnen") die sinnvollere Beschriftung als der Name der zuerst
+    // aktivierten Einzelinstanz ("A1").
+    const overlayLabel = group.querySelector('.acc-title')?.textContent?.trim() ?? legendLabel;
 
     // layers.json liefert seit 2026-07-12 pro Gruppe direkt type/color (und optional
     // legend_items für Match-Farbskalen) — das wird bevorzugt genutzt. Nachladen des vollen
@@ -195,6 +212,8 @@ export const initSidebar = (
     // color-Feld (siehe docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md).
     let swatch: LegendSwatch | null = null;
     let legendItems: { label: string; type: SwatchType; color: string }[] | null = null;
+    let opacity: number | null = null;
+    let dedupKey: string | null = null;
 
     const loaded = loadedLayers.get(overlayId);
     const isMetaPath = !!loaded && loaded.length > 0 && 'style_layers' in loaded[0];
@@ -202,12 +221,16 @@ export const initSidebar = (
     if (isMetaPath) {
       const idx = Number(itemEl.getAttribute('data-group-index'));
       const metaGroup = (loaded as LayerMetaGroup[])[idx];
+      opacity = typeof metaGroup.opacity === 'number' ? metaGroup.opacity : null;
 
       if (metaGroup.legend_items && metaGroup.legend_items.length > 0) {
         const itemType = swatchTypeForLayerType(metaGroup.type ?? layerType) ?? 'dot';
         legendItems = metaGroup.legend_items.map(li => ({ label: li.label, type: itemType, color: li.color }));
       } else if (metaGroup.color !== undefined) {
         swatch = resolveSwatchFromLayersMetaColor(metaGroup.type, metaGroup.color);
+        if (swatch) {
+          dedupKey = computeSwatchDedupKey(overlayId, metaGroup.template, swatch);
+        }
       }
     }
 
@@ -238,8 +261,11 @@ export const initSidebar = (
       checked,
       legendId: `${overlayId}:${layerIds.join(',')}`,
       legendLabel,
+      overlayLabel,
       swatch,
       legendItems,
+      opacity,
+      dedupKey,
       itemEl
     };
   };

@@ -31,6 +31,11 @@ export class MapPageController extends BasePageController {
     // Anfahrtszeit-Overlay der Fall). Trüge ein künftiges Overlay pro Gruppe unterschiedliche
     // legend_items, würden nur die Zeilen der zuerst aktivierten Gruppe angezeigt.
     private legendItemsRefCount = new Map<string, number>();
+    // Zählt aktive Gruppen pro Dedup-Schlüssel (computeSwatchDedupKey()) — mehrere Gruppen
+    // desselben Overlays mit identischem Swatch (z.B. jede Autobahn einzeln) teilen sich eine
+    // Legenden-Zeile, analog legendItemsRefCount oben. Nur für den layers.json-Metadaten-Pfad
+    // gesetzt (event.dedupKey !== null) — der style.json-Fallback-Pfad dedupliziert nicht.
+    private swatchRefCount = new Map<string, number>();
 
     public async mount(container: HTMLElement): Promise<void> {
         try {
@@ -173,7 +178,24 @@ export class MapPageController extends BasePageController {
                                 label: item.label,
                                 type: item.type,
                                 color: item.color,
+                                opacity: event.opacity ?? undefined,
                             });
+                        });
+                    }
+                } else if (event.swatch && event.dedupKey) {
+                    // Mehrere Gruppen mit identischem Swatch (z.B. jede Autobahn einzeln) teilen
+                    // sich eine Zeile — analog legendItemsRefCount oben. Kein onRemove: bei >1
+                    // aktiven Instanzen wäre unklar, welche der "×"-Klick abschalten sollte
+                    // (gleiches Muster wie beim legendItems-Zweig, der ebenfalls kein onRemove hat).
+                    const count = (this.swatchRefCount.get(event.dedupKey) ?? 0) + 1;
+                    this.swatchRefCount.set(event.dedupKey, count);
+                    if (count === 1) {
+                        legend.addEntry({
+                            id: event.dedupKey,
+                            label: event.overlayLabel,
+                            type: event.swatch.type,
+                            color: event.swatch.color,
+                            opacity: event.opacity ?? undefined,
                         });
                     }
                 } else if (event.swatch) {
@@ -182,6 +204,7 @@ export class MapPageController extends BasePageController {
                         label: event.legendLabel,
                         type: event.swatch.type,
                         color: event.swatch.color,
+                        opacity: event.opacity ?? undefined,
                         onRemove: () => event.itemEl.click()
                     });
                 }
@@ -192,6 +215,12 @@ export class MapPageController extends BasePageController {
                     this.legendItemsRefCount.set(event.overlayId, count);
                     if (count === 0) {
                         event.legendItems.forEach((_, idx) => legend.removeEntry(`${event.overlayId}:legend-item:${idx}`));
+                    }
+                } else if (event.dedupKey) {
+                    const count = Math.max(0, (this.swatchRefCount.get(event.dedupKey) ?? 1) - 1);
+                    this.swatchRefCount.set(event.dedupKey, count);
+                    if (count === 0) {
+                        legend.removeEntry(event.dedupKey);
                     }
                 } else {
                     legend.removeEntry(event.legendId);

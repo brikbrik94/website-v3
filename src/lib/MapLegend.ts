@@ -60,6 +60,9 @@ export class MapLegend {
       const marker = document.createElement('div');
       marker.className = typeClass;
       marker.style.background = entry.color;
+      // Inline-Style überschreibt CI-Defaults (z.B. .map-legend-area's statische opacity: 0.8) —
+      // spiegelt die echte Deckkraft der Kartendarstellung statt sie zu erfinden.
+      if (entry.opacity !== undefined) marker.style.opacity = String(entry.opacity);
       div.appendChild(marker);
     }
 
