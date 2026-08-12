@@ -129,6 +129,33 @@ alle vier auf einmal anfassen.
   166 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
   ARIA-APG-Tastaturnavigation fürs Menü (Pfeiltasten, Roving Tabindex) — eigener Folge-Punkt bei
   Bedarf; visuelles Hold-Feedback während des Haltens — bei Bedarf nach Live-Test nachziehen.
+- [ ] **`MapPage.ts`s `legendItemsRefCount` gruppiert falsch, wenn zwei Gruppen desselben
+  Overlays unterschiedliche `legend_items` tragen** (2026-08-12, Fund aus finalem
+  Whole-Branch-Review der `legend_scale_id`/`legend_sections`/`icon`-Runde). **Vorbestehender
+  Bug** — nicht durch diese Runde eingeführt, nur generalisiert (Ref-Zählungs-Key war vorher
+  ausschließlich `overlayId`, jetzt `legendGroupKey ?? overlayId`; das Problem besteht für den
+  `overlayId`-Fall unverändert). `toggleLayer()` zählt aktive Gruppen pro `groupKey`
+  (`legendItemsRefCount`) und rendert `event.legendItems` nur beim Übergang 0→1 aktiver Gruppen —
+  das setzt voraus, dass alle Gruppen eines `groupKey` denselben `legend_items`-Satz tragen. Live
+  gegen `https://tiles.oe5ith.at/layers.json` verifiziert (2026-08-12), dass das **heute bereits
+  nicht zutrifft**: `openskimap` hat die Gruppen „Ski-Spots" (6 `legend_items`) und „Lifte"
+  (7 `legend_items`), beide ohne `legend_scale_id` → beide bekommen `groupKey = "openskimap"`
+  (`resolveLegendItemsForGroup()`, `resolveLegendSwatch.ts`). Ebenso `zonen-nef` (6 Gruppen unter
+  `groupKey = "zonen-nef"`, je 7-15 `legend_items`, unterschiedlich pro Gruppe: NEF-AM 8,
+  NEF-HRV 11, NEF-INN 8, NEF-RLZ 15, NEF-SKG 10, NEF-SrKi 7) und `zonen-sew` (8 Gruppen unter
+  `groupKey = "zonen-sew"`, je 23-63 `legend_items`: SEW-HRV 26, SEW-INN 32, SEW-NÖ 61, SEW-RLZ 63,
+  SEW-SBG 25, SEW-SKG 27, SEW-STMK 23, SEW-SrKi 23). Werden zwei solche Gruppen eines Overlays
+  gleichzeitig aktiviert: (a) nur die Legenden-Zeilen der zuerst aktivierten Gruppe rendern
+  (0→1-Gate lässt die zweite Aktivierung nichts mehr anzeigen), und (b) wird danach die
+  zuerst aktivierte Gruppe wieder abgeschaltet während die zweite aktiv bleibt, iteriert
+  `removeEntry` über `event.legendItems` des GERADE abschaltenden Toggle-Events — dessen Länge/
+  Reihenfolge zu den tatsächlich gerenderten IDs (`${groupKey}:legend-item:${idx}`) nicht passt,
+  was orphaned Legenden-Zeilen hinterlassen kann, die nie wieder entfernt werden. Betrifft
+  `src/pages/MapPage.ts` (`legendItemsRefCount`, `toggleLayer()`, Kommentar dort korrigiert im
+  finalen Fix-Round). **Bewusst nicht in diesem Fix-Round behoben** — ein echter Fix bräuchte
+  einen Content-Hash- oder anderen kollisionsfreien Key statt reinem `groupKey`-Ref-Count; erst
+  angehen, wenn ein konkreter Live-Fall (zwei solche Gruppen gleichzeitig aktiv) tatsächlich
+  beobachtet/reproduziert wird.
 
 ## Sonstiges
 

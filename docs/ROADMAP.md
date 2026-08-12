@@ -303,6 +303,13 @@ konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
   Linie-mit-Casing, Fläche-mit-Rand), die noch nicht existieren; Inline-Styles dafür sind laut
   `oe5ith-ci/docs/for-coding-agents.md` nicht zulässig (neues visuelles Muster, keine zur
   Laufzeit berechnete Größe). Folgt als separates `oe5ith-ci`-Issue + Folge-Runde.
+- [ ] **`width`/`dasharray`/`outline_color`/`outline_width` aus `layers.json` in der Legende
+  darstellen** — im vorigen Punkt bewusst zurückgestellt, da die dafür nötigen `MapLegend`-
+  Swatch-Varianten (gestrichelte/breitere Linie, Linie-mit-Casing, Fläche-mit-Rand) noch nicht in
+  `oe5ith-ci` existieren. GitHub-Issue mit Belegen aus echten Live-Daten (`ski-lifts`/`bezirke`)
+  gestellt: [oe5ith-ci#1](https://github.com/brikbrik94/oe5ith-ci/issues/1). Tracking-Eintrag:
+  `docs/ci/open-items.md`. Umsetzung hier erst möglich, nachdem `oe5ith-ci` die neuen Varianten
+  liefert.
 - [ ] **Legenden-Gruppierung/Section-Header** — `MapLegend.ts` kennt aktuell nur eine flache
   Liste von Einträgen ohne Überschriften. Bei vielen gleichzeitig aktiven Overlays (z.B. mehrere
   Autobahnen + Anfahrtszeit-Ringe + Bezirke) könnte eine Legende ohne erkennbare Gruppierung

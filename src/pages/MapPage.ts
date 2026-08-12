@@ -27,9 +27,16 @@ export class MapPageController extends BasePageController {
     private map?: maplibregl.Map;
     private searchPinCoord: [number, number] | null = null;
     // Zählt aktive Gruppen pro Overlay, nicht pro legend_items-Inhalt — setzt voraus, dass alle
-    // Gruppen eines Overlays denselben legend_items-Satz tragen (aktuell nur beim
-    // Anfahrtszeit-Overlay der Fall). Trüge ein künftiges Overlay pro Gruppe unterschiedliche
-    // legend_items, würden nur die Zeilen der zuerst aktivierten Gruppe angezeigt.
+    // Gruppen eines Overlays denselben legend_items-Satz tragen. Das ist bereits HEUTE nicht
+    // durchgängig der Fall (live in layers.json verifiziert, siehe docs/TODO.md, Eintrag
+    // 2026-08-12): z.B. teilen sich `openskimap`s „Ski-Spots" (6 legend_items) und „Lifte"
+    // (7 legend_items) denselben groupKey ("openskimap"), ebenso `zonen-nef` (6 Gruppen,
+    // 7-15 Items) und `zonen-sew` (8 Gruppen, 23-63 Items) je unter ihrem eigenen groupKey.
+    // Werden zwei solche Gruppen eines Overlays gleichzeitig aktiviert, rendern nur die Zeilen
+    // der zuerst aktivierten Gruppe (0→1-Gate), und ein späteres Abschalten der jeweils anderen
+    // Gruppe kann falsche/orphaned Zeilen hinterlassen (removeEntry iteriert dann die Items-Länge
+    // der abschaltenden statt der tatsächlich gerenderten Gruppe). Bekannter, nicht behobener Bug
+    // — siehe TODO.md für Details, nicht hier fixen (Content-Hash-Key wäre der echte Fix).
     private legendItemsRefCount = new Map<string, number>();
     // Zählt aktive Gruppen pro Dedup-Schlüssel (computeSwatchDedupKey()) — mehrere Gruppen
     // desselben Overlays mit identischem Swatch (z.B. jede Autobahn einzeln) teilen sich eine
