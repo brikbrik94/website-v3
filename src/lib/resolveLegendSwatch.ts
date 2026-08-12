@@ -129,3 +129,17 @@ export function resolveSwatchFromLayersMetaColor(type: string | undefined, color
   if (!swatchType) return null;
   return { type: swatchType, color: extractLiteralColor(color) };
 }
+
+/**
+ * Dedup-Schlüssel für mehrere Gruppen desselben Overlays, die denselben Swatch ergeben (z.B. jede
+ * Autobahn einzeln in `autobahnen`, alle mit identischem `color`/`type`) — damit sie in der
+ * Legende zu einer Zeile zusammenfallen statt eine Zeile pro Instanz zu erzeugen. Bewusst
+ * `overlayId` UND `template` UND `color` im Schlüssel: reines Dedup nach `template`+`color` würde
+ * z.B. `gemeinden` und `bezirke` (unterschiedliche Overlays, zufällig identische Randfarbe) fälschlich
+ * zu einer Zeile zusammenfassen; reines Dedup nach `overlayId`+`template` würde `leitstellen-bereiche`
+ * (ein Overlay, ein Template, aber 5 echte verschiedene Zonenfarben) fälschlich auf eine Zeile
+ * reduzieren (siehe docs/geodata/open-items.md für die Live-Daten-Belege beider Fälle).
+ */
+export function computeSwatchDedupKey(overlayId: string, template: string, swatch: LegendSwatch): string {
+  return `${overlayId}:${template}:${swatch.type}:${swatch.color ?? 'null'}`;
+}

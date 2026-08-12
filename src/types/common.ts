@@ -23,6 +23,9 @@ export interface LegendEntry {
     label: string;
     /** FontAwesome-Klassen (z.B. 'fa-solid fa-helicopter'), nur bei type: 'icon' relevant. */
     icon?: string;
+    /** Deckkraft (0-1) aus den echten Layer-Paint-Daten, z.B. layers.json `opacity`-Feld — spiegelt
+     *  die tatsächliche Kartendarstellung, statt den Swatch immer volldeckend zu zeigen. */
+    opacity?: number;
 }
 
 export interface RouteStyle {

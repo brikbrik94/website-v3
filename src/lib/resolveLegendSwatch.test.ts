@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, resolveLegendSwatchBranches } from './resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, resolveLegendSwatchBranches, computeSwatchDedupKey } from './resolveLegendSwatch';
 
 describe('resolveLegendSwatch', () => {
   it('resolves a literal line-color as type line', () => {
@@ -156,6 +156,32 @@ describe('resolveSwatchFromLayersMetaColor', () => {
 
   it('returns null when type is undefined', () => {
     expect(resolveSwatchFromLayersMetaColor(undefined, '#ffffff')).toBeNull();
+  });
+});
+
+describe('computeSwatchDedupKey', () => {
+  it('gives identical instances of the same overlay+template+color the same key', () => {
+    // z.B. autobahnen: A1 und A10, beide template "strassen", identische Farbe
+    const swatch = { type: 'line' as const, color: '#0000FF' };
+    expect(computeSwatchDedupKey('autobahnen', 'strassen', swatch))
+      .toBe(computeSwatchDedupKey('autobahnen', 'strassen', swatch));
+  });
+
+  it('keeps different overlays with the same template+color distinct (gemeinden vs. bezirke)', () => {
+    const swatch = { type: 'line' as const, color: '#3b82f6' };
+    const gemeinden = computeSwatchDedupKey('gemeinden', 'gebiete', swatch);
+    const bezirke = computeSwatchDedupKey('bezirke', 'gebiete', swatch);
+    expect(gemeinden).not.toBe(bezirke);
+  });
+
+  it('keeps different colors within the same overlay+template distinct (leitstellen-bereiche)', () => {
+    const key1 = computeSwatchDedupKey('leitstellen-bereiche', 'leitstellen', { type: 'area', color: '#10b981' });
+    const key2 = computeSwatchDedupKey('leitstellen-bereiche', 'leitstellen', { type: 'area', color: '#8b5cf6' });
+    expect(key1).not.toBe(key2);
+  });
+
+  it('handles a null color without throwing', () => {
+    expect(computeSwatchDedupKey('rd', 'rd', { type: 'dot', color: null })).toBe('rd:rd:dot:null');
   });
 });
 

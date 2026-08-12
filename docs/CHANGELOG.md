@@ -2,6 +2,23 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-12 08:33
+
+### Hinzugefügt
+- **Legenden-Swatches zeigen jetzt echte Opacity statt immer volldeckend.** `opacity`-Feld aus
+  `layers.json` fließt durch `Sidebar.ts`/`MapLegend.ts` bis in ein Inline-Style, das
+  `oe5ith-ci`s bisher statisch fixe `opacity: 0.8` auf `.map-legend-area` überschreibt.
+
+### Geändert
+- **Legenden-Zeilen für einfarbige Overlay-Templates ohne `legend_items` werden dedupliziert.**
+  Autobahnen, Gemeinden, Leitstellen-Bereiche u.a. erzeugten bisher eine Legenden-Zeile pro
+  einzeln getoggelter Instanz (z.B. „A1"/„A10"/„A11" statt „Autobahnen"). Neues
+  `computeSwatchDedupKey()` (`overlayId`+`template`+`color`+`type`) fasst identische Instanzen zu
+  einer Zeile zusammen, ohne unterschiedliche Overlays mit zufällig gleicher Farbe (Gemeinden vs.
+  Bezirke) oder unterschiedliche Farben innerhalb eines Overlays (Leitstellen-Zonen)
+  fälschlicherweise zu vermischen. Live per Playwright verifiziert. 7 neue Tests, 291 Tests grün,
+  0 TypeScript-Fehler. Details: `docs/ROADMAP.md` → „Karten-Legende: weitere Optimierung".
+
 ## [Unreleased] - 2026-08-12 08:22
 
 ### Geändert

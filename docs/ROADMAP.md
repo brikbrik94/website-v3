@@ -253,25 +253,40 @@ Erweiterungen, sondern offene Richtungen, die erst einen eigenen Brainstorming-D
 brauchen. Die Schritte 3-5 (Legende auf `/nah`/`/routing`/`/tracking` anwenden) sind bereits
 konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
 
-- [ ] **`legend_items`-Kuratierung auf weitere Overlay-Templates ausweiten** — aktuell liefert
-  `layers.json` nur beim `anfahrtszeit`-Template kuratierte `legend_items` (die 6-stufige
-  Farbskala); alle anderen 7 Templates (Autobahnen, Bezirke, Leitstellen-Bereiche, RD/NEF-Zonen,
-  NAH-Stützpunkte, …) zeigen weiterhin einen Legenden-Eintrag pro einzeln getoggelter
-  Gruppe/Instanz statt einen pro semantischer Kategorie (z.B. „A1"/„A10"/„A11" statt einem
-  einzigen „Autobahn"-Eintrag) — das ursprüngliche Granularitätsproblem aus dem Live-Test
-  2026-07-09 ist damit nur für Anfahrtszeit gelöst, nicht generell. Zwei Stoßrichtungen offen:
-  (a) weitere Templates extern in `layers.json` mit `legend_items` kuratieren (analog
-  Anfahrtszeit), oder (b) client-seitig Gruppen mit identischer `color`/`type` zu einer Zeile
-  zusammenfassen (die ursprünglich verworfene Alternative (a) aus dem 2026-07-09-Design, jetzt
-  ggf. neu zu bewerten).
-- [ ] **`opacity`-Feld aus `layers.json` für Swatches nutzen** — bewusst außerhalb der
-  2026-07-12-Umsetzung gelassen (siehe Spec, „Out of Scope"). Legenden-Swatches rendern aktuell
-  immer volldeckend, unabhängig von der tatsächlichen Layer-Opacity auf der Karte (z.B.
-  Anfahrtszeit-Flächen mit 0.4 Opacity zeigen einen kräftigeren Swatch, als auf der Karte zu
-  sehen ist) — könnte die Legende irreführend wirken lassen, sobald mehr Overlays mit
-  niedriger Opacity dazukommen.
+- [x] **`legend_items`-Kuratierung auf weitere Overlay-Templates ausweiten** (2026-08-12) — ✅
+  ERLEDIGT über Alternative (b) (client-seitiges Zusammenfassen). **Zwischenzeitlich auch
+  serverseitig weiter fortgeschritten als hier vermerkt:** `legend_items` deckt inzwischen 8
+  Templates ab (nicht nur `anfahrtszeit`), verifiziert bei der Prüfung gegen
+  `geodata-plugin-standard` (siehe `docs/geodata/open-items.md`). Für die verbleibenden
+  Templates ohne `legend_items` (Autobahnen/`strassen`, `gebiete`, `leitstellen`, `rd`, `nah`,
+  `linz-ag-linien`, `ski-areas-*`) wurde jetzt clientseitiges Dedup ergänzt:
+  `computeSwatchDedupKey()` (`src/lib/resolveLegendSwatch.ts`) fasst Gruppen mit identischem
+  `overlayId`+`template`+`color`+`type` zu einer Legenden-Zeile zusammen (z.B. alle Autobahnen zu
+  „Autobahnen" statt 36 einzelnen „A1"/„A10"/…-Zeilen), ref-gezählt analog zum bestehenden
+  `legendItemsRefCount`-Muster (`MapPage.ts`). Bewusst *nicht* rein nach `template`+`color`
+  dedupliziert (hätte `gemeinden`/`bezirke` — verschiedene Overlays, zufällig gleiche Randfarbe —
+  fälschlich zusammengefasst) und *nicht* rein nach `overlayId`+`template` (hätte
+  `leitstellen-bereiche` — ein Overlay, ein Template, 5 echte Zonenfarben — fälschlich auf eine
+  Zeile reduziert) — beide Fälle mit echten Live-Daten verifiziert, siehe Tests in
+  `resolveLegendSwatch.test.ts`. Live per Playwright gegen `/karte` verifiziert: 3 Autobahn-
+  Instanzen → 1 Zeile „Autobahnen"; Gemeinden+Bezirke bleiben 2 getrennte Zeilen. Die
+  „echte" Kuratierung für kategorisierte Mehrfarb-Skalen (z.B. Ski-Pisten/-Loipen mit gemeinsamer
+  Schwierigkeitsgrad-Farbskala, kompakt als mehrere Swatches + ein Label) ist jetzt als
+  Schema-Anfrage bei `geodata-plugin-standard` verfolgt (Issue
+  [#1](https://github.com/brikbrik94/geodata-plugin-standard/issues/1), Punkt 5/7 dort) statt
+  hier weitergeführt.
+- [x] **`opacity`-Feld aus `layers.json` für Swatches nutzen** (2026-08-12) — ✅ ERLEDIGT.
+  `LayerMetaGroup.opacity`/`LayerToggleEvent.opacity` (`Sidebar.ts`) → `LegendEntry.opacity`
+  (`src/types/common.ts`) → `MapLegend.addEntry()` setzt `marker.style.opacity` inline (überschreibt
+  `oe5ith-ci`s bis dahin statisch fixe `opacity: 0.8` auf `.map-legend-area`, die unabhängig von
+  echten Daten war). Live verifiziert: Leitstellen-Bereiche-Swatch zeigt echte `opacity: 0.25` statt
+  fix 0.8. 7 neue Tests (`MapLegend.test.ts`, `resolveLegendSwatch.test.ts`).
 - [ ] **Legenden-Gruppierung/Section-Header** — `MapLegend.ts` kennt aktuell nur eine flache
   Liste von Einträgen ohne Überschriften. Bei vielen gleichzeitig aktiven Overlays (z.B. mehrere
   Autobahnen + Anfahrtszeit-Ringe + Bezirke) könnte eine Legende ohne erkennbare Gruppierung
   unübersichtlich werden. Noch nicht validiert, ob das in der Praxis tatsächlich ein Problem ist
-  — vor einer Umsetzung erst live beobachten.
+  — vor einer Umsetzung erst live beobachten. Teilweise überschneidend mit
+  `geodata-plugin-standard`-Issue [#1](https://github.com/brikbrik94/geodata-plugin-standard/issues/1)
+  Punkt 6 (Trennzeilen/Überschriften als Export-Strukturkonzept für geteilte Farbskalen) — dort
+  aber schema-getrieben, hier eher pures Client-Rendering-Thema; Zusammenhang bei Umsetzung neu
+  bewerten.
