@@ -321,6 +321,18 @@ konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
   Einzel-Swatch-Pfad mit diesen Feldern (alle 3 realen Kandidaten gehen über `legend_items`/
   `legend_scale_id`) — End-to-End per Playwright-Netzwerk-Mock verifiziert (line-cased-DOM-
   Struktur, Dasharray-Gradient, Flächen-Rand), Unit-Tests decken die Entscheidungslogik ab.
+- [ ] **`legend_items`/`legend_sections`-Items im echten Kartenstil statt generischem Punkt
+  rendern** (gemeldet 2026-08-13) — beim Nachziehen des vorigen Punkts für den Einzel-Swatch-Pfad
+  festgestellt, dass auch die kategorisierten Items (Schwierigkeitsgrad-Zeilen bei Pisten/Loipen,
+  Status-Zeilen bei Liften) den zur Karte passenden `type`/`width`/`dasharray`/`outline_*`
+  bekommen sollen, statt eines generischen Farbpunkts pro Item. `ski-lifts` wäre mit dem
+  Gruppen-Stil (statisches weißes Casing) sofort baubar, aber `ski-runs-downhill`/`-nordic`
+  (Pisten/Loipen) nicht — dort ist `outline_color: null`, weil die Casing-Farbe vermutlich selbst
+  pro Schwierigkeitsgrad variiert und der Standard das nicht abbilden kann. Bewusste
+  Nutzer-Entscheidung: kein Splitten nach Overlay-Typ (würde die Legende in zwei Qualitätsstufen
+  auseinanderfallen lassen) — **komplett blockiert** auf
+  [geodata-plugin-standard#2](https://github.com/brikbrik94/geodata-plugin-standard/issues/2).
+  Details: `docs/geodata/open-items.md`.
 - [ ] **Legenden-Gruppierung/Section-Header** — `MapLegend.ts` kennt aktuell nur eine flache
   Liste von Einträgen ohne Überschriften. Bei vielen gleichzeitig aktiven Overlays (z.B. mehrere
   Autobahnen + Anfahrtszeit-Ringe + Bezirke) könnte eine Legende ohne erkennbare Gruppierung

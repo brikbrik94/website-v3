@@ -12,20 +12,29 @@ Submodul-Update wird die Checkliste gegen den neuen Stand geprüft.
 
 ## Offen
 
-**Nichts offen an den Submodulen selbst.** Issue #1 (Standard) sowie #96 und #97
-(`geodata-updater`) sind vollständig umgesetzt und live verifiziert (siehe „Erledigt" unten).
+### [geodata-plugin-standard#2 — Kategorisierte Gruppen: pro Item vollständiger Rendering-Stil statt nur label/color](https://github.com/brikbrik94/geodata-plugin-standard/issues/2)
 
-Einzig offener Punkt ist jetzt die **client-seitige Umsetzung in website-v3** — siehe „Als
-Nächstes" unten, kein externer Blocker mehr.
+Gemeldet 2026-08-13. Beim Versuch, `legend_items`/`legend_sections`-Items in website-v3 mit dem
+korrekten Kartenstil (statt generischem Punkt) darzustellen, festgestellt: für `ski-lifts`
+reicht der Gruppen-Stil (statisches weißes Casing für alle Status), aber für
+`ski-runs-downhill`/`-nordic` (Pisten/Loipen) ist `outline_color: null`, weil die Casing-Farbe
+dort vermutlich selbst pro Schwierigkeitsgrad variiert — der Standard kann diese Zuordnung
+(Kategorie-Item → passender `type`/`width`/`dasharray`/`outline_color`/`outline_width`) aktuell
+nicht abbilden. **Blockiert die client-seitige Umsetzung unten vollständig** — bewusste
+Nutzer-Entscheidung, nicht nach Overlay-Typ zu splitten (würde die Legende in zwei
+Qualitätsstufen auseinanderfallen lassen), siehe Konversation 2026-08-13.
 
-## Als Nächstes (website-v3, kein externer Blocker mehr)
+- [ ] Mechanismus im Standard, der pro kategorisiertem Item (nicht nur pro Gruppe) den
+  passenden Rendering-Stil ausdrücken kann — konkrete Struktur bewusst offen gelassen, liegt bei
+  der Standard-/Extraktions-Seite (MapLibre-Expression-Korrelation zwischen Fill- und
+  Casing-Farbe pro Kategorie).
 
-- **Client-seitige Konsumierung der neuen Felder** in `Sidebar.ts`/`MapLegend.ts`/`MapPage.ts` —
-  Voraussetzungen (#96 deployed, #97 Felder in der Ausgabe) sind beide erfüllt, live verifiziert
-  2026-08-12 19:27. **Wichtig beim Start:** die Breaking-Change-Regel aus §5.6 beachten —
-  `legend_items` wird `null`, sobald eine Gruppe `legend_scale_id` trägt (Werte dann in
-  `legend_sections`); `version` muss numerisch als `major.minor` verglichen werden (`>= 1.1`),
-  nicht als String.
+## Blockiert (wartet auf externe Umsetzung)
+
+- **Client-seitige Konsumierung von `legend_items`/`legend_sections` mit korrektem Kartenstil
+  pro Item** in `Sidebar.ts`/`MapLegend.ts`/`MapPage.ts`/`resolveLegendSwatch.ts` — wartet auf
+  `geodata-plugin-standard#2`. Bis dahin bleibt die aktuelle (vor `geodata-plugin-standard#2`
+  gebaute) flache Darstellung unverändert bestehen, kein Zwischenschritt/Workaround geplant.
 
 ## Erledigt (archiviert)
 
