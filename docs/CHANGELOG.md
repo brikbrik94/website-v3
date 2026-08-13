@@ -2,6 +2,20 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-13 00:20
+
+### Sicherheit
+- **`legend_items`/`legend_sections`-Items zeigen aktuell keinen zur Karte passenden Stil** —
+  beim Versuch, Schwierigkeitsgrad-/Status-Legendenzeilen mit dem echten Kartenstil (Linie,
+  Casing, Umrandung) statt einem generischen Punkt zu rendern, festgestellt: `ski-lifts`
+  funktioniert mit dem Gruppen-Stil, `ski-runs-downhill`/`-nordic` (Pisten/Loipen) nicht, weil
+  `outline_color` dort `null` ist (die Casing-Farbe variiert vermutlich pro Schwierigkeitsgrad,
+  der Standard kann das nicht abbilden). Gemeldet als
+  [geodata-plugin-standard#2](https://github.com/brikbrik94/geodata-plugin-standard/issues/2).
+  Bewusst nicht nach Overlay-Typ gesplittet (Nutzer-Entscheidung) — die client-seitige Umsetzung
+  bleibt komplett blockiert, bis der Standard das für alle betroffenen Overlays einheitlich
+  liefert. Details: `docs/geodata/open-items.md`.
+
 ## [Unreleased] - 2026-08-12 23:58
 
 ### Hinzugefügt
