@@ -206,9 +206,13 @@ export const initRoutingSidebar = async (
       fieldStart.classList.add('hidden');
       fieldProvider.classList.add('hidden');
       labelTarget.textContent = 'Einsatzort (Ziel)';
-      // SEW/NEF unterstützen nur ORS (Matrix-Suche) — Provider-Auswahl zurücksetzen.
-      routeProvider.value = 'ors';
-      updateProfileOptions('ors');
+      // SEW/NEF unterstützen nur ORS (Matrix-Suche). Nur zurücksetzen, wenn Valhalla gewählt war —
+      // sonst geht ein bereits gewähltes ORS-Profil (z.B. driving-emergency) beim Moduswechsel
+      // verloren (Regression, gefunden im finalen Whole-Branch-Review 2026-08-19).
+      if (routeProvider.value !== 'ors') {
+        routeProvider.value = 'ors';
+        updateProfileOptions('ors');
+      }
     }
     // Bei Modus-Wechsel alles leeren
     document.getElementById('routing-status')!.classList.add('hidden');

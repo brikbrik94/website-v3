@@ -12,8 +12,10 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   `src/lib/ValhallaRouteInterpreter.ts` übersetzt Valhallas komprimiertes Polyline6-`shape` +
   `summary.{length,time}` in dieselbe `RouteResult`-Struktur, die ORS liefert — `RoutingMapLayers`/
   `updateRoutingSummary` bleiben dadurch unverändert. Bewusst nur A→B, kein Turn-by-Turn, keine
-  SEW/NEF-Matrix-Suche, kein Deploy-Pfad (Proxy läuft nur unter `npm run dev`, nicht auf
-  `map.oe5ith.at`) — reine Testumgebung, siehe
+  SEW/NEF-Matrix-Suche. **Kein Produktions-Deploy vorgesehen** — `nginx.conf` blockt
+  `/api/valhalla.php` per `deny all` (analog `diag.php`), da `deploy-website.sh` den kompletten
+  `api/`-Ordner ohne Datei-Allowlist rsynct und der Endpoint sonst ungefragt live ginge — reine
+  Testumgebung, siehe
   `docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`.
 
 ## [Unreleased] - 2026-08-16 19:10

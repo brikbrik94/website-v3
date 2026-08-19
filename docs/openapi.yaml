@@ -372,6 +372,87 @@ paths:
             application/json:
               schema: { type: object }
 
+  /valhalla.php:
+    get:
+      summary: >
+        Proxy zu einer selbst gehosteten Valhalla-Testinstanz (GET, z.B. Health-Check via
+        path=status) — nur für den lokalen Dev-Server, kein Produktions-Deploy vorgesehen
+        (in nginx.conf per deny-all blockiert)
+      operationId: proxyValhallaGet
+      parameters:
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+            default: status
+            enum: [route, status]
+          description: >
+            Feste Allowlist (route/status) — alles andere liefert 400. Kein Host-Override möglich
+            (fest an VALHALLA_URL angehängt, nur über api/config.local.php setzbar, kein
+            Produktions-Default).
+      responses:
+        "200":
+          description: "Valhalla-Response (durchgereicht)"
+          content:
+            application/json:
+              schema: { type: object }
+        "400":
+          description: "path entspricht keinem erlaubten Wert"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Invalid path" }
+        "500":
+          description: "VALHALLA_URL nicht konfiguriert (api/config.local.php fehlt/unvollständig)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Server misconfigured: VALHALLA_URL not set in config.local.php" }
+    post:
+      summary: >
+        Proxy zu einer selbst gehosteten Valhalla-Testinstanz (POST, Routenberechnung via
+        path=route) — nur für den lokalen Dev-Server, kein Produktions-Deploy vorgesehen
+        (in nginx.conf per deny-all blockiert)
+      operationId: proxyValhallaPost
+      parameters:
+        - name: path
+          in: query
+          required: false
+          schema: { type: string, default: status, enum: [route, status] }
+          description: "Gleiche Allowlist wie beim GET-Zweig."
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200":
+          description: "Valhalla-Response (durchgereicht)"
+          content:
+            application/json:
+              schema: { type: object }
+        "400":
+          description: "path entspricht keinem erlaubten Wert"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Invalid path" }
+        "500":
+          description: "VALHALLA_URL nicht konfiguriert"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+
   /adsb.php:
     get:
       summary: Live ADS-B-Flugzeugdaten (Proxy)
