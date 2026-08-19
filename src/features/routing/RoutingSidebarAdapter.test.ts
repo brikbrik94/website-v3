@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RoutingSidebarAdapter } from './RoutingSidebarAdapter';
 import { RoutingDataService } from './RoutingDataService';
 import { RoutingService } from '../../lib/RoutingService';
+import { ValhallaService } from '../../lib/ValhallaService';
 import { updateRoutingSummary } from '../../components/RoutingSidebar';
 
 vi.mock('./RoutingMapLayers', () => ({
@@ -221,5 +222,41 @@ describe('RoutingSidebarAdapter A→B route details', () => {
     expect(details.innerHTML).toContain('Head south on Hauptplatz');
 
     calculateRouteSpy.mockRestore();
+  });
+
+  it('routes through ValhallaService when provider is valhalla and skips ORS entirely', async () => {
+    const dataService = new RoutingDataService();
+    const map = { fitBounds: vi.fn() } as any;
+    const adapter = new RoutingSidebarAdapter(dataService, map, new AbortController().signal);
+    adapter.init({} as any);
+
+    const routeResult = {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: { summary: { distance: 5000, duration: 600 } },
+        geometry: { type: 'LineString', coordinates: [[14.1, 48.1], [14.2, 48.2]] },
+      }],
+    };
+    const orsSpy = vi.spyOn(RoutingService, 'calculateRoute');
+    const valhallaSpy = vi.spyOn(ValhallaService, 'calculateRoute').mockResolvedValue(routeResult as any);
+
+    expect(capturedOnRouteStart).not.toBeNull();
+    await capturedOnRouteStart!({
+      mode: 'ab',
+      start: [48.1, 14.1],
+      target: [48.2, 14.2],
+      profile: 'bicycle',
+      provider: 'valhalla',
+    });
+
+    expect(valhallaSpy).toHaveBeenCalledWith([48.1, 14.1], [48.2, 14.2], 'bicycle');
+    expect(orsSpy).not.toHaveBeenCalled();
+
+    const details = elements['routing-details'];
+    expect(details.innerHTML).toContain('5.00 km');
+
+    orsSpy.mockRestore();
+    valhallaSpy.mockRestore();
   });
 });
