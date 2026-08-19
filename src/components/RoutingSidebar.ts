@@ -12,12 +12,14 @@ const LOADING_BADGE: BadgeClass = 'badge-yellow';
 const ERROR_BADGE: BadgeClass = 'badge-red';
 const WARNING_BADGE: BadgeClass = 'badge-yellow';
 const STEP_COUNT_BADGE: BadgeClass = 'badge-gray';
+const VALHALLA_PROFILES = ['auto', 'bicycle', 'pedestrian'];
 
 export interface RoutingParams {
   start?: [number, number];
   target: [number, number];
   profile: string;
   mode: 'ab' | 'sew' | 'nef';
+  provider: 'ors' | 'valhalla';
 }
 
 /**
@@ -93,6 +95,15 @@ export const initRoutingSidebar = async (
 
         <div class="tool-sep"></div>
 
+        <!-- Provider Auswahl (nur bei Modus A → B relevant, siehe updateModeUI) -->
+        <div class="form-field" style="margin-bottom:7px" id="field-provider">
+          <label class="form-label" for="route-provider">Anbieter</label>
+          <select class="form-select" id="route-provider">
+            <option value="ors">ORS</option>
+            <option value="valhalla">Valhalla (Test)</option>
+          </select>
+        </div>
+
         <!-- Profil Auswahl -->
         <div class="form-field" style="margin-bottom:7px">
           <label class="form-label" for="route-profile">Profil</label>
@@ -167,13 +178,37 @@ export const initRoutingSidebar = async (
   const resultsStart = document.getElementById('results-start')!;
   const resultsTarget = document.getElementById('results-target')!;
 
+  const routeProvider = document.getElementById('route-provider') as HTMLSelectElement;
+  const routeProfile = document.getElementById('route-profile') as HTMLSelectElement;
+
+  const updateProfileOptions = (provider: string) => {
+    if (provider === 'valhalla') {
+      routeProfile.innerHTML = VALHALLA_PROFILES.map(p => `<option value="${p}">${p}</option>`).join('');
+      routeProfile.disabled = false;
+    } else {
+      routeProfile.innerHTML = profiles.length > 0
+        ? profiles.map(p => `<option value="${p}">${p}</option>`).join('')
+        : '<option>Dienst offline</option>';
+      routeProfile.disabled = !isOnline;
+    }
+  };
+
+  routeProvider.addEventListener('change', () => updateProfileOptions(routeProvider.value), { signal });
+
+  const fieldProvider = document.getElementById('field-provider')!;
+
   const updateModeUI = (mode: string) => {
     if (mode === 'ab') {
       fieldStart.classList.remove('hidden');
+      fieldProvider.classList.remove('hidden');
       labelTarget.textContent = 'Ziel';
     } else {
       fieldStart.classList.add('hidden');
+      fieldProvider.classList.add('hidden');
       labelTarget.textContent = 'Einsatzort (Ziel)';
+      // SEW/NEF unterstützen nur ORS (Matrix-Suche) — Provider-Auswahl zurücksetzen.
+      routeProvider.value = 'ors';
+      updateProfileOptions('ors');
     }
     // Bei Modus-Wechsel alles leeren
     document.getElementById('routing-status')!.classList.add('hidden');
@@ -221,16 +256,19 @@ export const initRoutingSidebar = async (
       const mode = routeMode.querySelector('.segmented-btn.active')?.getAttribute('data-mode') as 'ab' | 'sew' | 'nef';
       const target = getCoordsFromInput(inputTarget);
       const profile = (document.getElementById('route-profile') as HTMLSelectElement).value;
+      const provider = mode === 'ab'
+        ? (routeProvider.value as 'ors' | 'valhalla')
+        : 'ors'; // SEW/NEF unterstützen nur ORS
 
       if (mode === 'ab') {
         const start = getCoordsFromInput(inputStart);
         if (start && target) {
-          onRouteStart({ start, target, profile, mode });
+          onRouteStart({ start, target, profile, mode, provider });
         } else { alert('Bitte Start und Ziel eingeben.'); }
       } else {
         if (target) {
           renderRoutingLoading('Suche Standorte...');
-          onRouteStart({ target, profile, mode });
+          onRouteStart({ target, profile, mode, provider });
         } else { alert('Bitte Einsatzort (Ziel) eingeben.'); }
       }
     });
