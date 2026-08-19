@@ -2,6 +2,38 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-19 10:01
+
+### Hinzugefügt
+- **Valhalla-Routing-Connector (Testumgebung, `/routing`, Modus A→B)** — neuer Provider-Dropdown
+  (ORS/Valhalla) neben dem Profil-Select. Bei Auswahl „Valhalla" wird die Route über einen neuen,
+  eigenständigen PHP-Proxy (`api/valhalla.php`) gegen eine selbst gehostete Valhalla-Instanz
+  (Tailscale-IP, nur `api/config.local.php`, kein Produktions-Default) berechnet. Neu
+  `src/lib/ValhallaRouteInterpreter.ts` übersetzt Valhallas komprimiertes Polyline6-`shape` +
+  `summary.{length,time}` in dieselbe `RouteResult`-Struktur, die ORS liefert — `RoutingMapLayers`/
+  `updateRoutingSummary` bleiben dadurch unverändert. Bewusst nur A→B, kein Turn-by-Turn, keine
+  SEW/NEF-Matrix-Suche, kein Deploy-Pfad (Proxy läuft nur unter `npm run dev`, nicht auf
+  `map.oe5ith.at`) — reine Testumgebung, siehe
+  `docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`.
+
+## [Unreleased] - 2026-08-16 19:10
+
+### Hinzugefügt
+- **`render`/`variants` (geodata-plugin-standard §5.3, ab Schema-Version 2.0/2.1) in der
+  Karten-Legende konsumiert** — löst die Blockade aus dem `[Unreleased] - 2026-08-13 00:20`-Eintrag
+  unten: statt der ursprünglich erhofften punktuellen Standard-Erweiterung liefert der Standard
+  jetzt ein grundlegend neues Modell (`render[]`: ein Part pro Style-Layer mit eigener Farbe/
+  Breite/Strichmuster; `variants[]`: filter-basierte, sich ausschließende Formen wie Pisten-
+  „Buckelpiste"). Neu `src/lib/renderPartsLegend.ts` (`resolveRenderPartsRows()`) baut **eine
+  Legenden-Zeile pro Form-Variante statt pro Skalen-Item** — Farbabwandlungen laufen als
+  Chip-Streifen innerhalb der Zeile statt eine Vollexpansion zu erzeugen (85 → 18 Zeilen für
+  `openskimap`, live verifiziert). Neu `MapLegend.addPartsRow()` rendert jeden Chip als echtes
+  SVG mit den realen `width`/`radius`/`stroke_width`-Werten und korrekter MapLibre-`dasharray`-
+  Semantik (Pixel-Länge = Wert × `width`, nicht erfunden skaliert). `Sidebar.ts` gated den neuen
+  Pfad auf `isLegendSchemaAtLeast(version, 2, 0)`; alle anderen Overlays bleiben auf dem
+  bisherigen `legend_items`/`legend_scale_id`-Pfad. Details/Herleitung:
+  `docs/superpowers/specs/2026-08-16-legend-render-parts-design.md`.
+
 ## [Unreleased] - 2026-08-13 00:20
 
 ### Sicherheit
