@@ -2,6 +2,7 @@ import * as maplibregl from 'maplibre-gl';
 import { RoutingDataService } from './RoutingDataService';
 import { RoutingMapLayers } from './RoutingMapLayers';
 import { RoutingService } from '../../lib/RoutingService';
+import { ValhallaService } from '../../lib/ValhallaService';
 import {
   initRoutingSidebar,
   updateRoutingSummary,
@@ -31,18 +32,15 @@ export class RoutingSidebarAdapter {
       try {
         if (params.mode === 'ab' && params.start) {
           await this.setCoord('start', params.start[0], params.start[1]);
-          
+
           // Nur driving-car hat im ORS-Graph die way_type/tollways/roadaccessrestrictions
           // Encoded-Values geladen; extra_info für driving-emergency liefert 500 (Fehlercode 2018).
           const extraInfo = params.profile === 'driving-car'
             ? ['waytype', 'tollways', 'roadaccessrestrictions']
             : undefined;
-          const route = await RoutingService.calculateRoute(
-            params.start,
-            params.target,
-            params.profile,
-            extraInfo
-          );
+          const route = params.provider === 'valhalla'
+            ? await ValhallaService.calculateRoute(params.start, params.target, params.profile)
+            : await RoutingService.calculateRoute(params.start, params.target, params.profile, extraInfo);
           if (this.abortSignal.aborted) return;
 
           if (route && route.features && route.features.length > 0) {
