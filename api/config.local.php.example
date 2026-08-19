@@ -17,3 +17,4 @@
 // Override Endpoints
 // define('ORS_URL', 'http://localhost:8080/ors');
 // define('NOMINATIM_URL', 'http://localhost:8080/nominatim');
+// define('VALHALLA_URL', 'http://100.x.x.x:8002'); // eigene Tailscale-IP, nur für lokale Tests
