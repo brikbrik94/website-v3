@@ -12,7 +12,9 @@ const LOADING_BADGE: BadgeClass = 'badge-yellow';
 const ERROR_BADGE: BadgeClass = 'badge-red';
 const WARNING_BADGE: BadgeClass = 'badge-yellow';
 const STEP_COUNT_BADGE: BadgeClass = 'badge-gray';
-const VALHALLA_PROFILES = ['auto', 'bicycle', 'pedestrian'];
+// 'emergency' ist das für dieses Projekt relevante Costing-Modell der Testinstanz
+// (nutzt zusätzlich emergency=yes/access=emergency-getaggte Wege, siehe valhalla-server.md).
+const VALHALLA_PROFILES = ['auto', 'emergency', 'bicycle', 'pedestrian'];
 
 export interface RoutingParams {
   start?: [number, number];
