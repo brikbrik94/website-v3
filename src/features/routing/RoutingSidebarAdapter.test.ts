@@ -3,7 +3,7 @@ import { RoutingSidebarAdapter } from './RoutingSidebarAdapter';
 import { RoutingDataService } from './RoutingDataService';
 import { RoutingService } from '../../lib/RoutingService';
 import { ValhallaService } from '../../lib/ValhallaService';
-import { updateRoutingSummary } from '../../components/RoutingSidebar';
+import { updateRoutingSummary, renderRoutingError } from '../../components/RoutingSidebar';
 
 vi.mock('./RoutingMapLayers', () => ({
   RoutingMapLayers: {
@@ -258,5 +258,27 @@ describe('RoutingSidebarAdapter A→B route details', () => {
 
     orsSpy.mockRestore();
     valhallaSpy.mockRestore();
+  });
+
+  it('shows renderRoutingError when the route calculation resolves to null (both providers fail closed, no exception)', async () => {
+    const dataService = new RoutingDataService();
+    const map = { fitBounds: vi.fn() } as any;
+    const adapter = new RoutingSidebarAdapter(dataService, map, new AbortController().signal);
+    adapter.init({} as any);
+
+    vi.mocked(renderRoutingError).mockClear();
+    const calculateRouteSpy = vi.spyOn(RoutingService, 'calculateRoute').mockResolvedValue(null as any);
+
+    expect(capturedOnRouteStart).not.toBeNull();
+    await capturedOnRouteStart!({
+      mode: 'ab',
+      start: [48.1, 14.1],
+      target: [48.2, 14.2],
+      profile: 'driving-car',
+    });
+
+    expect(renderRoutingError).toHaveBeenCalledWith('Route konnte nicht berechnet werden.');
+
+    calculateRouteSpy.mockRestore();
   });
 });

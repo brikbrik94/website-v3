@@ -161,16 +161,23 @@ alle vier auf einmal anfassen.
 
 - [ ] **Valhalla-Connector: vor Live-Deploy**
 
-Der Valhalla-Proxy (`api/valhalla.php`) ist bewusst nur für `npm run dev` gebaut (siehe
-`docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`, Abschnitt „Config &
-Security"). Bevor ein Deploy auf `map.oe5ith.at` in Frage kommt, muss durchdacht werden:
+  Der Valhalla-Proxy (`api/valhalla.php`) ist bewusst nur für `npm run dev` gebaut (siehe
+  `docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`, Abschnitt „Config &
+  Security"). **Wichtig:** `./deploy-website.sh` kopiert den kompletten `api/`-Ordner 1:1 nach
+  `map.oe5ith.at` (kein Datei-Allowlist, nur `config.local.php`/`*.example` sind ausgeschlossen)
+  und `nginx.conf`s generischer `~ \.php$`-Handler bedient jede `.php`-Datei automatisch —
+  `valhalla.php` landet also ungefragt live, sobald ein Deploy läuft. Aktuell schützt nur ein
+  `deny all;` in `nginx.conf` (analog `diag.php`) sowie das Fehlen von `VALHALLA_URL` in der
+  produktiven Config (Endpoint antwortet dann mit 500) — das ist kein Ersatz für eine echte
+  Security-Review, bevor ein Deploy tatsächlich in Frage kommt:
 
-- [ ] Authentifizierung/Rate-Limiting auf `api/valhalla.php` (aktuell: offener Proxy, sobald
-      `VALHALLA_URL` gesetzt ist)
-- [ ] Eintrag in `nginx.conf`/`deploy-website.sh` (aktuell: bewusst nicht enthalten)
-- [ ] Ob `VALHALLA_URL` weiterhin eine private Tailscale-IP bleibt oder ein öffentlich
-      erreichbarer Endpoint nötig wird — falls Tailscale: sicherstellen, dass der Produktivserver
-      selbst im Tailnet hängt
+  - [ ] Authentifizierung/Rate-Limiting auf `api/valhalla.php` (aktuell: offener Proxy, sobald
+        `VALHALLA_URL` gesetzt ist)
+  - [ ] Ob der `deny all;`-Block in `nginx.conf` als alleiniger Schutz reicht oder `valhalla.php`
+        zusätzlich aus dem `deploy-website.sh`-rsync ausgeschlossen werden soll
+  - [ ] Ob `VALHALLA_URL` weiterhin eine private Tailscale-IP bleibt oder ein öffentlich
+        erreichbarer Endpoint nötig wird — falls Tailscale: sicherstellen, dass der Produktivserver
+        selbst im Tailnet hängt
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
   Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
   `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die

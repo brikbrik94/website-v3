@@ -51,6 +51,8 @@ export class RoutingSidebarAdapter {
             const bounds = new maplibregl.LngLatBounds();
             route.features[0].geometry.coordinates.forEach((c: Position) => bounds.extend(c as [number, number]));
             this.map.fitBounds(bounds, { padding: 50 });
+          } else {
+            renderRoutingError('Route konnte nicht berechnet werden.');
           }
         } else {
           // params.mode ist hier 'ab' | 'sew' | 'nef' (durch das zusammengesetzte if oben nicht auf
