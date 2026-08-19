@@ -19,6 +19,7 @@
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.0.0",
     "@fortawesome/fontawesome-free": "^7.2.0",
+    "@mapbox/polyline": "^1.2.1",
     "maplibre-gl": "^6.0.0",
     "mgrs": "^2.1.0",
     "open-location-code": "^1.0.3",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
     "@types/geojson": "^7946.0.16",
+    "@types/mapbox__polyline": "^1.0.5",
     "@types/topojson-client": "^3.1.5",
     "chrome-launcher": "^1.2.1",
     "concurrently": "^10.0.4",
