@@ -159,6 +159,18 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
+- [ ] **Valhalla-Connector: vor Live-Deploy**
+
+Der Valhalla-Proxy (`api/valhalla.php`) ist bewusst nur für `npm run dev` gebaut (siehe
+`docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`, Abschnitt „Config &
+Security"). Bevor ein Deploy auf `map.oe5ith.at` in Frage kommt, muss durchdacht werden:
+
+- [ ] Authentifizierung/Rate-Limiting auf `api/valhalla.php` (aktuell: offener Proxy, sobald
+      `VALHALLA_URL` gesetzt ist)
+- [ ] Eintrag in `nginx.conf`/`deploy-website.sh` (aktuell: bewusst nicht enthalten)
+- [ ] Ob `VALHALLA_URL` weiterhin eine private Tailscale-IP bleibt oder ein öffentlich
+      erreichbarer Endpoint nötig wird — falls Tailscale: sicherstellen, dass der Produktivserver
+      selbst im Tailnet hängt
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
   Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
   `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die

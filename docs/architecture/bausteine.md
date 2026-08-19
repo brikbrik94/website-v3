@@ -211,6 +211,7 @@ Import: `from '.../lib/MapLegend'` (Pfad relativ zum aufrufenden Modul anpassen)
 
 Exports:
 - `AddLegendEntryOptions` (interface)
+- `AddPartsRowOptions` (interface)
 - `MapLegend` (class)
 
 ## `MapRegistry.ts`
@@ -338,6 +339,31 @@ Exports:
 - `renderGeocodeItemHtml` (const)
 - `formatTime` (const)
 
+## `ValhallaRouteInterpreter.ts`
+
+Übersetzt Valhallas `/route`-Antwort (komprimiertes Polyline6-`shape` pro Leg,
+`summary.length` in km) in dieselbe `RouteResult`-Struktur, die ORS liefert
+(Meter/Sekunden) — damit RoutingMapLayers/updateRoutingSummary unverändert bleiben.
+
+Import: `from '.../lib/ValhallaRouteInterpreter'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `ValhallaLeg` (interface)
+- `ValhallaTripSummary` (interface)
+- `ValhallaTrip` (interface)
+- `toRouteResult` (function)
+
+## `ValhallaService.ts`
+
+Abstraktionsschicht über den `/api/valhalla.php`-Proxy zur selbst gehosteten
+Valhalla-Testinstanz — analog RoutingService, aber bewusst reduziert auf reine
+A→B-Routenberechnung (kein Turn-by-Turn, keine Matrix-Suche, siehe Design-Spec).
+
+Import: `from '.../lib/ValhallaService'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `ValhallaService` (const)
+
 ## `legendSchemaVersion.ts`
 
 Vergleicht einen Schema-"version"-String (z.B. "1.1") numerisch gegen ein Minimum
@@ -350,6 +376,23 @@ Import: `from '.../lib/legendSchemaVersion'` (Pfad relativ zum aufrufenden Modul
 
 Exports:
 - `isLegendSchemaAtLeast` (function)
+
+## `renderPartsLegend.ts`
+
+Ein Darstellungsteil aus `layers.json`s `render`/`variants[].render` (geodata-plugin-standard
+ §5.3, ab Schema-Version 2.0) — ein Eintrag pro echtem MapLibre-Style-Layer.
+
+Import: `from '.../lib/renderPartsLegend'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `RenderColor` (type)
+- `RenderPart` (interface)
+- `RenderVariant` (interface)
+- `RenderPartsChip` (interface)
+- `RenderPartsRow` (interface)
+- `findDrivingScaleId` (function)
+- `resolveRenderPartsRows` (function)
+- `findGroupDrivingScaleId` (function)
 
 ## `resolveLegendSwatch.ts`
 
