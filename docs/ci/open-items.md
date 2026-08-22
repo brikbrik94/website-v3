@@ -18,26 +18,28 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
 - **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet
   2026-08-11 (Performance-Baseline-Audit). Detaildatei: `bug-reports.md` (Punkt 3).
 
-- **16 neue Maneuver-Icons für Valhalla-Turn-by-Turn-Parität** — gemeldet 2026-08-22. Valhalla
-  unterscheidet 30 relevante Manöver-Konzepte (37 Typen minus 7 technisch unerreichbare
-  Transit-Typen), 16 davon haben keine Entsprechung im bestehenden 14er-`orsCode`-Katalog
-  (`docs/maneuver-icons.md`) — inkl. Schema-Vorschlag (providerneutrales `id`-Feld statt
-  `orsCode`-Pflicht). Issue: [oe5ith-ci#2](https://github.com/brikbrik94/oe5ith-ci/issues/2).
-  `website-v3` hat die 16 Icons als Entwurf bereits lokal in `src/lib/ManeuverIcons.ts` inline
-  übernommen (kein Blocker für die Valhalla-Anbindung) — Details/Herleitung:
-  `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`.
-  - [ ] `ci-maneuver-uturn-left` / `ci-maneuver-uturn-right`
-  - [ ] `ci-maneuver-ramp-straight` / `-right` / `-left`
-  - [ ] `ci-maneuver-exit-right` / `-left`
-  - [ ] `ci-maneuver-stay-straight`
-  - [ ] `ci-maneuver-merge`
-  - [ ] `ci-maneuver-ferry-enter` / `-exit`
-  - [ ] `ci-maneuver-depart-right` / `-left`
-  - [ ] `ci-maneuver-goal-right` / `-left`
-  - [ ] `ci-maneuver-becomes`
-  - [ ] `icons.json`-Schema um providerneutrales Feld erweitert
+- **`ci-maneuver-uturn-left.svg` (v1.26.0) ist byte-identisch zu `ci-maneuver-uturn.svg`** —
+  gemeldet 2026-08-22, gefunden beim Sync auf v1.26.0 nach Schließung von #2. Root Cause: der
+  ursprüngliche Vorschlag in #2 hatte für `uturn-left` versehentlich denselben Pfad wie das
+  bestehende `uturn`-Icon genannt (Copy-Paste-Fehler beim Issue-Verfassen, in `website-v3` selbst
+  vor der Umsetzung gefunden und korrigiert, aber nicht mehr im Issue-Text nachgezogen) —
+  `oe5ith-ci` hat den fehlerhaften Vorschlag wörtlich übernommen. Issue:
+  [oe5ith-ci#3](https://github.com/brikbrik94/oe5ith-ci/issues/3), inkl. konkretem Korrektur-
+  Vorschlag. `website-v3` behält bis zur Behebung die bereits lokal korrigierte, eigenständige
+  Fassung (`src/lib/ManeuverIcons.ts`, Kommentar bei `'uturn-left'`) statt auf die fehlerhafte
+  offizielle Version zu syncen.
+  - [ ] `ci-maneuver-uturn-left.svg` durch eigenständigen, von `uturn` unterscheidbaren Pfad ersetzt
 
 ## Erledigt (archiviert)
+
+- **16 neue Maneuver-Icons für Valhalla-Turn-by-Turn-Parität** — gemeldet 2026-08-22, umgesetzt
+  und geschlossen in `oe5ith-ci` v1.26.0 (14 → 30 Icons, neues optionales `valhallaType`-Feld in
+  `icons.json`, `orsCode` jetzt optional, neue Kontext-Pfad-Stilkonvention für Ramp/Exit/
+  Stay-straight/Becomes/Fähre). Issue: [oe5ith-ci#2](https://github.com/brikbrik94/oe5ith-ci/issues/2).
+  **website-v3-seitig konsumiert** (2026-08-22): `src/lib/ManeuverIcons.ts` auf den offiziellen
+  Stand synchronisiert (15 von 16 neuen Icons waren bereits wortgleich zum lokalen Entwurf; eine
+  Ausnahme, siehe den neuen Punkt oben unter „Offen"). Details/Herleitung:
+  `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`.
 
 Detaildateien liegen in `archive/`, keine website-v3-seitige Restarbeit mehr offen:
 

@@ -216,6 +216,15 @@ Folgt demselben Muster wie die bestehenden 14: **lokal inline gezeichnet, nicht 
    Folge-Update, das die lokalen Inline-Kopien gegen den offiziellen Stand synchronisiert —
    **nicht** Teil dieses Tasks/Plans.
 
+**Nachtrag (2026-08-22): oe5ith-ci#2 umgesetzt, Sync durchgeführt.** `oe5ith-ci` v1.26.0 hat alle
+16 Icons offiziell übernommen — 15 davon wortgleich zum hier eingereichten Vorschlag, `ManeuverIcons.ts`
+entsprechend synchronisiert (Kommentare aktualisiert, Pfad-Daten unverändert). Ausnahme:
+`ci-maneuver-uturn-left` in v1.26.0 hat denselben Root-Cause-Fehler geerbt, der hier lokal beim
+Plan-Self-Review bereits gefunden und korrigiert wurde (byte-identisch zum bestehenden `uturn`-
+Icon) — nachgemeldet als [oe5ith-ci#3](https://github.com/brikbrik94/oe5ith-ci/issues/3), lokal
+bleibt bis zur Behebung die bereits korrigierte, eigenständige Fassung erhalten statt auf die
+fehlerhafte offizielle Version zu syncen. Details: `docs/ci/open-items.md`.
+
 ## Testing-Strategie
 
 - `OrsManeuverKind.test.ts` (neu): alle 14 ORS-Codes → korrekter `ManeuverKind`, unbekannter Code
