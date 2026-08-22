@@ -120,8 +120,8 @@ describe('updateRoutingSummary turn-by-turn disclosure', () => {
         distance: 1176.2,
         duration: 144.3,
         steps: [
-          { distance: 176.2, duration: 63.4, type: 11, instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
-          { distance: 1000, duration: 80.9, type: 6, instruction: 'Continue straight onto Hauptstraße', name: 'Hauptstraße', way_points: [10, 20] },
+          { distance: 176.2, duration: 63.4, type: 'depart', instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
+          { distance: 1000, duration: 80.9, type: 'straight', instruction: 'Continue straight onto Hauptstraße', name: 'Hauptstraße', way_points: [10, 20] },
         ],
       },
     ]);
@@ -138,7 +138,7 @@ describe('updateRoutingSummary turn-by-turn disclosure', () => {
 
   it('places the disclosure block at or after the point where .result-list closes, not nested inside it', () => {
     updateRoutingSummary(1000, 60, 'Zusammenfassung', undefined, undefined, [
-      { distance: 100, duration: 10, steps: [{ distance: 100, duration: 10, type: 6, instruction: 'Continue straight', name: '', way_points: [0, 1] }] },
+      { distance: 100, duration: 10, steps: [{ distance: 100, duration: 10, type: 'straight', instruction: 'Continue straight', name: '', way_points: [0, 1] }] },
     ]);
 
     const resultListOpenIdx = details.innerHTML.indexOf('<div class="result-list">');

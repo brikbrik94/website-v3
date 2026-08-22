@@ -104,8 +104,8 @@ describe('formatSteps', () => {
         distance: 1175.2,
         duration: 144.3,
         steps: [
-          { distance: 176.2, duration: 63.4, type: 11, instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
-          { distance: 999, duration: 80.9, type: 6, instruction: 'Continue straight onto Hauptstraße', name: 'Hauptstraße', way_points: [10, 20] },
+          { distance: 176.2, duration: 63.4, type: 'depart', instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
+          { distance: 999, duration: 80.9, type: 'straight', instruction: 'Continue straight onto Hauptstraße', name: 'Hauptstraße', way_points: [10, 20] },
         ],
       },
     ];
@@ -126,8 +126,8 @@ describe('formatSteps', () => {
         distance: 2500,
         duration: 200,
         steps: [
-          { distance: 1000, duration: 60, type: 6, instruction: 'Continue straight', name: '', way_points: [0, 5] },
-          { distance: 1500, duration: 90, type: 1, instruction: 'Turn right', name: '', way_points: [5, 10] },
+          { distance: 1000, duration: 60, type: 'straight', instruction: 'Continue straight', name: '', way_points: [0, 5] },
+          { distance: 1500, duration: 90, type: 'turn-right', instruction: 'Turn right', name: '', way_points: [5, 10] },
         ],
       },
     ];
@@ -140,8 +140,8 @@ describe('formatSteps', () => {
 
   it('flattens steps from multiple segments in order', () => {
     const segments: RouteSegment[] = [
-      { distance: 100, duration: 10, steps: [{ distance: 100, duration: 10, type: 11, instruction: 'Depart', name: '', way_points: [0, 1] }] },
-      { distance: 200, duration: 20, steps: [{ distance: 200, duration: 20, type: 10, instruction: 'Arrive', name: '', way_points: [1, 2] }] },
+      { distance: 100, duration: 10, steps: [{ distance: 100, duration: 10, type: 'depart', instruction: 'Depart', name: '', way_points: [0, 1] }] },
+      { distance: 200, duration: 20, steps: [{ distance: 200, duration: 20, type: 'goal', instruction: 'Arrive', name: '', way_points: [1, 2] }] },
     ];
 
     const result = formatSteps(segments);
