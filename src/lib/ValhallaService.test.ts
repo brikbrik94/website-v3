@@ -26,6 +26,7 @@ describe('ValhallaService.calculateRoute', () => {
     expect(capturedBody.costing).toBe('bicycle');
     expect(capturedBody.units).toBe('kilometers');
     expect(capturedBody.locations).toEqual([{ lat: 48.1, lon: 14.1 }, { lat: 48.2, lon: 14.2 }]);
+    expect(capturedBody.directions_options).toEqual({ language: 'de-DE' });
     expect(result?.type).toBe('FeatureCollection');
     expect(result?.features[0].properties.summary.duration).toBe(300);
     expect(result?.features[0].properties.summary.distance).toBeCloseTo(12500, 1);

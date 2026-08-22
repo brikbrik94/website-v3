@@ -6,7 +6,7 @@ const VALHALLA_BASE_URL = '/api/valhalla.php';
 /**
  * Abstraktionsschicht über den `/api/valhalla.php`-Proxy zur selbst gehosteten
  * Valhalla-Testinstanz — analog RoutingService, aber bewusst reduziert auf reine
- * A→B-Routenberechnung (kein Turn-by-Turn, keine Matrix-Suche, siehe Design-Spec).
+ * A→B-Routenberechnung (keine Matrix-Suche, siehe Design-Spec).
  */
 export const ValhallaService = {
   async checkHealth(): Promise<boolean> {
@@ -34,6 +34,10 @@ export const ValhallaService = {
           ],
           costing,
           units: 'kilometers',
+          // Turn-by-Turn-Anweisungen (legs[].maneuvers[].instruction) sonst auf Englisch,
+          // obwohl der Rest der UI Deutsch ist. Valhalla erwartet hier ein BCP-47-artiges
+          // Locale-Tag ('de-DE'), nicht ORS' knappes 'de'.
+          directions_options: { language: 'de-DE' },
         }),
       });
 
