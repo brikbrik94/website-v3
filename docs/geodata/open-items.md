@@ -12,6 +12,14 @@ Submodul-Update wird die Checkliste gegen den neuen Stand geprüft.
 
 ## Offen
 
+_Aktuell keine offenen Punkte._
+
+## Blockiert (wartet auf externe Umsetzung)
+
+_Aktuell keine blockierten Punkte._
+
+## Erledigt (archiviert)
+
 ### [geodata-plugin-standard#2 — Kategorisierte Gruppen: pro Item vollständiger Rendering-Stil statt nur label/color](https://github.com/brikbrik94/geodata-plugin-standard/issues/2)
 
 Gemeldet 2026-08-13. Beim Versuch, `legend_items`/`legend_sections`-Items in website-v3 mit dem
@@ -20,23 +28,21 @@ reicht der Gruppen-Stil (statisches weißes Casing für alle Status), aber für
 `ski-runs-downhill`/`-nordic` (Pisten/Loipen) ist `outline_color: null`, weil die Casing-Farbe
 dort vermutlich selbst pro Schwierigkeitsgrad variiert — der Standard kann diese Zuordnung
 (Kategorie-Item → passender `type`/`width`/`dasharray`/`outline_color`/`outline_width`) aktuell
-nicht abbilden. **Blockiert die client-seitige Umsetzung unten vollständig** — bewusste
-Nutzer-Entscheidung, nicht nach Overlay-Typ zu splitten (würde die Legende in zwei
-Qualitätsstufen auseinanderfallen lassen), siehe Konversation 2026-08-13.
+nicht abbilden. Ursprünglich als **komplett blockierend** für die client-seitige Umsetzung
+eingestuft (Konversation 2026-08-13).
 
-- [ ] Mechanismus im Standard, der pro kategorisiertem Item (nicht nur pro Gruppe) den
-  passenden Rendering-Stil ausdrücken kann — konkrete Struktur bewusst offen gelassen, liegt bei
-  der Standard-/Extraktions-Seite (MapLibre-Expression-Korrelation zwischen Fill- und
-  Casing-Farbe pro Kategorie).
+**Gelöst** — nicht durch eine punktuelle Standard-Erweiterung, sondern durch das größere
+`render`/`variants`-Modell (Schema v2.0→v2.1, siehe `render-parts-guide.md` im Submodul): jede
+Gruppe trägt `render[]` (ein `Part` pro Style-Layer mit eigenem `kind`/`color`/`width`/
+`dasharray`/…) und optional `variants[]` für filter-basierte, sich ausschließende Formen. Damit
+ist die Fill-/Casing-Farbe pro Kategorie ausdrückbar. Client-seitig konsumiert 2026-08-16 in
+website-v3 (`src/lib/renderPartsLegend.ts`, `MapLegend.addPartsRow()`) — siehe
+`docs/ROADMAP.md` „Karten-Legende: weitere Optimierung" und
+`docs/superpowers/specs/2026-08-16-legend-render-parts-design.md`.
 
-## Blockiert (wartet auf externe Umsetzung)
-
-- **Client-seitige Konsumierung von `legend_items`/`legend_sections` mit korrektem Kartenstil
-  pro Item** in `Sidebar.ts`/`MapLegend.ts`/`MapPage.ts`/`resolveLegendSwatch.ts` — wartet auf
-  `geodata-plugin-standard#2`. Bis dahin bleibt die aktuelle (vor `geodata-plugin-standard#2`
-  gebaute) flache Darstellung unverändert bestehen, kein Zwischenschritt/Workaround geplant.
-
-## Erledigt (archiviert)
+- [x] Mechanismus im Standard, der pro kategorisiertem Item (nicht nur pro Gruppe) den
+  passenden Rendering-Stil ausdrücken kann — gelöst über `render[]`/`variants[]` statt einer
+  Item→Stil-Zuordnung.
 
 ### [geodata-updater#96 — layers.py reicht Schema-„version" nicht durch](https://github.com/brikbrik94/geodata-updater/issues/96)
 

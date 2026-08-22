@@ -321,18 +321,28 @@ konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
   Einzel-Swatch-Pfad mit diesen Feldern (alle 3 realen Kandidaten gehen über `legend_items`/
   `legend_scale_id`) — End-to-End per Playwright-Netzwerk-Mock verifiziert (line-cased-DOM-
   Struktur, Dasharray-Gradient, Flächen-Rand), Unit-Tests decken die Entscheidungslogik ab.
-- [ ] **`legend_items`/`legend_sections`-Items im echten Kartenstil statt generischem Punkt
-  rendern** (gemeldet 2026-08-13) — beim Nachziehen des vorigen Punkts für den Einzel-Swatch-Pfad
-  festgestellt, dass auch die kategorisierten Items (Schwierigkeitsgrad-Zeilen bei Pisten/Loipen,
-  Status-Zeilen bei Liften) den zur Karte passenden `type`/`width`/`dasharray`/`outline_*`
-  bekommen sollen, statt eines generischen Farbpunkts pro Item. `ski-lifts` wäre mit dem
-  Gruppen-Stil (statisches weißes Casing) sofort baubar, aber `ski-runs-downhill`/`-nordic`
-  (Pisten/Loipen) nicht — dort ist `outline_color: null`, weil die Casing-Farbe vermutlich selbst
-  pro Schwierigkeitsgrad variiert und der Standard das nicht abbilden kann. Bewusste
-  Nutzer-Entscheidung: kein Splitten nach Overlay-Typ (würde die Legende in zwei Qualitätsstufen
-  auseinanderfallen lassen) — **komplett blockiert** auf
-  [geodata-plugin-standard#2](https://github.com/brikbrik94/geodata-plugin-standard/issues/2).
-  Details: `docs/geodata/open-items.md`.
+- [x] **`legend_items`/`legend_sections`-Items im echten Kartenstil statt generischem Punkt
+  rendern** (gemeldet 2026-08-13) — ✅ ERLEDIGT (2026-08-16), aber anders als ursprünglich geplant.
+  Der Blocker (kategorisierte Casing-Farbe pro Schwierigkeitsgrad nicht ausdrückbar) wurde nicht
+  durch eine kleine Standard-Erweiterung gelöst, sondern durch das größere `render`/`variants`-
+  Modell aus [geodata-plugin-standard#2](https://github.com/brikbrik94/geodata-plugin-standard/issues/2)
+  (Schema v2.0→v2.1, siehe `docs/geodata/open-items.md`): jede Gruppe trägt jetzt `render[]`
+  (ein `Part` pro echtem Style-Layer, `kind`/`color`/`width`/`dasharray`/`radius`/`stroke_*`) und
+  optional `variants[]` (filter-basierte, sich ausschließende Formen wie Pisten-„Buckelpiste"
+  oder Lifte-Status). Client-Konsum neu implementiert, nicht die alte `legend_items`-Punkt-Legende
+  erweitert: `src/lib/renderPartsLegend.ts` (`resolveRenderPartsRows()`, pure Funktion, testbar)
+  baut **eine Legenden-Zeile pro Form-Variante** statt einer Zeile pro Skalen-Item (löst dabei
+  auch den ursprünglich befürchteten Zeilen-Explosions-Effekt — Farbabwandlungen laufen als
+  Chip-Streifen innerhalb der einen Zeile, siehe `docs/superpowers/specs/2026-08-16-legend-render-parts-design.md`).
+  `MapLegend.addPartsRow()` rendert jeden Chip als echtes SVG (nicht CSS-Näherung) mit den realen
+  `width`/`radius`/`stroke_width`-Werten und korrekter MapLibre-`dasharray`-Semantik (Pixel-Länge
+  = `dasharray`-Wert × `width`). Zusätzlich, sofern die Gruppe eine geteilte Skala referenziert,
+  läuft **derselbe** bestehende `legendItems`/`legendGroupKey`-Ref-Zähl-Mechanismus (kein
+  MapPage.ts-Änderungsbedarf) für einen einmaligen Farb-Erklärungs-Block. Gated auf Schema-Version
+  ≥2.0 (`isLegendSchemaAtLeast`), alle anderen Overlays unverändert auf dem alten Pfad. `.map-legend-parts-*`
+  ist ein lokales, noch nicht in `oe5ith-ci` generalisiertes Pattern (analog `.map-legend-unknown`).
+  Live gegen `/karte` mit Playwright verifiziert (Pisten/Lifte aktiviert, Zeilen/Chips korrekt,
+  sauberes Add/Remove, keine Konsolenfehler).
 - [ ] **Legenden-Gruppierung/Section-Header** — `MapLegend.ts` kennt aktuell nur eine flache
   Liste von Einträgen ohne Überschriften. Bei vielen gleichzeitig aktiven Overlays (z.B. mehrere
   Autobahnen + Anfahrtszeit-Ringe + Bezirke) könnte eine Legende ohne erkennbare Gruppierung
@@ -342,3 +352,26 @@ konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
   Punkt 6 (Trennzeilen/Überschriften als Export-Strukturkonzept für geteilte Farbskalen) — dort
   aber schema-getrieben, hier eher pures Client-Rendering-Thema; Zusammenhang bei Umsetzung neu
   bewerten.
+  **Teilweise erledigt für den `legend[]`-Pfad (2026-08-22):** `legend[].heading` wird seit der
+  v3.0-Umstellung (`MapLegend.addHeading()`, wiederverwendet `.overlay-section-label` aus
+  `oe5ith-ci`) als Section-Header gerendert — siehe
+  `docs/superpowers/plans/2026-08-22-legend-v3-groups-legend-split.md`. Das allgemeine Problem
+  (Gruppierung *beliebiger* Overlays, nicht nur `legend[]`-Quellen) bleibt offen.
+
+## Neue Kartenseite: GeoJSON-Viewer
+
+- [ ] **Lokaler GeoJSON-Viewer** (Idee 2026-08-21) — Neue Kartenseite, auf der Nutzer lokale
+  GeoJSON-Dateien laden (File-Picker + Drag&Drop) und auf der Karte darstellen können, ohne
+  Backend-Anbindung. Aufwand grob vergleichbar mit einer bestehenden Feature-Seite
+  (`Graph`/`Isochrones`, je ~700-720 Zeilen inkl. Tests) — kein Backend nötig, aber mehr UI
+  (Datei-Liste, pro Layer sichtbar/entfernen/Farbe) als bei den API-getriebenen Seiten. Bausteine:
+  neue Route/Page nach bestehendem Pattern (`BasePageController`+`LayoutHelper`+`MapCore.init`,
+  siehe `CoordsPage.ts`); File-Input+Drag&Drop (aktuell nirgends im Repo vorhanden — neu);
+  `FileReader`/`JSON.parse` mit Fehlerbehandlung (kaputtes JSON, kein Feature/FeatureCollection);
+  dynamisches Styling nach Geometrietyp (Standard-MapLibre-`$type`-Filter-Pattern, kein Neuland) +
+  Farbzuweisung pro geladener Datei; Popup mit Properties-Anzeige (kann `GenericFeaturePopup.ts`
+  wiederverwenden); Zoom-to-bounds beim Laden. Offene Risiken vor Umsetzung zu klären:
+  Performance/Memory bei sehr großen Dateien im Main-Thread, und ob es für das neue
+  Sidebar-Panel-Pattern (Datei-Liste mit Toggle/Remove) schon ein Muster in
+  `oe5ith-ci/docs/for-coding-agents.md` gibt oder eines neu abgestimmt werden muss. Braucht vor
+  Umsetzung einen eigenen `superpowers:brainstorming`-Durchgang (Scope/UI-Details).
