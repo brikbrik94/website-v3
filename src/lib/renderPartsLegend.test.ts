@@ -110,4 +110,23 @@ describe('resolveVisibleLegend', () => {
     const row = visible[0].rows.find(r => r.label === 'Präpariert')!;
     expect(row.chips.map(c => c.itemColor)).toEqual(['green', 'blue', 'red']);
   });
+
+  it('silently excludes a row with a malformed (non-array) style_layer_ids instead of throwing', () => {
+    const malformedHeadings: LegendHeading[] = [
+      {
+        heading: 'Kaputt',
+        rows: [
+          // Simuliert unvalidiertes Server-JSON (z.B. Feld fehlt/ist null statt string[]).
+          { label: 'Undefined', render: [fixedLine('white')], style_layer_ids: undefined as unknown as string[] },
+          { label: 'Null', render: [fixedLine('white')], style_layer_ids: null as unknown as string[] },
+          { label: 'Ok', render: [fixedLine('white')], style_layer_ids: ['some-layer'] },
+        ],
+      },
+    ];
+    const active = new Set(['some-layer']);
+    expect(() => resolveVisibleLegend(malformedHeadings, active, scales)).not.toThrow();
+    const visible = resolveVisibleLegend(malformedHeadings, active, scales);
+    expect(visible).toHaveLength(1);
+    expect(visible[0].rows.map(r => r.label)).toEqual(['Ok']);
+  });
 });

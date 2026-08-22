@@ -88,7 +88,7 @@ export function resolveVisibleLegend(
 ): VisibleLegendHeading[] {
   const result: VisibleLegendHeading[] = [];
   for (const h of headings) {
-    const visibleRows = h.rows.filter(r => r.style_layer_ids.some(id => activeStyleLayerIds.has(id)));
+    const visibleRows = h.rows.filter(r => Array.isArray(r.style_layer_ids) && r.style_layer_ids.some(id => activeStyleLayerIds.has(id)));
     if (visibleRows.length === 0) continue;
     result.push({
       heading: h.heading,

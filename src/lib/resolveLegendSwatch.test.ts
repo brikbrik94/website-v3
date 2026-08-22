@@ -399,7 +399,7 @@ describe('resolveLegendItemsForGroup', () => {
       groupKey: 'openskimap',
     });
     expect(warnSpy).toHaveBeenCalledWith(
-      '[resolveLegendItemsForGroup] legend_scale_id ohne passenden legend_sections-Eintrag:', 'unknown-scale'
+      '[resolveLegendItemsForGroup] legend_scale_id ohne passenden legend_scales-Eintrag:', 'unknown-scale'
     );
     warnSpy.mockRestore();
   });

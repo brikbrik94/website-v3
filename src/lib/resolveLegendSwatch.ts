@@ -242,7 +242,7 @@ export function resolveLegendItemsForGroup(
       if (section) {
         return { items: section.items, groupKey: `scale:${section.id}` };
       }
-      console.warn('[resolveLegendItemsForGroup] legend_scale_id ohne passenden legend_sections-Eintrag:', metaGroup.legend_scale_id);
+      console.warn('[resolveLegendItemsForGroup] legend_scale_id ohne passenden legend_scales-Eintrag:', metaGroup.legend_scale_id);
     } else {
       console.warn('[resolveLegendItemsForGroup] legend_scale_id gesetzt, aber version-Gate (>=1.1) nicht erfüllt:', styleVersion);
     }
