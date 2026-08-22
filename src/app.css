@@ -158,3 +158,29 @@ html, body {
   flex-shrink: 0;
 }
 
+/* render/variants-Legendenzeilen (geodata-plugin-standard §5.3, ab Schema-Version 2.0) — noch
+   nicht in oe5ith-ci generalisiert, analog .map-legend-unknown/.map-legend-remove oben. Eigene
+   Spalten-Anordnung (statt der Standard-.map-legend-entry-Zeile): der Chip-Streifen kann mehrere
+   Farb-Varianten breit werden und muss deshalb umbrechen können, bevor das Label folgt. */
+.map-legend-parts-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.map-legend-parts-row .map-legend-label {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.map-legend-parts-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.map-legend-parts-chip {
+  flex-shrink: 0;
+}
+
