@@ -76,10 +76,32 @@ export interface RouteExtras {
     waytype?: RouteExtra;
 }
 
+/**
+ * Providerneutraler Manöver-Typ — beide Routing-Provider (ORS, Valhalla) übersetzen ihren
+ * jeweiligen nativen numerischen Code hierher (siehe OrsManeuverKind.ts/ValhallaRouteInterpreter.ts),
+ * damit ManeuverIcons.ts/RoutingDetailsFormatter.ts providerunabhängig bleiben. 30 Werte: die 14
+ * bestehenden oe5ith-ci-Icons plus 16 neue (geodata-plugin-standard-analoges Muster: lokal bereits
+ * gezeichnet, Issue an oe5ith-ci läuft parallel, siehe docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md).
+ */
+export type ManeuverKind =
+  | 'depart' | 'depart-right' | 'depart-left'
+  | 'goal' | 'goal-right' | 'goal-left'
+  | 'becomes'
+  | 'straight'
+  | 'slight-right' | 'turn-right' | 'sharp-right'
+  | 'slight-left' | 'turn-left' | 'sharp-left'
+  | 'uturn' | 'uturn-right' | 'uturn-left'
+  | 'ramp-straight' | 'ramp-right' | 'ramp-left'
+  | 'exit-right' | 'exit-left'
+  | 'stay-straight' | 'keep-right' | 'keep-left'
+  | 'merge'
+  | 'roundabout-enter' | 'roundabout-exit'
+  | 'ferry-enter' | 'ferry-exit';
+
 export interface RouteStep {
     distance: number;
     duration: number;
-    type: number;
+    type: ManeuverKind;
     instruction: string;
     name: string;
     way_points: [number, number];
