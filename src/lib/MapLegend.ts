@@ -10,6 +10,7 @@ export interface AddPartsRowOptions {
   label: string;
   chips: RenderPartsChip[];
 }
+
 /**
  * Steuert das Legende-Panel einer Kartenseite (`.map-legend`-DOM-Struktur aus `oe5ith-ci`).
  * Einträge (`dot`/`line`/`area`/`icon`/`line-cased`) werden rein clientseitig verwaltet — welche
@@ -254,6 +255,30 @@ export class MapLegend {
         case 'circle': {
           const r = Math.max(2, Math.min(part.radius ?? 5, 7));
           svg.appendChild(svgChild('circle', {
+            cx: SW / 2, cy: CY, r,
+            fill: color ?? 'var(--null-bg, #999)', 'fill-opacity': opacity,
+            stroke: strokeColor ?? 'var(--line-strong, #999)', 'stroke-width': part.stroke_width ?? 1,
+          }));
+          break;
+        }
+        case 'icon': {
+          svg.appendChild(svgChild('circle', { cx: SW / 2, cy: CY, r: 6, fill: 'var(--null-bg, #999)' }));
+          const t = svgChild('text', { x: SW / 2, y: CY + 3, 'text-anchor': 'middle', 'font-size': 8, fill: color ?? 'var(--null-ink, #666)' });
+          t.textContent = color ? '◆' : '?';
+          svg.appendChild(t);
+          break;
+        }
+      }
+    }
+    return svg;
+  }
+
+  removeEntry(id: string): void {
+    const node = this._entryNodes.get(id);
+    if (node) {
+      node.remove();
+      this._entryNodes.delete(id);
+    }
   }
 
   clearEntries(): void {
