@@ -12,6 +12,8 @@ import { MAP_COLORS } from '../lib/MapStyles';
 import type { GeocoderSelection } from '../lib/GeocoderSearchField';
 import { PopupManager } from '../lib/PopupManager';
 import { buildGenericFeaturePopupHtml } from '../lib/GenericFeaturePopup';
+import { resolveVisibleLegend, type LegendHeading } from '../lib/renderPartsLegend';
+import type { LegendScale } from '../lib/resolveLegendSwatch';
 
 const SEARCH_PIN_SOURCE = 'map-search-pin';
 const SEARCH_PIN_LAYER = 'map-search-pin-layer';
@@ -43,6 +45,13 @@ export class MapPageController extends BasePageController {
     // Legenden-Zeile, analog legendItemsRefCount oben. Nur für den layers.json-Metadaten-Pfad
     // gesetzt (event.dedupKey !== null) — der style.json-Fallback-Pfad dedupliziert nicht.
     private swatchRefCount = new Map<string, number>();
+    // legend[]-Top-Level-Block (geodata-plugin-standard §5.4, ab Schema-Version 3.0) — global,
+    // nicht pro Overlay/Gruppe (siehe docs/superpowers/specs/2026-08-22-legend-v3-groups-legend-split-design.md).
+    private legendHeadings: LegendHeading[] = [];
+    private legendScalesById = new Map<string, LegendScale>();
+    // IDs der aktuell in der Legende gerenderten legend[]-Headings/-Zeilen — vor jedem Recompute
+    // vollständig entfernt und neu aufgebaut (kein inkrementelles Fortschreiben, siehe _syncV3Legend).
+    private v3LegendEntryIds: string[] = [];
 
     public async mount(container: HTMLElement): Promise<void> {
         try {
@@ -55,6 +64,8 @@ export class MapPageController extends BasePageController {
             
             if (!layersRes.ok) throw new Error(`Failed to load layers.json: ${layersRes.status}`);
             const layersMeta = await layersRes.json();
+            this.legendHeadings = layersMeta.legend ?? [];
+            this.legendScalesById = new Map((layersMeta.legend_scales ?? []).map((s: LegendScale) => [s.id, s]));
             const overlays = await invService.getOverlays();
 
             // 2. Basis-Layout rendern
@@ -96,7 +107,7 @@ export class MapPageController extends BasePageController {
                 undefined,
                 undefined,
                 layersMeta.layers,
-                layersMeta.legend_sections ?? [],
+                layersMeta.legend_scales ?? [],
                 (selection) => this._handleSearchSelect(selection),
                 this.signal
             );
@@ -246,10 +257,38 @@ export class MapPageController extends BasePageController {
                     legend.removeEntry(event.legendId);
                 }
             }
+            this._syncV3Legend(legend);
             m.triggerRepaint();
         } catch (err) {
             console.error(`[MapPageController] toggleLayer error:`, err);
         }
+    }
+
+    /**
+     * Berechnet den sichtbaren `legend[]`-Ausschnitt komplett neu aus der aktuellen Menge aktiver
+     * Style-Layer-IDs und synchronisiert die Legende — kein inkrementelles Add/Remove wie beim
+     * alten render/variants-Pfad, weil eine legend[]-Zeile Style-Layer aus mehreren groups[]
+     * referenzieren kann (siehe Design-Spec). Wird nach JEDEM Toggle aufgerufen.
+     */
+    private _syncV3Legend(legendPanel: MapLegend): void {
+        this.v3LegendEntryIds.forEach(id => legendPanel.removeEntry(id));
+        this.v3LegendEntryIds = [];
+
+        if (this.legendHeadings.length === 0) return;
+
+        const active = new Set(OverlayLoader.getActiveLayerIds());
+        const visible = resolveVisibleLegend(this.legendHeadings, active, this.legendScalesById);
+
+        visible.forEach((h, hIdx) => {
+            const headingId = `legend3:heading:${hIdx}`;
+            legendPanel.addHeading(headingId, h.heading);
+            this.v3LegendEntryIds.push(headingId);
+            h.rows.forEach((row, rIdx) => {
+                const rowId = `legend3:row:${hIdx}:${rIdx}`;
+                legendPanel.addPartsRow({ id: rowId, label: row.label, chips: row.chips });
+                this.v3LegendEntryIds.push(rowId);
+            });
+        });
     }
 
     public destroy(): void {
