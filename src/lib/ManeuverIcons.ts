@@ -1,12 +1,11 @@
 import type { ManeuverKind } from '../types/common';
 
-// Providerneutrale Manöver-Icons — 14 Icons 1:1 aus oe5ith-ci/assets/maneuver-icons/*.svg
-// (v1.20.0) übernommen (siehe oe5ith-ci/docs/maneuver-icons.md), 16 neue Icons für Valhalla-
-// Konzepte ohne ORS-Entsprechung lokal entworfen und als Vorschlag an oe5ith-ci gemeldet
-// (https://github.com/brikbrik94/oe5ith-ci/issues/2, docs/ci/open-items.md) — siehe
-// docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md für die vollständige
-// Herleitung. Die exakte grafische Form der 16 neuen Icons ist bewusst nicht final — sobald
-// oe5ith-ci eine offizielle Version liefert, werden diese Einträge synchronisiert.
+// Providerneutrale Manöver-Icons — alle 30 Icons 1:1 aus oe5ith-ci/assets/maneuver-icons/*.svg
+// übernommen (siehe oe5ith-ci/docs/maneuver-icons.md): 14 seit v1.20.0 (ORS-Code 0-13), 16
+// weitere für Valhalla-only-Konzepte seit v1.26.0 (ursprünglich als Vorschlag eingereicht,
+// https://github.com/brikbrik94/oe5ith-ci/issues/2 — inzwischen geschlossen, offiziell
+// übernommen; Ausnahme 'uturn-left', siehe Kommentar dort). Herleitung:
+// docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md.
 const MANEUVER_ICON_PATHS: Record<ManeuverKind, string> = {
   // Bestehende 14 (oe5ith-ci v1.20.0, vormals ORS-Code 0-13)
   'turn-left': '<path d="M8 13 Q8 7 2.6 7"/><path d="M2 4.7 L2.6 7 L4.1 5.2"/>',
@@ -24,11 +23,16 @@ const MANEUVER_ICON_PATHS: Record<ManeuverKind, string> = {
   'keep-left': '<path d="M8 13 V9"/><path d="M8 9 Q8 6 5.5 4.5"/><path d="M7.2 2.8 L5.3 4.3 L6.8 6.4"/><path d="M8 9 Q8 6.5 10 5.5" opacity="0.35"/>',
   'keep-right': '<path d="M8 13 V9"/><path d="M8 9 Q8 6 10.5 4.5"/><path d="M8.8 2.8 L10.7 4.3 L9.2 6.4"/><path d="M8 9 Q8 6.5 6 5.5" opacity="0.35"/>',
 
-  // Neu — Valhalla-only, Vorschlag an oe5ith-ci#2. Eigenständige Pfade, bewusst NICHT identisch
-  // zum bestehenden bare 'uturn' oben (sonst kollidieren zwei ManeuverKind-Werte auf ein Icon —
-  // 'uturn' bedient weiterhin ORS' richtungslosen Code, diese beiden nur Valhallas gerichtete Typen).
+  // Valhalla-only (oe5ith-ci v1.26.0). 'uturn-right' 1:1 aus dem offiziellen
+  // ci-maneuver-uturn-right.svg übernommen. 'uturn-left' bewusst NICHT synchronisiert — die
+  // offizielle oe5ith-ci-Version von ci-maneuver-uturn-left.svg (Stand v1.26.0) ist byte-identisch
+  // zum bestehenden bare 'uturn' oben (derselbe Kollisions-Fehler, der hier lokal beim
+  // Plan-Self-Review bereits gefunden und korrigiert wurde — der ursprüngliche GitHub-Issue-Text
+  // hat den Fehler versehentlich weitergetragen, oe5ith-ci hat ihn wörtlich übernommen). Bis
+  // oe5ith-ci das behebt, bleibt hier die bereits korrigierte, eigenständige lokale Fassung
+  // erhalten — siehe docs/ci/open-items.md für den nachgemeldeten Bug.
   'uturn-left': '<path d="M9 13 V8 A4 4 0 0 0 3 8 V11"/><path d="M1 9.5 L3 11.5 L5 9.5"/>',
-  'uturn-right': '<path d="M7 13 V8 A4 4 0 0 1 13 8 V11"/><path d="M11 9.5 L13 11.5 L15 9.5"/>',
+  'uturn-right': '<path d="M5 13 V6 A3 3 0 0 1 11 6 V9"/><path d="M13.2 7 L11 9.5 L8.8 7"/>',
   'ramp-right': '<path d="M8 13 V9"/><path d="M8 9 Q8 6 11 5"/><path d="M12.8 3.5 L11 5 L11.8 7"/><path d="M8 9 V3" stroke-dasharray="1.5 1.5" opacity="0.4"/>',
   'ramp-left': '<path d="M8 13 V9"/><path d="M8 9 Q8 6 5 5"/><path d="M3.2 3.5 L5 5 L4.2 7"/><path d="M8 9 V3" stroke-dasharray="1.5 1.5" opacity="0.4"/>',
   'ramp-straight': '<path d="M8 13 V3"/><path d="M5.5 5.5 L8 3 L10.5 5.5"/><path d="M11 11 Q11 8 9 6" stroke-dasharray="1.5 1.5" opacity="0.4"/>',
