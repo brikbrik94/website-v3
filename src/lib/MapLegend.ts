@@ -1,9 +1,15 @@
 import { LegendEntry } from '../types/common';
+import type { RenderPartsChip, RenderColor } from './renderPartsLegend';
 
 export interface AddLegendEntryOptions extends LegendEntry {
   onRemove?: () => void;
 }
 
+export interface AddPartsRowOptions {
+  id: string;
+  label: string;
+  chips: RenderPartsChip[];
+}
 /**
  * Steuert das Legende-Panel einer Kartenseite (`.map-legend`-DOM-Struktur aus `oe5ith-ci`).
  * Einträge (`dot`/`line`/`area`/`icon`/`line-cased`) werden rein clientseitig verwaltet — welche
@@ -146,12 +152,108 @@ export class MapLegend {
     return wrapper;
   }
 
-  removeEntry(id: string): void {
-    const node = this._entryNodes.get(id);
-    if (node) {
-      node.remove();
-      this._entryNodes.delete(id);
-    }
+  /**
+   * Zeile für eine `render`/`variants`-Gruppe (geodata-plugin-standard §5.3, ab Schema-Version
+   * 2.0): ein Chip-Streifen statt eines einzelnen Swatches — pro `chips[]`-Eintrag ein SVG, das
+   * dessen `parts` (Fläche/Linie/Umrandung/Kreis/Icon) übereinander zeichnet, mit den echten
+   * `width`/`radius`/`stroke_width`-Werten und der MapLibre-`dasharray`-Semantik (Dash-Länge =
+   * `dasharray`-Wert × `width`, siehe `_buildPartsChip()`). Lokales Pattern (`.map-legend-parts-*`),
+   * noch nicht in `oe5ith-ci` generalisiert — analog `.map-legend-unknown`/`.map-legend-remove`.
+   */
+  addPartsRow(entry: AddPartsRowOptions): void {
+    if (this._entryNodes.has(entry.id)) this.removeEntry(entry.id);
+
+    const div = document.createElement('div');
+    div.className = 'map-legend-entry map-legend-parts-row';
+
+    const strip = document.createElement('div');
+    strip.className = 'map-legend-parts-strip';
+    entry.chips.forEach(chip => strip.appendChild(this._buildPartsChip(chip)));
+    div.appendChild(strip);
+
+    const label = document.createElement('span');
+    label.className = 'map-legend-label';
+    label.textContent = entry.label;
+    div.appendChild(label);
+
+    this._entriesEl.appendChild(div);
+    this._entryNodes.set(entry.id, div);
+  }
+
+  /**
+   * Rendert einen `legend[].heading`-Titel (geodata-plugin-standard §5.4, ab Schema-Version 3.0)
+   * als linksbündige Überschrift über einem Zeilenblock — Renderer-Vertrag aus dem Standard.
+   * Wiederverwendet die bestehende CI-Klasse `.overlay-section-label` (bereits in `Topbar.ts`
+   * für "Basemap" genutzt) statt eine neue lokale CSS-Klasse zu erfinden.
+   */
+  addHeading(id: string, text: string): void {
+    if (this._entryNodes.has(id)) this.removeEntry(id);
+
+    const div = document.createElement('div');
+    div.className = 'overlay-section-label';
+    div.textContent = text;
+
+    this._entriesEl.appendChild(div);
+    this._entryNodes.set(id, div);
+  }
+
+  private _resolvePartColor(color: RenderColor | null, itemColor: string | null): string | null {
+    if (!color) return null;
+    return color.mode === 'fixed' ? color.value : itemColor;
+  }
+
+  private _buildPartsChip(chip: RenderPartsChip): SVGSVGElement {
+    // Das Legende-Panel ist fest max-width: var(--sidebar-width) = 300px (12-14px Padding) —
+    // Chip-Maße bewusst klein genug, dass ein 6er-Streifen (nach Serverseitiger Farbreduktion
+    // der übliche Fall) ohne Umbruch hineinpasst, statt der breiten Standalone-Artifact-Maße.
+    const SW = 34, SH = 16, CY = 8, X0 = 3, X1 = 31;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg') as SVGSVGElement;
+    svg.setAttribute('class', 'map-legend-parts-chip');
+    svg.setAttribute('width', String(SW));
+    svg.setAttribute('height', String(SH));
+    svg.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
+
+    const svgChild = (tag: string, attrs: Record<string, string | number>) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const k in attrs) el.setAttribute(k, String(attrs[k]));
+      return el;
+    };
+
+    for (const part of chip.parts) {
+      if (part.kind === 'text') continue;
+      const color = this._resolvePartColor(part.color, chip.itemColor);
+      const strokeColor = this._resolvePartColor(part.stroke_color, chip.itemColor);
+      const opacity = part.opacity ?? 1;
+
+      switch (part.kind) {
+        case 'fill':
+          svg.appendChild(svgChild('rect', {
+            x: X0 + 1, y: CY - 6, width: (X1 - X0) - 2, height: 12, rx: 3,
+            fill: color ?? 'var(--null-bg, #999)', 'fill-opacity': opacity,
+          }));
+          break;
+        case 'line':
+        case 'outline': {
+          // Gleiche Clamp-Idee wie die bestehenden type:'line'/'line-cased'-Zweige oben (1-6px
+          // bzw. 2-8px) — auf die kleinere Chip-Höhe abgestimmt, damit Umrandung sichtbar breiter
+          // bleibt als die Linie darüber, aber beide in den 16px-Chip passen.
+          const isOutline = part.kind === 'outline';
+          const w = Math.max(1, Math.min(part.width ?? (isOutline ? 5 : 2), isOutline ? 5 : 4));
+          const attrs: Record<string, string | number> = {
+            x1: X0, y1: CY, x2: X1, y2: CY,
+            stroke: color ?? 'var(--null-bg, #999)', 'stroke-width': w,
+            'stroke-opacity': opacity, 'stroke-linecap': 'butt',
+          };
+          // MapLibre-Semantik (line-dasharray): die Werte sind in Vielfachen der Linienbreite
+          // angegeben, nicht in Pixeln — reale Pixel-Länge = dasharray-Wert * (geclampte) width,
+          // damit das Muster zur tatsächlich gezeichneten Strichstärke proportional bleibt.
+          if (part.dasharray) attrs['stroke-dasharray'] = `${part.dasharray[0] * w} ${part.dasharray[1] * w}`;
+          svg.appendChild(svgChild('line', attrs));
+          break;
+        }
+        case 'circle': {
+          const r = Math.max(2, Math.min(part.radius ?? 5, 7));
+          svg.appendChild(svgChild('circle', {
   }
 
   clearEntries(): void {
