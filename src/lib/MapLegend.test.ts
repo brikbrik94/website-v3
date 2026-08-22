@@ -146,6 +146,7 @@ describe('MapLegend.addEntry', () => {
       .toThrow("MapLegend.addEntry: 'area' benötigt outline_color UND outline_width zusammen");
   });
 });
+
 describe('MapLegend.addPartsRow', () => {
   let legend: MapLegend;
 
@@ -209,5 +210,35 @@ describe('MapLegend.addPartsRow', () => {
     expect(document.querySelector('.map-legend-parts-row')).not.toBeNull();
     legend.removeEntry('pr6');
     expect(document.querySelector('.map-legend-parts-row')).toBeNull();
+  });
+});
+
+describe('MapLegend.addHeading', () => {
+  let legend: MapLegend;
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    legend = new MapLegend(makeLegendFixture());
+  });
+
+  it('renders the heading text with the CI overlay-section-label class', () => {
+    legend.addHeading('h1', 'Pisten');
+    const el = document.querySelector('.overlay-section-label');
+    expect(el?.textContent).toBe('Pisten');
+  });
+
+  it('is removable via the shared removeEntry(id) mechanism', () => {
+    legend.addHeading('h2', 'Loipen');
+    expect(document.querySelector('.overlay-section-label')).not.toBeNull();
+    legend.removeEntry('h2');
+    expect(document.querySelector('.overlay-section-label')).toBeNull();
+  });
+
+  it('replaces an existing heading when addHeading is called again with the same id', () => {
+    legend.addHeading('h3', 'Alt');
+    legend.addHeading('h3', 'Neu');
+    const headings = document.querySelectorAll('.overlay-section-label');
+    expect(headings).toHaveLength(1);
+    expect(headings[0].textContent).toBe('Neu');
   });
 });
