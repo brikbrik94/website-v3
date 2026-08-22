@@ -1,5 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { updateRoutingSummary, renderStationResults } from './RoutingSidebar';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { updateRoutingSummary, renderStationResults, updateServiceStatus, checkProviderHealth, type ServiceStatusElements } from './RoutingSidebar';
+import { RoutingService } from '../lib/RoutingService';
+import { ValhallaService } from '../lib/ValhallaService';
 
 function createFakeElement() {
   const classes = new Set<string>();
@@ -146,6 +148,114 @@ describe('updateRoutingSummary turn-by-turn disclosure', () => {
     expect(resultListOpenIdx).toBeGreaterThanOrEqual(0);
     expect(resultListCloseIdx).toBeGreaterThan(0);
     expect(disclosureIdx).toBeGreaterThanOrEqual(resultListCloseIdx);
+  });
+});
+
+function createFakeStatusEl() {
+  const classes = new Set<string>();
+  return {
+    textContent: '',
+    classList: {
+      add: (c: string) => classes.add(c),
+      remove: (...cs: string[]) => cs.forEach(c => classes.delete(c)),
+      contains: (c: string) => classes.has(c),
+    },
+  };
+}
+
+function createFakeToggleEl() {
+  return { disabled: false };
+}
+
+function createFakeServiceStatusElements(): ServiceStatusElements {
+  return {
+    statusDot: createFakeStatusEl(),
+    statusName: createFakeStatusEl(),
+    profileSelect: createFakeToggleEl(),
+    startInput: createFakeToggleEl(),
+    targetInput: createFakeToggleEl(),
+    submitButton: createFakeToggleEl(),
+  };
+}
+
+describe('updateServiceStatus', () => {
+  it('labels the status row "ORS API" for provider ors', () => {
+    const els = createFakeServiceStatusElements();
+    updateServiceStatus(els, true, 'ors');
+    expect(els.statusName.textContent).toBe('ORS API');
+  });
+
+  it('labels the status row "Valhalla API" for provider valhalla', () => {
+    const els = createFakeServiceStatusElements();
+    updateServiceStatus(els, true, 'valhalla');
+    expect(els.statusName.textContent).toBe('Valhalla API');
+  });
+
+  it('shows the dot as "on" and enables inputs/button when online', () => {
+    const els = createFakeServiceStatusElements();
+    updateServiceStatus(els, true, 'ors');
+    expect(els.statusDot.classList.contains('on')).toBe(true);
+    expect(els.statusDot.classList.contains('off')).toBe(false);
+    expect(els.statusDot.classList.contains('warn')).toBe(false);
+    expect(els.profileSelect.disabled).toBe(false);
+    expect(els.startInput.disabled).toBe(false);
+    expect(els.targetInput.disabled).toBe(false);
+    expect(els.submitButton.disabled).toBe(false);
+  });
+
+  it('shows the dot as "off" and disables inputs/button when offline', () => {
+    const els = createFakeServiceStatusElements();
+    updateServiceStatus(els, false, 'ors');
+    expect(els.statusDot.classList.contains('off')).toBe(true);
+    expect(els.statusDot.classList.contains('on')).toBe(false);
+    expect(els.profileSelect.disabled).toBe(true);
+    expect(els.startInput.disabled).toBe(true);
+    expect(els.targetInput.disabled).toBe(true);
+    expect(els.submitButton.disabled).toBe(true);
+  });
+
+  it('shows the dot as "warn" and disables inputs/button while a check is in progress (online: null)', () => {
+    const els = createFakeServiceStatusElements();
+    updateServiceStatus(els, null, 'valhalla');
+    expect(els.statusDot.classList.contains('warn')).toBe(true);
+    expect(els.statusDot.classList.contains('on')).toBe(false);
+    expect(els.statusDot.classList.contains('off')).toBe(false);
+    expect(els.profileSelect.disabled).toBe(true);
+    expect(els.submitButton.disabled).toBe(true);
+  });
+
+  it('clears a previous dot state when called again with a different result', () => {
+    const els = createFakeServiceStatusElements();
+    updateServiceStatus(els, false, 'ors');
+    updateServiceStatus(els, true, 'ors');
+    expect(els.statusDot.classList.contains('off')).toBe(false);
+    expect(els.statusDot.classList.contains('on')).toBe(true);
+  });
+});
+
+describe('checkProviderHealth', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('dispatches to RoutingService.checkHealth for provider ors', async () => {
+    const orsSpy = vi.spyOn(RoutingService, 'checkHealth').mockResolvedValue(true);
+    const valhallaSpy = vi.spyOn(ValhallaService, 'checkHealth').mockResolvedValue(false);
+
+    const result = await checkProviderHealth('ors');
+
+    expect(result).toBe(true);
+    expect(orsSpy).toHaveBeenCalledOnce();
+    expect(valhallaSpy).not.toHaveBeenCalled();
+  });
+
+  it('dispatches to ValhallaService.checkHealth for provider valhalla', async () => {
+    const orsSpy = vi.spyOn(RoutingService, 'checkHealth').mockResolvedValue(false);
+    const valhallaSpy = vi.spyOn(ValhallaService, 'checkHealth').mockResolvedValue(true);
+
+    const result = await checkProviderHealth('valhalla');
+
+    expect(result).toBe(true);
+    expect(valhallaSpy).toHaveBeenCalledOnce();
+    expect(orsSpy).not.toHaveBeenCalled();
   });
 });
 
