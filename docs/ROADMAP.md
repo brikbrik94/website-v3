@@ -163,6 +163,11 @@ Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](.
   reflexhaftem Ergänzen, (c) falls ja: Folgeeintrag zum bereits gestellten
   [oe5ith-ci#2](https://github.com/brikbrik94/oe5ith-ci/issues/2)-Icon-Request. Kontext:
   `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`.
+  **Update 2026-08-22:** oe5ith-ci#2 (die ursprüngliche 16-Icon-Anfrage) wurde inzwischen zügig
+  umgesetzt (`oe5ith-ci` v1.26.0) — senkt die Hürde für einen möglichen Folge-Request, falls (b)
+  positiv entschieden wird. Dabei außerdem
+  [oe5ith-ci#3](https://github.com/brikbrik94/oe5ith-ci/issues/3) gefunden/gemeldet (unabhängiger
+  Bug: `ci-maneuver-uturn-left` dupliziert `ci-maneuver-uturn`), siehe `docs/ci/open-items.md`.
 
 ## Repo-Pflege & Dokumentation
 

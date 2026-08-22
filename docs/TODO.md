@@ -169,7 +169,17 @@ alle vier auf einmal anfassen.
   `valhalla.php` landet also ungefragt live, sobald ein Deploy läuft. Aktuell schützt nur ein
   `deny all;` in `nginx.conf` (analog `diag.php`) sowie das Fehlen von `VALHALLA_URL` in der
   produktiven Config (Endpoint antwortet dann mit 500) — das ist kein Ersatz für eine echte
-  Security-Review, bevor ein Deploy tatsächlich in Frage kommt:
+  Security-Review, bevor ein Deploy tatsächlich in Frage kommt.
+
+  **Scope seit 2026-08-22 gewachsen:** `?path=route` liefert inzwischen volle Turn-by-Turn-Daten
+  (nicht mehr nur A→B-Geometrie, siehe
+  `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`) und — falls die
+  SEW/NEF-Matrixsuche für Valhalla umgesetzt wird — käme mit `?path=sources_to_targets` ein
+  weiterer, potenziell teurerer Endpoint dazu. Macht die Review vor einem Deploy nicht dringlicher
+  im Sinne von Zeitdruck, aber die Angriffs-/Kostenfläche größer, als der ursprüngliche Text unten
+  unterstellt (dort noch mit Blick auf den reinen A→B-Connector geschrieben):
+
+
 
   - [ ] Authentifizierung/Rate-Limiting auf `api/valhalla.php` (aktuell: offener Proxy, sobald
         `VALHALLA_URL` gesetzt ist)
