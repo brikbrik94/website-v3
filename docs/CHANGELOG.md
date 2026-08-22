@@ -2,6 +2,24 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-22 12:11
+
+### Hinzugefügt
+- **Valhalla-Turn-by-Turn-Parität mit ORS** — Valhalla-Routen (`/routing`, Provider-Umschalter)
+  zeigen jetzt dieselbe Wegbeschreibung wie ORS-Routen, vollständig für alle 30 relevanten
+  Manöver-Konzepte (37 Valhalla-Manöver-Typen minus 7 technisch unerreichbare Transit-Typen, siehe
+  `docs/valhalla-api-guide.md`). Neuer providerneutraler `ManeuverKind`-String-Typ
+  (`src/types/common.ts`) ersetzt `RouteStep.type: number` — beide Provider übersetzen ihren
+  jeweiligen nativen Code dorthin (`src/lib/OrsManeuverKind.ts` für ORS,
+  `valhallaTypeToManeuverKind()` in `src/lib/ValhallaRouteInterpreter.ts` für Valhalla).
+  `src/lib/ManeuverIcons.ts` kennt jetzt 30 statt 14 Icons — 16 davon (Ramp, Exit, Merge, Fähre,
+  gerichtete U-Turn-/Depart-/Goal-Varianten, „Becomes") existieren noch nicht offiziell im
+  `oe5ith-ci`-Katalog, lokal als Entwurf gezeichnet und parallel als Vorschlag eingereicht:
+  [oe5ith-ci#2](https://github.com/brikbrik94/oe5ith-ci/issues/2)
+  (`docs/ci/open-items.md`). Details:
+  `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`,
+  `docs/superpowers/plans/2026-08-22-valhalla-turn-by-turn-parity.md`.
+
 ## [Unreleased] - 2026-08-22 09:44
 
 ### Geändert
@@ -23,6 +41,9 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   `docs/superpowers/plans/2026-08-22-legend-v3-groups-legend-split.md`.
 
 ## [Unreleased] - 2026-08-19 10:01
+
+_Hinweis (2026-08-22): Die hier erwähnte Einschränkung „kein Turn-by-Turn" gilt nicht mehr, siehe
+der neue Eintrag oben._
 
 ### Hinzugefügt
 - **Valhalla-Routing-Connector (Testumgebung, `/routing`, Modus A→B)** — neuer Provider-Dropdown
