@@ -27,12 +27,18 @@ export interface ValhallaTrip {
   summary: ValhallaTripSummary;
 }
 
-// Valhallas numerischer Manöver-Typ (0-36, siehe valhalla-docs/turn-by-turn/api-reference.md)
+// Valhallas numerischer Manöver-Typ (0-36, siehe
+// https://github.com/valhalla/valhalla-docs/blob/master/turn-by-turn/api-reference.md)
 // → providerneutraler ManeuverKind. kNone (0) und die 7 Transit-Typen (30-36) sind bewusst nicht
 // gelistet — Transit/Multimodal-Costing ist in dieser Instanz mangels GTFS-Daten nicht nutzbar
 // (docs/valhalla-api-guide.md), keines der unterstützten Profile kann diese Typen je liefern;
 // beide fallen auf 'straight' zurück wie jeder unbekannte Wert (siehe
 // docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md).
+// Hinweis (2026-08-22, finale Branch-Review): der Bereich 0-36 stammt aus der Doku, gegen die
+// zur Planungszeit entworfen wurde. Live gegen die produktiv erreichbare Instanz (v3.8.3)
+// verifiziert, dass es real weitere Typen jenseits 36 gibt — mindestens 39/40/41
+// (Aufzug/Treppe/Rolltreppe im `pedestrian`-Costing, das diese App anbietet). Nicht gemappt,
+// fällt sicher auf 'straight' zurück — kein Fehlverhalten, aber keine vollständige Abdeckung.
 const VALHALLA_TYPE_TO_KIND: Record<number, ManeuverKind> = {
   1: 'depart', 2: 'depart-right', 3: 'depart-left',
   4: 'goal', 5: 'goal-right', 6: 'goal-left',
