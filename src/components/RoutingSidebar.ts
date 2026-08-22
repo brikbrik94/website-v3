@@ -1,4 +1,5 @@
 import { RoutingService } from '../lib/RoutingService';
+import { ValhallaService } from '../lib/ValhallaService';
 import { GeocoderService } from '../lib/GeocoderService';
 import { GeocoderSearchField } from '../lib/GeocoderSearchField';
 import { RouteExtras, RouteSegment, RoutingStation } from '../types/common';
@@ -61,6 +62,47 @@ export const setRoutingCoord = async (type: 'start' | 'target', lat: number, lon
   }
 };
 
+/** Prüft die Erreichbarkeit des übergebenen Routing-Providers — dispatcht auf den jeweiligen
+ *  Service, sonst identisch zu dessen eigenem checkHealth(). */
+export const checkProviderHealth = async (provider: 'ors' | 'valhalla'): Promise<boolean> => {
+  return provider === 'valhalla' ? ValhallaService.checkHealth() : RoutingService.checkHealth();
+};
+
+/** DOM-Elemente des "Service Status"-Panels, die updateServiceStatus() zusammen aktualisiert —
+ *  minimal typisiert (nur die tatsächlich gelesenen/gesetzten Properties), damit sich das auch
+ *  ohne echtes DOM testen lässt (siehe RoutingSidebar.test.ts). */
+export interface ServiceStatusElements {
+  statusDot: { classList: { add(c: string): void; remove(...cs: string[]): void; contains(c: string): boolean } };
+  statusName: { textContent: string };
+  profileSelect: { disabled: boolean };
+  startInput: { disabled: boolean };
+  targetInput: { disabled: boolean };
+  submitButton: { disabled: boolean };
+}
+
+/**
+ * Aktualisiert Label, Status-Dot und Bedienbarkeit (Profil/Start/Ziel/Button) des Routing-
+ * Sidebar-Statuspanels für den übergebenen Provider. `online: null` steht für "Prüfung läuft"
+ * (Dot `warn`, Bedienelemente währenddessen deaktiviert — kein optimistisches "bedienbar" während
+ * unklar ist, ob der gewählte Provider erreichbar ist).
+ */
+export const updateServiceStatus = (
+  els: ServiceStatusElements,
+  online: boolean | null,
+  provider: 'ors' | 'valhalla'
+): void => {
+  els.statusName.textContent = provider === 'valhalla' ? 'Valhalla API' : 'ORS API';
+
+  els.statusDot.classList.remove('on', 'off', 'warn');
+  els.statusDot.classList.add(online === null ? 'warn' : online ? 'on' : 'off');
+
+  const enabled = online === true;
+  els.profileSelect.disabled = !enabled;
+  els.startInput.disabled = !enabled;
+  els.targetInput.disabled = !enabled;
+  els.submitButton.disabled = !enabled;
+};
+
 export const initRoutingSidebar = async (
   container: HTMLElement,
   onRouteStart: (params: RoutingParams) => void,
@@ -86,10 +128,10 @@ export const initRoutingSidebar = async (
             <div class="status-row">
               <div class="status-row-left">
                 <i class="fa-solid fa-server status-row-icon"></i>
-                <span class="status-row-name">ORS API</span>
+                <span class="status-row-name" id="status-provider-name">ORS API</span>
               </div>
               <div class="status-row-right">
-                <span class="status-dot ${isOnline ? 'on' : 'off'}"></span>
+                <span class="status-dot ${isOnline ? 'on' : 'off'}" id="status-provider-dot"></span>
               </div>
             </div>
           </div>
@@ -186,16 +228,44 @@ export const initRoutingSidebar = async (
   const updateProfileOptions = (provider: string) => {
     if (provider === 'valhalla') {
       routeProfile.innerHTML = VALHALLA_PROFILES.map(p => `<option value="${p}">${p}</option>`).join('');
-      routeProfile.disabled = false;
     } else {
       routeProfile.innerHTML = profiles.length > 0
         ? profiles.map(p => `<option value="${p}">${p}</option>`).join('')
         : '<option>Dienst offline</option>';
-      routeProfile.disabled = !isOnline;
     }
+    // Bedienbarkeit (disabled) hängt vom Live-Status des jeweiligen Providers ab, nicht von der
+    // Options-Liste — das regelt ausschließlich updateServiceStatus() über refreshProviderStatus(),
+    // damit es nur eine Quelle der Wahrheit für den disabled-Zustand gibt.
   };
 
-  routeProvider.addEventListener('change', () => updateProfileOptions(routeProvider.value), { signal });
+  const serviceStatusEls: ServiceStatusElements = {
+    statusDot: document.getElementById('status-provider-dot')!,
+    statusName: document.getElementById('status-provider-name')!,
+    profileSelect: routeProfile,
+    startInput: inputStart,
+    targetInput: inputTarget,
+    submitButton: btnStart as HTMLButtonElement,
+  };
+  // Initialer Stand deckt sich mit dem, was das Template oben schon (statisch, für 'ors') gerendert
+  // hat — hier trotzdem explizit gesetzt, damit updateServiceStatus() ab jetzt die einzige Quelle
+  // der Wahrheit ist (kein zweiter, potenziell abweichender disabled-Pfad über das Template).
+  updateServiceStatus(serviceStatusEls, isOnline, 'ors');
+
+  // Prüft den übergebenen Provider live und aktualisiert Statuspanel + Bedienbarkeit — zeigt
+  // währenddessen "wird geprüft" (warn/disabled), damit kein bedienbarer Zustand vorgetäuscht
+  // wird, während unklar ist, ob der gewählte Provider erreichbar ist.
+  const refreshProviderStatus = async (provider: 'ors' | 'valhalla') => {
+    updateServiceStatus(serviceStatusEls, null, provider);
+    const online = await checkProviderHealth(provider);
+    updateServiceStatus(serviceStatusEls, online, provider);
+  };
+
+  const handleProviderChange = (provider: string) => {
+    updateProfileOptions(provider);
+    void refreshProviderStatus(provider as 'ors' | 'valhalla');
+  };
+
+  routeProvider.addEventListener('change', () => handleProviderChange(routeProvider.value), { signal });
 
   const fieldProvider = document.getElementById('field-provider')!;
 
@@ -213,7 +283,7 @@ export const initRoutingSidebar = async (
       // verloren (Regression, gefunden im finalen Whole-Branch-Review 2026-08-19).
       if (routeProvider.value !== 'ors') {
         routeProvider.value = 'ors';
-        updateProfileOptions('ors');
+        handleProviderChange('ors');
       }
     }
     // Bei Modus-Wechsel alles leeren
@@ -257,28 +327,29 @@ export const initRoutingSidebar = async (
   setupGeocoder(inputStart, resultsStart);
   setupGeocoder(inputTarget, resultsTarget);
 
-  if (isOnline) {
-    btnStart.addEventListener('click', async () => {
-      const mode = routeMode.querySelector('.segmented-btn.active')?.getAttribute('data-mode') as 'ab' | 'sew' | 'nef';
-      const target = getCoordsFromInput(inputTarget);
-      const profile = (document.getElementById('route-profile') as HTMLSelectElement).value;
-      const provider = mode === 'ab'
-        ? (routeProvider.value as 'ors' | 'valhalla')
-        : 'ors'; // SEW/NEF unterstützen nur ORS
+  // Immer verdrahtet (nicht mehr auf den ORS-Status bei Mount bedingt) — Bedienbarkeit steuert
+  // ausschließlich das disabled-Attribut aus updateServiceStatus(), das jetzt providerabhängig
+  // live nachgeführt wird, statt hier nur einmal beim Mount für ORS gegolten zu haben.
+  btnStart.addEventListener('click', async () => {
+    const mode = routeMode.querySelector('.segmented-btn.active')?.getAttribute('data-mode') as 'ab' | 'sew' | 'nef';
+    const target = getCoordsFromInput(inputTarget);
+    const profile = (document.getElementById('route-profile') as HTMLSelectElement).value;
+    const provider = mode === 'ab'
+      ? (routeProvider.value as 'ors' | 'valhalla')
+      : 'ors'; // SEW/NEF unterstützen nur ORS
 
-      if (mode === 'ab') {
-        const start = getCoordsFromInput(inputStart);
-        if (start && target) {
-          onRouteStart({ start, target, profile, mode, provider });
-        } else { alert('Bitte Start und Ziel eingeben.'); }
-      } else {
-        if (target) {
-          renderRoutingLoading('Suche Standorte...');
-          onRouteStart({ target, profile, mode, provider });
-        } else { alert('Bitte Einsatzort (Ziel) eingeben.'); }
-      }
-    });
-  }
+    if (mode === 'ab') {
+      const start = getCoordsFromInput(inputStart);
+      if (start && target) {
+        onRouteStart({ start, target, profile, mode, provider });
+      } else { alert('Bitte Start und Ziel eingeben.'); }
+    } else {
+      if (target) {
+        renderRoutingLoading('Suche Standorte...');
+        onRouteStart({ target, profile, mode, provider });
+      } else { alert('Bitte Einsatzort (Ziel) eingeben.'); }
+    }
+  });
 };
 
 export const renderRoutingLoading = (message: string) => {
