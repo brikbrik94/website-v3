@@ -2,7 +2,7 @@ import { MapItem } from '../types/inventory';
 import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
-import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, computeSwatchDedupKey, resolveLegendItemsForGroup, type LegendSwatch, type SwatchType, type LegendSection } from '../lib/resolveLegendSwatch';
+import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, computeSwatchDedupKey, resolveLegendItemsForGroup, type LegendSwatch, type SwatchType, type LegendScale } from '../lib/resolveLegendSwatch';
 
 export interface LayerMetaGroup {
   name: string;
@@ -73,11 +73,11 @@ export const initSidebar = (
   onBulkToggle?: BulkToggleCallback,
   onGroupExpand?: (overlayId: string) => Promise<void>,
   layersMeta: LayerMetaEntry[] = [],
-  legendSections: LegendSection[] = [],
+  legendScales: LegendScale[] = [],
   onSearchSelect?: (selection: GeocoderSelection) => void,
   signal?: AbortSignal
 ) => {
-  const legendSectionsById = new Map(legendSections.map(s => [s.id, s]));
+  const legendScalesById = new Map(legendScales.map(s => [s.id, s]));
   const loadedLayers = new Map<string, LayerMetaGroup[] | LayerSpecification[]>();
 
   // Separater Cache für den layersMeta-Pfad: layers.json liefert Gruppierung/Namen, aber keine
@@ -241,7 +241,7 @@ export const initSidebar = (
       opacity = typeof metaGroup.opacity === 'number' ? metaGroup.opacity : null;
 
       const styleEntry = layersMeta.find(l => l.id === overlayId);
-      const resolvedItems = resolveLegendItemsForGroup(metaGroup, overlayId, styleEntry?.version, legendSectionsById);
+      const resolvedItems = resolveLegendItemsForGroup(metaGroup, overlayId, styleEntry?.version, legendScalesById);
       if (resolvedItems) {
         const itemType = swatchTypeForLayerType(metaGroup.type ?? layerType) ?? 'dot';
         legendItems = resolvedItems.items.map(li => ({ ...li, type: itemType }));
