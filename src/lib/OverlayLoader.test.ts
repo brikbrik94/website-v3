@@ -88,4 +88,56 @@ describe('OverlayLoader concurrency', () => {
     );
     vi.unstubAllGlobals();
   });
+
+  it('getOriginalActiveLayerIds strips the overlayId prefix that add() adds for layer ids not already starting with it (regression: legend[] vs. OverlayLoader id-space mismatch)', async () => {
+    const map = createFakeMap();
+    // Realistischer Fall wie openskimap: Layer-IDs im Style-JSON tragen NICHT die overlayId als
+    // Präfix ("ski-runs-downhill-line", nicht "openskimap-ski-runs-downhill-line") — add() fügt
+    // den Präfix also tatsächlich hinzu (prefixed()'s startsWith-Zweig greift NICHT).
+    const style = {
+      sources: { s: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } },
+      layers: [
+        { id: 'ski-runs-downhill-line', type: 'line', source: 's', paint: { 'line-color': '#000000' } },
+      ],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => style }));
+
+    await OverlayLoader.add(map, 'openskimap', 'https://example/openskimap/style.json', {
+      layerIds: ['ski-runs-downhill-line'],
+    });
+
+    // Präfixte Form (wie sie MapLibre/MapRegistry tatsächlich kennt) bleibt unverändert korrekt.
+    expect(OverlayLoader.getActiveLayerIds()).toEqual(['openskimap-ski-runs-downhill-line']);
+
+    // Originale Form (wie sie legend[].rows[].style_layer_ids/groups[].style_layers aus
+    // layers.json verwenden) muss den synthetischen Präfix wieder entfernt haben.
+    expect(OverlayLoader.getOriginalActiveLayerIds()).toEqual(new Set(['ski-runs-downhill-line']));
+
+    vi.unstubAllGlobals();
+  });
+
+  it('getOriginalActiveLayerIds does not corrupt a layer id that already starts with the overlayId (edge case: prefixed() left it unchanged, blind string-stripping would truncate it wrongly)', async () => {
+    const map = createFakeMap();
+    // overlayId "foo", Layer-ID "foo-thing" beginnt bereits mit der overlayId -> prefixed()
+    // lässt sie unverändert (kein "foo-foo-thing"). Ein naives Entfernen von "${overlayId}-" aus
+    // der resultierenden ID ("foo-thing" -> "thing") wäre hier falsch, weil "foo-thing" bereits
+    // die wahre Original-ID ist, kein synthetisch hinzugefügter Präfix.
+    const style = {
+      sources: { s: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } },
+      layers: [
+        { id: 'foo-thing', type: 'line', source: 's', paint: { 'line-color': '#000000' } },
+      ],
+    };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => style }));
+
+    await OverlayLoader.add(map, 'foo', 'https://example/foo/style.json', { layerIds: ['foo-thing'] });
+
+    // prefixed('foo', 'foo-thing') lässt die ID unverändert (startsWith-Guard greift).
+    expect(OverlayLoader.getActiveLayerIds()).toEqual(['foo-thing']);
+
+    // getOriginalActiveLayerIds() muss die wahre Original-ID zurückgeben, nicht "thing".
+    expect(OverlayLoader.getOriginalActiveLayerIds()).toEqual(new Set(['foo-thing']));
+
+    vi.unstubAllGlobals();
+  });
 });
