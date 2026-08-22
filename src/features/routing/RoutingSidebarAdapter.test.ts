@@ -198,7 +198,7 @@ describe('RoutingSidebarAdapter A→B route details', () => {
               distance: 1176.2,
               duration: 144.3,
               steps: [
-                { distance: 176.2, duration: 63.4, type: 11, instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
+                { distance: 176.2, duration: 63.4, type: 'depart', instruction: 'Head south on Hauptplatz', name: 'Hauptplatz', way_points: [0, 10] },
               ],
             },
           ],
