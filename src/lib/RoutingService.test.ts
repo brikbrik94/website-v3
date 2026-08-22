@@ -52,6 +52,58 @@ describe('RoutingService.calculateRoute extraInfo', () => {
   });
 });
 
+describe('RoutingService.calculateRoute maneuver type translation', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('translates raw ORS numeric step types into ManeuverKind strings', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates: [] },
+          properties: {
+            summary: { distance: 1000, duration: 60 },
+            segments: [{
+              distance: 1000, duration: 60,
+              steps: [
+                { distance: 500, duration: 30, type: 1, instruction: 'Turn right', name: 'X', way_points: [0, 5] },
+                { distance: 500, duration: 30, type: 6, instruction: 'Continue', name: 'Y', way_points: [5, 10] },
+              ],
+            }],
+          },
+        }],
+        metadata: {},
+      }),
+    })));
+
+    const result = await RoutingService.calculateRoute([48.1, 14.1], [48.2, 14.2], 'driving-car');
+
+    const steps = result!.features[0].properties.segments![0].steps;
+    expect(steps[0].type).toBe('turn-right');
+    expect(steps[1].type).toBe('straight');
+  });
+
+  it('leaves the route intact when the response has no segments (e.g. a profile without turn-by-turn)', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates: [] },
+          properties: { summary: { distance: 1000, duration: 60 } },
+        }],
+        metadata: {},
+      }),
+    })));
+
+    const result = await RoutingService.calculateRoute([48.1, 14.1], [48.2, 14.2], 'driving-car');
+    expect(result!.features[0].properties.segments).toBeUndefined();
+  });
+});
+
 describe('RoutingService.findNearestStations (driving-emergency / Sondersignal)', () => {
   afterEach(() => vi.unstubAllGlobals());
 

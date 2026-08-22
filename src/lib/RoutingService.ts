@@ -1,6 +1,30 @@
 import { RouteResult, RoutingStation } from '../types/common';
+import { orsCodeToManeuverKind } from './OrsManeuverKind';
 
 const ORS_BASE_URL = '/api/ors.php';
+
+/**
+ * Übersetzt die rohen ORS-Zahlencodes in properties.segments[].steps[].type auf ManeuverKind —
+ * ORS liefert weiterhin Zahlen, ManeuverIcons.ts/RoutingDetailsFormatter.ts kennen nur noch
+ * ManeuverKind (siehe docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md).
+ * Alles andere an der Antwort bleibt unverändert (Zero-Transform-Prinzip bleibt für den Rest
+ * erhalten).
+ */
+function translateOrsManeuverKinds(data: any): RouteResult {
+  const features = (data.features ?? []).map((feature: any) => {
+    const segments = feature.properties?.segments?.map((segment: any) => ({
+      ...segment,
+      steps: (segment.steps ?? []).map((step: any) => ({
+        ...step,
+        type: orsCodeToManeuverKind(step.type),
+      })),
+    }));
+    return segments
+      ? { ...feature, properties: { ...feature.properties, segments } }
+      : feature;
+  });
+  return { ...data, features };
+}
 
 /**
  * Abstraktionsschicht über den `/api/ors.php`-Proxy zum OpenRouteService (ORS): Health-Check,
@@ -59,7 +83,7 @@ export const RoutingService = {
 
       if (!res.ok) throw new Error('Routing fehlgeschlagen');
       const data = await res.json();
-      return data as RouteResult;
+      return translateOrsManeuverKinds(data);
     } catch (e) {
       console.error('Routing Fehler:', e);
       return null;
