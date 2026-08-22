@@ -3,6 +3,7 @@ import { getSidebarFooterHtml } from '../lib/SidebarUtils';
 import { GeocoderSearchField, GeocoderSelection } from '../lib/GeocoderSearchField';
 import type { LayerSpecification } from 'maplibre-gl';
 import { resolveLegendSwatch, swatchTypeForLayerType, resolveSwatchFromLayersMetaColor, computeSwatchDedupKey, resolveLegendItemsForGroup, type LegendSwatch, type SwatchType, type LegendScale } from '../lib/resolveLegendSwatch';
+import { isLegendSchemaAtLeast } from '../lib/legendSchemaVersion';
 
 export interface LayerMetaGroup {
   name: string;
@@ -234,13 +235,13 @@ export const initSidebar = (
 
     const loaded = loadedLayers.get(overlayId);
     const isMetaPath = !!loaded && loaded.length > 0 && 'style_layers' in loaded[0];
+    const styleEntry = layersMeta.find(l => l.id === overlayId);
 
     if (isMetaPath) {
       const idx = Number(itemEl.getAttribute('data-group-index'));
       const metaGroup = (loaded as LayerMetaGroup[])[idx];
       opacity = typeof metaGroup.opacity === 'number' ? metaGroup.opacity : null;
 
-      const styleEntry = layersMeta.find(l => l.id === overlayId);
       const resolvedItems = resolveLegendItemsForGroup(metaGroup, overlayId, styleEntry?.version, legendScalesById);
       if (resolvedItems) {
         const itemType = swatchTypeForLayerType(metaGroup.type ?? layerType) ?? 'dot';
@@ -261,7 +262,15 @@ export const initSidebar = (
       }
     }
 
-    if (!isMetaPath || (!legendItems && swatch === null)) {
+    // Ab Schema v3.0 trägt groups[] gar keine color/type/legend_items/legend_scale_id-Felder
+    // mehr — legend[] (in MapPage.ts::_syncV3Legend(), entkoppelt von einzelnen Toggle-Events)
+    // ist dort die einzig korrekte Legend-Darstellung (geodata-plugin-standard: "groups[] nur
+    // für die Toggle-UI lesen, nie für die Legend-Darstellung"). Der style.json-Fallback unten
+    // würde sonst pro Toggle einen generischen, bedeutungslosen Swatch erzeugen, der die
+    // legend[]-Zeilen für dieselbe Gruppe dupliziert/verunklart — daher hier ausgeschlossen.
+    const isV3LegendGroup = isMetaPath && isLegendSchemaAtLeast(styleEntry?.version, 3, 0);
+
+    if (!isV3LegendGroup && (!isMetaPath || (!legendItems && swatch === null))) {
       // Fallback: kein layersMeta-Pfad ODER Gruppe ohne color-Feld (Alt-/Sonderfall, z.B. ein
       // Overlay ganz ohne layersMeta-Eintrag).
       let realLayer: LayerSpecification | undefined;
