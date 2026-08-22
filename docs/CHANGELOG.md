@@ -2,6 +2,26 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-22 09:44
+
+### Geändert
+- **Kartenlegende auf `geodata-plugin-standard` v3.0 (`legend[]`-Top-Level-Block) umgestellt** —
+  ersetzt den bisherigen `groups[].render`/`variants`-Konsum (Schema v2.0/2.1, siehe
+  `[Unreleased] - 2026-08-16 19:10` oben) vollständig, kein Dual-Pfad. `legend[]` trennt
+  Legend-Darstellung von der Toggle-Struktur (`groups[]`) und kann Zeilen aus mehreren
+  Toggle-Gruppen bündeln (z.B. „Pisten" = Downhill- + Skitour-Gruppe). Neu
+  `resolveVisibleLegend()` (`src/lib/renderPartsLegend.ts`) berechnet den sichtbaren Legend-
+  Ausschnitt bei jedem Layer-Toggle komplett neu aus der aktuellen Menge aktiver Style-Layer-IDs
+  (Union-Sichtbarkeit), statt inkrementell fortzuschreiben — nötig, weil eine Zeile mehrere
+  `groups[]`-Einträge referenzieren kann. Neu `MapLegend.addHeading()` rendert `legend[].heading`
+  als Section-Header (wiederverwendet die bestehende CI-Klasse `.overlay-section-label`, keine
+  neue lokale CSS-Klasse). Behebt dabei einen zusätzlich entdeckten, produktionskritischen Bug:
+  `OverlayLoader.getActiveLayerIds()` lieferte intern präfixte Layer-IDs
+  (`${overlayId}-${originalId}`), während `legend[].rows[].style_layer_ids` unpräfixt sind — neue
+  `OverlayLoader.getOriginalActiveLayerIds()` behebt den Mismatch. Details:
+  `docs/superpowers/specs/2026-08-22-legend-v3-groups-legend-split-design.md`,
+  `docs/superpowers/plans/2026-08-22-legend-v3-groups-legend-split.md`.
+
 ## [Unreleased] - 2026-08-19 10:01
 
 ### Hinzugefügt
@@ -19,6 +39,9 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   `docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`.
 
 ## [Unreleased] - 2026-08-16 19:10
+
+_Hinweis (2026-08-22): Der hier beschriebene `render`/`variants`-Konsum wurde durch das
+`legend[]`-Modell (Schema v3.0) ersetzt, siehe der neue Eintrag unten._
 
 ### Hinzugefügt
 - **`render`/`variants` (geodata-plugin-standard §5.3, ab Schema-Version 2.0/2.1) in der

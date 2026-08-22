@@ -379,20 +379,22 @@ Exports:
 
 ## `renderPartsLegend.ts`
 
-Ein Darstellungsteil aus `layers.json`s `render`/`variants[].render` (geodata-plugin-standard
- §5.3, ab Schema-Version 2.0) — ein Eintrag pro echtem MapLibre-Style-Layer.
+Ein Darstellungsteil aus `legend[].rows[].render` (geodata-plugin-standard §5.4, ab
+ Schema-Version 3.0) — ein Eintrag pro echtem MapLibre-Style-Layer.
 
 Import: `from '.../lib/renderPartsLegend'` (Pfad relativ zum aufrufenden Modul anpassen)
 
 Exports:
 - `RenderColor` (type)
 - `RenderPart` (interface)
-- `RenderVariant` (interface)
+- `LegendRow` (interface)
+- `LegendHeading` (interface)
 - `RenderPartsChip` (interface)
-- `RenderPartsRow` (interface)
+- `VisibleLegendRow` (interface)
+- `VisibleLegendHeading` (interface)
 - `findDrivingScaleId` (function)
-- `resolveRenderPartsRows` (function)
-- `findGroupDrivingScaleId` (function)
+- `buildChipsForRow` (function)
+- `resolveVisibleLegend` (function)
 
 ## `resolveLegendSwatch.ts`
 
@@ -412,6 +414,6 @@ Exports:
 - `swatchTypeForLayerType` (function)
 - `resolveSwatchFromLayersMetaColor` (function)
 - `computeSwatchDedupKey` (function)
-- `LegendSection` (interface)
+- `LegendScale` (interface)
 - `ResolvedLegendItems` (interface)
 - `resolveLegendItemsForGroup` (function)

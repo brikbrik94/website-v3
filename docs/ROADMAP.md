@@ -357,6 +357,18 @@ konkret in TODO.md erfasst und **nicht** Teil dieses Punkts.
   `oe5ith-ci`) als Section-Header gerendert — siehe
   `docs/superpowers/plans/2026-08-22-legend-v3-groups-legend-split.md`. Das allgemeine Problem
   (Gruppierung *beliebiger* Overlays, nicht nur `legend[]`-Quellen) bleibt offen.
+- [ ] **Farb-Erklärungs-Block für `legend[]`-Skalen fehlt** (gemeldet 2026-08-22, finale
+  Branch-Review der v3.0-Umstellung) — `legend[].rows[].render`-Parts mit `color.mode: "scale"`
+  werden korrekt als eingefärbte Chips gerendert (`resolveVisibleLegend()`/`buildChipsForRow()`),
+  aber es gibt keinen separaten Block, der zeigt, welche Farbe welche Kategorie bedeutet (z.B.
+  „Novice"/„Easy"/... bei `ski-difficulty-v1`) — der `render-parts-guide.md` im Standard-Submodul
+  sieht das explizit vor („einen eigenen Legenden-Block ... mit denselben Kategorien"). Bausteine:
+  für jede in aktuell sichtbaren `legend[]`-Zeilen referenzierte `scale_id`
+  (`findDrivingScaleId()`/`buildChipsForRow()` kennen das bereits pro Zeile) einmalig über
+  `legend_scales` iterieren und `id`/`label`/`items` anzeigen — analog zum alten, bereits
+  bestehenden `legendItems`-Mechanismus für den v1.1-Pfad, aber neu für den v3.0-Pfad zu bauen,
+  da `legend[]`/`legend_scales` global und unabhängig von `groups[]` sind (siehe
+  `docs/superpowers/specs/2026-08-22-legend-v3-groups-legend-split-design.md`).
 
 ## Neue Kartenseite: GeoJSON-Viewer
 
