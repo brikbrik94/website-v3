@@ -9,6 +9,14 @@ interface LoadedOverlay {
   sourceIdMap: Map<string, string>;
   sourceIds: string[];
   layerIds: string[];
+  // uniqueLayerId (= prefixed(overlayId, layerId)) -> ursprüngliche, unpräfixte Layer-ID aus dem
+  // Overlay-Style-JSON. Explizit bei add() mitgeschrieben statt nachträglich aus uniqueLayerId
+  // zurückgerechnet, weil prefixed() nicht verlustfrei umkehrbar ist: startet die ursprüngliche
+  // ID bereits mit der overlayId (z.B. overlayId "rd", Layer-ID "rd-a-line"), lässt prefixed()
+  // sie unverändert – ein nachträgliches String-Stripping von "${overlayId}-" könnte dann nicht
+  // unterscheiden, ob der Präfix synthetisch hinzugefügt wurde oder schon Teil der Original-ID
+  // war (siehe getOriginalActiveLayerIds()).
+  originalLayerIds: Map<string, string>;
   hasImage: boolean;
 }
 
@@ -84,7 +92,7 @@ export const OverlayLoader = {
           const res = await fetch(styleUrl, opts?.signal ? { signal: opts.signal } : undefined);
           const style = await res.json();
 
-          const newEntry: LoadedOverlay = { style, sourceIdMap: new Map(), sourceIds: [], layerIds: [], hasImage: false };
+          const newEntry: LoadedOverlay = { style, sourceIdMap: new Map(), sourceIds: [], layerIds: [], originalLayerIds: new Map(), hasImage: false };
           loaded.set(overlayId, newEntry);
 
           if (style.sprite) {
@@ -128,6 +136,7 @@ export const OverlayLoader = {
       MapRegistry.registerLayer(uniqueLayerId, newLayer);
       addLayerIfMissing(map, newLayer);
       entry.layerIds.push(uniqueLayerId);
+      entry.originalLayerIds.set(uniqueLayerId, layerId);
     }
   },
 
@@ -149,6 +158,7 @@ export const OverlayLoader = {
       if (map.getLayer(layerId)) map.removeLayer(layerId);
       MapRegistry.unregisterLayer(layerId);
       entry.layerIds = entry.layerIds.filter(id => id !== layerId);
+      entry.originalLayerIds.delete(layerId);
     }
 
     if (entry.layerIds.length === 0) {
@@ -176,5 +186,27 @@ export const OverlayLoader = {
    */
   getActiveLayerIds(): string[] {
     return Array.from(loaded.values()).flatMap(entry => entry.layerIds);
+  },
+
+  /**
+   * Wie getActiveLayerIds(), aber liefert die ORIGINALEN (unprefixten) Style-Layer-IDs statt der
+   * intern präfixten (`${overlayId}-${id}`, siehe prefixed() oben) — nötig für den Abgleich gegen
+   * layers.json-Metadaten (`groups[].style_layers`/`legend[].rows[].style_layer_ids`), die immer
+   * die unprefixte Form verwenden (geodata-plugin-standard §5.3/§5.4). Liest die bei add() explizit
+   * mitgeschriebene originalLayerIds-Zuordnung (siehe LoadedOverlay), statt uniqueLayerId per
+   * String-Stripping zurückzurechnen — prefixed() ist nicht verlustfrei umkehrbar, wenn die
+   * ursprüngliche ID bereits mit der overlayId beginnt (dann bleibt sie bei add() unverändert, ein
+   * nachträgliches Entfernen von `${overlayId}-` würde sie in diesem Fall verstümmeln).
+   * getActiveLayerIds() selbst bleibt für handleOverlayClick()/queryRenderedFeatures unverändert
+   * (dort werden die echten MapLibre-Layer-IDs gebraucht, also die präfixte Form).
+   */
+  getOriginalActiveLayerIds(): Set<string> {
+    const result = new Set<string>();
+    for (const entry of loaded.values()) {
+      for (const layerId of entry.layerIds) {
+        result.add(entry.originalLayerIds.get(layerId) ?? layerId);
+      }
+    }
+    return result;
   },
 };

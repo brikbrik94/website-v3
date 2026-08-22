@@ -276,7 +276,7 @@ export class MapPageController extends BasePageController {
 
         if (this.legendHeadings.length === 0) return;
 
-        const active = new Set(OverlayLoader.getActiveLayerIds());
+        const active = OverlayLoader.getOriginalActiveLayerIds();
         const visible = resolveVisibleLegend(this.legendHeadings, active, this.legendScalesById);
 
         visible.forEach((h, hIdx) => {
