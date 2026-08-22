@@ -203,7 +203,10 @@ export function computeSwatchDedupKey(overlayId: string, template: string, swatc
   return `${overlayId}:${template}:${swatch.type}:${swatch.color ?? 'null'}:${swatch.width ?? 'null'}:${dasharrayKey}:${swatch.outline_color ?? 'null'}:${swatch.outline_width ?? 'null'}`;
 }
 
-export interface LegendSection {
+/** Entspricht `legend_scales[]` (geodata-plugin-standard §5.7, ab Schema-Version 3.0; hieß bis
+ *  v2.1.0 `legend_sections` — umbenannt zur Vermeidung der Namenskollision mit dem neuen
+ *  `legend`-Block, Inhalt/Form unverändert). */
+export interface LegendScale {
   id: string;
   label: string;
   items: { label: string; color: string }[];
@@ -231,11 +234,11 @@ export function resolveLegendItemsForGroup(
   metaGroup: LegendItemsSource,
   overlayId: string,
   styleVersion: string | null | undefined,
-  legendSectionsById: Map<string, LegendSection>
+  legendScalesById: Map<string, LegendScale>
 ): ResolvedLegendItems | null {
   if (metaGroup.legend_scale_id) {
     if (isLegendSchemaAtLeast(styleVersion, 1, 1)) {
-      const section = legendSectionsById.get(metaGroup.legend_scale_id);
+      const section = legendScalesById.get(metaGroup.legend_scale_id);
       if (section) {
         return { items: section.items, groupKey: `scale:${section.id}` };
       }
