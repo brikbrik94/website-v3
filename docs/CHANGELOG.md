@@ -6,9 +6,13 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ### Hinzugefügt
 - **Valhalla-Turn-by-Turn-Parität mit ORS** — Valhalla-Routen (`/routing`, Provider-Umschalter)
-  zeigen jetzt dieselbe Wegbeschreibung wie ORS-Routen, vollständig für alle 30 relevanten
-  Manöver-Konzepte (37 Valhalla-Manöver-Typen minus 7 technisch unerreichbare Transit-Typen, siehe
-  `docs/valhalla-api-guide.md`). Neuer providerneutraler `ManeuverKind`-String-Typ
+  zeigen jetzt dieselbe Wegbeschreibung wie ORS-Routen, abgedeckt für alle 30 relevanten
+  Manöver-Konzepte der zur Planungszeit dokumentierten 37 Valhalla-Manöver-Typen (minus 7 technisch
+  unerreichbare Transit-Typen, siehe `docs/valhalla-api-guide.md`). **Nachtrag (finale
+  Branch-Review):** Live-Verifikation gegen die deployte Instanz (v3.8.3) fand weitere, dort
+  nicht dokumentierte Typen jenseits 36 (pedestrian-spezifisch: Aufzug/Treppe/Rolltreppe) — diese
+  sind noch nicht gemappt und fallen sicher auf ein generisches Icon zurück, siehe
+  `docs/ROADMAP.md`. Neuer providerneutraler `ManeuverKind`-String-Typ
   (`src/types/common.ts`) ersetzt `RouteStep.type: number` — beide Provider übersetzen ihren
   jeweiligen nativen Code dorthin (`src/lib/OrsManeuverKind.ts` für ORS,
   `valhallaTypeToManeuverKind()` in `src/lib/ValhallaRouteInterpreter.ts` für Valhalla).
@@ -43,7 +47,7 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 ## [Unreleased] - 2026-08-19 10:01
 
 _Hinweis (2026-08-22): Die hier erwähnte Einschränkung „kein Turn-by-Turn" gilt nicht mehr, siehe
-der neue Eintrag oben._
+den neuen Eintrag oben._
 
 ### Hinzugefügt
 - **Valhalla-Routing-Connector (Testumgebung, `/routing`, Modus A→B)** — neuer Provider-Dropdown

@@ -23,6 +23,19 @@ nirgends, wir machen das sauber", Konversation 2026-08-22).
 Laufzeit von `oe5ith-ci` nachgeladen — dasselbe Muster gilt für die 16 neuen Icons dieses Tasks
 (siehe „Icon-Beschaffung" unten).
 
+## Nachtrag (2026-08-22, finale Branch-Review): Typ-Bereich ist live-abhängig
+
+Die untenstehende Tabelle wurde gegen die zur Planungszeit verfügbare Valhalla-Dokumentation
+(Typen 0-36) entworfen und behauptete „vollständig". Die finale Branch-Review hatte Live-Zugriff
+auf die produktiv erreichbare Valhalla-Instanz (v3.8.3) und hat verifiziert, dass real weitere
+Typen jenseits 36 existieren: bestätigt 39/40/41 (Aufzug/Treppe/Rolltreppe-Anweisungen im
+`pedestrian`-Costing, das diese App im UI anbietet), vermutlich auch 37/38 (wahrscheinlich
+`kMergeRight`/`kMergeLeft` nach dem Layout des Upstream-Protos, unbestätigt). Die „37 Typen,
+vollständig abgedeckt"-Aussage war gegen die damalige Doku-Momentaufnahme korrekt, ist es gegen
+die live deployte Instanz aber nicht mehr. Kein bestehender Tabelleneintrag ist falsch — nicht
+gemappte Typen fallen sicher auf `'straight'` zurück statt etwas Irreführendes anzuzeigen. Ein
+ROADMAP-Folgeeintrag verfolgt das Schließen dieser Abdeckungslücke.
+
 ## Valhalla-Manöver-Typen vs. ORS-Katalog
 
 Valhalla liefert 37 numerische Manöver-Typen (`kNone`…`kPostTransitConnectionDestination`,

@@ -147,6 +147,22 @@ Kontext: [docs/superpowers/specs/2026-07-04-routing-sidebar-details-design.md](.
   werden) — behebt nebenbei eine potenzielle Race Condition (Map-Klicks vor fertigem
   Sidebar-Rendering griffen zuvor ins Leere). 196 Tests grün, 0 TypeScript-Fehler. **Hinweis:**
   Browser-Verifikation weiterhin ausstehend (keine Playwright-Umgebung hier).
+- [ ] **Valhalla-Manöver-Typ-Abdeckung über 29-Einträge-Tabelle hinaus erweitern** (gemeldet
+  2026-08-22, finale Branch-Review der Turn-by-Turn-Parität) — die bestehende
+  `VALHALLA_TYPE_TO_KIND`-Tabelle (`src/lib/ValhallaRouteInterpreter.ts`) wurde gegen die zur
+  Planungszeit dokumentierten Typen 0-36 entworfen; Live-Verifikation gegen die produktiv
+  erreichbare Instanz (v3.8.3) hat bestätigt, dass real weitere Typen jenseits 36 existieren
+  (39/40/41 = Aufzug/Treppe/Rolltreppe im `pedestrian`-Costing, das im UI bereits als Profil
+  angeboten wird; vermutlich auch 37/38, wahrscheinlich `kMergeRight`/`kMergeLeft`, unbestätigt).
+  Nicht gemappte Typen fallen aktuell sicher auf `'straight'` zurück (kein Fehlverhalten, aber
+  keine vollständige Abdeckung). Braucht: (a) Live-Re-Ableitung des tatsächlich vollständigen
+  Enums gegen die deployte Instanz statt sich auf den dokumentierten Bereich zu verlassen, (b)
+  eine Design-Entscheidung, ob diese neu entdeckten Konzepte eigene `ManeuverKind`-Werte/Icons
+  brauchen — bei einer App für Einsatzfahrzeug-Routing ist fraglich, ob Aufzug-/Treppen-/
+  Rolltreppen-Navigation überhaupt relevant ist, das verdient eine bewusste Prüfung statt
+  reflexhaftem Ergänzen, (c) falls ja: Folgeeintrag zum bereits gestellten
+  [oe5ith-ci#2](https://github.com/brikbrik94/oe5ith-ci/issues/2)-Icon-Request. Kontext:
+  `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`.
 
 ## Repo-Pflege & Dokumentation
 
