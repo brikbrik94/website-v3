@@ -2,6 +2,32 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-23 08:10
+
+### Hinzugefügt
+- **SEW/NEF-Matrixsuche unterstützt jetzt Valhalla als Provider** — letzte verbleibende
+  Parität-Lücke zwischen ORS und Valhalla (nach Status-Anzeige und Turn-by-Turn) geschlossen.
+  `api/nearest-stations.php` bekommt einen neuen `provider`-Query-Parameter (Default `ors`):
+  die PostGIS-KNN-Stationssuche bleibt für beide Provider gemeinsam, nur der Matrix-Aufruf
+  verzweigt (ORS `curl_request()` gegen `/matrix/{profile}` vs. eigener schlanker curl-Call gegen
+  Valhallas `/sources_to_targets`, inkl. km→m-Umrechnung für die Distanz).
+  `RoutingService.findNearestStations()` reicht `provider` durch, der ORS-spezifische
+  `driving-emergency`-Zwei-Pass-Fallback bleibt dabei ausschließlich für `provider === 'ors'`
+  aktiv. `RoutingSidebar.ts`: der Provider-Umschalter bleibt jetzt in allen drei Modi (A→B, SEW,
+  NEF) sichtbar und wirksam, statt in SEW/NEF hart auf ORS zurückgesetzt zu werden. Fund beim
+  Planen (nicht explizit in der ursprünglichen Spec benannt, aber für echte Parität notwendig):
+  `RoutingSidebarAdapter.ts`s `fetchRouteIfNeeded()` — zeichnet die Route zu einer einzelnen, per
+  Augen-Icon aktivierten Station auf der Karte — rief bisher immer `RoutingService.calculateRoute`
+  (ORS) auf, unabhängig vom gewählten Provider; ohne Fix wäre die Matrix-Liste von Valhalla
+  gekommen, die Kartenlinie aber weiter von ORS — jetzt mit demselben Provider-Branch wie im
+  bestehenden A→B-Modus behoben. Umgesetzt per Subagent-Driven Development mit Task-Reviews
+  (alle „Approved", ein Fix-Round bei Task 2 wegen eines tautologischen Tests). Spec:
+  `docs/superpowers/specs/2026-08-22-valhalla-sew-nef-matrix-design.md`, Plan:
+  `docs/superpowers/plans/2026-08-23-valhalla-sew-nef-matrix.md`. 390 Tests grün, 0
+  TypeScript-Fehler. **Hinweis:** Browser-Live-Verifikation (Provider Valhalla in SEW/NEF,
+  `emergency`-Costing gegen realistischere Stationsanzahl) weiterhin ausstehend (keine
+  Playwright-Umgebung hier).
+
 ## [Unreleased] - 2026-08-23 07:15
 
 ### Geändert
