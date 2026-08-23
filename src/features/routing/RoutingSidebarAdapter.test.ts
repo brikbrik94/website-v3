@@ -3,7 +3,7 @@ import { RoutingSidebarAdapter } from './RoutingSidebarAdapter';
 import { RoutingDataService } from './RoutingDataService';
 import { RoutingService } from '../../lib/RoutingService';
 import { ValhallaService } from '../../lib/ValhallaService';
-import { updateRoutingSummary, renderRoutingError } from '../../components/RoutingSidebar';
+import { updateRoutingSummary, renderRoutingError, renderStationResults } from '../../components/RoutingSidebar';
 
 vi.mock('./RoutingMapLayers', () => ({
   RoutingMapLayers: {
@@ -280,5 +280,50 @@ describe('RoutingSidebarAdapter A→B route details', () => {
     expect(renderRoutingError).toHaveBeenCalledWith('Route konnte nicht berechnet werden.');
 
     calculateRouteSpy.mockRestore();
+  });
+
+  it('draws the SEW/NEF station route via ValhallaService when provider is valhalla, and passes provider to findNearestStations', async () => {
+    const dataService = new RoutingDataService();
+    const map = { fitBounds: vi.fn() } as any;
+    const adapter = new RoutingSidebarAdapter(dataService, map, new AbortController().signal);
+    adapter.init({} as any);
+
+    const stations = [
+      { id: 1, name: 'Stützpunkt A', org: 'SEW', lat: 48.1, lon: 14.1, duration: 300, distance: 5000 },
+    ];
+    const findNearestStationsSpy = vi.spyOn(RoutingService, 'findNearestStations').mockResolvedValue(stations as any);
+
+    const routeResult = {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: { summary: { distance: 5000, duration: 300 } },
+        geometry: { type: 'LineString', coordinates: [[14.1, 48.1], [14.2, 48.2]] },
+      }],
+    };
+    const orsSpy = vi.spyOn(RoutingService, 'calculateRoute');
+    const valhallaSpy = vi.spyOn(ValhallaService, 'calculateRoute').mockResolvedValue(routeResult as any);
+
+    expect(capturedOnRouteStart).not.toBeNull();
+    await capturedOnRouteStart!({
+      mode: 'sew',
+      target: [48.2, 14.2],
+      profile: 'auto',
+      provider: 'valhalla',
+    });
+
+    expect(findNearestStationsSpy).toHaveBeenCalledWith([48.2, 14.2], 'sew', 'auto', 'valhalla');
+
+    // Zweiter Callback-Parameter von renderStationResults(stations, onToggle, onHighlight) —
+    // simuliert den Klick auf eine Station in der Ergebnisliste.
+    const onHighlight = vi.mocked(renderStationResults).mock.calls.at(-1)![2];
+    await onHighlight(stations[0] as any);
+
+    expect(valhallaSpy).toHaveBeenCalledWith([48.1, 14.1], [48.2, 14.2], 'auto');
+    expect(orsSpy).not.toHaveBeenCalled();
+
+    findNearestStationsSpy.mockRestore();
+    orsSpy.mockRestore();
+    valhallaSpy.mockRestore();
   });
 });
