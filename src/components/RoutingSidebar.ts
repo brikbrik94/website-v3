@@ -267,24 +267,13 @@ export const initRoutingSidebar = async (
 
   routeProvider.addEventListener('change', () => handleProviderChange(routeProvider.value), { signal });
 
-  const fieldProvider = document.getElementById('field-provider')!;
-
   const updateModeUI = (mode: string) => {
     if (mode === 'ab') {
       fieldStart.classList.remove('hidden');
-      fieldProvider.classList.remove('hidden');
       labelTarget.textContent = 'Ziel';
     } else {
       fieldStart.classList.add('hidden');
-      fieldProvider.classList.add('hidden');
       labelTarget.textContent = 'Einsatzort (Ziel)';
-      // SEW/NEF unterstützen nur ORS (Matrix-Suche). Nur zurücksetzen, wenn Valhalla gewählt war —
-      // sonst geht ein bereits gewähltes ORS-Profil (z.B. driving-emergency) beim Moduswechsel
-      // verloren (Regression, gefunden im finalen Whole-Branch-Review 2026-08-19).
-      if (routeProvider.value !== 'ors') {
-        routeProvider.value = 'ors';
-        handleProviderChange('ors');
-      }
     }
     // Bei Modus-Wechsel alles leeren
     document.getElementById('routing-status')!.classList.add('hidden');
@@ -334,9 +323,7 @@ export const initRoutingSidebar = async (
     const mode = routeMode.querySelector('.segmented-btn.active')?.getAttribute('data-mode') as 'ab' | 'sew' | 'nef';
     const target = getCoordsFromInput(inputTarget);
     const profile = (document.getElementById('route-profile') as HTMLSelectElement).value;
-    const provider = mode === 'ab'
-      ? (routeProvider.value as 'ors' | 'valhalla')
-      : 'ors'; // SEW/NEF unterstützen nur ORS
+    const provider = routeProvider.value as 'ors' | 'valhalla';
 
     if (mode === 'ab') {
       const start = getCoordsFromInput(inputStart);
