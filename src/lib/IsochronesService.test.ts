@@ -18,7 +18,7 @@ describe('IsochronesService.calculateIsochrones', () => {
 
     await IsochronesService.calculateIsochrones([48.3, 14.28], 'driving-car', [5, 10], 'time');
 
-    expect(capturedUrl).toBe('/api/ors.php?path=isochrones/driving-car');
+    expect(capturedUrl).toBe('/api/routing-proxy.php?provider=ors&path=isochrones/driving-car');
     expect(capturedBody.locations).toEqual([[14.28, 48.3]]);
     expect(capturedBody.range).toEqual([300, 600]);
     expect(capturedBody.range_type).toBe('time');

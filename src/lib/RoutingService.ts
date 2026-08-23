@@ -1,7 +1,6 @@
 import { RouteResult, RoutingStation } from '../types/common';
 import { orsCodeToManeuverKind } from './OrsManeuverKind';
-
-const ORS_BASE_URL = '/api/ors.php';
+import { buildRoutingProxyUrl } from './RoutingProxyUrl';
 
 /**
  * Übersetzt die rohen ORS-Zahlencodes in properties.segments[].steps[].type auf ManeuverKind —
@@ -34,7 +33,7 @@ function translateOrsManeuverKinds(data: any): RouteResult {
 export const RoutingService = {
   async checkHealth(): Promise<boolean> {
     try {
-      const res = await fetch(`${ORS_BASE_URL}?path=health`, { cache: 'no-store' });
+      const res = await fetch(buildRoutingProxyUrl('ors', 'health'), { cache: 'no-store' });
       if (!res.ok) return false;
       const data = await res.json();
       return data.status === 'ready' || data.status === 'ok';
@@ -45,7 +44,7 @@ export const RoutingService = {
 
   async getProfiles(): Promise<string[]> {
     try {
-      const res = await fetch(`${ORS_BASE_URL}?path=status`, { cache: 'no-store' });
+      const res = await fetch(buildRoutingProxyUrl('ors', 'status'), { cache: 'no-store' });
       if (!res.ok) throw new Error();
       const data = await res.json();
       if (data.profiles && typeof data.profiles === 'object') {
@@ -63,7 +62,7 @@ export const RoutingService = {
     profile: string = 'driving-car',
     extraInfo?: string[]
   ): Promise<RouteResult | null> {
-    const url = `${ORS_BASE_URL}?path=directions/${profile}/geojson`;
+    const url = buildRoutingProxyUrl('ors', `directions/${profile}/geojson`);
 
     try {
       const res = await fetch(url, {

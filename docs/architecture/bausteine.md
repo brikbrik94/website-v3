@@ -168,9 +168,9 @@ Exports:
 
 ## `ManeuverIcons.ts`
 
-Baut das SVG-Markup für ein ORS-Turn-by-Turn-Manöver-Icon (z.B. für die Wegbeschreibung in
-`RoutingSidebar.ts`). Unbekannte/künftige ORS-Codes fallen auf "Straight" (Code 6) zurück statt
-nichts anzuzeigen.
+Baut das SVG-Markup für ein Turn-by-Turn-Manöver-Icon (z.B. für die Wegbeschreibung in
+`RoutingSidebar.ts`). Unbekannte/künftige Werte fallen auf "Straight" zurück statt nichts
+anzuzeigen.
 
 Import: `from '.../lib/ManeuverIcons'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -238,6 +238,15 @@ Exports:
 - `MAP_COLORS` (const)
 - `getIsochroneRingColor` (function)
 
+## `OrsManeuverKind.ts`
+
+ORS könnte künftig neue Manöver-Codes einführen; "straight" ist der neutralste Fallback.
+
+Import: `from '.../lib/OrsManeuverKind'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `orsCodeToManeuverKind` (function)
+
 ## `OverlayLoader.ts`
 
 Gemeinsamer Loader für entfernte MapLibre-Style-Overlays (z.B. Wanderwege, Höhenlinien,
@@ -266,6 +275,17 @@ Exports:
 - `LayerPopupConfig` (interface)
 - `POPUP_CONFIGS` (const)
 - `PopupManager` (class)
+
+## `RoutingProxyUrl.ts`
+
+Baut die URL für den generischen Routing-Proxy-Endpoint (`api/routing-proxy.php`), der ORS und
+Valhalla providerparametrisiert hinter einem gemeinsamen Endpoint zusammenfasst — eine Stelle
+statt unabhängiger URL-Konstanten in RoutingService.ts/IsochronesService.ts/ValhallaService.ts.
+
+Import: `from '.../lib/RoutingProxyUrl'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `buildRoutingProxyUrl` (function)
 
 ## `RoutingService.ts`
 
@@ -342,22 +362,24 @@ Exports:
 ## `ValhallaRouteInterpreter.ts`
 
 Übersetzt Valhallas `/route`-Antwort (komprimiertes Polyline6-`shape` pro Leg,
-`summary.length` in km) in dieselbe `RouteResult`-Struktur, die ORS liefert
-(Meter/Sekunden) — damit RoutingMapLayers/updateRoutingSummary unverändert bleiben.
+`summary.length` in km, optional `maneuvers[]` pro Leg) in dieselbe `RouteResult`-Struktur, die
+ORS liefert (Meter/Sekunden) — damit RoutingMapLayers/updateRoutingSummary unverändert bleiben.
 
 Import: `from '.../lib/ValhallaRouteInterpreter'` (Pfad relativ zum aufrufenden Modul anpassen)
 
 Exports:
+- `ValhallaManeuver` (interface)
 - `ValhallaLeg` (interface)
 - `ValhallaTripSummary` (interface)
 - `ValhallaTrip` (interface)
+- `valhallaTypeToManeuverKind` (function)
 - `toRouteResult` (function)
 
 ## `ValhallaService.ts`
 
 Abstraktionsschicht über den `/api/valhalla.php`-Proxy zur selbst gehosteten
 Valhalla-Testinstanz — analog RoutingService, aber bewusst reduziert auf reine
-A→B-Routenberechnung (kein Turn-by-Turn, keine Matrix-Suche, siehe Design-Spec).
+A→B-Routenberechnung (keine Matrix-Suche, siehe Design-Spec).
 
 Import: `from '.../lib/ValhallaService'` (Pfad relativ zum aufrufenden Modul anpassen)
 

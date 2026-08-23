@@ -22,7 +22,7 @@ describe('ValhallaService.calculateRoute', () => {
 
     const result = await ValhallaService.calculateRoute([48.1, 14.1], [48.2, 14.2], 'bicycle');
 
-    expect(capturedUrl).toBe('/api/valhalla.php?path=route');
+    expect(capturedUrl).toBe('/api/routing-proxy.php?provider=valhalla&path=route');
     expect(capturedBody.costing).toBe('bicycle');
     expect(capturedBody.units).toBe('kilometers');
     expect(capturedBody.locations).toEqual([{ lat: 48.1, lon: 14.1 }, { lat: 48.2, lon: 14.2 }]);
