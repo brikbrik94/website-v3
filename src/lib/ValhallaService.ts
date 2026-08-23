@@ -1,7 +1,6 @@
 import { RouteResult } from '../types/common';
 import { toRouteResult, ValhallaTrip } from './ValhallaRouteInterpreter';
-
-const VALHALLA_BASE_URL = '/api/valhalla.php';
+import { buildRoutingProxyUrl } from './RoutingProxyUrl';
 
 /**
  * Abstraktionsschicht über den `/api/valhalla.php`-Proxy zur selbst gehosteten
@@ -11,7 +10,7 @@ const VALHALLA_BASE_URL = '/api/valhalla.php';
 export const ValhallaService = {
   async checkHealth(): Promise<boolean> {
     try {
-      const res = await fetch(`${VALHALLA_BASE_URL}?path=status`, { cache: 'no-store' });
+      const res = await fetch(buildRoutingProxyUrl('valhalla', 'status'), { cache: 'no-store' });
       return res.ok;
     } catch (e) {
       return false;
@@ -24,7 +23,7 @@ export const ValhallaService = {
     costing: string
   ): Promise<RouteResult | null> {
     try {
-      const res = await fetch(`${VALHALLA_BASE_URL}?path=route`, {
+      const res = await fetch(buildRoutingProxyUrl('valhalla', 'route'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

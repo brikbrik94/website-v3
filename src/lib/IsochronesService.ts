@@ -1,8 +1,7 @@
 import type { FeatureCollection, Polygon } from 'geojson';
 import { IsochroneRangeType } from '../types/common';
 import { RoutingService } from './RoutingService';
-
-const ORS_BASE_URL = '/api/ors.php';
+import { buildRoutingProxyUrl } from './RoutingProxyUrl';
 
 /**
  * Abstraktionsschicht über den `/api/ors.php`-Proxy für ORS-Isochronen-Abfragen. Health-Check
@@ -19,7 +18,7 @@ export const IsochronesService = {
     ranges: number[],
     rangeType: IsochroneRangeType
   ): Promise<FeatureCollection<Polygon> | null> {
-    const url = `${ORS_BASE_URL}?path=isochrones/${profile}`;
+    const url = buildRoutingProxyUrl('ors', `isochrones/${profile}`);
     const rangeValues = rangeType === 'time' ? ranges.map((r) => r * 60) : ranges.map((r) => r * 1000);
 
     try {
