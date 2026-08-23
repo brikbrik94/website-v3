@@ -15,6 +15,14 @@ if (!preg_match('/^[a-z0-9-]+$/', $profile)) {
     exit;
 }
 
+$provider = $_GET['provider'] ?? 'ors';
+
+if (!in_array($provider, ['ors', 'valhalla'], true)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid provider']);
+    exit;
+}
+
 if (!$target) {
     http_response_code(400);
     echo json_encode(['error' => 'Parameter target (lat,lon) fehlt']);
@@ -47,39 +55,87 @@ if (empty($stations)) {
     exit;
 }
 
-// 2. ORS Matrix via Central Helper
-$locations = [];
-foreach ($stations as $s) {
-    $locations[] = [(float)$s['lon'], (float)$s['lat']];
+// 2. Matrix-Aufruf — Provider-Branch (Stationssuche oben bleibt für beide Provider gemeinsam)
+if ($provider === 'valhalla') {
+    if (!defined('VALHALLA_URL')) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Server misconfigured: VALHALLA_URL not set in config.local.php']);
+        exit;
+    }
+
+    $sources = [];
+    foreach ($stations as $s) {
+        $sources[] = ['lat' => (float)$s['lat'], 'lon' => (float)$s['lon']];
+    }
+    $targets = [['lat' => $lat, 'lon' => $lon]];
+
+    $payload = [
+        'sources' => $sources,
+        'targets' => $targets,
+        'costing' => $profile,
+    ];
+
+    // Eigener, schlanker curl-Aufruf statt curl_request() — die würde automatisch
+    // X-API-KEY: ORS_API_KEY anhängen, was für Valhalla falsch wäre (siehe api/valhalla.php).
+    $ch = curl_init(VALHALLA_URL . '/sources_to_targets');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_ENCODING, '');
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($http_code !== 200) {
+        http_response_code($http_code ?: 502);
+        echo $response;
+        exit;
+    }
+
+    $matrix = json_decode($response, true);
+} else {
+    $locations = [];
+    foreach ($stations as $s) {
+        $locations[] = [(float)$s['lon'], (float)$s['lat']];
+    }
+    $locations[] = [$lon, $lat];
+    $target_index = count($locations) - 1;
+
+    $payload = [
+        "locations" => $locations,
+        "sources" => range(0, count($stations) - 1),
+        "destinations" => [$target_index],
+        "metrics" => ["duration", "distance"]
+    ];
+
+    $matrix_url = ORS_URL . "/matrix/" . urlencode($profile);
+    $res = curl_request($matrix_url, 'POST', json_encode($payload));
+
+    if ($res['code'] !== 200) {
+        // Wenn Matrix für ein Profil fehlschlägt (z.B. driving-emergency), geben wir den Fehler weiter
+        // oder die aufrufende Seite fängt es ab.
+        http_response_code($res['code']);
+        echo $res['data'];
+        exit;
+    }
+
+    $matrix = json_decode($res['data'], true);
 }
-$locations[] = [$lon, $lat];
-$target_index = count($locations) - 1;
-
-$payload = [
-    "locations" => $locations,
-    "sources" => range(0, count($stations) - 1),
-    "destinations" => [$target_index],
-    "metrics" => ["duration", "distance"]
-];
-
-$matrix_url = ORS_URL . "/matrix/" . urlencode($profile);
-$res = curl_request($matrix_url, 'POST', json_encode($payload));
-
-if ($res['code'] !== 200) {
-    // Wenn Matrix für ein Profil fehlschlägt (z.B. driving-emergency), geben wir den Fehler weiter
-    // oder die aufrufende Seite fängt es ab.
-    http_response_code($res['code']);
-    echo $res['data'];
-    exit;
-}
-
-$matrix = json_decode($res['data'], true);
 
 // 3. Ergebnisse kombinieren und sortieren
 $results = [];
 foreach ($stations as $i => $s) {
-    $duration = $matrix['durations'][$i][0];
-    $distance = $matrix['distances'][$i][0];
+    if ($provider === 'valhalla') {
+        $duration = $matrix['sources_to_targets'][$i][0]['time'] ?? null;
+        $distance = isset($matrix['sources_to_targets'][$i][0]['distance'])
+            ? $matrix['sources_to_targets'][$i][0]['distance'] * 1000
+            : null;
+    } else {
+        $duration = $matrix['durations'][$i][0];
+        $distance = $matrix['distances'][$i][0];
+    }
 
     if ($duration !== null) {
         // Icon-Logik basierend auf Typ und short_name
