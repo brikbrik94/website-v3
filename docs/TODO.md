@@ -197,6 +197,14 @@ alle vier auf einmal anfassen.
   - [ ] Ob `VALHALLA_URL` weiterhin eine private Tailscale-IP bleibt oder ein öffentlich
         erreichbarer Endpoint nötig wird — falls Tailscale: sicherstellen, dass der Produktivserver
         selbst im Tailnet hängt
+
+  **Update 2026-08-23:** Die SEW/NEF-Matrixsuche für Valhalla (`?path=sources_to_targets`) ist
+  jetzt umgesetzt (`api/nearest-stations.php`, `provider`-Parameter, siehe
+  `docs/superpowers/specs/2026-08-22-valhalla-sew-nef-matrix-design.md`) — nicht mehr nur
+  „potenziell" wie oben noch geschrieben. Die Security-Review vor einem Deploy muss also
+  endgültig auch den Matrix-Traffic auf `nearest-stations.php` mit-abdecken, nicht nur
+  `api/valhalla.php` — beide Endpoints teilen sich `VALHALLA_URL` und damit dieselbe
+  Angriffsfläche.
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
   Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
   `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die
