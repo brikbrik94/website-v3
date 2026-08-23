@@ -11,10 +11,8 @@
 // define('DB_USER', 'dev_user');
 // define('DB_PASS', 'dev_password');
 
-// Override API Keys for Local Testing
-// define('ORS_API_KEY', 'your-local-key-here');
-
-// Override Endpoints
+// Override Endpoints (Production-Default zeigt auf lokale VPS-Instanzen, 127.0.0.1:8082/8080 —
+// hier überschreiben, falls lokal kein ORS/Nominatim erreichbar ist, z.B. eigene Dev-Instanz)
 // define('ORS_URL', 'http://localhost:8080/ors');
 // define('NOMINATIM_URL', 'http://localhost:8080/nominatim');
 // define('VALHALLA_URL', 'http://100.x.x.x:8002'); // eigene Tailscale-IP, nur für lokale Tests
