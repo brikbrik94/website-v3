@@ -2,6 +2,8 @@
 
 require_once 'config.php';
 require_once 'http.php';
+require_once 'ors-client.php';
+require_once 'valhalla-client.php';
 require_method('GET');
 header('Content-Type: application/json');
 
@@ -61,7 +63,8 @@ if (empty($stations)) {
     exit;
 }
 
-// 2. Matrix-Aufruf — Provider-Branch (Stationssuche oben bleibt für beide Provider gemeinsam)
+// 2. Matrix-Aufruf — Provider-Branch (Stationssuche oben bleibt für beide Provider gemeinsam),
+// nutzt die geteilten Client-Funktionen aus ors-client.php/valhalla-client.php.
 if ($provider === 'valhalla') {
     $sources = [];
     foreach ($stations as $s) {
@@ -76,26 +79,7 @@ if ($provider === 'valhalla') {
         'units' => 'kilometers',
     ];
 
-    // Eigener, schlanker curl-Aufruf statt curl_request() — die würde automatisch
-    // X-API-KEY: ORS_API_KEY anhängen, was für Valhalla falsch wäre (siehe api/valhalla.php).
-    $ch = curl_init(VALHALLA_URL . '/sources_to_targets');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_ENCODING, '');
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($http_code !== 200) {
-        http_response_code($http_code ?: 502);
-        echo $response;
-        exit;
-    }
-
-    $matrix = json_decode($response, true);
+    $matrixRes = valhalla_call('sources_to_targets', 'POST', json_encode($payload));
 } else {
     $locations = [];
     foreach ($stations as $s) {
@@ -111,19 +95,19 @@ if ($provider === 'valhalla') {
         "metrics" => ["duration", "distance"]
     ];
 
-    $matrix_url = ORS_URL . "/matrix/" . urlencode($profile);
-    $res = curl_request($matrix_url, 'POST', json_encode($payload));
-
-    if ($res['code'] !== 200) {
-        // Wenn Matrix für ein Profil fehlschlägt (z.B. driving-emergency), geben wir den Fehler weiter
-        // oder die aufrufende Seite fängt es ab.
-        http_response_code($res['code']);
-        echo $res['data'];
-        exit;
-    }
-
-    $matrix = json_decode($res['data'], true);
+    $matrixRes = ors_call('matrix/' . urlencode($profile), 'POST', json_encode($payload));
 }
+
+if ($matrixRes['code'] < 200 || $matrixRes['code'] >= 300) {
+    // Rohen Upstream-Body nie an den Client durchreichen — Detail nur ins Server-Log.
+    error_log("nearest-stations.php: provider=$provider upstream_code={$matrixRes['code']} body=" .
+        substr((string)$matrixRes['data'], 0, 500));
+    http_response_code($matrixRes['code'] ?: 502);
+    echo json_encode(['error' => 'Matrixsuche fehlgeschlagen']);
+    exit;
+}
+
+$matrix = json_decode($matrixRes['data'], true);
 
 // 3. Ergebnisse kombinieren und sortieren
 $results = [];
