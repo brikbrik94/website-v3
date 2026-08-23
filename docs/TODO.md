@@ -197,14 +197,32 @@ alle vier auf einmal anfassen.
   - [ ] Ob `VALHALLA_URL` weiterhin eine private Tailscale-IP bleibt oder ein öffentlich
         erreichbarer Endpoint nötig wird — falls Tailscale: sicherstellen, dass der Produktivserver
         selbst im Tailnet hängt
+  - [ ] `nearest-stations.php?provider=valhalla` erreicht Valhalla ohne den nginx-`deny all;` von
+        `valhalla.php` — braucht eine eigene Auth-/Rate-Limiting-Entscheidung, nicht nur die für
+        `valhalla.php` gedachte
 
-  **Update 2026-08-23:** Die SEW/NEF-Matrixsuche für Valhalla (`?path=sources_to_targets`) ist
-  jetzt umgesetzt (`api/nearest-stations.php`, `provider`-Parameter, siehe
-  `docs/superpowers/specs/2026-08-22-valhalla-sew-nef-matrix-design.md`) — nicht mehr nur
-  „potenziell" wie oben noch geschrieben. Die Security-Review vor einem Deploy muss also
-  endgültig auch den Matrix-Traffic auf `nearest-stations.php` mit-abdecken, nicht nur
-  `api/valhalla.php` — beide Endpoints teilen sich `VALHALLA_URL` und damit dieselbe
-  Angriffsfläche.
+  **Update 2026-08-23:** Die SEW/NEF-Matrixsuche für Valhalla ist jetzt umgesetzt — nicht über
+  einen `?path=`-Wert auf `valhalla.php` (dessen Allowlist bleibt unverändert `^(route|status)$`),
+  sondern über `nearest-stations.php?provider=valhalla`, das serverseitig Valhallas
+  `/sources_to_targets`-HTTP-Endpoint aufruft (siehe `api/nearest-stations.php`,
+  `docs/superpowers/specs/2026-08-22-valhalla-sew-nef-matrix-design.md`). Das ist **keine
+  „dieselbe Angriffsfläche"** wie `api/valhalla.php`, sondern eine größere: `valhalla.php` steht
+  hinter dem `deny all;`-Block in `nginx.conf`, `nearest-stations.php` ist ein normaler, bereits
+  live deployter Produktions-Endpoint **ohne** einen solchen Block. Aktuell ist er nur dadurch
+  sicher, dass `VALHALLA_URL` in der Produktivkonfiguration nicht gesetzt ist (Endpoint antwortet
+  dann mit 500, siehe Guard am Dateianfang) — sobald diese Konstante aus irgendeinem Grund gesetzt
+  wird, ist `nearest-stations.php?provider=valhalla` ein offener, nicht authentifizierter Zugang
+  zur Valhalla-Instanz, ohne dass die Matrixsuche selbst irgendein zusätzliches Gate hätte: Ein
+  unauthentifizierter Aufrufer könnte dann pro Request eine PostGIS-KNN-Abfrage plus eine
+  20×1-Valhalla-Matrixberechnung auslösen, ohne Rate-Limiting.
+
+  Zusätzliche Deploy-Reihenfolge-Falle: SEW/NEF mit Valhalla braucht praktisch zwei Endpoints —
+  `nearest-stations.php` für die Liste, `valhalla.php` für die pro Station nachgezeichnete Route.
+  Würde `VALHALLA_URL` produktiv gesetzt, ohne dass zugleich `valhalla.php`s `deny all;`
+  aufgehoben wird, bliebe `ValhallaService.checkHealth()` (läuft über `valhalla.php`) weiterhin
+  fehlschlagen und der Submit-Button entsprechend deaktiviert — das ist aktuell ein zufälliger
+  Nebeneffekt, kein bewusst gebauter Schutz, und sollte vor einem echten Deploy nicht als
+  Verlass gelten.
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
   Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
   `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die

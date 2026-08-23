@@ -23,6 +23,12 @@ if (!in_array($provider, ['ors', 'valhalla'], true)) {
     exit;
 }
 
+if ($provider === 'valhalla' && !defined('VALHALLA_URL')) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Server misconfigured: VALHALLA_URL not set in config.local.php']);
+    exit;
+}
+
 if (!$target) {
     http_response_code(400);
     echo json_encode(['error' => 'Parameter target (lat,lon) fehlt']);
@@ -57,12 +63,6 @@ if (empty($stations)) {
 
 // 2. Matrix-Aufruf — Provider-Branch (Stationssuche oben bleibt für beide Provider gemeinsam)
 if ($provider === 'valhalla') {
-    if (!defined('VALHALLA_URL')) {
-        http_response_code(500);
-        echo json_encode(['error' => 'Server misconfigured: VALHALLA_URL not set in config.local.php']);
-        exit;
-    }
-
     $sources = [];
     foreach ($stations as $s) {
         $sources[] = ['lat' => (float)$s['lat'], 'lon' => (float)$s['lon']];
@@ -73,6 +73,7 @@ if ($provider === 'valhalla') {
         'sources' => $sources,
         'targets' => $targets,
         'costing' => $profile,
+        'units' => 'kilometers',
     ];
 
     // Eigener, schlanker curl-Aufruf statt curl_request() — die würde automatisch

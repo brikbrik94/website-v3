@@ -139,7 +139,7 @@ export const initRoutingSidebar = async (
 
         <div class="tool-sep"></div>
 
-        <!-- Provider Auswahl (nur bei Modus A → B relevant, siehe updateModeUI) -->
+        <!-- Provider Auswahl (gemeinsam für alle drei Modi: A → B, SEW, NEF) -->
         <div class="form-field" style="margin-bottom:7px" id="field-provider">
           <label class="form-label" for="route-provider">Anbieter</label>
           <select class="form-select" id="route-provider">
