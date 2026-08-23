@@ -137,3 +137,29 @@ describe('RoutingService.findNearestStations (driving-emergency / Sondersignal)'
     expect(station.distance).toBe(1000);
   });
 });
+
+describe('RoutingService.findNearestStations (provider)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('passes the provider through as a query parameter to nearest-stations.php', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve([]) }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await RoutingService.findNearestStations([48.3, 14.2], 'sew', 'auto', 'valhalla');
+
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('provider=valhalla'));
+  });
+
+  it('does not run the driving-emergency two-pass fallback when provider is valhalla', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve([]) }));
+    vi.stubGlobal('fetch', fetchMock);
+    const calculateRouteSpy = vi.spyOn(RoutingService, 'calculateRoute');
+
+    await RoutingService.findNearestStations([48.3, 14.2], 'sew', 'driving-emergency', 'valhalla');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(calculateRouteSpy).not.toHaveBeenCalled();
+
+    calculateRouteSpy.mockRestore();
+  });
+});
