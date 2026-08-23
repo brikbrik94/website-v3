@@ -426,10 +426,10 @@ export const updateRoutingSummary = (
         </summary>
         <div class="disclosure-body">
           ${steps.map((s) => `
-            <div class="disclosure-item">
+            <div class="maneuver-item">
               ${s.iconMarkup}
-              <span class="disclosure-item-text">${s.text}</span>
-              <span class="disclosure-item-meta mono">${s.meta}</span>
+              <span class="maneuver-item-text">${s.text}</span>
+              <span class="maneuver-item-meta mono">${s.meta}</span>
             </div>
           `).join('')}
         </div>

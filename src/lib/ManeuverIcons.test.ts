@@ -19,11 +19,11 @@ const ALL_KINDS: ManeuverKind[] = [
 ];
 
 describe('getManeuverIconMarkup', () => {
-  it('returns svg markup with the disclosure-item-icon class and a 16x16 viewBox for a known kind', () => {
+  it('returns svg markup with the maneuver-item-icon class and a 16x24 viewBox for a known kind', () => {
     const markup = getManeuverIconMarkup('turn-right');
-    expect(markup).toContain('class="disclosure-item-icon"');
-    expect(markup).toContain('viewBox="0 0 16 16"');
-    expect(markup).toContain('M8 13 Q8 7 13.4 7');
+    expect(markup).toContain('class="maneuver-item-icon"');
+    expect(markup).toContain('viewBox="0 0 16 24"');
+    expect(markup).toContain('M8 19.5 Q8 10.5 13.4 10.5');
   });
 
   it('returns distinct markup for each of the 30 known ManeuverKind values', () => {

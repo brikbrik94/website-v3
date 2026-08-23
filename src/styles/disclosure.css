@@ -104,6 +104,44 @@ details.disclosure[open] .disclosure-chevron {
 }
 
 /* ═══════════════════════════════════════
+   MANEUVER-ITEM (Turn-by-Turn)
+   Eigene Zeilen-Definition für Turn-by-Turn-Listen,
+   ersetzt .disclosure-item nur für diesen Spezialfall.
+   Nutzt weiterhin die generische .disclosure-Hülle
+   (Header/Collapse) — siehe docs/maneuver-icons.md.
+   ═══════════════════════════════════════ */
+.maneuver-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.maneuver-item:last-child {
+  border-bottom: none;
+}
+
+.maneuver-item-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 24px;
+  color: var(--text);
+}
+
+.maneuver-item-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.maneuver-item-meta {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+/* ═══════════════════════════════════════
    REDUCED MOTION
    ═══════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {

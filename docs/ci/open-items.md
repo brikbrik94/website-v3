@@ -18,19 +18,15 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
 - **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet
   2026-08-11 (Performance-Baseline-Audit). Detaildatei: `bug-reports.md` (Punkt 3).
 
-- **`ci-maneuver-uturn-left.svg` (v1.26.0) ist byte-identisch zu `ci-maneuver-uturn.svg`** —
-  gemeldet 2026-08-22, gefunden beim Sync auf v1.26.0 nach Schließung von #2. Root Cause: der
-  ursprüngliche Vorschlag in #2 hatte für `uturn-left` versehentlich denselben Pfad wie das
-  bestehende `uturn`-Icon genannt (Copy-Paste-Fehler beim Issue-Verfassen, in `website-v3` selbst
-  vor der Umsetzung gefunden und korrigiert, aber nicht mehr im Issue-Text nachgezogen) —
-  `oe5ith-ci` hat den fehlerhaften Vorschlag wörtlich übernommen. Issue:
-  [oe5ith-ci#3](https://github.com/brikbrik94/oe5ith-ci/issues/3), inkl. konkretem Korrektur-
-  Vorschlag. `website-v3` behält bis zur Behebung die bereits lokal korrigierte, eigenständige
-  Fassung (`src/lib/ManeuverIcons.ts`, Kommentar bei `'uturn-left'`) statt auf die fehlerhafte
-  offizielle Version zu syncen.
-  - [ ] `ci-maneuver-uturn-left.svg` durch eigenständigen, von `uturn` unterscheidbaren Pfad ersetzt
-
 ## Erledigt (archiviert)
+
+- **`ci-maneuver-uturn-left.svg` (v1.26.0) war byte-identisch zu `ci-maneuver-uturn.svg`** —
+  gemeldet 2026-08-22 als [oe5ith-ci#3](https://github.com/brikbrik94/oe5ith-ci/issues/3), behoben
+  in `oe5ith-ci` v2.0.0 (2026-08-23): `uturn-left` hat jetzt einen eigenständigen, von `uturn`
+  unterscheidbaren Pfad. **website-v3-seitig konsumiert** (2026-08-23): der bisherige lokale
+  Workaround (eigenständige `'uturn-left'`-Pfaddaten in `src/lib/ManeuverIcons.ts`, siehe
+  Kommentar dort) entfällt — alle 30 Icons wurden im selben Zug auf die neue oe5ith-ci-v2.0.0-
+  Vorlage (16×24-`viewBox`, siehe nächster Punkt) resynchronisiert, `uturn-left` eingeschlossen.
 
 - **16 neue Maneuver-Icons für Valhalla-Turn-by-Turn-Parität** — gemeldet 2026-08-22, umgesetzt
   und geschlossen in `oe5ith-ci` v1.26.0 (14 → 30 Icons, neues optionales `valhallaType`-Feld in
@@ -40,6 +36,16 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
   Stand synchronisiert (15 von 16 neuen Icons waren bereits wortgleich zum lokalen Entwurf; eine
   Ausnahme, siehe den neuen Punkt oben unter „Offen"). Details/Herleitung:
   `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`.
+
+- **Turn-by-Turn-Icons: `viewBox` 16×16 → 16×24 (Breaking), neue `.maneuver-item`-Komponente** —
+  `oe5ith-ci` v2.0.0 (2026-08-23): alle 30 Icons in `assets/maneuver-icons/` auf `viewBox="0 0 16
+  24"` umgezeichnet (`icons.json`s `grid` jetzt `[16, 24]`), neue Zeilen-Komponente `.maneuver-item`
+  (+ `.maneuver-item-icon`/`-text`/`-meta`, `css/disclosure.css`) ersetzt `.disclosure-item` für
+  Turn-by-Turn-Listen. Migration-Guide: `oe5ith-ci/docs/migration-v2.md`. **website-v3-seitig
+  konsumiert** (2026-08-23): `src/lib/ManeuverIcons.ts` (alle 30 Pfaddaten + `viewBox`/Klasse),
+  `src/components/RoutingSidebar.ts` (Zeilen-Markup auf `.maneuver-item*` umgestellt),
+  `src/styles/disclosure.css` (`.maneuver-item*`-Block mirror-gesynct). 387 Tests grün, 0
+  TypeScript-Fehler.
 
 Detaildateien liegen in `archive/`, keine website-v3-seitige Restarbeit mehr offen:
 
@@ -75,7 +81,8 @@ Detaildateien liegen in `archive/`, keine website-v3-seitige Restarbeit mehr off
 ---
 
 Submodul-Pointer-Historie: `dca22e5` (v1.18.0) → `c92fb77` (2026-07-06) → `v1.21.0`/`bb4e415`
-(2026-07-18) → `0092387` (v1.25.0 + Doku-Fix, 2026-08-12). Details siehe `TODO_ARCHIVE.md`.
+(2026-07-18) → `0092387` (v1.25.0 + Doku-Fix, 2026-08-12) → `8e4ac64` (v2.0.0, 2026-08-23). Details
+siehe `TODO_ARCHIVE.md`.
 
 Diese Übersicht (und die Detaildateien) lagen bis 2026-07-18 unversioniert im Arbeitsverzeichnis
 des `oe5ith-ci`-Submoduls und wurden dann nach `docs/ci/` in website-v3 übertragen (siehe
