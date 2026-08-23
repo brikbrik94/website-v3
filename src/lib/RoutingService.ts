@@ -93,15 +93,17 @@ export const RoutingService = {
   async findNearestStations(
     target: [number, number],
     type: 'sew' | 'nef',
-    profile: string = 'driving-car'
+    profile: string = 'driving-car',
+    provider: 'ors' | 'valhalla' = 'ors'
   ): Promise<RoutingStation[]> {
     try {
-      // SONDERFALL: driving-emergency
+      // SONDERFALL: driving-emergency (nur ORS — Valhallas Matrix scheint laut Live-Test
+      // zuverlässig, siehe Design-Spec; kein Beleg für dasselbe Problem)
       // Matrix-Abfrage für driving-emergency ist unzuverlässig.
       // 1. Suche 7 schnellste Stationen mit driving-car.
       // 2. Berechne für diese 7 die echte Route mit driving-emergency.
       // 3. Gib die 5 besten zurück.
-      if (profile === 'driving-emergency') {
+      if (profile === 'driving-emergency' && provider === 'ors') {
         const top7Base = await fetch(`/api/nearest-stations.php?target=${target[0]},${target[1]}&type=${type}&profile=driving-car&limit=7`);
         const stations7 = await top7Base.json();
 
@@ -130,8 +132,8 @@ export const RoutingService = {
         return final5;
       }
 
-      // Normalfall: Direkte Matrix-Abfrage mit dem gewählten Profil
-      const res = await fetch(`/api/nearest-stations.php?target=${target[0]},${target[1]}&type=${type}&profile=${profile}`);
+      // Normalfall: Direkte Matrix-Abfrage mit dem gewählten Profil/Provider
+      const res = await fetch(`/api/nearest-stations.php?target=${target[0]},${target[1]}&type=${type}&profile=${profile}&provider=${provider}`);
       if (!res.ok) throw new Error('Stations-API nicht erreichbar');
       return await res.json();
     } catch (e) {
