@@ -129,6 +129,15 @@ alle vier auf einmal anfassen.
   166 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
   ARIA-APG-Tastaturnavigation fürs Menü (Pfeiltasten, Roving Tabindex) — eigener Folge-Punkt bei
   Bedarf; visuelles Hold-Feedback während des Haltens — bei Bedarf nach Live-Test nachziehen.
+- [ ] **`MapLegend`: `--legend-width-wide`-Token konsumieren** (2026-08-23, Fund beim
+  `oe5ith-ci`-Submodul-Reload auf v2.0.0). `oe5ith-ci` v1.27.0 hat den in
+  [oe5ith-ci#4](https://github.com/brikbrik94/oe5ith-ci/issues/4) angefragten Token
+  `--legend-width-wide: 340px` + Modifier `.map-legend--wide` (`css/modal.css:505`) geliefert —
+  siehe `docs/ci/open-items.md`. `website-v3` nutzt noch den lokalen 300px-Workaround
+  (`src/app.css`, `.map-legend-parts-strip { max-width: 116px }`, siehe CHANGELOG
+  `[Unreleased] - 2026-08-22 17:03`) statt des offiziellen Tokens — Umstieg noch offen, nicht Teil
+  dieser Runde (die betroffenen Dateien `src/app.css`/`MapLegend.ts`/`MapLegend.test.ts` haben
+  bereits eine eigene, separate uncommitted Änderung zum render-parts-Rendering).
 - [ ] **`MapPage.ts`s `legendItemsRefCount` gruppiert falsch, wenn zwei Gruppen desselben
   Overlays unterschiedliche `legend_items` tragen** (2026-08-12, Fund aus finalem
   Whole-Branch-Review der `legend_scale_id`/`legend_sections`/`icon`-Runde). **Vorbestehender

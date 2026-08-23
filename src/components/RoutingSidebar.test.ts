@@ -133,7 +133,7 @@ describe('updateRoutingSummary turn-by-turn disclosure', () => {
     expect(details.innerHTML).toContain('176 m');
     expect(details.innerHTML).toContain('Continue straight onto Hauptstraße');
     expect(details.innerHTML).toContain('1.0 km');
-    expect(details.innerHTML).toContain('disclosure-item-icon');
+    expect(details.innerHTML).toContain('maneuver-item-icon');
   });
 
   it('places the disclosure block at or after the point where .result-list closes, not nested inside it', () => {

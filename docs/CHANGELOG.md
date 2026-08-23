@@ -2,6 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-23 07:15
+
+### Geändert
+- **`oe5ith-ci`-Submodul auf v2.0.0 aktualisiert (Breaking: Turn-by-Turn-Icons 16×16 → 16×24)**
+  — Pointer `00af215` (v1.26.0) → `8e4ac64` (v2.0.0). Alle 30 Turn-by-Turn-Manöver-Icons in
+  `src/lib/ManeuverIcons.ts` auf die neuen, hochformatigen 16×24-Pfaddaten resynchronisiert
+  (`getManeuverIconMarkup()`: `viewBox="0 0 16 16"` → `"0 0 16 24"`, Klasse `disclosure-item-icon`
+  → `maneuver-item-icon`, analog `oe5ith-ci`s neuer `.maneuver-item`-Zeilen-Komponente). Turn-by-
+  Turn-Zeilen-Markup in `src/components/RoutingSidebar.ts` von `.disclosure-item`/`-text`/`-meta`
+  auf `.maneuver-item`/`-text`/`-meta` umgestellt, `.maneuver-item*`-CSS-Block aus
+  `oe5ith-ci/css/disclosure.css` nach `src/styles/disclosure.css` mirror-gesynct. Nebeneffekt:
+  behebt [oe5ith-ci#3](https://github.com/brikbrik94/oe5ith-ci/issues/3) (`uturn-left` war
+  byte-identisch zu `uturn`) — der bisherige lokale Pfad-Workaround in `ManeuverIcons.ts` entfällt,
+  da alle 30 Icons ohnehin auf die neue offizielle Vorlage resynchronisiert wurden. Details:
+  `docs/ci/open-items.md`. 387 Tests grün, 0 TypeScript-Fehler.
+
 ## [Unreleased] - 2026-08-22 12:11
 
 ### Hinzugefügt

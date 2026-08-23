@@ -115,7 +115,7 @@ describe('formatSteps', () => {
     expect(result).toHaveLength(2);
     expect(result[0].text).toBe('Head south on Hauptplatz');
     expect(result[0].meta).toBe('176 m');
-    expect(result[0].iconMarkup).toContain('disclosure-item-icon');
+    expect(result[0].iconMarkup).toContain('maneuver-item-icon');
     expect(result[1].text).toBe('Continue straight onto Hauptstraße');
     expect(result[1].meta).toBe('999 m');
   });
