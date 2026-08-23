@@ -115,7 +115,7 @@ paths:
 
   /nearest-stations.php:
     get:
-      summary: Nächstgelegene RD/NEF-Stationen zu einem Zielpunkt (mit ORS-Matrix-Fahrzeiten)
+      summary: Nächstgelegene RD/NEF-Stationen zu einem Zielpunkt (mit ORS- oder Valhalla-Matrix-Fahrzeiten)
       operationId: getNearestStations
       parameters:
         - name: target
@@ -128,11 +128,19 @@ paths:
           in: query
           required: false
           schema: { type: string, enum: [sew, nef], default: sew }
+        - name: provider
+          in: query
+          required: false
+          schema: { type: string, enum: [ors, valhalla], default: ors }
+          description: Wählt das Routing-Backend für den Matrix-Aufruf (ORS `/matrix` bzw. Valhalla `/sources_to_targets`).
         - name: profile
           in: query
           required: false
           schema: { type: string, default: driving-car, pattern: "^[a-z0-9-]+$" }
-          description: ORS-Routing-Profil (z.B. driving-car, driving-emergency)
+          description: >
+            Bedeutung ist abhängig von provider: bei provider=ors ein ORS-Routing-Profil
+            (z.B. driving-car, driving-emergency), bei provider=valhalla ein
+            Valhalla-Costing-String (z.B. auto, emergency, bicycle, pedestrian).
         - name: limit
           in: query
           required: false
@@ -157,7 +165,7 @@ paths:
                     distance: { type: number, description: "Meter" }
                     icon: { type: string }
         "400":
-          description: "Parameter target fehlt oder profile hat ein ungültiges Format"
+          description: "Parameter target fehlt, provider hat einen ungültigen Wert oder profile hat ein ungültiges Format"
           content:
             application/json:
               schema:
@@ -172,6 +180,14 @@ paths:
                 type: object
                 properties:
                   error: { type: string, example: "Method not allowed" }
+        "500":
+          description: "Nur bei provider=valhalla: VALHALLA_URL nicht konfiguriert (api/config.local.php fehlt/unvollständig)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Server misconfigured: VALHALLA_URL not set in config.local.php" }
 
   /stations-by-region.php:
     get:
