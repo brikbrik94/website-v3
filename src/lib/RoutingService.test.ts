@@ -151,13 +151,28 @@ describe('RoutingService.findNearestStations (provider)', () => {
   });
 
   it('does not run the driving-emergency two-pass fallback when provider is valhalla', async () => {
-    const fetchMock = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve([]) }));
+    const fetchMock = vi.fn((url: string) => {
+      // If the two-pass branch is incorrectly taken, it would fetch the limit=7 URL
+      // Return a non-empty array so calculateRoute gets called and we can detect the bug
+      if (typeof url === 'string' && url.includes('limit=7')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([
+            { id: 1, name: 'Station A', org: 'SEW', lat: 48.1, lon: 14.1 },
+          ]),
+        });
+      }
+      // Normal fetch (without limit=7) should return empty
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    });
     vi.stubGlobal('fetch', fetchMock);
     const calculateRouteSpy = vi.spyOn(RoutingService, 'calculateRoute');
 
     await RoutingService.findNearestStations([48.3, 14.2], 'sew', 'driving-emergency', 'valhalla');
 
+    // Should fetch only once (the normal path), never the limit=7 URL
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(expect.not.stringContaining('limit=7'));
     expect(calculateRouteSpy).not.toHaveBeenCalled();
 
     calculateRouteSpy.mockRestore();
