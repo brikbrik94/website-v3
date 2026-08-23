@@ -2,6 +2,39 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-23 11:45
+
+### Geändert
+- **Routing-Endpoints konsolidiert: `ors.php`/`valhalla.php` → ein provider-parametrisierter
+  `routing-proxy.php`** — neue `api/ors-client.php`/`api/valhalla-client.php` (reine
+  `ors_call()`/`valhalla_call()`-Funktionen, identisches Rückgabeformat) ersetzen dupliziertes
+  curl-Setup; `api/nearest-stations.php`s Matrix-Aufruf nutzt jetzt dieselbe Client-Schicht statt
+  eigenem curl-Code. Frontend: neue `buildRoutingProxyUrl()`-Hilfsfunktion
+  (`src/lib/RoutingProxyUrl.ts`) ersetzt drei unabhängige URL-Konstanten in
+  `RoutingService.ts`/`IsochronesService.ts`/`ValhallaService.ts`.
+- **ORS/Nominatim laufen jetzt über lokale VPS-Adressen** (`127.0.0.1:8082`/`:8080`) statt
+  öffentlicher Subdomains — `ORS_API_KEY` als Konzept komplett entfernt (`api/config.php`,
+  `curl_request()` hängt keinen Auto-Header mehr an). Live verifiziert: Nominatim prüfte
+  denselben Key wie ORS (kein ORS-spezifisches Secret, sondern ein gemeinsames Gateway-Secret).
+  `VALHALLA_URL` wird damit fester Bestandteil der Produktivkonfiguration statt reiner
+  Testaufbau — Voraussetzung für einen dauerhaften, öffentlichen Valhalla-Zweit-Provider.
+- Fehlerantworten von `routing-proxy.php`/`nearest-stations.php` sanitisiert — kein roher
+  Upstream-Body mehr an den Client, Detail nur noch per `error_log()` serverseitig.
+
+### Sicherheit
+- **Einheitliche nginx-Zugriffsbeschränkung für beide öffentlichen Routing-Endpoints**
+  (`routing-proxy.php` UND `nearest-stations.php`) — neuer `limit_req_zone` (Rate-Limit pro
+  Client-IP) + `valid_referers`-Check (nur `map.oe5ith.at`), ersetzt den alten, nur
+  `valhalla.php` betreffenden `deny all;`-Block. Schließt die zuvor bestehende Lücke, dass
+  `nearest-stations.php?provider=valhalla` ohne eigenen Schutz war.
+
+Umgesetzt per Subagent-Driven Development (alle 7 Code-Tasks „Approved", 1 Fix-Round bei einer
+Rate-Limit/Referer-Aussage in einem Task-Report ohne Code-Änderung). Spec:
+`docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`, Plan:
+`docs/superpowers/plans/2026-08-23-routing-endpoints-public-rollout.md`. 393 Tests grün, 0
+TypeScript-Fehler. **Offen:** Live-Verifikation von ORS/Nominatim über die neuen lokalen
+Adressen sowie der eigentliche nginx-Rollout sind Aufgabe des Nutzers auf dem echten VPS.
+
 ## [Unreleased] - 2026-08-23 08:10
 
 ### Hinzugefügt

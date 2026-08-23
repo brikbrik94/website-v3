@@ -168,7 +168,26 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
-- [ ] **Valhalla-Connector: vor Live-Deploy**
+- [x] **Valhalla-Connector: vor Live-Deploy** (2026-08-23) — ✅ ERLEDIGT. Umgesetzt per
+  `docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md` +
+  `docs/superpowers/plans/2026-08-23-routing-endpoints-public-rollout.md`: `ors.php`/`valhalla.php`
+  verschmolzen zu einem provider-parametrisierten `routing-proxy.php` (geteilte
+  `ors_call()`/`valhalla_call()`-Client-Funktionen statt dupliziertem curl-Setup, auch
+  `nearest-stations.php` nutzt dieselbe Client-Schicht), ORS/Nominatim laufen jetzt über lokale
+  VPS-Adressen (`127.0.0.1:8082`/`:8080`) statt öffentlicher Subdomains — `ORS_API_KEY` als
+  Konzept komplett entfernt (live verifiziert: Nominatim prüfte denselben Key wie ORS, kein
+  ORS-spezifisches Secret). Einheitliche nginx-Zugriffsbeschränkung (`limit_req` + Referer-Check)
+  jetzt auf **beiden** öffentlichen Routing-Endpoints (`routing-proxy.php` UND
+  `nearest-stations.php`) statt der alten, nur `valhalla.php` betreffenden `deny all;`-Lösung —
+  schließt die unten dokumentierte Lücke, dass `nearest-stations.php?provider=valhalla` ohne
+  eigenen Schutz war. `VALHALLA_URL` wird damit fester, dauerhaft öffentlich nutzbarer Bestandteil
+  der Produktivkonfiguration statt Testaufbau. Fehlerantworten sanitisiert (kein roher
+  Upstream-Body mehr an den Client). Subagent-Driven Development, alle 7 Code-Tasks „Approved"
+  (1 Fix-Round bei einer Rate-Limit/Referer-Aussage in einem Task-Report, keine Code-Änderung
+  nötig). **Offen, außerhalb dieser Umgebung:** Live-Verifikation von ORS/Nominatim über die
+  neuen lokalen Adressen sowie der eigentliche nginx-Rollout (`nginx -t`, Reload) sind Aufgabe des
+  Nutzers auf dem echten VPS — hier nicht möglich (kein lokaler ORS/Nominatim, kein nginx-Prozess
+  in dieser Sandbox). Ursprünglicher Text (Historie) darunter unverändert erhalten:
 
   Der Valhalla-Proxy (`api/valhalla.php`) ist bewusst nur für `npm run dev` gebaut (siehe
   `docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`, Abschnitt „Config &
