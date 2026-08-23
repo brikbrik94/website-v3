@@ -58,7 +58,7 @@ export class RoutingSidebarAdapter {
           // params.mode ist hier 'ab' | 'sew' | 'nef' (durch das zusammengesetzte if oben nicht auf
           // 'sew' | 'nef' engbar, falls mode === 'ab' und params.start fehlt). Cast bildet exakt das
           // vorher durch any stillschweigend erlaubte Verhalten ab — keine Verhaltensänderung.
-          const results: RoutingStation[] = await RoutingService.findNearestStations(params.target, params.mode as 'sew' | 'nef', params.profile);
+          const results: RoutingStation[] = await RoutingService.findNearestStations(params.target, params.mode as 'sew' | 'nef', params.profile, params.provider);
           if (this.abortSignal.aborted) return;
           
           if (results.length === 0) {
@@ -75,7 +75,9 @@ export class RoutingSidebarAdapter {
 
           const fetchRouteIfNeeded = async (station: RoutingStation) => {
             if (!this.dataService.getStationRoutes().get(station.id)) {
-              const route = await RoutingService.calculateRoute([station.lat, station.lon], params.target, params.profile);
+              const route = params.provider === 'valhalla'
+                ? await ValhallaService.calculateRoute([station.lat, station.lon], params.target, params.profile)
+                : await RoutingService.calculateRoute([station.lat, station.lon], params.target, params.profile);
               if (this.abortSignal.aborted) return;
               if (route && route.features && route.features.length > 0) {
                 this.dataService.setStationRoute(station.id, route);
