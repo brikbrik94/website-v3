@@ -13,19 +13,21 @@ if (file_exists($local_config_file)) {
 // 2. Define defaults (Production) ONLY IF not already defined by config.local.php
 
 // Datenbank (PostGIS) — Host/Port/Name/User sind unkritische Defaults, DB_PASS
-// und ORS_API_KEY haben bewusst KEINEN Default (Secrets dürfen nicht im Repo
-// stehen); sie müssen über config.local.php (gitignored) gesetzt werden.
+// hat bewusst KEINEN Default (Secret darf nicht im Repo stehen); muss über
+// config.local.php (gitignored) gesetzt werden.
 defined('DB_HOST') || define('DB_HOST', '127.0.0.1');
 defined('DB_PORT') || define('DB_PORT', '5432');
 defined('DB_NAME') || define('DB_NAME', 'emergency_db');
 defined('DB_USER') || define('DB_USER', 'web_api_user');
 
-// Endpunkte
-defined('ORS_URL') || define('ORS_URL', 'https://ors.oe5ith.at');
-defined('NOMINATIM_URL') || define('NOMINATIM_URL', 'https://geocoder.oe5ith.at');
+// Endpunkte — ORS/Nominatim laufen lokal auf demselben VPS (siehe
+// docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md), kein API-Key
+// mehr nötig (Voraussetzung: beide sind serverseitig nur an 127.0.0.1 gebunden, nicht 0.0.0.0).
+defined('ORS_URL') || define('ORS_URL', 'http://127.0.0.1:8082');
+defined('NOMINATIM_URL') || define('NOMINATIM_URL', 'http://127.0.0.1:8080');
 
 // Secrets müssen aus config.local.php kommen — kein Fallback-Wert im Repo.
-if (!defined('DB_PASS') || !defined('ORS_API_KEY')) {
+if (!defined('DB_PASS')) {
     http_response_code(500);
     echo json_encode(['error' => 'Server misconfigured: missing config.local.php with required secrets']);
     exit;
@@ -71,7 +73,6 @@ function curl_request($url, $method = 'GET', $body = null, $headers = [])
     }
 
     $default_headers = [
-        "X-API-KEY: " . ORS_API_KEY,
         "Content-Type: application/json"
     ];
 
