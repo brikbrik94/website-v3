@@ -33,6 +33,20 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
 
 ## Erledigt (archiviert)
 
+- **`MapLegend`: breiteres Panel für render/variants-Chip-Streifen-Zeilen
+  (`.map-legend-parts-row`) gewünscht** — gemeldet 2026-08-22 als
+  [oe5ith-ci#4](https://github.com/brikbrik94/oe5ith-ci/issues/4), umgesetzt in `oe5ith-ci`
+  v1.27.0 (neuer Token `--legend-width-wide: 340px` + Modifier `.map-legend--wide`,
+  `css/modal.css`). **website-v3-seitig konsumiert** (2026-08-27): Token/Modifier in
+  `src/styles/common.css`/`src/styles/modal.css` nachgezogen (lokale CSS-Kopien der
+  `oe5ith-ci`-Dateien, siehe Kopfkommentar dort — waren zuvor nicht synchronisiert, das war der
+  eigentliche Grund, warum der Token bislang wirkungslos blieb); `MapLegend.addPartsRow()`
+  schaltet `.map-legend--wide` scharf, solange mindestens eine Parts-Row aktiv ist
+  (`removeEntry()`/`clearEntries()` nehmen es wieder zurück). Lokaler `.map-legend-parts-strip`-
+  Workaround bleibt (Chip-Streifen soll weiterhin selbst umbrechen), `max-width` proportional von
+  116px auf 148px angehoben. Live gegen `/karte` (Pisten-Overlay, Playwright) verifiziert. 397
+  Tests grün, 0 TypeScript-Fehler.
+
 - **`ci-maneuver-uturn-left.svg` (v1.26.0) war byte-identisch zu `ci-maneuver-uturn.svg`** —
   gemeldet 2026-08-22 als [oe5ith-ci#3](https://github.com/brikbrik94/oe5ith-ci/issues/3), behoben
   in `oe5ith-ci` v2.0.0 (2026-08-23): `uturn-left` hat jetzt einen eigenständigen, von `uturn`

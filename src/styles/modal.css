@@ -513,6 +513,10 @@
   padding: 12px 14px;
 }
 
+.map-legend--wide {
+  max-width: var(--legend-width-wide);
+}
+
 .map-legend-title {
   font-size: 0.65rem;
   font-weight: 700;
