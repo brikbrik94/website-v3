@@ -2,6 +2,17 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-27 13:45
+
+### Behoben
+- **`.map-legend-parts-strip`-`max-width` (148px, siehe `[Unreleased] - 2026-08-27 13:15`) war zu
+  knapp bemessen** — live gegen echte Pisten-Daten (`ski-difficulty-v1`-Skala, 5 Items) brach die
+  Chip-Reihe bei 4 statt allen 5 Chips um. `max-width` auf 224px angehoben (auf 6 Chips bemessen,
+  passend zur `_buildPartsChip()`-Designannahme "6er-Streifen... der übliche Fall"). Panel bleibt
+  mit realen Pisten-Daten bei ~298px, innerhalb des 340px-`--legend-width-wide`-Limits. Live gegen
+  `/karte` (Pisten-Overlay, Playwright) verifiziert: alle 4 Zeilen (Präpariert/Buckelpiste/
+  Skiroute/Freeride) jetzt einzeilig.
+
 ## [Unreleased] - 2026-08-27 13:15
 
 ### Geändert
