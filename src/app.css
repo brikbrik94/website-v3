@@ -165,8 +165,9 @@ html, body {
    .map-legend--wide (oe5ith-ci v1.27.0, --legend-width-wide: 340px) scharf, sobald mindestens
    eine Parts-Row aktiv ist — löst den früheren Vorschlag/lokalen Override aus oe5ith-ci#4 ab. Der
    Streifen behält trotzdem eine eigene max-width, damit er bei vielen Chips selbst umbricht statt
-   das Label zu verdrängen (proportional zum größeren Panel angehoben: 116px bei 300px-Panel →
-   148px bei 340px, gleiches Verhältnis nutzbare Breite/Chip-Modulbreite). */
+   das Label zu verdrängen — auf 6 Chips bemessen (34px Chip + 4px Gap je Modul, siehe
+   _buildPartsChip()-Kommentar: "6er-Streifen... der übliche Fall"), passt bei 340px-Panel noch
+   neben ein einzeiliges Label. */
 .map-legend-parts-row {
   align-items: flex-start;
   gap: 8px;
@@ -186,7 +187,7 @@ html, body {
   flex-wrap: wrap;
   gap: 4px;
   flex: 0 0 auto;
-  max-width: 148px;
+  max-width: 224px;
 }
 
 .map-legend-parts-chip {
