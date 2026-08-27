@@ -4,7 +4,7 @@ import { RoutingService } from './RoutingService';
 import { buildRoutingProxyUrl } from './RoutingProxyUrl';
 
 /**
- * Abstraktionsschicht über den `/api/ors.php`-Proxy für ORS-Isochronen-Abfragen. Health-Check
+ * Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy für ORS-Isochronen-Abfragen. Health-Check
  * und Profil-Liste sind generische ORS-Abfragen, die schon in RoutingService existieren — hier
  * direkt wiederverwendet statt dupliziert.
  */

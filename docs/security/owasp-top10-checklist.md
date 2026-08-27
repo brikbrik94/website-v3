@@ -13,7 +13,10 @@ Legende: ✅ adressiert · ⚠️ teilweise/zu beobachten · ❌ offener Punkt �
 Alle Endpoints sind öffentlich ohne Authentifizierung erreichbar — das ist für die meisten
 (read-only Geodaten-Proxies: `nah.php`, `stations.php`, `region_stations.php`, `stats.php`,
 `adsb.php`, `ais.php`, `geocoder.php`, `ors.php`) bewusst so gewollt (öffentliches GeoPortal ohne
-Login-Konzept).
+Login-Konzept). *(überholt durch die Routing-Endpoint-Konsolidierung 2026-08-23 — siehe
+`docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`; `ors.php` existiert
+nicht mehr, der Nachfolger `routing-proxy.php` ist ebenfalls bewusst öffentlich, aber inzwischen
+zusätzlich per Rate-Limiting + Referer-Check in nginx.conf abgesichert.)*
 
 **`diag.php` — ✅ behoben (2026-07-08/09):** exponierte PHP-Version, geladene Extensions,
 DB-Host/Port/Name/User (Passwort maskiert) und internen ORS-Health-Status ohne Zugriffskontrolle.
@@ -29,7 +32,10 @@ im selben Arbeitsblock: `DebugModule.ts` (`/info/debug`, API-Request-Playground)
 `nearest-stations.php`/`stations-by-region.php` umbenannt (Namen allein waren nicht
 unterscheidbar), alle neun verbleibenden Lese-Endpoints akzeptieren nur noch GET (405 sonst,
 `api/http.php`), `ors.php`/`nearest-stations.php`/`geocoder.php` validieren `path`/`profile`/
-`lat`+`lon` gegen Allowlist-Muster. Details: Plan
+`lat`+`lon` gegen Allowlist-Muster. *(überholt durch die Routing-Endpoint-Konsolidierung
+2026-08-23 — siehe `docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`;
+`ors.php` existiert nicht mehr, die Allowlist-Validierung lebt jetzt in `routing-proxy.php`.)*
+Details: Plan
 [docs/superpowers/plans/2026-07-25-api-hardening-debug-removal.md](../superpowers/plans/2026-07-25-api-hardening-debug-removal.md).
 
 Manuell bewertet — nicht automatisierbar (Access-Control ist eine Design-Entscheidung, kein
@@ -41,7 +47,10 @@ Pattern-Match).
 
 - DB-Passwort und ORS-API-Key liegen nur in `api/config.local.php` (gitignored), nicht im Repo
   (Fix vom 2026-07-08, Commit `87accec` — vorher waren sie als Fallback-Default in `config.php`
-  hardcoded, das war ein `A02`-relevanter Fund).
+  hardcoded, das war ein `A02`-relevanter Fund). *(überholt durch die Routing-Endpoint-Konsolidierung
+  2026-08-23 — siehe `docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`;
+  `ORS_API_KEY` wurde im Zuge dieser Konsolidierung entfernt, ist also nicht mehr Teil der
+  aktuellen Secret-Fläche.)*
 - Verbindung zur DB läuft lokal (`127.0.0.1`) ohne TLS — akzeptabel, da DB und API auf demselben
   Host laufen (kein Netzwerk-Transit für die Credentials).
 - Kein Klartext-Passwort-Handling für Endnutzer (keine Login-/User-Passwort-Funktion im Projekt
@@ -90,13 +99,19 @@ Nicht automatisierbar — Design-Entscheidung, kein Pattern-Match.
   akzeptieren nur noch `GET` (`api/http.php`, `require_method()`), `ors.php`/`nearest-stations.php`
   validieren `path`/`profile` gegen Allowlist-Muster, `geocoder.php` validiert `lat`/`lon` als
   numerisch (Adress-Freitextsuche bleibt bewusst offen). `curl_request()`-Timeout-Fund bleibt
-  separat offen.
+  separat offen. *(überholt durch die Routing-Endpoint-Konsolidierung 2026-08-23 — siehe
+  `docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`; `ors.php`
+  existiert nicht mehr, `ORS_API_KEY` wurde entfernt.)*
 - **Neuer Fund (2026-07-25):** `curl_request()` (`api/config.php`, gemeinsam genutzt von `ors.php`
   und `geocoder.php`) setzt kein `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT` — im Unterschied zu
   `adsb.php`/`ais.php`, die beide 5s Timeout setzen. Ein hängender/langsamer Upstream (ORS oder
   Nominatim) kann einen PHP-FPM-Worker unbegrenzt blockieren (Resource-Exhaustion unter Last).
   Geringes Risiko bei aktuellem Traffic-Volumen, aber inkonsistent zum bereits etablierten Pattern
-  in dieser Codebase. Siehe TODO.md.
+  in dieser Codebase. Siehe TODO.md. *(überholt durch die Routing-Endpoint-Konsolidierung
+  2026-08-23 — siehe `docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`;
+  `ors.php` existiert nicht mehr, `ORS_API_KEY` wurde entfernt; der `curl_request()`-Shared-Aufruf
+  von `ors.php` ist damit gegenstandslos, `routing-proxy.php`/`valhalla-client.php` nutzen eigene
+  curl-Aufrufe — der Timeout-Punkt selbst bleibt zu prüfen.)*
 - Live-Check der ausgelieferten HTTP-Security-Header (2026-07-25): `X-Frame-Options`,
   `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy` und eine
   auf die tatsächliche externe Call-Surface dieser App zugeschnittene `Content-Security-Policy`
@@ -157,11 +172,18 @@ Nicht automatisierbar — Logging-Strategie ist eine Design-Entscheidung.
 `ors.php` proxied einen User-kontrollierten `path`-Parameter, aber dieser wird immer an die feste
 `ORS_URL`-Basis angehängt (`ORS_URL . "/" . ltrim($path, '/')`) — der User kann damit keinen
 anderen Host ansprechen, nur den Pfad innerhalb des konfigurierten ORS-Hosts variieren. Kein
-SSRF-Vektor, da der Host nicht user-kontrolliert ist.
+SSRF-Vektor, da der Host nicht user-kontrolliert ist. *(überholt durch die
+Routing-Endpoint-Konsolidierung 2026-08-23 — siehe
+`docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`; `ors.php` existiert
+nicht mehr, `ORS_API_KEY` wurde entfernt. Der Nachfolger `routing-proxy.php` übernimmt dasselbe
+Muster [`provider`-parametrisiert an `ORS_URL`/`VALHALLA_URL` angehängt] — die Analyse gilt
+sinngemäß weiter, sollte aber bei Gelegenheit gegen den neuen Code re-verifiziert werden.)*
 
 `geocoder.php` proxied ausschließlich zu der fest konfigurierten `NOMINATIM_URL` — gleiches Muster,
 kein SSRF-Vektor. Re-geprüft 2026-07-25 (Isochronen-Feature nutzt denselben `ors.php`-Proxy, kein
-neuer Endpoint, keine neue Angriffsfläche).
+neuer Endpoint, keine neue Angriffsfläche). *(überholt durch die Routing-Endpoint-Konsolidierung
+2026-08-23 — siehe `docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`;
+`ors.php` existiert nicht mehr, der Proxy dahinter ist jetzt `routing-proxy.php`.)*
 
 Manuell bewertet (Code-Struktur-Analyse, kein automatisierbares Pattern für "Host ist nicht
 user-kontrolliert").

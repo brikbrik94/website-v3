@@ -98,7 +98,7 @@ Exports:
 
 ## `GraphExportService.ts`
 
-Abstraktionsschicht über den `/api/ors.php`-Proxy für den ORS-`/export`-Endpoint (interner
+Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy für den ORS-`/export`-Endpoint (interner
 Routing-Graph als Bbox-Ausschnitt). Health-Check/Profil-Liste wiederverwendet von
 RoutingService (generische ORS-Abfragen), analog IsochronesService. `status` im
 Fehlerfall wird durchgereicht, damit der Adapter gezielt auf 504 (Bbox zu groß/Timeout,
@@ -129,7 +129,7 @@ Exports:
 
 ## `IsochronesService.ts`
 
-Abstraktionsschicht über den `/api/ors.php`-Proxy für ORS-Isochronen-Abfragen. Health-Check
+Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy für ORS-Isochronen-Abfragen. Health-Check
 und Profil-Liste sind generische ORS-Abfragen, die schon in RoutingService existieren — hier
 direkt wiederverwendet statt dupliziert.
 
@@ -281,6 +281,9 @@ Exports:
 Baut die URL für den generischen Routing-Proxy-Endpoint (`api/routing-proxy.php`), der ORS und
 Valhalla providerparametrisiert hinter einem gemeinsamen Endpoint zusammenfasst — eine Stelle
 statt unabhängiger URL-Konstanten in RoutingService.ts/IsochronesService.ts/ValhallaService.ts.
+`path` wird bewusst nicht URL-kodiert — verschachtelte Segmente (z.B.
+`directions/driving-car/geojson`) müssen unverändert bleiben, die eigentliche Absicherung ist
+die serverseitige Allowlist in `routing-proxy.php`.
 
 Import: `from '.../lib/RoutingProxyUrl'` (Pfad relativ zum aufrufenden Modul anpassen)
 
@@ -289,7 +292,7 @@ Exports:
 
 ## `RoutingService.ts`
 
-Abstraktionsschicht über den `/api/ors.php`-Proxy zum OpenRouteService (ORS): Health-Check,
+Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy zum OpenRouteService (ORS): Health-Check,
 verfügbare Fahrprofile, Routenberechnung (A→B) und Matrix-basierte Nächste-Station-Suche
 (SEW/NEF).
 
@@ -377,7 +380,7 @@ Exports:
 
 ## `ValhallaService.ts`
 
-Abstraktionsschicht über den `/api/valhalla.php`-Proxy zur selbst gehosteten
+Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy zur selbst gehosteten
 Valhalla-Testinstanz — analog RoutingService, aber bewusst reduziert auf reine
 A→B-Routenberechnung (keine Matrix-Suche, siehe Design-Spec).
 

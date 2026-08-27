@@ -6,11 +6,21 @@ require_once 'valhalla-client.php';
 header('Content-Type: application/json');
 
 $provider = $_GET['provider'] ?? 'ors';
+if (!is_string($provider)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid provider']);
+    exit;
+}
 $method = $_SERVER['REQUEST_METHOD'];
 $body = ($method === 'POST') ? file_get_contents('php://input') : null;
 
 if ($provider === 'ors') {
     $path = $_GET['path'] ?? 'health';
+    if (!is_string($path)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid path']);
+        exit;
+    }
     // {profil} bleibt bewusst offen ([a-z0-9-]+ statt fester Namensliste) — die gültigen
     // ORS-Profile werden dynamisch vom ORS-Host konfiguriert (RoutingService.getProfiles()
     // liest sie zur Laufzeit aus /status).
@@ -24,6 +34,11 @@ if ($provider === 'ors') {
     $res = ors_call($path, $method, $body);
 } elseif ($provider === 'valhalla') {
     $path = $_GET['path'] ?? 'status';
+    if (!is_string($path)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid path']);
+        exit;
+    }
     // sources_to_targets bewusst NICHT in dieser Allowlist — wird nur in-process von
     // nearest-stations.php aufgerufen, nie über diesen öffentlichen Pfad exponiert.
     if (!preg_match('#^(route|status)$#D', $path)) {

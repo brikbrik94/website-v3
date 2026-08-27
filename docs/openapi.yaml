@@ -115,7 +115,10 @@ paths:
 
   /nearest-stations.php:
     get:
-      summary: Nächstgelegene RD/NEF-Stationen zu einem Zielpunkt (mit ORS- oder Valhalla-Matrix-Fahrzeiten)
+      summary: >
+        Nächstgelegene RD/NEF-Stationen zu einem Zielpunkt (mit ORS- oder Valhalla-Matrix-Fahrzeiten).
+        Rate-Limiting + Referer-Check in nginx.conf (siehe
+        docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md).
       operationId: getNearestStations
       parameters:
         - name: target
@@ -313,108 +316,37 @@ paths:
                 properties:
                   error: { type: string, example: "Method not allowed" }
 
-  /ors.php:
-    get:
-      summary: Proxy zu OpenRouteService (GET, z.B. Health-Check) — Allowlist-Pfade
-      operationId: proxyOrsGet
-      parameters:
-        - name: path
-          in: query
-          required: false
-          schema:
-            type: string
-            default: health
-          description: >
-            Fester Wert (health/status) oder Muster directions/{profil}/geojson,
-            matrix/{profil}, isochrones/{profil}, export/{profil} bzw.
-            export/{profil}/topojson — alles andere liefert 400.
-            Kein Host-Override möglich (fest an ORS_URL angehängt).
-      responses:
-        "200":
-          description: "ORS-Response (durchgereicht)"
-          content:
-            application/json:
-              schema: { type: object }
-        "400":
-          description: "path entspricht keinem erlaubten Muster"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error: { type: string, example: "Invalid path" }
-        "504":
-          description: >
-            Gateway-Timeout vom ORS-Backend durchgereicht (z.B. bei export/{profil} mit zu
-            großer Bbox) — der Client (GraphSidebarAdapter) behandelt diesen Status gezielt
-            getrennt von anderen Fehlern.
-          content:
-            application/json:
-              schema: { type: object }
-    post:
-      summary: Proxy zu OpenRouteService (POST, z.B. Routing/Matrix/Isochrones/Graph-Export mit Body) — Allowlist-Pfade
-      operationId: proxyOrsPost
-      parameters:
-        - name: path
-          in: query
-          required: false
-          schema: { type: string, default: health }
-          description: "Gleiche Allowlist wie beim GET-Zweig."
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema: { type: object }
-      responses:
-        "200":
-          description: "ORS-Response (durchgereicht)"
-          content:
-            application/json:
-              schema: { type: object }
-        "400":
-          description: "path entspricht keinem erlaubten Muster"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error: { type: string, example: "Invalid path" }
-        "504":
-          description: >
-            Gateway-Timeout vom ORS-Backend durchgereicht (z.B. bei export/{profil} mit zu
-            großer Bbox) — der Client (GraphSidebarAdapter) behandelt diesen Status gezielt
-            getrennt von anderen Fehlern.
-          content:
-            application/json:
-              schema: { type: object }
-
-  /valhalla.php:
+  /routing-proxy.php:
     get:
       summary: >
-        Proxy zu einer selbst gehosteten Valhalla-Testinstanz (GET, z.B. Health-Check via
-        path=status) — nur für den lokalen Dev-Server, kein Produktions-Deploy vorgesehen
-        (in nginx.conf per deny-all blockiert)
-      operationId: proxyValhallaGet
+        Konsolidierter Proxy zu ORS und Valhalla (GET, z.B. Health-Check) — ersetzt die früheren
+        getrennten Endpoints /ors.php und /valhalla.php. Rate-Limiting + Referer-Check in
+        nginx.conf (siehe docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md).
+      operationId: proxyRoutingGet
       parameters:
+        - name: provider
+          in: query
+          required: false
+          schema: { type: string, enum: [ors, valhalla], default: ors }
+          description: Wählt das Routing-Backend.
         - name: path
           in: query
           required: false
-          schema:
-            type: string
-            default: status
-            enum: [route, status]
+          schema: { type: string }
           description: >
-            Feste Allowlist (route/status) — alles andere liefert 400. Kein Host-Override möglich
-            (fest an VALHALLA_URL angehängt, nur über api/config.local.php setzbar, kein
-            Produktions-Default).
+            Providerabhängige Allowlist. provider=ors: fester Wert (health/status) oder Muster
+            directions/{profil}/geojson, matrix/{profil}, isochrones/{profil}, export/{profil}
+            bzw. export/{profil}/topojson (Default health). provider=valhalla: route oder status
+            (Default status) — sources_to_targets wird hier NIE exponiert, nur in-process von
+            nearest-stations.php genutzt. Alles andere liefert 400.
       responses:
         "200":
-          description: "Valhalla-Response (durchgereicht)"
+          description: "Provider-Response (durchgereicht)"
           content:
             application/json:
               schema: { type: object }
         "400":
-          description: "path entspricht keinem erlaubten Wert"
+          description: "provider oder path entspricht keinem erlaubten Wert"
           content:
             application/json:
               schema:
@@ -422,24 +354,40 @@ paths:
                 properties:
                   error: { type: string, example: "Invalid path" }
         "500":
-          description: "VALHALLA_URL nicht konfiguriert (api/config.local.php fehlt/unvollständig)"
+          description: "Nur bei provider=valhalla: VALHALLA_URL nicht konfiguriert (api/config.local.php fehlt/unvollständig)"
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   error: { type: string, example: "Server misconfigured: VALHALLA_URL not set in config.local.php" }
+        "502":
+          description: >
+            Sanitisierte Fehlerantwort bei sonstigem Nicht-2xx vom Provider (z.B. Verbindungsfehler,
+            oder ein vom ORS-Backend durchgereichtes 504 bei export/{profil} mit zu großer Bbox —
+            GraphSidebarAdapter behandelt diesen Fall weiterhin gezielt, der HTTP-Status wird
+            unverändert durchgereicht, nur der Body ist jetzt sanitisiert). Der rohe Upstream-Body
+            wird nie durchgereicht, Detail nur serverseitig via error_log().
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Routing-Anfrage fehlgeschlagen" }
     post:
       summary: >
-        Proxy zu einer selbst gehosteten Valhalla-Testinstanz (POST, Routenberechnung via
-        path=route) — nur für den lokalen Dev-Server, kein Produktions-Deploy vorgesehen
-        (in nginx.conf per deny-all blockiert)
-      operationId: proxyValhallaPost
+        Konsolidierter Proxy zu ORS und Valhalla (POST, z.B. Routing/Matrix/Isochrones/Graph-Export
+        mit Body) — ersetzt /ors.php und /valhalla.php.
+      operationId: proxyRoutingPost
       parameters:
+        - name: provider
+          in: query
+          required: false
+          schema: { type: string, enum: [ors, valhalla], default: ors }
         - name: path
           in: query
           required: false
-          schema: { type: string, default: status, enum: [route, status] }
+          schema: { type: string }
           description: "Gleiche Allowlist wie beim GET-Zweig."
       requestBody:
         required: false
@@ -448,12 +396,12 @@ paths:
             schema: { type: object }
       responses:
         "200":
-          description: "Valhalla-Response (durchgereicht)"
+          description: "Provider-Response (durchgereicht)"
           content:
             application/json:
               schema: { type: object }
         "400":
-          description: "path entspricht keinem erlaubten Wert"
+          description: "provider oder path entspricht keinem erlaubten Wert"
           content:
             application/json:
               schema:
@@ -461,13 +409,21 @@ paths:
                 properties:
                   error: { type: string, example: "Invalid path" }
         "500":
-          description: "VALHALLA_URL nicht konfiguriert"
+          description: "Nur bei provider=valhalla: VALHALLA_URL nicht konfiguriert"
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   error: { type: string }
+        "502":
+          description: "Sanitisierte Fehlerantwort bei sonstigem Nicht-2xx vom Provider (kein roher Upstream-Body)."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Routing-Anfrage fehlgeschlagen" }
 
   /adsb.php:
     get:

@@ -1,6 +1,5 @@
 import { RoutingService } from './RoutingService';
-
-const ORS_BASE_URL = '/api/ors.php';
+import { buildRoutingProxyUrl } from './RoutingProxyUrl';
 
 export type GraphExportFormat = 'json' | 'topojson';
 
@@ -9,7 +8,7 @@ export type GraphExportResult =
   | { ok: false; status: number | null };
 
 /**
- * Abstraktionsschicht über den `/api/ors.php`-Proxy für den ORS-`/export`-Endpoint (interner
+ * Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy für den ORS-`/export`-Endpoint (interner
  * Routing-Graph als Bbox-Ausschnitt). Health-Check/Profil-Liste wiederverwendet von
  * RoutingService (generische ORS-Abfragen), analog IsochronesService. `status` im
  * Fehlerfall wird durchgereicht, damit der Adapter gezielt auf 504 (Bbox zu groß/Timeout,
@@ -26,7 +25,7 @@ export const GraphExportService = {
     geometry: boolean
   ): Promise<GraphExportResult> {
     const path = format === 'topojson' ? `export/${profile}/topojson` : `export/${profile}`;
-    const url = `${ORS_BASE_URL}?path=${path}`;
+    const url = buildRoutingProxyUrl('ors', path);
 
     try {
       const res = await fetch(url, {
