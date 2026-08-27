@@ -23,7 +23,10 @@ defined('DB_USER') || define('DB_USER', 'web_api_user');
 // Endpunkte — ORS/Nominatim laufen lokal auf demselben VPS (siehe
 // docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md), kein API-Key
 // mehr nötig (Voraussetzung: beide sind serverseitig nur an 127.0.0.1 gebunden, nicht 0.0.0.0).
-defined('ORS_URL') || define('ORS_URL', 'http://127.0.0.1:8082');
+// ORS_URL braucht den /ors/v2-Pfad: die rohe ORS-Instanz mountet ihre API dort, das kurze
+// Pfadschema (health, status, matrix/{profile}, ...) gab es nur über das Rewrite der früheren
+// öffentlichen ors.oe5ith.at-nginx-Site, das beim direkten lokalen Zugriff entfällt.
+defined('ORS_URL') || define('ORS_URL', 'http://127.0.0.1:8082/ors/v2');
 defined('NOMINATIM_URL') || define('NOMINATIM_URL', 'http://127.0.0.1:8080');
 
 // Secrets müssen aus config.local.php kommen — kein Fallback-Wert im Repo.
