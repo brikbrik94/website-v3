@@ -2,6 +2,22 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-27 07:20
+
+### Behoben
+- **Zwei vom Routing-Endpoint-Umbau übersehene Aufrufer des gelöschten `/api/ors.php` gefunden
+  und korrigiert** (finaler Whole-Branch-Review, Opus): `src/lib/GraphExportService.ts` (Bruch
+  des `/graph`-Exports) und `src/components/info/HealthModule.ts` (Info-Portal hätte ORS
+  dauerhaft als „down" gemeldet) — der ursprüngliche Umbau (siehe `[Unreleased] - 2026-08-23
+  11:45`) hatte den Frontend-Scope auf 3 statt tatsächlich 5 betroffene Dateien begrenzt. Beide
+  jetzt auf `buildRoutingProxyUrl()` umgestellt. Ursache, warum die grüne Test-Suite das nicht
+  gefangen hat: `GraphExportService.test.ts` prüfte noch die alte, jetzt falsche URL — Test
+  ebenfalls korrigiert. Zusätzlich: `docs/openapi.yaml` (fehlender `routing-proxy.php`-Eintrag),
+  `docs/security/owasp-top10-checklist.md` (veraltete `ors.php`/`ORS_API_KEY`-Aussagen),
+  `README.md`/`CLAUDE.md` (veraltete Endpoint-Liste) nachgezogen; `api/routing-proxy.php` und
+  `api/nearest-stations.php` gegen Array-typisierte Query-Parameter gehärtet (verhinderte
+  zuvor einen rohen 500 ohne JSON-Body). 393 Tests grün, 0 TypeScript-Fehler.
+
 ## [Unreleased] - 2026-08-23 11:45
 
 ### Geändert
