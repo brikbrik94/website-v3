@@ -159,80 +159,6 @@ alle vier auf einmal anfassen.
 
 ## Sonstiges
 
-- [x] **Valhalla-Connector: vor Live-Deploy** (2026-08-23) — ✅ ERLEDIGT. Umgesetzt per
-  `docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md` +
-  `docs/superpowers/plans/2026-08-23-routing-endpoints-public-rollout.md`: `ors.php`/`valhalla.php`
-  verschmolzen zu einem provider-parametrisierten `routing-proxy.php` (geteilte
-  `ors_call()`/`valhalla_call()`-Client-Funktionen statt dupliziertem curl-Setup, auch
-  `nearest-stations.php` nutzt dieselbe Client-Schicht), ORS/Nominatim laufen jetzt über lokale
-  VPS-Adressen (`127.0.0.1:8082`/`:8080`) statt öffentlicher Subdomains — `ORS_API_KEY` als
-  Konzept komplett entfernt (live verifiziert: Nominatim prüfte denselben Key wie ORS, kein
-  ORS-spezifisches Secret). Einheitliche nginx-Zugriffsbeschränkung (`limit_req` + Referer-Check)
-  jetzt auf **beiden** öffentlichen Routing-Endpoints (`routing-proxy.php` UND
-  `nearest-stations.php`) statt der alten, nur `valhalla.php` betreffenden `deny all;`-Lösung —
-  schließt die unten dokumentierte Lücke, dass `nearest-stations.php?provider=valhalla` ohne
-  eigenen Schutz war. `VALHALLA_URL` wird damit fester, dauerhaft öffentlich nutzbarer Bestandteil
-  der Produktivkonfiguration statt Testaufbau. Fehlerantworten sanitisiert (kein roher
-  Upstream-Body mehr an den Client). Subagent-Driven Development, alle 7 Code-Tasks „Approved"
-  (1 Fix-Round bei einer Rate-Limit/Referer-Aussage in einem Task-Report, keine Code-Änderung
-  nötig). **Offen, außerhalb dieser Umgebung:** Live-Verifikation von ORS/Nominatim über die
-  neuen lokalen Adressen sowie der eigentliche nginx-Rollout (`nginx -t`, Reload) sind Aufgabe des
-  Nutzers auf dem echten VPS — hier nicht möglich (kein lokaler ORS/Nominatim, kein nginx-Prozess
-  in dieser Sandbox). Ursprünglicher Text (Historie) darunter unverändert erhalten:
-
-  Der Valhalla-Proxy (`api/valhalla.php`) ist bewusst nur für `npm run dev` gebaut (siehe
-  `docs/superpowers/specs/2026-08-19-valhalla-routing-connector-design.md`, Abschnitt „Config &
-  Security"). **Wichtig:** `./deploy-website.sh` kopiert den kompletten `api/`-Ordner 1:1 nach
-  `map.oe5ith.at` (kein Datei-Allowlist, nur `config.local.php`/`*.example` sind ausgeschlossen)
-  und `nginx.conf`s generischer `~ \.php$`-Handler bedient jede `.php`-Datei automatisch —
-  `valhalla.php` landet also ungefragt live, sobald ein Deploy läuft. Aktuell schützt nur ein
-  `deny all;` in `nginx.conf` (analog `diag.php`) sowie das Fehlen von `VALHALLA_URL` in der
-  produktiven Config (Endpoint antwortet dann mit 500) — das ist kein Ersatz für eine echte
-  Security-Review, bevor ein Deploy tatsächlich in Frage kommt.
-
-  **Scope seit 2026-08-22 gewachsen:** `?path=route` liefert inzwischen volle Turn-by-Turn-Daten
-  (nicht mehr nur A→B-Geometrie, siehe
-  `docs/superpowers/specs/2026-08-22-valhalla-turn-by-turn-parity-design.md`) und — falls die
-  SEW/NEF-Matrixsuche für Valhalla umgesetzt wird — käme mit `?path=sources_to_targets` ein
-  weiterer, potenziell teurerer Endpoint dazu. Macht die Review vor einem Deploy nicht dringlicher
-  im Sinne von Zeitdruck, aber die Angriffs-/Kostenfläche größer, als der ursprüngliche Text unten
-  unterstellt (dort noch mit Blick auf den reinen A→B-Connector geschrieben):
-
-
-
-  - [ ] Authentifizierung/Rate-Limiting auf `api/valhalla.php` (aktuell: offener Proxy, sobald
-        `VALHALLA_URL` gesetzt ist)
-  - [ ] Ob der `deny all;`-Block in `nginx.conf` als alleiniger Schutz reicht oder `valhalla.php`
-        zusätzlich aus dem `deploy-website.sh`-rsync ausgeschlossen werden soll
-  - [ ] Ob `VALHALLA_URL` weiterhin eine private Tailscale-IP bleibt oder ein öffentlich
-        erreichbarer Endpoint nötig wird — falls Tailscale: sicherstellen, dass der Produktivserver
-        selbst im Tailnet hängt
-  - [ ] `nearest-stations.php?provider=valhalla` erreicht Valhalla ohne den nginx-`deny all;` von
-        `valhalla.php` — braucht eine eigene Auth-/Rate-Limiting-Entscheidung, nicht nur die für
-        `valhalla.php` gedachte
-
-  **Update 2026-08-23:** Die SEW/NEF-Matrixsuche für Valhalla ist jetzt umgesetzt — nicht über
-  einen `?path=`-Wert auf `valhalla.php` (dessen Allowlist bleibt unverändert `^(route|status)$`),
-  sondern über `nearest-stations.php?provider=valhalla`, das serverseitig Valhallas
-  `/sources_to_targets`-HTTP-Endpoint aufruft (siehe `api/nearest-stations.php`,
-  `docs/superpowers/specs/2026-08-22-valhalla-sew-nef-matrix-design.md`). Das ist **keine
-  „dieselbe Angriffsfläche"** wie `api/valhalla.php`, sondern eine größere: `valhalla.php` steht
-  hinter dem `deny all;`-Block in `nginx.conf`, `nearest-stations.php` ist ein normaler, bereits
-  live deployter Produktions-Endpoint **ohne** einen solchen Block. Aktuell ist er nur dadurch
-  sicher, dass `VALHALLA_URL` in der Produktivkonfiguration nicht gesetzt ist (Endpoint antwortet
-  dann mit 500, siehe Guard am Dateianfang) — sobald diese Konstante aus irgendeinem Grund gesetzt
-  wird, ist `nearest-stations.php?provider=valhalla` ein offener, nicht authentifizierter Zugang
-  zur Valhalla-Instanz, ohne dass die Matrixsuche selbst irgendein zusätzliches Gate hätte: Ein
-  unauthentifizierter Aufrufer könnte dann pro Request eine PostGIS-KNN-Abfrage plus eine
-  20×1-Valhalla-Matrixberechnung auslösen, ohne Rate-Limiting.
-
-  Zusätzliche Deploy-Reihenfolge-Falle: SEW/NEF mit Valhalla braucht praktisch zwei Endpoints —
-  `nearest-stations.php` für die Liste, `valhalla.php` für die pro Station nachgezeichnete Route.
-  Würde `VALHALLA_URL` produktiv gesetzt, ohne dass zugleich `valhalla.php`s `deny all;`
-  aufgehoben wird, bliebe `ValhallaService.checkHealth()` (läuft über `valhalla.php`) weiterhin
-  fehlschlagen und der Submit-Button entsprechend deaktiviert — das ist aktuell ein zufälliger
-  Nebeneffekt, kein bewusst gebauter Schutz, und sollte vor einem echten Deploy nicht als
-  Verlass gelten.
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
   Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
   `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die
@@ -441,17 +367,6 @@ Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
   Koordinaten-Eingabezeilen, konkrete Komponente müsste bei Umsetzung erst identifiziert werden.
   Niedrige Priorität (unter der „poor"-Schwelle von 0,1), aber reproduzierbar. Details:
   `docs/performance/2026-07-28-baseline-audit.md`, Befund 5.
-- [ ] **`/tracking`: auffällig hoher TBT (5.840 ms) gegenüber den übrigen 5 Seiten (1.990–3.320
-  ms).** `mainthread-work-breakdown`-Audit zeigt 9,7 von 12,0 s Mainthread-Arbeit in der nicht
-  weiter attribuierten Kategorie „Other". Ursache aus den Lighthouse-Daten allein nicht
-  abschließend bestimmbar (denkbar: Live-ADS-B/AIS-Verbindungsaufbau) — braucht gezielte
-  Nachuntersuchung (z. B. Chrome-Performance-Profil) vor einem Fix. Details:
-  `docs/performance/2026-07-28-baseline-audit.md`, Befund 6.
-  **Nicht reproduziert (2026-08-11):** erneuter `npm run perf:audit`-Lauf zeigt `/tracking` bei
-  2.910 ms TBT — unauffällig im Bereich der übrigen Seiten (1.990–3.490 ms). Der ursprüngliche
-  5.840-ms-Ausreißer war vermutlich Messrauschen (z.B. Timing des Live-ADS-B/AIS-Verbindungsaufbaus
-  während des Audits), kein stabiler Befund. Vor einer echten Untersuchung mehrere Läufe
-  gegenprüfen, nicht auf Basis des einzelnen Baseline-Werts vorgehen.
 - [ ] **Wiederholungslauf gegen echten Produktiv-Build (`vite preview`) statt Dev-Server.** Der
   bisherige `npm run perf:audit`-Lauf misst gegen den unminifizierten Vite-Dev-Server (bewusste
   Design-Entscheidung, siehe Spec) — LCP/TBT-Absolutwerte und die „Minify JavaScript"/„Reduce
