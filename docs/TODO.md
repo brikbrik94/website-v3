@@ -156,9 +156,6 @@ alle vier auf einmal anfassen.
   einen Content-Hash- oder anderen kollisionsfreien Key statt reinem `groupKey`-Ref-Count; erst
   angehen, wenn ein konkreter Live-Fall (zwei solche Gruppen gleichzeitig aktiv) tatsächlich
   beobachtet/reproduziert wird.
-- [ ] **Pisten-Legende: weißes Casing fehlt** (2026-08-27) — Bug im `geodata-openskimap`-Plugin-
-  Repo, nicht website-v3. Details/Tracking: `docs/geodata/open-items.md`,
-  [geodata-openskimap#1](https://github.com/brikbrik94/geodata-openskimap/issues/1).
 
 ## Sonstiges
 
