@@ -22,6 +22,7 @@ export class MapLegend {
   private _titleEl: HTMLElement;
   private _entriesEl: HTMLElement;
   private _entryNodes = new Map<string, HTMLElement>();
+  private _partsRowIds = new Set<string>();
 
   constructor(selectorOrEl: string | HTMLElement) {
     const el = typeof selectorOrEl === 'string' ? document.querySelector(selectorOrEl) : selectorOrEl;
@@ -155,11 +156,15 @@ export class MapLegend {
 
   /**
    * Zeile für eine `render`/`variants`-Gruppe (geodata-plugin-standard §5.3, ab Schema-Version
-   * 2.0): ein Chip-Streifen statt eines einzelnen Swatches — pro `chips[]`-Eintrag ein SVG, das
-   * dessen `parts` (Fläche/Linie/Umrandung/Kreis/Icon) übereinander zeichnet, mit den echten
-   * `width`/`radius`/`stroke_width`-Werten und der MapLibre-`dasharray`-Semantik (Dash-Länge =
-   * `dasharray`-Wert × `width`, siehe `_buildPartsChip()`). Lokales Pattern (`.map-legend-parts-*`),
-   * noch nicht in `oe5ith-ci` generalisiert — analog `.map-legend-unknown`/`.map-legend-remove`.
+   * 2.0): ein Chip-Streifen statt eines einzelnen Swatches — pro `chips[]`-Eintrag ein kleiner
+   * Div-Chip, der dessen `parts` (Fläche/Linie/Umrandung/Kreis/Icon) als gestapelte, absolut
+   * positionierte Divs zeichnet (analog `.map-legend-line-cased` oben — kein SVG, siehe
+   * `_buildPartsChip()`-Kommentar dort zur Begründung), mit den echten `width`/`radius`/
+   * `stroke_width`-Werten und der MapLibre-`dasharray`-Semantik (Dash-Länge = `dasharray`-Wert ×
+   * `width`). Lokales Pattern (`.map-legend-parts-*`), noch nicht in `oe5ith-ci` generalisiert —
+   * analog `.map-legend-unknown`/`.map-legend-remove`. Schaltet `.map-legend--wide`
+   * (`oe5ith-ci` v1.27.0, `--legend-width-wide`) auf dem Panel scharf, solange mindestens eine
+   * Parts-Row aktiv ist — löst den früheren lokalen 116px-Streifen-Workaround ab (oe5ith-ci#4).
    */
   addPartsRow(entry: AddPartsRowOptions): void {
     if (this._entryNodes.has(entry.id)) this.removeEntry(entry.id);
@@ -179,6 +184,12 @@ export class MapLegend {
 
     this._entriesEl.appendChild(div);
     this._entryNodes.set(entry.id, div);
+    this._partsRowIds.add(entry.id);
+    this._updateWideMode();
+  }
+
+  private _updateWideMode(): void {
+    this._el.classList.toggle('map-legend--wide', this._partsRowIds.size > 0);
   }
 
   /**
@@ -203,22 +214,28 @@ export class MapLegend {
     return color.mode === 'fixed' ? color.value : itemColor;
   }
 
-  private _buildPartsChip(chip: RenderPartsChip): SVGSVGElement {
+  /**
+   * Baut einen Chip als gestapelte, absolut positionierte Divs statt SVG — ursprünglich war das
+   * SVG (siehe `docs/superpowers/specs/2026-08-16-legend-render-parts-design.md`), aber der
+   * einzige echte Grund dafür war ein Formelfehler im allerersten CSS-Versuch (Dash-Zyklus fix
+   * auf 8px normiert statt der realen MapLibre-Formel), nicht eine grundsätzliche CSS-Grenze.
+   * Mit der korrekten Formel (siehe unten) deckt reines CSS alle in den Live-Daten vorkommenden
+   * `kind`-Werte ab: `line`/`outline` als Box mit fester Höhe (bzw. `repeating-linear-gradient`
+   * für `dasharray`, analog dem `type:'line'`-Zweig in `addEntry()` oben), `circle` als
+   * `border-radius:50%`-Box mit Rand (analog `_buildLineCased()`), `fill` als abgerundete Box.
+   * Nebeneffekt: eine Box mit ganzzahliger `top`/`height` ist immer pixelscharf — anders als ein
+   * SVG-`<line>`-Stroke, der bei ungerader `stroke-width` um eine ganzzahlige Mittelachse zentriert
+   * unscharfe, halbpixelige Kanten bekommt (das war der eigentliche Unschärfe-Bug hier).
+   */
+  private _buildPartsChip(chip: RenderPartsChip): HTMLDivElement {
     // Das Legende-Panel ist fest max-width: var(--sidebar-width) = 300px (12-14px Padding) —
     // Chip-Maße bewusst klein genug, dass ein 6er-Streifen (nach Serverseitiger Farbreduktion
     // der übliche Fall) ohne Umbruch hineinpasst, statt der breiten Standalone-Artifact-Maße.
     const SW = 34, SH = 16, CY = 8, X0 = 3, X1 = 31;
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg') as SVGSVGElement;
-    svg.setAttribute('class', 'map-legend-parts-chip');
-    svg.setAttribute('width', String(SW));
-    svg.setAttribute('height', String(SH));
-    svg.setAttribute('viewBox', `0 0 ${SW} ${SH}`);
-
-    const svgChild = (tag: string, attrs: Record<string, string | number>) => {
-      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-      for (const k in attrs) el.setAttribute(k, String(attrs[k]));
-      return el;
-    };
+    const chipEl = document.createElement('div');
+    chipEl.className = 'map-legend-parts-chip';
+    chipEl.style.width = `${SW}px`;
+    chipEl.style.height = `${SH}px`;
 
     for (const part of chip.parts) {
       if (part.kind === 'text') continue;
@@ -227,50 +244,72 @@ export class MapLegend {
       const opacity = part.opacity ?? 1;
 
       switch (part.kind) {
-        case 'fill':
-          svg.appendChild(svgChild('rect', {
-            x: X0 + 1, y: CY - 6, width: (X1 - X0) - 2, height: 12, rx: 3,
-            fill: color ?? 'var(--null-bg, #999)', 'fill-opacity': opacity,
-          }));
+        case 'fill': {
+          const el = document.createElement('div');
+          el.className = 'map-legend-parts-chip-fill';
+          el.style.background = color ?? 'var(--null-bg, #999)';
+          el.style.opacity = String(opacity);
+          chipEl.appendChild(el);
           break;
+        }
         case 'line':
         case 'outline': {
           // Gleiche Clamp-Idee wie die bestehenden type:'line'/'line-cased'-Zweige oben (1-6px
           // bzw. 2-8px) — auf die kleinere Chip-Höhe abgestimmt, damit Umrandung sichtbar breiter
-          // bleibt als die Linie darüber, aber beide in den 16px-Chip passen.
+          // bleibt als die Linie darüber, aber beide in den 16px-Chip passen. Auf eine ganze Zahl
+          // gerundet, damit `top`/`height` als Box-Kanten immer auf der Pixelgrenze liegen.
           const isOutline = part.kind === 'outline';
-          const w = Math.max(1, Math.min(part.width ?? (isOutline ? 5 : 2), isOutline ? 5 : 4));
-          const attrs: Record<string, string | number> = {
-            x1: X0, y1: CY, x2: X1, y2: CY,
-            stroke: color ?? 'var(--null-bg, #999)', 'stroke-width': w,
-            'stroke-opacity': opacity, 'stroke-linecap': 'butt',
-          };
-          // MapLibre-Semantik (line-dasharray): die Werte sind in Vielfachen der Linienbreite
-          // angegeben, nicht in Pixeln — reale Pixel-Länge = dasharray-Wert * (geclampte) width,
-          // damit das Muster zur tatsächlich gezeichneten Strichstärke proportional bleibt.
-          if (part.dasharray) attrs['stroke-dasharray'] = `${part.dasharray[0] * w} ${part.dasharray[1] * w}`;
-          svg.appendChild(svgChild('line', attrs));
+          const w = Math.round(Math.max(1, Math.min(part.width ?? (isOutline ? 5 : 2), isOutline ? 5 : 4)));
+          const el = document.createElement('div');
+          el.className = 'map-legend-parts-chip-line';
+          el.style.left = `${X0}px`;
+          el.style.width = `${X1 - X0}px`;
+          el.style.top = `${CY - Math.round(w / 2)}px`;
+          el.style.height = `${w}px`;
+          el.style.opacity = String(opacity);
+          const c = color ?? 'var(--null-bg, #999)';
+          if (part.dasharray) {
+            // MapLibre-Semantik (line-dasharray): die Werte sind in Vielfachen der Linienbreite
+            // angegeben, nicht in Pixeln — reale Pixel-Länge = dasharray-Wert * (gerundete) width,
+            // damit das Muster zur tatsächlich gezeichneten Strichstärke proportional bleibt
+            // (dieselbe Formel wie zuvor im SVG, nur jetzt als Gradient-Stop statt stroke-dasharray).
+            const dashPx = part.dasharray[0] * w;
+            const gapPx = part.dasharray[1] * w;
+            el.style.backgroundColor = 'transparent';
+            el.style.backgroundImage = `repeating-linear-gradient(to right, ${c} 0px ${dashPx}px, transparent ${dashPx}px ${dashPx + gapPx}px)`;
+          } else {
+            el.style.backgroundColor = c;
+          }
+          chipEl.appendChild(el);
           break;
         }
         case 'circle': {
-          const r = Math.max(2, Math.min(part.radius ?? 5, 7));
-          svg.appendChild(svgChild('circle', {
-            cx: SW / 2, cy: CY, r,
-            fill: color ?? 'var(--null-bg, #999)', 'fill-opacity': opacity,
-            stroke: strokeColor ?? 'var(--line-strong, #999)', 'stroke-width': part.stroke_width ?? 1,
-          }));
+          const r = Math.round(Math.max(2, Math.min(part.radius ?? 5, 7)));
+          const sw = Math.round(part.stroke_width ?? 1);
+          const el = document.createElement('div');
+          el.className = 'map-legend-parts-chip-circle';
+          el.style.left = `${SW / 2 - r}px`;
+          el.style.top = `${CY - r}px`;
+          el.style.width = `${r * 2}px`;
+          el.style.height = `${r * 2}px`;
+          el.style.background = color ?? 'var(--null-bg, #999)';
+          el.style.opacity = String(opacity);
+          el.style.borderWidth = `${sw}px`;
+          el.style.borderColor = strokeColor ?? 'var(--line-strong, #999)';
+          chipEl.appendChild(el);
           break;
         }
         case 'icon': {
-          svg.appendChild(svgChild('circle', { cx: SW / 2, cy: CY, r: 6, fill: 'var(--null-bg, #999)' }));
-          const t = svgChild('text', { x: SW / 2, y: CY + 3, 'text-anchor': 'middle', 'font-size': 8, fill: color ?? 'var(--null-ink, #666)' });
-          t.textContent = color ? '◆' : '?';
-          svg.appendChild(t);
+          const el = document.createElement('div');
+          el.className = 'map-legend-parts-chip-icon';
+          el.style.color = color ?? 'var(--null-ink, #666)';
+          el.textContent = color ? '◆' : '?';
+          chipEl.appendChild(el);
           break;
         }
       }
     }
-    return svg;
+    return chipEl;
   }
 
   removeEntry(id: string): void {
@@ -278,12 +317,15 @@ export class MapLegend {
     if (node) {
       node.remove();
       this._entryNodes.delete(id);
+      if (this._partsRowIds.delete(id)) this._updateWideMode();
     }
   }
 
   clearEntries(): void {
     this._entriesEl.innerHTML = '';
     this._entryNodes.clear();
+    this._partsRowIds.clear();
+    this._updateWideMode();
   }
 
   show(): void { this._el.classList.remove('hidden'); }

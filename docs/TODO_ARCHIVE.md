@@ -5,6 +5,21 @@ Punkte aus [ROADMAP.md](./ROADMAP.md) landen separat in [ROADMAP_ARCHIVE.md](./R
 Einträge unten stammen aus der Zeit vor dem TODO/ROADMAP-Split (Cleanup- und Feature-Arbeit war
 noch nicht getrennt) und sind entsprechend gemischt.
 
+## 2026-08-27 — MapLegend: --legend-width-wide-Token konsumiert
+
+- [x] **`MapLegend`: `--legend-width-wide`-Token konsumiert** (2026-08-23 gefunden beim
+  `oe5ith-ci`-Submodul-Reload auf v2.0.0, 2026-08-27 umgesetzt). `oe5ith-ci` v1.27.0 hatte den in
+  [oe5ith-ci#4](https://github.com/brikbrik94/oe5ith-ci/issues/4) angefragten Token
+  `--legend-width-wide: 340px` + Modifier `.map-legend--wide` (`css/modal.css`) geliefert, der
+  Token blieb aber wirkungslos: `src/styles/common.css`/`src/styles/modal.css` (lokale, manuell
+  gepflegte Kopien der `oe5ith-ci`-CSS-Dateien) waren nie synchronisiert worden. Fix: Token +
+  Modifier-Regel nachgezogen; `MapLegend.addPartsRow()` schaltet `.map-legend--wide` scharf,
+  solange mindestens eine Parts-Row aktiv ist (`removeEntry()`/`clearEntries()` nehmen es zurück).
+  Lokaler `.map-legend-parts-strip`-Workaround bleibt bestehen (Chip-Streifen soll weiterhin selbst
+  umbrechen), `max-width` proportional zur größeren Panel-Breite von 116px auf 148px angehoben.
+  Live gegen `/karte` (Pisten-Overlay, Playwright) verifiziert. 397 Tests grün, 0
+  TypeScript-Fehler. Details: `docs/ci/open-items.md`.
+
 ## 2026-07-25 — OWASP-Re-Audit: db.php-Info-Disclosure behoben, API-Fläche generell gehärtet
 
 - [x] **`api/db.php`-Info-Disclosure behoben, Debug-Playground entfernt, API-Endpoints umbenannt

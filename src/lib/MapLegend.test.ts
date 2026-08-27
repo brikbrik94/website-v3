@@ -155,7 +155,7 @@ describe('MapLegend.addPartsRow', () => {
     legend = new MapLegend(makeLegendFixture());
   });
 
-  it('renders one SVG chip per entry in chips[]', () => {
+  it('renders one chip element per entry in chips[]', () => {
     const parts = [{ kind: 'line' as const, color: { mode: 'fixed' as const, value: '#fff' }, stroke_color: null, opacity: 1, width: 3, dasharray: null, radius: null, stroke_width: null, icon: null }];
     legend.addPartsRow({
       id: 'pr1',
@@ -171,38 +171,51 @@ describe('MapLegend.addPartsRow', () => {
     expect(document.querySelector('.map-legend-label')?.textContent).toBe('Buckelpiste');
   });
 
-  it('draws a line part as an SVG <line> with the resolved color', () => {
+  it('draws a line part as a div with the resolved background color', () => {
     const parts = [{ kind: 'line' as const, color: { mode: 'scale' as const, scale_id: 's' }, stroke_color: null, opacity: 1, width: 3, dasharray: null, radius: null, stroke_width: null, icon: null }];
     legend.addPartsRow({ id: 'pr3', label: 'Test', chips: [{ parts, itemColor: '#ff0000' }] });
-    const line = document.querySelector('.map-legend-parts-chip line') as SVGLineElement;
+    const line = document.querySelector('.map-legend-parts-chip-line') as HTMLElement;
     expect(line).not.toBeNull();
-    expect(line.getAttribute('stroke')).toBe('#ff0000');
+    expect(line.style.backgroundColor).toBe('#ff0000');
   });
 
   it('scales dasharray by the real MapLibre semantics (dash/gap values are multiples of line width)', () => {
     const parts = [{ kind: 'line' as const, color: { mode: 'fixed' as const, value: '#000' }, stroke_color: null, opacity: 1, width: 3, dasharray: [1, 3] as [number, number], radius: null, stroke_width: null, icon: null }];
     legend.addPartsRow({ id: 'pr4', label: 'Test', chips: [{ parts, itemColor: null }] });
-    const line = document.querySelector('.map-legend-parts-chip line') as SVGLineElement;
-    expect(line.getAttribute('stroke-dasharray')).toBe('3 9');
+    const line = document.querySelector('.map-legend-parts-chip-line') as HTMLElement;
+    // dash = 1*3 = 3px, gap = 3*3 = 9px -> Farbe von 0-3px, transparent von 3-12px (3+9)
+    expect(line.style.backgroundImage).toContain('0px 3px');
+    expect(line.style.backgroundImage).toContain('3px 12px');
   });
 
-  it('draws a fill part as an SVG <rect> with the resolved color and opacity', () => {
+  it('draws a fill part as a div with the resolved color and opacity', () => {
     const parts = [{ kind: 'fill' as const, color: { mode: 'fixed' as const, value: '#123456' }, stroke_color: null, opacity: 0.25, width: null, dasharray: null, radius: null, stroke_width: null, icon: null }];
     legend.addPartsRow({ id: 'pr5', label: 'Test', chips: [{ parts, itemColor: null }] });
-    const rect = document.querySelector('.map-legend-parts-chip rect') as SVGRectElement;
-    expect(rect.getAttribute('fill')).toBe('#123456');
-    expect(rect.getAttribute('fill-opacity')).toBe('0.25');
+    const fill = document.querySelector('.map-legend-parts-chip-fill') as HTMLElement;
+    expect(fill.style.background).toContain('#123456');
+    expect(fill.style.opacity).toBe('0.25');
   });
 
-  it('sizes chips small enough that a 6-chip strip fits the 300px legend panel', () => {
-    // .map-legend is max-width: var(--sidebar-width) = 300px with 12-14px padding — a chip
-    // width chosen for a wide standalone artifact page would blow this fixed panel out.
+  it('draws line parts with integer top/height so the box lands on the pixel grid', () => {
+    // Kein SVG-Stroke mehr, der um eine Mittelachse zentriert wird (halbpixelige Kanten bei
+    // ungerader stroke-width) — top/height sind jetzt Box-Kanten und müssen nur ganzzahlig sein.
+    const parts = [{ kind: 'line' as const, color: { mode: 'fixed' as const, value: '#000' }, stroke_color: null, opacity: 1, width: 3, dasharray: null, radius: null, stroke_width: null, icon: null }];
+    legend.addPartsRow({ id: 'pr8', label: 'Test', chips: [{ parts, itemColor: null }] });
+    const line = document.querySelector('.map-legend-parts-chip-line') as HTMLElement;
+    expect(Number.isInteger(parseFloat(line.style.top))).toBe(true);
+    expect(Number.isInteger(parseFloat(line.style.height))).toBe(true);
+  });
+
+  it('sizes chips small enough that a 6-chip strip fits the 340px wide legend panel', () => {
+    // .map-legend--wide (oe5ith-ci v1.27.0) is max-width: var(--legend-width-wide) = 340px with
+    // 12-14px padding — a chip width chosen for a wide standalone artifact page would still blow
+    // this panel out.
     const parts = [{ kind: 'line' as const, color: { mode: 'fixed' as const, value: '#000' }, stroke_color: null, opacity: 1, width: 3, dasharray: null, radius: null, stroke_width: null, icon: null }];
     legend.addPartsRow({ id: 'pr7', label: 'Test', chips: Array(6).fill({ parts, itemColor: null }) });
-    const chip = document.querySelector('.map-legend-parts-chip') as SVGSVGElement;
-    const w = Number(chip.getAttribute('width'));
+    const chip = document.querySelector('.map-legend-parts-chip') as HTMLElement;
+    const w = parseFloat(chip.style.width);
     expect(w).toBeLessThanOrEqual(40);
-    expect(w * 6).toBeLessThanOrEqual(272);
+    expect(w * 6).toBeLessThanOrEqual(312);
   });
 
   it('is removable via the shared removeEntry(id) mechanism', () => {
@@ -210,6 +223,43 @@ describe('MapLegend.addPartsRow', () => {
     expect(document.querySelector('.map-legend-parts-row')).not.toBeNull();
     legend.removeEntry('pr6');
     expect(document.querySelector('.map-legend-parts-row')).toBeNull();
+  });
+
+  it('switches the panel to .map-legend--wide (oe5ith-ci v1.27.0 token) while a parts-row is active', () => {
+    const el = legend['_el'] as HTMLElement;
+    expect(el.classList.contains('map-legend--wide')).toBe(false);
+    legend.addPartsRow({ id: 'pr9', label: 'Test', chips: [{ parts: [], itemColor: null }] });
+    expect(el.classList.contains('map-legend--wide')).toBe(true);
+    legend.removeEntry('pr9');
+    expect(el.classList.contains('map-legend--wide')).toBe(false);
+  });
+
+  it('keeps .map-legend--wide as long as at least one parts-row remains', () => {
+    const el = legend['_el'] as HTMLElement;
+    legend.addPartsRow({ id: 'pr10', label: 'A', chips: [{ parts: [], itemColor: null }] });
+    legend.addPartsRow({ id: 'pr11', label: 'B', chips: [{ parts: [], itemColor: null }] });
+    legend.removeEntry('pr10');
+    expect(el.classList.contains('map-legend--wide')).toBe(true);
+    legend.removeEntry('pr11');
+    expect(el.classList.contains('map-legend--wide')).toBe(false);
+  });
+
+  it('clears .map-legend--wide via clearEntries()', () => {
+    const el = legend['_el'] as HTMLElement;
+    legend.addPartsRow({ id: 'pr12', label: 'Test', chips: [{ parts: [], itemColor: null }] });
+    expect(el.classList.contains('map-legend--wide')).toBe(true);
+    legend.clearEntries();
+    expect(el.classList.contains('map-legend--wide')).toBe(false);
+  });
+});
+
+describe('MapLegend.addEntry does not trigger wide mode', () => {
+  it('leaves .map-legend--wide off for plain dot/line/area/icon entries', () => {
+    document.body.innerHTML = '';
+    const legend = new MapLegend(makeLegendFixture());
+    legend.addEntry({ id: 'a', type: 'area', color: '#3b82f6', label: 'Bezirke', opacity: 0.1 });
+    const el = legend['_el'] as HTMLElement;
+    expect(el.classList.contains('map-legend--wide')).toBe(false);
   });
 });
 

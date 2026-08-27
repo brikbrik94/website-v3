@@ -2,6 +2,32 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-27 13:15
+
+### Geändert
+- **`MapLegend`: `--legend-width-wide`-Token (`oe5ith-ci` v1.27.0) konsumiert** — Panel für
+  `render`/`variants`-Chip-Streifen-Zeilen (`.map-legend-parts-row`) ist jetzt 340px statt 300px
+  breit. Root Cause, warum der Token seit v1.27.0 wirkungslos blieb: `src/styles/common.css`/
+  `src/styles/modal.css` sind lokale, manuell gepflegte Kopien der `oe5ith-ci`-CSS-Dateien (siehe
+  Kopfkommentar dort) und waren nie synchronisiert worden — reines JS-Klassen-Toggle allein hätte
+  nichts bewirkt. Token + `.map-legend--wide`-Modifier nachgezogen; `MapLegend.addPartsRow()`
+  schaltet die Klasse scharf, solange mindestens eine Parts-Row aktiv ist, `removeEntry()`/
+  `clearEntries()` nehmen sie zurück, sobald keine mehr übrig ist. Lokaler
+  `.map-legend-parts-strip`-Workaround bleibt bestehen (Chip-Streifen soll weiterhin selbst
+  umbrechen statt das Label zu verdrängen), `max-width` proportional zur größeren Panel-Breite von
+  116px auf 148px angehoben. Löst [oe5ith-ci#4](https://github.com/brikbrik94/oe5ith-ci/issues/4)
+  website-v3-seitig ab. Live gegen `/karte` (Pisten-Overlay, Playwright) verifiziert, 5 neue
+  Tests, 397 Tests grün, 0 TypeScript-Fehler.
+
+### Behoben
+- **`oe5ith-ci`-Tags `v2.1.0`/`v2.2.0` als verwaist identifiziert** — zeigen auf ältere Commits als
+  das echte `v2.0.0` (Reste eines im Mai 2026 verworfenen ersten v2.x-Versuchs, später auf
+  `v1.8.0`/`v1.9.0` zurückgestuft, alte Tags nie gelöscht). Kein website-v3-seitiges Problem (wir
+  sind über den Commit-Pointer ohnehin auf dem korrekten `origin/main`-Tip), aber irreführend bei
+  künftigen Versionschecks per Semver-Sortierung. Gemeldet als
+  [oe5ith-ci#5](https://github.com/brikbrik94/oe5ith-ci/issues/5), Tracking in
+  `docs/ci/open-items.md`.
+
 ## [Unreleased] - 2026-08-27 12:00
 
 ### Behoben
@@ -109,6 +135,38 @@ Adressen sowie der eigentliche nginx-Rollout sind Aufgabe des Nutzers auf dem ec
   byte-identisch zu `uturn`) — der bisherige lokale Pfad-Workaround in `ManeuverIcons.ts` entfällt,
   da alle 30 Icons ohnehin auf die neue offizielle Vorlage resynchronisiert wurden. Details:
   `docs/ci/open-items.md`. 387 Tests grün, 0 TypeScript-Fehler.
+
+## [Unreleased] - 2026-08-22 17:32
+
+### Geändert
+- **Legende: render-parts-Chips (`.map-legend-parts-chip`) von SVG auf reine CSS-Divs umgebaut**
+  — `MapLegend._buildPartsChip()` erzeugt jetzt gestapelte, absolut positionierte `<div>`s statt
+  eines `<svg>` (`line`/`outline` als Box mit fester Höhe bzw. `repeating-linear-gradient` für
+  `dasharray`, `circle` als `border-radius:50%`-Box mit Rand, `fill` als abgerundete Box) —
+  analog dem bereits bestehenden `.map-legend-line-cased`-Muster in derselben Datei. Grund: der
+  ursprüngliche SVG-Umstieg (siehe `[Unreleased] - 2026-08-16 19:10`) war nur wegen eines
+  Formelfehlers im allerersten CSS-Versuch nötig (Dash-Zyklus fix auf 8px normiert statt der
+  realen MapLibre-Formel `dasharray-Wert × width`), nicht wegen einer grundsätzlichen CSS-Grenze
+  — mit der korrigierten Formel deckt CSS alle in den Live-Daten vorkommenden `render`-Kinds ab.
+  Nebeneffekt behebt einen echten Bug: SVG-`<line>`-Strokes mit ungerader `stroke-width`, zentriert
+  auf eine ganzzahlige Achse, hatten unscharfe/verwaschene Kanten (halbpixelige Stroke-Grenzen);
+  eine CSS-Box mit ganzzahligem `top`/`height` liegt dagegen immer exakt auf der Pixelgrenze.
+  `MapLegend.test.ts`: die 4 SVG-spezifischen Assertions auf div-Styles umgestellt, 1 neuer Test
+  für die Pixelgrenzen-Eigenschaft ergänzt (387 statt 386 Tests). Live gegen `/karte` verifiziert
+  (Pisten: Blur-Halo weg, Loipen/Lifte-Casing und Ski-Spots-Circles weiterhin korrekt geschichtet).
+
+## [Unreleased] - 2026-08-22 17:03
+
+### Geändert
+- **Legende: Chip-Streifen bei render-parts-Zeilen (`.map-legend-parts-row`) links neben statt
+  über dem Label** — `src/app.css`: `flex-direction: column` entfernt (fällt auf den
+  `.map-legend-entry`-Zeilen-Default zurück), `.map-legend-parts-strip` bekommt `max-width: 116px`
+  (bricht bei vielen Chips selbst um statt das Label zu verdrängen), Label `flex: 1 1 auto` +
+  `min-width: 0`. Panel-`max-width` bleibt beim CI-Default `var(--sidebar-width)` (300px) —
+  ein erster lokaler Override auf 340px wurde verworfen, da `.map-legend` eine kanonische
+  `oe5ith-ci`-Komponente ist; stattdessen als [oe5ith-ci#4](https://github.com/brikbrik94/oe5ith-ci/issues/4)
+  gemeldet (`docs/ci/open-items.md`). Live gegen `/karte` (Pisten/Skitouren-Layer, Playwright)
+  verifiziert: Panel-Höhe bei 5 Zeilen 300px → 275px, Breite unverändert innerhalb der 300px-Grenze.
 
 ## [Unreleased] - 2026-08-22 12:11
 
