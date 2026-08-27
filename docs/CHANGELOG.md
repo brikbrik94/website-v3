@@ -2,6 +2,25 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-27 14:05
+
+### Behoben
+- **Parts-Row-Chips saßen optisch leicht über dem Label statt auf gleicher Höhe** —
+  `.map-legend-parts-row` hatte `align-items: flex-start` (Label zusätzlich mit
+  `padding-top: 2px`), wodurch der fix-höhige Chip-Streifen (16px) an der Zeilenoberkante
+  auslief, während der Text durch seine Line-Height tiefer saß. Auf `align-items: center`
+  umgestellt, das nicht mehr nötige `padding-top` entfernt.
+
+### Geändert
+- **Zeilenabstand bei Parts-Rows verringert** — `.map-legend-entry` (CI) hat `padding: 3px 0`,
+  gilt für alle Legend-Zeilentypen gleich. Lokaler `.map-legend-parts-row`-Override auf
+  `padding: 1px 0` (per Cascade-Reihenfolge, keine Compound-Selektor-Notwendigkeit, da
+  `src/app.css` nach `styles/modal.css` importiert wird) — betrifft nur Chip-Streifen-Zeilen,
+  dot/line/area/icon/line-cased-Zeilen bleiben bei den CI-Werten.
+
+Live gegen `/karte` (Pisten-Overlay, Playwright) verifiziert, 397 Tests grün, 0
+TypeScript-Fehler.
+
 ## [Unreleased] - 2026-08-27 13:45
 
 ### Behoben

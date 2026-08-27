@@ -169,8 +169,13 @@ html, body {
    _buildPartsChip()-Kommentar: "6er-Streifen... der übliche Fall"), passt bei 340px-Panel noch
    neben ein einzeiliges Label. */
 .map-legend-parts-row {
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
+  /* Engerer vertikaler Abstand nur für Parts-Rows — .map-legend-entry (CI) hat padding: 3px 0,
+     gilt sonst für alle Zeilentypen (dot/line/area/icon/line-cased). Compound-Selektor
+     (.map-legend-entry.map-legend-parts-row) statt Änderung der CI-Basisklasse, damit die
+     anderen Zeilentypen unangetastet bleiben. */
+  padding: 1px 0;
 }
 
 .map-legend-parts-row .map-legend-label {
@@ -179,7 +184,6 @@ html, body {
   text-overflow: clip;
   flex: 1 1 auto;
   min-width: 0;
-  padding-top: 2px;
 }
 
 .map-legend-parts-strip {
