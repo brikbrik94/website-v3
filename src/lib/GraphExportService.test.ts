@@ -19,7 +19,7 @@ describe('GraphExportService.queryExport', () => {
     const bbox: [[number, number], [number, number]] = [[16.3, 48.2], [16.31, 48.205]];
     await GraphExportService.queryExport('driving-car', 'json', bbox, true);
 
-    expect(capturedUrl).toBe('/api/ors.php?path=export/driving-car');
+    expect(capturedUrl).toBe('/api/routing-proxy.php?provider=ors&path=export/driving-car');
     expect(capturedBody.bbox).toEqual(bbox);
     expect(capturedBody.geometry).toBe(true);
   });
@@ -33,7 +33,7 @@ describe('GraphExportService.queryExport', () => {
 
     await GraphExportService.queryExport('driving-car', 'topojson', [[16.3, 48.2], [16.31, 48.205]], false);
 
-    expect(capturedUrl).toBe('/api/ors.php?path=export/driving-car/topojson');
+    expect(capturedUrl).toBe('/api/routing-proxy.php?provider=ors&path=export/driving-car/topojson');
   });
 
   it('returns { ok: true, payloadBytes } derived from the response size', async () => {

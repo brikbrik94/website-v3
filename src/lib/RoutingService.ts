@@ -26,7 +26,7 @@ function translateOrsManeuverKinds(data: any): RouteResult {
 }
 
 /**
- * Abstraktionsschicht über den `/api/ors.php`-Proxy zum OpenRouteService (ORS): Health-Check,
+ * Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy zum OpenRouteService (ORS): Health-Check,
  * verfügbare Fahrprofile, Routenberechnung (A→B) und Matrix-basierte Nächste-Station-Suche
  * (SEW/NEF).
  */

@@ -11,7 +11,13 @@ $target = $_GET['target'] ?? null;
 $type = $_GET['type'] ?? 'sew';
 $profile = $_GET['profile'] ?? 'driving-car'; // Neues Profil-Parameter
 
-if (!preg_match('/^[a-z0-9-]+$/', $profile)) {
+if (!is_string($type)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid type']);
+    exit;
+}
+
+if (!is_string($profile) || !preg_match('/^[a-z0-9-]+$/', $profile)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid profile']);
     exit;
@@ -19,7 +25,7 @@ if (!preg_match('/^[a-z0-9-]+$/', $profile)) {
 
 $provider = $_GET['provider'] ?? 'ors';
 
-if (!in_array($provider, ['ors', 'valhalla'], true)) {
+if (!is_string($provider) || !in_array($provider, ['ors', 'valhalla'], true)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid provider']);
     exit;
@@ -108,6 +114,13 @@ if ($matrixRes['code'] < 200 || $matrixRes['code'] >= 300) {
 }
 
 $matrix = json_decode($matrixRes['data'], true);
+
+if ($matrix === null) {
+    error_log("nearest-stations.php: provider=$provider — matrix response was not valid JSON");
+    http_response_code(502);
+    echo json_encode(['error' => 'Matrixsuche fehlgeschlagen']);
+    exit;
+}
 
 // 3. Ergebnisse kombinieren und sortieren
 $results = [];

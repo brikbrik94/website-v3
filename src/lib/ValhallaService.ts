@@ -3,7 +3,7 @@ import { toRouteResult, ValhallaTrip } from './ValhallaRouteInterpreter';
 import { buildRoutingProxyUrl } from './RoutingProxyUrl';
 
 /**
- * Abstraktionsschicht über den `/api/valhalla.php`-Proxy zur selbst gehosteten
+ * Abstraktionsschicht über den `/api/routing-proxy.php`-Proxy zur selbst gehosteten
  * Valhalla-Testinstanz — analog RoutingService, aber bewusst reduziert auf reine
  * A→B-Routenberechnung (keine Matrix-Suche, siehe Design-Spec).
  */

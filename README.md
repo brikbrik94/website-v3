@@ -41,7 +41,7 @@ Drei Modi, wählbar über Segmented-Buttons:
 - **NEF-Modus:** Wie SEW, aber für Notarzt-Einsatzfahrzeuge/-Stationen.
 
 *Technisch:* `src/pages/RoutingPage.ts`, `src/features/routing/`, Fahrzeitberechnung über die
-ORS-Matrix-API (`api/nearest-stations.php`/`api/ors.php`).
+ORS-Matrix-API (`api/nearest-stations.php`/`api/routing-proxy.php`).
 
 ### `/nah` — Luftrettung (Hubschrauber-Status)
 

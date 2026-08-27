@@ -45,7 +45,7 @@ Vite dev server proxies `/api/*` → the PHP server and strips the `/api` prefix
 
 **Info portal (`/info/*`, `src/pages/InfoPage.ts` + `src/components/info/`):** Modular system-status dashboard. Modules: NAH status, Service Health (live API pings), Regions analysis, Tracking telemetry, Map Inventory. Subpath selects the active module.
 
-**PHP API (`api/`):** Read-only proxy/aggregator over the backend DB and external services (ORS routing, geocoder, tile server, ADS-B/AIS). Each endpoint is a standalone `*.php` file (`nah.php`, `nearest-stations.php`, `ors.php`, `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, …). Bei einer Verschiebung auf einen neuen Produktivserver: `api/config.php`-Konstanten (`DB_HOST`, `ORS_URL`, `NOMINATIM_URL`) anpassen, ausgehende Verbindungen zu `ORS_URL`/`NOMINATIM_URL` freischalten, Zugriffsberechtigungen für `DB_USER` auf der neuen DB-Instanz sicherstellen.
+**PHP API (`api/`):** Read-only proxy/aggregator over the backend DB and external services (ORS routing, geocoder, tile server, ADS-B/AIS). Each endpoint is a standalone `*.php` file (`nah.php`, `nearest-stations.php`, `routing-proxy.php`, `geocoder.php`, `ping.php`, `adsb.php`, `ais.php`, …). Bei einer Verschiebung auf einen neuen Produktivserver: `api/config.php`-Konstanten (`DB_HOST`, `ORS_URL`, `NOMINATIM_URL`) anpassen, ausgehende Verbindungen zu `ORS_URL`/`NOMINATIM_URL` freischalten, Zugriffsberechtigungen für `DB_USER` auf der neuen DB-Instanz sicherstellen.
 
 ## Standards-Referenzen
 

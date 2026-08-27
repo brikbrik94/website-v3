@@ -4,7 +4,8 @@ require_once 'config.php';
 
 /**
  * Ruft einen Pfad gegen VALHALLA_URL auf — reine Funktion, kein eigener HTTP-Endpoint. Eigener,
- * schlanker curl-Aufruf statt curl_request(): Valhalla braucht keinen X-API-KEY-Header.
+ * schlanker curl-Aufruf statt curl_request() — bewusst von dessen (heute leerem, aber potenziell
+ * künftig wieder ORS-spezifischem) Header-Verhalten entkoppelt.
  */
 function valhalla_call(string $path, string $method = 'GET', ?string $body = null): array
 {

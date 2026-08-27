@@ -1,3 +1,5 @@
+import { buildRoutingProxyUrl } from '../../lib/RoutingProxyUrl';
+
 /**
  * Renders the Service Health monitoring module.
  */
@@ -7,7 +9,7 @@ export const renderHealthModule = async (container: HTMLElement, signal: AbortSi
     { id: 'database', name: 'PostgreSQL Database', url: '/api/db.php', icon: 'fa-solid fa-database', description: 'PostGIS Datenbank Status' },
     { id: 'nah', name: 'NAH Service', url: '/api/nah.php', icon: 'fa-solid fa-helicopter', description: 'Luftrettung Echtzeit-Daten' },
     { id: 'tracking', name: 'Tracking Gateway', url: 'https://api.oe5ith.at/tracking/health', icon: 'fa-solid fa-satellite-dish', description: 'WebSocket Push Backend (V1.1) für ADS-B & AIS' },
-    { id: 'ors', name: 'Routing API (ORS)', url: '/api/ors.php?path=status', icon: 'fa-solid fa-route', description: 'OpenRouteService Status' },
+    { id: 'ors', name: 'Routing API (ORS)', url: buildRoutingProxyUrl('ors', 'status'), icon: 'fa-solid fa-route', description: 'OpenRouteService Status' },
     { id: 'geocoder', name: 'Geocoder (Nominatim)', url: '/api/geocoder.php', icon: 'fa-solid fa-location-dot', description: 'Adress-Suche & Reverse Geocoding' },
     { id: 'tiles', name: 'Tile Registry', url: 'https://tiles.oe5ith.at/inventory.json', icon: 'fa-solid fa-layer-group', description: 'Karten-Layer Verzeichnis' }
   ];
