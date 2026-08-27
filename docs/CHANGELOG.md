@@ -2,6 +2,23 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased] - 2026-08-27 12:00
+
+### Behoben
+- **`ORS_URL`-Default fehlte der `/ors/v2`-Pfad** (`api/config.php`): beim ersten echten
+  Dev-Server-Test des neuen `routing-proxy.php` gegen laufendes ORS auf `127.0.0.1:8082`
+  festgestellt — alle kurzen Pfade (`health`, `status`, `matrix/{profile}`,
+  `directions/{profile}/geojson`, `isochrones/{profile}`, `export/{profile}`) lieferten 404. Die
+  rohe ORS-Instanz mountet ihre API unter `/ors/v2`; das kurze Schema gab es nur über ein Rewrite
+  der früheren öffentlichen `ors.oe5ith.at`-nginx-Site (eigenes Repo), das beim direkten
+  lokalen Zugriff (siehe `[Unreleased] - 2026-08-23 11:45`) entfallen ist — auf dem
+  Produktivserver wäre nach dem Umstieg jeder ORS-Aufruf fehlgeschlagen. Default jetzt
+  `http://127.0.0.1:8082/ors/v2`; `api/diag.php` (nutzt `ORS_URL` direkt) automatisch mitbehoben.
+  `config.local.php.example`-Kommentar und die Design-Spec
+  (`docs/superpowers/specs/2026-08-23-routing-endpoints-public-rollout-design.md`) korrigiert.
+  Gegen echtes ORS/Valhalla verifiziert: health, status, matrix (`nearest-stations.php`, SEW+NEF),
+  directions, isochrones, export — alle 200. 393 Tests grün, 0 TypeScript-Fehler.
+
 ## [Unreleased] - 2026-08-27 07:20
 
 ### Behoben

@@ -199,7 +199,15 @@ curl-Setup.
 
 ## Config & Secrets (`api/config.php`, `config.local.php`, `.example`)
 
-- `ORS_URL`-Default: `https://ors.oe5ith.at` → `http://127.0.0.1:8082`.
+- `ORS_URL`-Default: `https://ors.oe5ith.at` → `http://127.0.0.1:8082/ors/v2`. **Korrektur
+  2026-08-27** (beim Dev-Server-Test gegen echtes ORS gefunden): ursprünglich hier als
+  `http://127.0.0.1:8082` spezifiziert und so auch implementiert — das kurze Pfadschema
+  (`health`, `status`, `matrix/{profile}`, ...) gab es aber nur über ein Rewrite der früheren
+  öffentlichen `ors.oe5ith.at`-nginx-Site (eigenes Repo, hier nicht einsehbar); die rohe
+  ORS-Instanz mountet ihre API unter `/ors/v2`. Ohne den Präfix wären auf dem Produktivserver
+  nach dem Umstieg alle ORS-Aufrufe (health, status, matrix, directions, isochrones, export) mit
+  404 fehlgeschlagen — in der SDD-Review nicht aufgefallen, weil Port 8082 in der Sandbox nicht
+  gegen echtes ORS testbar war.
 - Neuer Default `NOMINATIM_URL`: `https://geocoder.oe5ith.at` → `http://127.0.0.1:8080`.
 - `ORS_API_KEY` entfällt vollständig: Konstante, der Fail-Closed-Check in `config.php`
   (`if (!defined('DB_PASS') || !defined('ORS_API_KEY'))` → nur noch `DB_PASS`), Beispielzeile in
