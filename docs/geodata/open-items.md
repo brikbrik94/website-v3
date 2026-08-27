@@ -12,7 +12,20 @@ Submodul-Update wird die Checkliste gegen den neuen Stand geprüft.
 
 ## Offen
 
-_Aktuell keine offenen Punkte._
+- **Pisten-Legende: weißes Casing fehlt** — gemeldet 2026-08-27 als
+  [geodata-openskimap#1](https://github.com/brikbrik94/geodata-openskimap/issues/1) (Ziel-Repo:
+  `geodata-openskimap`, nicht `geodata-plugin-standard`/`geodata-updater` — der Bug sitzt im
+  Plugin-Repo selbst, das `tiles.oe5ith.at/layers.json`s `openskimap`-Anteil erzeugt). 4 der 5
+  Pisten-Zeilen (Präpariert/Buckelpiste/Skiroute/Freeride) fehlt der `outline`-`render`-Part fürs
+  weiße Casing — Root Cause laut Live-Code-Review: `scripts/generate_layer_list.py`s
+  hand-authorierte `LEGEND_HEADINGS["Pisten"]`-Zeilen referenzieren
+  `ski-runs-downhill-casing` nicht in `style_layer_ids` (die analogen Loipen/Lifte-Zeilen tun
+  das korrekt). „Skitour" ist nicht betroffen (`ski-runs-skitour`-Gruppe hat keinen
+  Casing-Layer). Kein website-v3-seitiger Bug — `MapLegend`/`renderPartsLegend.ts` rendern exakt
+  das, was `layers.json` liefert.
+  - [ ] `ski-runs-downhill-casing` zu den 4 betroffenen Zeilen ergänzt (Code, `geodata-openskimap`)
+  - [ ] Live in `tiles.oe5ith.at/layers.json` verifiziert
+  - [ ] website-v3-seitig verifiziert (Legende zeigt Casing, keine Client-Änderung nötig)
 
 ## Blockiert (wartet auf externe Umsetzung)
 
