@@ -18,6 +18,19 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
 - **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet
   2026-08-11 (Performance-Baseline-Audit). Detaildatei: `bug-reports.md` (Punkt 3).
 
+- **Verwaiste Tags `v2.1.0`/`v2.2.0` zeigen auf ältere Commits als das echte `v2.0.0`** —
+  gemeldet 2026-08-27 als
+  [oe5ith-ci#5](https://github.com/brikbrik94/oe5ith-ci/issues/5). Reste eines im Mai 2026
+  verworfenen ersten v2.x-Versuchs (`06b3621`/`fc23c7a`, damals `v2.1.0`/`v2.2.0` getaggt, am
+  03.06.2026 auf `v1.8.0`/`v1.9.0` zurückgestuft — alte Tags nicht gelöscht); kollidiert jetzt mit
+  dem echten, durchgezogenen `v2.0.0` (23.08.2026, 16×24-Icon-Redesign). Per Semver-Sortierung
+  sehen `v2.1.0`/`v2.2.0` neuer aus, sind aber Vorfahren von `v2.0.0`. Kein website-v3-seitiges
+  Problem (wir sind über den Commit-Pointer, nicht über Tags, ohnehin auf dem korrekten
+  `origin/main`-Tip) — nur zur Vermeidung falscher "veraltet"-Warnungen bei künftigen
+  Versionschecks gemeldet.
+  - [ ] `v2.1.0`/`v2.2.0`-Tags in `oe5ith-ci` gelöscht (Vorschlag im Issue: `git push --delete
+    origin v2.1.0 v2.2.0`)
+
 ## Erledigt (archiviert)
 
 - **`ci-maneuver-uturn-left.svg` (v1.26.0) war byte-identisch zu `ci-maneuver-uturn.svg`** —
