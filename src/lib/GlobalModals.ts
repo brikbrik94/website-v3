@@ -19,6 +19,26 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.14.0] - 2026-08-30</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Routing:</strong> Neben ORS steht jetzt Valhalla als zweiter
+            Routing-Anbieter zur Wahl — inklusive Wegbeschreibung mit Abbiege-Symbolen und
+            Stützpunkt-Suche für Rettungsdienst/Notarzt.</li>
+            <li><strong>Karte:</strong> Die Legende zeigt jetzt bei Kategorien mit mehreren
+            Farbabstufungen (z.B. Pistenschwierigkeit) alle Varianten übersichtlich als
+            Farbstreifen, Linien/Flächen mit Umrandung werden korrekt dargestellt, und
+            mehrfach vorkommende einfarbige Einträge (z.B. Autobahnen) erscheinen nur noch
+            einmal.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Sicherheit:</strong> Die öffentlichen Routing-Funktionen sind jetzt
+            gegen übermäßige Nutzung abgesichert.</li>
+            <li><strong>Karte:</strong> Kleinere Darstellungskorrekturen an der Legende
+            (Farbstreifen-Umbruch, Ausrichtung der Beschriftung).</li>
+          </ul>
+
           <h2>[3.13.1] - 2026-08-11</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>
