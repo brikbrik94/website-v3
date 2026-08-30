@@ -222,13 +222,19 @@ html, body {
   box-sizing: content-box;
 }
 
+/* Ungemaskt statt Kreis: echte Sprite-Icons (siehe LegendIconSprite.ts) sind Pin-artige Formen
+   (~64x72-80px im Quell-Spriteset), ein Kreisausschnitt würde Spitzen/Ecken abschneiden. Die
+   Box-Maße (12x14, leicht hochformatig) sind ein fixer Kompromiss für alle Icon-Namen statt
+   pro Icon dynamisch aus dem Seitenverhältnis berechnet — die Sprites im Set liegen alle nah an
+   diesem Verhältnis (64x72 .. 64x80), sichtbares Verzerren ist minimal. Bleibt auch der
+   "?"-Platzhalter-Rahmen, solange kein `icon`-Feld auflösbar ist oder das Sprite noch lädt. */
 .map-legend-parts-chip-icon {
   position: absolute;
   left: 11px;
-  top: 2px;
+  top: 1px;
   width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  height: 14px;
+  border-radius: 2px;
   background: var(--null-bg, #999);
   display: flex;
   align-items: center;

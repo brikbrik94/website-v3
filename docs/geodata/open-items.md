@@ -12,7 +12,17 @@ Submodul-Update wird die Checkliste gegen den neuen Stand geprüft.
 
 ## Offen
 
-_Aktuell keine offenen Punkte._
+### [geodata-plugin-standard#6 — Sprite-Set-Referenz für icon-Render-Parts fehlt](https://github.com/brikbrik94/geodata-plugin-standard/issues/6)
+
+Gemeldet 2026-08-30. `render[].icon` (kind: "icon") ist der rohe `icon-image`-Name ohne Angabe,
+aus welchem Spriteset er aufzulösen ist. website-v3 hat das Sprite-Rendering in der Kartenlegende
+(`src/lib/LegendIconSprite.ts`) deshalb fix auf das `oe5ith-markers`-Set hardcoded — aktuell
+(2026-08-30) korrekt für alle 21 live vorkommenden Icon-Namen, aber ohne Schema-Garantie für
+künftige Overlays mit eigenem Spriteset (fällt dann still auf den "?"-Platzhalter zurück).
+
+- [ ] Explizites Sprite-Referenz-Feld im Standard (z.B. `render[].sprite` oder `rows[].sprite`)
+- [ ] Nach Umsetzung: `LegendIconSprite.ts` von der `oe5ith-markers`-Annahme auf das neue Feld
+  umstellen
 
 ## Blockiert (wartet auf externe Umsetzung)
 
