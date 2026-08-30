@@ -2,6 +2,18 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased]
+
+### Sicherheit
+- **`api/router.php`/`api/router.log` (reine PHP-Dev-Server-Hilfsdateien) waren über nginx' generischen
+  `.php`-Catch-all live erreichbar** (`map.oe5ith.at/api/router.php`) und schrieben bei jedem Aufruf
+  ungefragt in `router.log` (unauthentifizierter Schreib-/Disk-Fill-Vektor) — analog dem
+  früher behobenen `diag.php`/`db.php`-Muster. Fix: beide Dateien per `--exclude` in
+  `deploy-website.sh`s `api/`-Sync von der Auslieferung ausgeschlossen, statt einen weiteren
+  nginx-`deny`-Block zu ergänzen (die Dateien werden in Produktion nie gebraucht). Details:
+  `docs/security/owasp-top10-checklist.md` (A01). **Noch offen:** bereits deployte Stände haben
+  die Dateien noch live liegen — manuelles Löschen auf dem Server nötig, siehe TODO.md.
+
 ## [3.14.1] - 2026-08-30
 
 ### Hinzugefügt

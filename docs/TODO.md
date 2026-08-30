@@ -6,6 +6,14 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
 ## Sonstiges
 
+- [ ] **`router.php`/`router.log` auf dem Live-Server manuell löschen** (2026-08-30). Beide
+  waren bis inkl. `v3.14.1` live auf `map.oe5ith.at` deployt und über nginx' generischen
+  `.php`-Catch-all öffentlich erreichbar (siehe `docs/security/owasp-top10-checklist.md`, A01).
+  `deploy-website.sh` schließt beide jetzt per `--exclude` von künftigen Deploys aus, das
+  entfernt aber nichts rückwirkend vom Server (`--exclude` nimmt Dateien komplett aus der
+  `--delete`-Betrachtung heraus). Auf dem Server ausführen:
+  `rm /var/www/map.oe5ith.at/api/router.php /var/www/map.oe5ith.at/api/router.log`, danach
+  `curl -I https://map.oe5ith.at/api/router.php` gegenprüfen (sollte 404 liefern).
 - [x] **CI-Backend-Job (`PSR-12-Lint`) schlägt fehl — vorbestehend, unabhängig vom
   Node-24/`@v7`-Fix** (2026-08-30) — ✅ ERLEDIGT. Root Cause: `api/ors-client.php` und
   `api/valhalla-client.php` mischten `require_once 'config.php';` (Side Effect) mit einer

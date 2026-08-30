@@ -38,6 +38,23 @@ unterscheidbar), alle neun verbleibenden Lese-Endpoints akzeptieren nur noch GET
 Details: Plan
 [docs/superpowers/plans/2026-07-25-api-hardening-debug-removal.md](../superpowers/plans/2026-07-25-api-hardening-debug-removal.md).
 
+**`router.php` — ✅ behoben (2026-08-30).** Reiner PHP-Dev-Server-Router (`php -S ...
+router.php`, simuliert nginx-Routing für `npm run dev:api`), aber git-getrackt und dadurch
+Bestandteil jedes `deploy-website.sh`-Syncs. `nginx.conf`s `location ~ \.php$`-Block ist ein
+Catch-all für jede `.php`-Datei (kein Allowlist), machte `router.php` also live auf
+`map.oe5ith.at/api/router.php` erreichbar — analog zum `diag.php`/`db.php`-Muster, aber ohne
+deren nginx-`deny`-Block. Zusätzlicher Nebeneffekt: `router.php` schreibt bei jedem Aufruf
+ungefragt eine Zeile in `api/router.log` (`file_put_contents(..., FILE_APPEND)`), ein
+unauthentifizierter Schreib-/Disk-Fill-Vektor. Fix: `router.php`/`router.log` per
+`--exclude` in `deploy-website.sh`s `api/`-rsync von vornherein von der Auslieferung
+ausgeschlossen (statt wie bei `diag.php` einen nginx-`deny`-Block zu ergänzen — die Datei wird
+in Produktion nie gebraucht, muss also gar nicht erst dorthin). **Achtung:** bereits vor diesem
+Fix deployte Stände (`v3.14.0`/`v3.14.1`) haben `router.php`/`router.log` noch live auf dem
+Server liegen — der Fix in `deploy-website.sh` verhindert nur künftiges erneutes Deployen,
+löscht aber nichts rückwirkend (`--exclude` nimmt Dateien von der `--delete`-Betrachtung
+komplett aus). Manuelles Aufräumen auf dem Server nötig:
+`rm /var/www/map.oe5ith.at/api/router.php /var/www/map.oe5ith.at/api/router.log`.
+
 Manuell bewertet — nicht automatisierbar (Access-Control ist eine Design-Entscheidung, kein
 Pattern-Match).
 
@@ -90,6 +107,7 @@ Nicht automatisierbar — Design-Entscheidung, kein Pattern-Match.
 
 - `diag.php` — ✅ behoben, siehe A01.
 - `db.php` — ✅ behoben, siehe A01.
+- `router.php` — ✅ behoben, siehe A01.
 - `adsb.php`/`ais.php` setzen `Access-Control-Allow-Origin: *` (Wildcard-CORS) — für diese beiden
   Endpoints akzeptabel, da sie ausschließlich öffentliche, nicht-personenbezogene Live-Tracking-Daten
   (Flugzeuge/Schiffe) ausliefern, kein Auth-Kontext, kein Schreibzugriff.
@@ -192,7 +210,7 @@ user-kontrolliert").
 
 | Kategorie | Status |
 |---|---|
-| A01 Broken Access Control | ⚠️ (diag.php per nginx-Block gefixt, db.php gefixt, Rest bewusst öffentlich) |
+| A01 Broken Access Control | ⚠️ (diag.php per nginx-Block gefixt, db.php gefixt, router.php per Deploy-Exclude gefixt, Rest bewusst öffentlich) |
 | A02 Cryptographic Failures | ✅ |
 | A03 Injection | ⚠️ (stationär, kein akuter Fund) |
 | A04 Insecure Design | N/A |
@@ -209,4 +227,6 @@ user-kontrolliert").
 **Historisch behoben:** `diag.php`-Info-Disclosure (A01/A05), gefunden und gefixt 2026-07-08/09.
 `db.php`-Info-Disclosure (A01/A05) samt API-Debug-Modul, Endpoint-Umbenennung und
 Method-/Input-Restriktion auf der gesamten `api/*.php`-Fläche, gefunden und gefixt 2026-07-25 —
-siehe `TODO_ARCHIVE.md`.
+siehe `TODO_ARCHIVE.md`. `router.php`-Exposition (A01/A05, unauthentifizierter
+Log-Schreib-Endpoint via generischem nginx-`.php`-Catch-all), gefunden und gefixt 2026-08-30 —
+manuelle Bereinigung des bereits deployten Stands auf dem Server bleibt offen (siehe A01-Eintrag).

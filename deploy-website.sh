@@ -28,7 +28,17 @@ rsync -avz --delete "$BUILD_DIR/" "$WEB_ROOT/dist/"
 
 # Sync API files
 # Note: This will overwrite api/config.php if it exists in the source.
-rsync -avz --delete --exclude='config.local.php' --exclude='*.example' "$API_DIR/" "$WEB_ROOT/api/"
+# router.php/router.log sind reine PHP-Dev-Server-Hilfsdateien (php -S ... router.php, siehe
+# package.json "dev:api") — nginx.conf's "location ~ \.php$" ist ein Catch-all für JEDE .php-Datei,
+# würde router.php also öffentlich erreichbar machen (schreibt bei jedem Aufruf ungefragt in
+# router.log). In Produktion übernimmt nginx das Routing selbst, beide Dateien werden dort nie
+# gebraucht — daher von vornherein nicht deployen statt nginx-seitig zu blocken.
+rsync -avz --delete \
+  --exclude='config.local.php' \
+  --exclude='*.example' \
+  --exclude='router.php' \
+  --exclude='router.log' \
+  "$API_DIR/" "$WEB_ROOT/api/"
 
 # 3. Correct permissions
 echo "[3/4] Setting permissions for www-data..."
