@@ -19,6 +19,14 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.14.1] - 2026-08-30</h2>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Karte:</strong> Die Legende zeigt bei Rettungsdienst-/Bergrettungs-/
+            Hubschrauberstationen jetzt das echte Symbol des jeweiligen Betreibers statt eines
+            generischen Platzhalters.</li>
+          </ul>
+
           <h2>[3.14.0] - 2026-08-30</h2>
           <h3>Neuigkeiten & Features</h3>
           <ul>

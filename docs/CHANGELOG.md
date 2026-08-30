@@ -2,7 +2,7 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [Unreleased]
+## [3.14.1] - 2026-08-30
 
 ### Hinzugefügt
 - **Echte Sprite-Icons in der Kartenlegende** für `icon`-Render-Parts (z.B. NAH-/RD-/NEF-/BRD-Stationsmarker)
