@@ -6,14 +6,18 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
 ## Sonstiges
 
-- [ ] **`router.php`/`router.log` auf dem Live-Server manuell löschen** (2026-08-30). Beide
-  waren bis inkl. `v3.14.1` live auf `map.oe5ith.at` deployt und über nginx' generischen
-  `.php`-Catch-all öffentlich erreichbar (siehe `docs/security/owasp-top10-checklist.md`, A01).
-  `deploy-website.sh` schließt beide jetzt per `--exclude` von künftigen Deploys aus, das
-  entfernt aber nichts rückwirkend vom Server (`--exclude` nimmt Dateien komplett aus der
-  `--delete`-Betrachtung heraus). Auf dem Server ausführen:
-  `rm /var/www/map.oe5ith.at/api/router.php /var/www/map.oe5ith.at/api/router.log`, danach
-  `curl -I https://map.oe5ith.at/api/router.php` gegenprüfen (sollte 404 liefern).
+- [x] **`router.php`/`router.log` auf dem Live-Server manuell löschen** (2026-08-30) —
+  ✅ ERLEDIGT. Waren bis inkl. `v3.14.1` live auf `map.oe5ith.at` deployt und über nginx'
+  generischen `.php`-Catch-all öffentlich erreichbar (siehe `docs/security/owasp-top10-checklist.md`,
+  A01); `deploy-website.sh` schließt beide seit Commit `c7a0f11` per `--exclude` von künftigen
+  Deploys aus, das entfernt aber nichts rückwirkend. Nutzer hat den bereits deployten Stand
+  aufgeräumt (Datei-Listing des Servers zeigt kein `router.php`/`router.log` mehr). Live per
+  `curl` gegen `map.oe5ith.at` verifiziert: `router.php` → 404, `router.log` liefert nur den
+  SPA-Fallback (`index.html`, kein Log-Inhalt, egal ob physisch noch vorhanden). Zusätzliche
+  Live-Sicherheits-Stichprobe im selben Zug: `diag.php` weiterhin 403, `db.php`/`config.php`/
+  `config.local.php`/`http.php`/`ors-client.php`/`valhalla-client.php` liefern leeren Body (kein
+  Secret-Leak), `routing-proxy.php`-Referer-Check (403 bei fremdem Referer) und
+  Method-Restriktion (`nah.php` POST → 405) funktionieren wie dokumentiert — keine neuen Funde.
 - [x] **CI-Backend-Job (`PSR-12-Lint`) schlägt fehl — vorbestehend, unabhängig vom
   Node-24/`@v7`-Fix** (2026-08-30) — ✅ ERLEDIGT. Root Cause: `api/ors-client.php` und
   `api/valhalla-client.php` mischten `require_once 'config.php';` (Side Effect) mit einer
