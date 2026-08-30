@@ -4,159 +4,6 @@ Aufgaben im **aktuellen Scope**: Fixes, Cleanup, Erweiterungen an bereits besteh
 Neue, noch nicht existierende Features/Funktionen gehören in [ROADMAP.md](./ROADMAP.md), nicht hierher.
 Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
-## Map-Subsystem: Anschlussfeatures
-
-Von ROADMAP.md hierher verschoben (2026-07-09) — Erweiterungen an bereits bestehenden Komponenten
-(`MapLegend`, `RoutingPage`-Kontextmenü, `NahMapLayers`), keine komplett neuen Features, daher im
-Zweifel hier statt in der Roadmap (siehe `AGENT_INSTRUCTIONS.md` §3). Die Legende ist bewusst in
-Einzelschritte zerlegt statt als ein großer Punkt — Machbarkeits-Check (2026-07-09) hat gezeigt,
-dass `MapRegistry` aktuell keinerlei Legenden-Semantik kennt (nur rohe MapLibre-Layer-Definitionen,
-kein Label, keine Zuordnung Layer→Legenden-Zeile) und `/karte` mit ihren dynamisch aus
-`layers.json`/Overlay-Style-JSONs geladenen Layer-Gruppen der komplexeste Fall ist. Reihenfolge:
-zuerst Infrastruktur + `/karte` als Machbarkeitsnachweis, danach erst die übrigen Seiten — nicht
-alle vier auf einmal anfassen.
-
-- [x] **Schritt 1: MapLegend interaktiv + Registry-Metadata** (2026-07-09) — ✅ ERLEDIGT
-  `MapLegend.addEntry()`-Einträge sind jetzt klickbar (×-Button zum Ausblenden). Neuer Farb-Resolver
-  für MapLibre-Paint-Expressions (`resolveLegendSwatch()` + `swatchTypeForLayerType()` in
-  `src/lib/resolveLegendSwatch.ts`), mit „?"-Fallback für nicht aufgelöste Farben. Bewusst
-  **keine** `MapRegistry`-Legend-Metadata-Abstraktion gebaut (Entscheidung 4 im Spec-Doc) —
-  `MapRegistry.ts` selbst wurde nicht angefasst. Reine Infrastruktur, dokumentiert in
-  [docs/superpowers/specs/2026-07-09-map-legend-interactive-design.md](./superpowers/specs/2026-07-09-map-legend-interactive-design.md).
-  129 Tests grün, 0 TypeScript-Fehler.
-- [x] **Schritt 2: Anwendung auf `/karte`** (2026-07-09, Nachbesserung nach Live-Test 2026-07-09) —
-  ✅ ERLEDIGT. Legende auf `/karte` zeigt nur aktive Layer (Sidebar-Accordion → Legende automatisch
-  bei Ein-/Ausschalten). Klick auf „×" in der Legende löst einen echten `.click()` auf das
-  zugehörige Accordion-Item aus (derselbe bestehende Toggle-Pfad, keine zweite Implementierung) —
-  die Legende kann Layer nur ausblenden, nicht einschalten, das bleibt Sache der Sidebar. **Nach
-  Live-Test durch den Nutzer (echte Overlays: Autobahnen, OpenSkiMap, Contours) drei reale Lücken
-  gefunden und behoben** (Details: CHANGELOG.md, 2026-07-09 22:57) — u.a. fehlten für alle
-  `layers.json`-kuratierten Overlays (14 Stück) komplett die Legenden-Einträge, da deren
-  `template`-Feld keine echten MapLibre-Typen enthält; behoben durch bedarfsweises Nachladen des
-  echten `style.json` (gecacht) für die Farbauflösung, `layers.json` bleibt weiter für die
-  Gruppierung zuständig. Spec-Abdeckung: alle 7 Entscheidungen umgesetzt. Alle Fixes gegen echte,
-  live abgerufene Overlay-Style-Daten verifiziert (nicht nur synthetische Testfälle). 133 Tests
-  grün, 0 TypeScript-Fehler.
-  **Hinweis: vollständige interaktive Browser-Verifikation weiterhin ausstehend** (keine
-  Playwright/Headless-Browser in dieser Umgebung) — die drei jetzt behobenen Lücken wurden vom
-  Nutzer manuell im Browser gefunden; ein erneuter Durchlauf nach diesem Fix steht noch aus.
-- [x] **Legenden-Granularität: neues `layers.json`-Schema konsumieren** (2026-07-09 aufgemacht,
-  2026-07-12 externe Seite geliefert + hier umgesetzt) — ✅ ERLEDIGT. Ursprünglich: die Legende auf
-  `/karte` zeigte einen Eintrag pro *einzeln getoggeltem Layer/Gruppe* (z.B. „A1", „A10", „A11", …),
-  nicht einen Eintrag pro *semantischer Kategorie*. Option (b) aus der ursprünglichen Formulierung
-  — kuratierte Legenden-Infos direkt in `layers.json` ergänzen — wurde extern umgesetzt
-  (`https://tiles.oe5ith.at/layers.json` liefert seither pro Gruppe `type`/`color`/`legend_items`)
-  und hier konsumiert: neue `resolveSwatchFromLayersMetaColor()` in `src/lib/resolveLegendSwatch.ts`,
-  `buildToggleEvent()` in `src/components/Sidebar.ts` bevorzugt `layersMeta.color`/`legend_items`
-  vor dem teuren `style.json`-Fallback (der zuvor durch einen Bug immer griff), `MapPageController`
-  in `src/pages/MapPage.ts` dedupliziert `legend_items` pro Overlay per Referenzzählung (die 6
-  Anfahrtszeit-Ringe zeigen ihre 6-stufige Farbskala jetzt genau einmal statt mehrfach dupliziert).
-  Subagent-driven-development mit Task-Reviews (alle „Approved") + finaler Whole-Branch-Review
-  (Opus, „Ready to merge: Yes", keine Critical/Important-Funde). Spec:
-  [docs/superpowers/specs/2026-07-12-map-legend-granularity-design.md](./superpowers/specs/2026-07-12-map-legend-granularity-design.md).
-  156 Tests grün, 0 TypeScript-Fehler. Vom Nutzer live auf `/karte` verifiziert und bestätigt.
-  Weitere Optimierungsrichtungen (Kuratierung auf mehr Templates ausweiten, `opacity` nutzen,
-  Legenden-Gruppierung) als eigener Punkt in ROADMAP.md → „Karten-Legende: weitere Optimierung"
-  festgehalten.
-- [x] **Schritt 3: Anwendung auf `/nah`** (2026-07-18) — ✅ ERLEDIGT. Die 3 hardcodierten
-  Status-`legend.addEntry()`-Aufrufe wurden auf einen erweiterten Resolver umgestellt: neue
-  `resolveLegendSwatchBranches()` in `src/lib/resolveLegendSwatch.ts` liest — anders als
-  `resolveLegendSwatch()`, das nur den Fallback-Arm einer `match`-Expression liest — **alle**
-  Branches aus und mappt sie über ein Label-Dictionary auf Legenden-Zeilen (Sonderfall: **ein**
-  Layer → **drei** Zeilen). Farbe kommt jetzt aus der echten Stations-Layer-Definition
-  (`NahMapLayers.getStationsLayerDefinition()`, extrahiert aus der bisher nur lokal in
-  `initLayers()` gebauten Literal) statt separat gepflegten `MAP_COLORS`-Konstanten — eine Quelle
-  der Wahrheit, Fallback auf die alten hardcodierten Werte falls die Layer-Definition sich künftig
-  unerwartet ändert. Zusätzlich: Status-Einträge zeigen jetzt ein Helikopter-Icon
-  (`fa-solid fa-helicopter`) statt eines Farbpunkts, passend zum tatsächlichen Kartensymbol —
-  neuer `icon`-Eintragstyp in `MapLegend`/`LegendEntry`, dafür vorher `.map-legend-icon` per
-  CI-Request in `oe5ith-ci` v1.21.0 umgesetzt (`docs/ci/legend-icon-swatch-request.md`). 8 neue
-  Tests (`resolveLegendSwatch.test.ts`, `NahMapLayers.test.ts`), 174 Tests grün, 0
-  TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf `/nah` weiterhin ausstehend (keine
-  Playwright-Umgebung hier).
-- [x] **Schritt 4: Anwendung auf `/routing`** (2026-07-18) — ✅ ERLEDIGT. `RoutingPage.ts`
-  befüllt die Legende jetzt mit 4 Einträgen: 2 Routen-Linien (Gewählte/Alternative Route, aus
-  `MAP_ROUTE_STYLES`) + Start-/Zielpunkt (Dots, aus `MAP_COLORS.success`/`.danger`) — beide
-  Quellen waren schon vorher die einzige Quelle für die jeweiligen Kartenlayer (`RoutingMapLayers.ts`),
-  keine neue Resolver-Logik nötig (keine `match`-Expression wie bei Schritt 3). Bewusst **kein**
-  Legenden-Eintrag für die Stations-Icons — die kommen pro Rettungsorganisation
-  (`rd-<org>`/`nef-<org>`, `api/stations.php:78-80`), keine kleine geschlossene Aufzählung wie
-  bei `/nah`s Status, ein Eintrag pro Organisation wäre unbegrenzt/unpraktisch. 174 Tests grün,
-  0 TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf `/routing` weiterhin ausstehend
-  (keine Playwright-Umgebung hier).
-- [x] **Schritt 5: Anwendung auf `/tracking`** (2026-07-18) — ✅ ERLEDIGT. `/tracking` hatte
-  bisher gar keine Legende (`withLegend` fehlte, kein `MapLegend`, kein Legend-Toggle im Topbar).
-  Jetzt 7 Einträge: 4 ADS-B-Höhenstufen (`MAP_COLORS.alt0/alt5k/alt15k/alt35k`, direkt aus dem
-  bestehenden `interpolate`-Ausdruck in `TrackingMapLayers.ts:64-71`) + 3 AIS-Schiffstyp-Farben
-  (`MAP_COLORS.danger/warning/accent`, entsprechend der 3-Bucket-Zuordnung in
-  `ShipTypeMapper.getColor()`). Keine neue Resolver-Logik nötig — beide Farbsätze waren schon
-  über bestehende, geteilte Konstanten direkt referenzierbar (kein `match`-Sonderfall wie bei
-  Schritt 3). 174 Tests grün, 0 TypeScript-Fehler. **Hinweis:** Browser-Verifikation auf
-  `/tracking` weiterhin ausstehend (keine Playwright-Umgebung hier).
-- [x] **Karten-Klick + Overlay-Infos auf `/karte`** (2026-07-09) — ✅ ERLEDIGT (Scope beim
-  Brainstorming korrigiert: `/nah` hatte bereits einen eigenen, funktionierenden Popup-Builder
-  — der ursprüngliche TODO-Text war hier veraltet — die echte Lücke war ausschließlich `/karte`,
-  wo es noch gar kein Klick-Handling für Overlay-Layer gab). Klick auf ein Feature eines aktiven
-  Overlays zeigt ein generisches Popup mit dessen rohen `properties` (`GenericFeaturePopup.ts`),
-  keine Kuratierung pro Layer nötig — praktikabel bei den z.T. hunderten Sub-Layern (109 allein
-  bei Autobahnen). `OverlayLoader.getActiveLayerIds()` neu ergänzt. Details: CHANGELOG.md,
-  2026-07-09 23:45. 145 Tests grün, 0 TypeScript-Fehler. `/nah`s bestehender Popup-Builder bewusst
-  unangetastet. **Nach erstem Live-Test (Nutzer meldete: kein Popup erscheint trotz aktivem
-  Overlay)** Klick-Toleranz nachgebessert — `queryRenderedFeatures` fragte nur den exakten
-  Klick-Pixel ab, bei dünnen Linien-Layern (Autobahnen 1-3px, Höhenlinien 0.5-2.7px) praktisch
-  nie treffbar; jetzt ±4px-Toleranz-Box (Details: CHANGELOG.md, 2026-07-09 23:53). **Nach zweitem
-  Live-Test (Nutzer meldete: funktioniert bei Flächen, nicht bei RD/NEF-Pins oder Zonen-Flächen)**
-  mit gezieltem Debug-Logging echte Root Cause gefunden und behoben: Race Condition in
-  `OverlayLoader.add()` bei parallelen Aufrufen für dieselbe, noch nicht geladene Overlay-ID
-  (ausgelöst durch Sidebar.ts' „Alle an"-Bulk-Toggle, das `onLayerToggle()` nicht awaitet — Muster
-  bereits vor dieser Session vorhanden, aber erst durch die neue `getActiveLayerIds()`-Aggregation
-  sichtbar geworden). Details + Regressionstest: CHANGELOG.md, 2026-07-10 00:06. 148 Tests grün,
-  0 TypeScript-Fehler. **Nach drittem Live-Test** (Nutzer meldete: Gemeinden-Klick funktioniert nur
-  auf Umrisslinie/Namens-Label, nicht innerhalb der Fläche) Root Cause identifiziert (Gemeinden/
-  Bezirke rendern nur `line`, kein `fill`, obwohl die Vektordaten echte Polygon-Geometrie haben)
-  — liegt im Style-JSON auf dem Tile-Server, nicht im Repo-Code; wird vom Nutzer direkt dort
-  behoben statt mit einem Workaround hier (Details:
-  [docs/external-blockers.md](./external-blockers.md)). **Hinweis:** erneute
-  Browser-Verifikation nach dem Race-Condition-Fix noch ausstehend (keine Playwright-Umgebung).
-- [x] **Routing-Kontextmenü: Touchsteuerung** (2026-07-12) — ✅ ERLEDIGT. Long-Press öffnet das
-  Zielwahl-Kontextmenü jetzt auch auf Touch-Geräten, auf `/routing` und `/coords` (beide nutzen
-  denselben `ContextMenu`-Baustein). Root Cause recherchiert: kein CI-/CSS-Bug, sondern MapLibres
-  eigenes `touch-action: none` (nötig für Pan/Zoom per Touch) unterdrückt die native
-  `contextmenu`-Long-Press-Erkennung — daher neue, eigene Erkennung in
-  `src/lib/LongPressGesture.ts` (`attachLongPress()`, analog `HoverCursor.ts`), unabhängig vom
-  nativen Event. Rechtsklick auf Desktop bleibt unverändert. Spec:
-  [docs/superpowers/specs/2026-07-12-routing-context-menu-touch-design.md](./superpowers/specs/2026-07-12-routing-context-menu-touch-design.md).
-  166 Tests grün, 0 TypeScript-Fehler. **Bewusst nicht Teil dieses Punkts:** volle
-  ARIA-APG-Tastaturnavigation fürs Menü (Pfeiltasten, Roving Tabindex) — eigener Folge-Punkt bei
-  Bedarf; visuelles Hold-Feedback während des Haltens — bei Bedarf nach Live-Test nachziehen.
-- [ ] **`MapPage.ts`s `legendItemsRefCount` gruppiert falsch, wenn zwei Gruppen desselben
-  Overlays unterschiedliche `legend_items` tragen** (2026-08-12, Fund aus finalem
-  Whole-Branch-Review der `legend_scale_id`/`legend_sections`/`icon`-Runde). **Vorbestehender
-  Bug** — nicht durch diese Runde eingeführt, nur generalisiert (Ref-Zählungs-Key war vorher
-  ausschließlich `overlayId`, jetzt `legendGroupKey ?? overlayId`; das Problem besteht für den
-  `overlayId`-Fall unverändert). `toggleLayer()` zählt aktive Gruppen pro `groupKey`
-  (`legendItemsRefCount`) und rendert `event.legendItems` nur beim Übergang 0→1 aktiver Gruppen —
-  das setzt voraus, dass alle Gruppen eines `groupKey` denselben `legend_items`-Satz tragen. Live
-  gegen `https://tiles.oe5ith.at/layers.json` verifiziert (2026-08-12), dass das **heute bereits
-  nicht zutrifft**: `openskimap` hat die Gruppen „Ski-Spots" (6 `legend_items`) und „Lifte"
-  (7 `legend_items`), beide ohne `legend_scale_id` → beide bekommen `groupKey = "openskimap"`
-  (`resolveLegendItemsForGroup()`, `resolveLegendSwatch.ts`). Ebenso `zonen-nef` (6 Gruppen unter
-  `groupKey = "zonen-nef"`, je 7-15 `legend_items`, unterschiedlich pro Gruppe: NEF-AM 8,
-  NEF-HRV 11, NEF-INN 8, NEF-RLZ 15, NEF-SKG 10, NEF-SrKi 7) und `zonen-sew` (8 Gruppen unter
-  `groupKey = "zonen-sew"`, je 23-63 `legend_items`: SEW-HRV 26, SEW-INN 32, SEW-NÖ 61, SEW-RLZ 63,
-  SEW-SBG 25, SEW-SKG 27, SEW-STMK 23, SEW-SrKi 23). Werden zwei solche Gruppen eines Overlays
-  gleichzeitig aktiviert: (a) nur die Legenden-Zeilen der zuerst aktivierten Gruppe rendern
-  (0→1-Gate lässt die zweite Aktivierung nichts mehr anzeigen), und (b) wird danach die
-  zuerst aktivierte Gruppe wieder abgeschaltet während die zweite aktiv bleibt, iteriert
-  `removeEntry` über `event.legendItems` des GERADE abschaltenden Toggle-Events — dessen Länge/
-  Reihenfolge zu den tatsächlich gerenderten IDs (`${groupKey}:legend-item:${idx}`) nicht passt,
-  was orphaned Legenden-Zeilen hinterlassen kann, die nie wieder entfernt werden. Betrifft
-  `src/pages/MapPage.ts` (`legendItemsRefCount`, `toggleLayer()`, Kommentar dort korrigiert im
-  finalen Fix-Round). **Bewusst nicht in diesem Fix-Round behoben** — ein echter Fix bräuchte
-  einen Content-Hash- oder anderen kollisionsfreien Key statt reinem `groupKey`-Ref-Count; erst
-  angehen, wenn ein konkreter Live-Fall (zwei solche Gruppen gleichzeitig aktiv) tatsächlich
-  beobachtet/reproduziert wird.
-
 ## Sonstiges
 
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
@@ -308,10 +155,11 @@ Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
   echtem `npm run perf:audit`-Re-Lauf verifiziert: `button-name` jetzt `1` auf allen 6 Seiten
   (vorher `0`), Accessibility-Score global von 0,91–0,92 auf 0,96–0,97 gestiegen. 284 Tests grün,
   0 TypeScript-Fehler.
-- [ ] **Farbkontrast `.topbar-search-btn` (~2,06:1).** Weiterhin offen — Root Cause liegt in
-  `oe5ith-ci`s `topbar.css` (hardcodiertes `color: #555`, gesynct nach
-  `src/styles/topbar.css`), nicht in website-v3-eigenem Code. Nicht hier gefixt, siehe
-  `docs/ci/bug-reports.md` (Punkt 3).
+- [ ] **Farbkontrast `.topbar-search-btn` (~2,06:1).** 🟡 In Arbeit — als GitHub-Issue gemeldet
+  (2026-08-30): [oe5ith-ci#6](https://github.com/brikbrik94/oe5ith-ci/issues/6). Root Cause liegt
+  in `oe5ith-ci`s `topbar.css` (hardcodiertes `color: #555`, gesynct nach
+  `src/styles/topbar.css`), nicht in website-v3-eigenem Code — Fix wartet auf externe Umsetzung
+  im Submodul. Details: `docs/ci/bug-reports.md` (Punkt 3).
 - [x] **`/coords`: Formularelemente ohne Label** (2026-08-11) — ✅ ERLEDIGT. `label`-/
   `select-name`-Audits schlugen auf `/coords` fehl (0,82 statt 0,91–0,92 Accessibility-Score).
   Alle Inputs/Selects in `src/features/coords/blocks/*.ts` (7 Dateien, `BmnBlock`/`UtmBlock`/
@@ -361,19 +209,6 @@ Umsetzung ist bewusst nicht Teil der Audit-Runde selbst.
   einen Canvas, Terrain-Button-Klick funktioniert live (dynamischer `OverlayLoader`-Import greift
   korrekt), Client-Navigation `/karte` ↔ `/info` fehlerfrei. 284 Tests grün, 0 TypeScript-Fehler.
   Details: `docs/performance/2026-07-28-baseline-audit.md`, Befund 4.
-- [ ] **`/routing` + `/isochrones`: identischer CLS von 0,063.** Beide Seiten liefern exakt
-  denselben Layout-Shift-Wert — gemeinsame Ursache noch nicht abschließend lokalisiert; beide
-  Seiten teilen sich zumindest den Seiten-Shell (Layout/Topbar) und strukturell ähnliche
-  Koordinaten-Eingabezeilen, konkrete Komponente müsste bei Umsetzung erst identifiziert werden.
-  Niedrige Priorität (unter der „poor"-Schwelle von 0,1), aber reproduzierbar. Details:
-  `docs/performance/2026-07-28-baseline-audit.md`, Befund 5.
-- [ ] **Wiederholungslauf gegen echten Produktiv-Build (`vite preview`) statt Dev-Server.** Der
-  bisherige `npm run perf:audit`-Lauf misst gegen den unminifizierten Vite-Dev-Server (bewusste
-  Design-Entscheidung, siehe Spec) — LCP/TBT-Absolutwerte und die „Minify JavaScript"/„Reduce
-  unused JavaScript"-Opportunities sind dadurch Dev-Server-Artefakte, keine Produktionswerte. Für
-  belastbare absolute Werte müsste `perf-audit.mjs` (oder ein neuer Lauf-Modus) gegen `vite
-  preview` statt `vite` laufen — Tooling-Änderung, kein reiner Doku-Punkt. Details:
-  `docs/performance/2026-07-28-baseline-audit.md`, Abschnitt „Wichtiger Hinweis zur Methodik".
 
 Siehe [TODO_ARCHIVE.md](./TODO_ARCHIVE.md) für den zuletzt abgearbeiteten Stand (2026-07-09).
 Bekannte, aber außerhalb dieses Repos liegende Probleme stehen in

@@ -15,8 +15,12 @@ Umstellung (lokale Volltext-Anfragen, kein Issue) und bleiben unverändert als H
 
 ## Offen
 
-- **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gemeldet
-  2026-08-11 (Performance-Baseline-Audit). Detaildatei: `bug-reports.md` (Punkt 3).
+- **`.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)** — gefunden
+  2026-08-11 (Performance-Baseline-Audit), als GitHub-Issue gemeldet 2026-08-30:
+  [oe5ith-ci#6](https://github.com/brikbrik94/oe5ith-ci/issues/6). Detaildatei: `bug-reports.md`
+  (Punkt 3).
+  - [ ] `.topbar-search-btn`s `color: #555` auf einen ausreichend kontraststarken Token
+    umgestellt (Vorschlag im Issue: `var(--text-muted)` oder neuer Token)
 
 - **Verwaiste Tags `v2.1.0`/`v2.2.0` zeigen auf ältere Commits als das echte `v2.0.0`** —
   gemeldet 2026-08-27 als

@@ -181,7 +181,8 @@ unberührt, da sie ohnehin nie so breit werden.
 
 ## 3. `.topbar-search-btn` hat unzureichenden Farbkontrast (~2,06:1 statt min. 3:1)
 
-**Status:** 🔴 Offen
+**Status:** 🟡 In Arbeit — gemeldet als
+[oe5ith-ci#6](https://github.com/brikbrik94/oe5ith-ci/issues/6) (2026-08-30)
 **Gemeldet von:** website-v3 (Performance-Baseline-Audit, `npm run perf:audit` /
 `lighthouse`-`color-contrast`-Audit, schlägt global auf allen 6 Kartenseiten fehl — Details:
 `docs/performance/2026-07-28-baseline-audit.md`, Befund 1)
