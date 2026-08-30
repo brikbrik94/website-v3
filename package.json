@@ -3,6 +3,9 @@
   "private": true,
   "version": "3.14.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev:vite": "vite",
     "dev:api": "cd api && php -S 127.0.0.1:8081 router.php",
