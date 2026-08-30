@@ -9,6 +9,21 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   statt eines generischen "?"-Platzhalters — gezeichnet aus dem gemeinsamen `oe5ith-markers`-Spriteset
   (neues, eigenständiges Modul `src/lib/LegendIconSprite.ts`).
 
+### Geändert
+- **Dependency-Updates (`npm outdated`-Audit):** risikolose In-Range-Updates via `npm update`
+  (`concurrently`, `happy-dom`, `maplibre-gl` 6.0.0→6.6.0, `playwright`, `pmtiles`, `proj4`,
+  `rollup-plugin-visualizer`, `terra-draw`, `vite`, `vitest`). Live gegen `/karte` verifiziert
+  (Playwright), keine Regression durch den maplibre-gl-Minor-Sprung. `typescript` 6→7 bewusst
+  zurückgestellt (Major-Bump außerhalb des `^6.0.3`-Ranges, eigene Migrationsprüfung nötig).
+- **GitHub-Actions-Workflow (`ci.yml`): `actions/checkout`/`actions/setup-node` v4→v7** — behebt
+  die „Node.js 20 is deprecated"-Warnung (beide Actions liefen erzwungen auf Node 24 statt ihrem
+  eigenen Ziel Node 20; ab v5 laufen beide nativ auf `node24`).
+
+### Sicherheit
+- **3 `npm audit`-Schwachstellen in Dev-Dependencies behoben** (`fast-uri`, `js-yaml`, `nanoid`,
+  alle High-Severity) — `npm audit fix` ohne `--force`, kein Major-Bump nötig. `npm audit` zeigt
+  danach 0 Schwachstellen.
+
 ## [3.14.0] - 2026-08-30
 
 ### Hinzugefügt
