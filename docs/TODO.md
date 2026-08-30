@@ -6,6 +6,22 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
 ## Sonstiges
 
+- [ ] **`MapCore.ts`s globaler `map.on('error', ...)`-Handler loggt das volle Event-Objekt.**
+  Gefunden als Nebenbefund beim Debuggen des terra-draw-Event-Listener-Leaks (2026-08-30):
+  `console.error(`[MapCore] Map error: ${errMsg}`, e)` übergibt das komplette MapLibre-Event
+  (`e`, mit Referenzen auf Style/Map und potenziell große Tile-/GL-Caches im bubbling `target`)
+  als zweites Argument. Unter Chrome-DevTools-Protocol-Beobachtung (z.B. Playwright, das
+  `page.on('console')` nutzt) führte das reproduzierbar zu ~1s Verzögerung *pro* Fehler-Event
+  durch die Objekt-Serialisierung für die Remote-Inspektion — bei mehreren Fehlern in Folge
+  (wie beim terra-draw-Fix, 5 `removeLayer`-ErrorEvents in einem Rutsch) summierte sich das auf
+  mehrere Sekunden spürbarer Verzögerung. Ob/wie stark sich das auch in echten,
+  lokal-geöffneten DevTools bemerkbar macht (ohne CDP-Remote-Overhead), nicht verifiziert — dort
+  ist Objekt-Formatierung typischerweise günstiger, aber nicht kostenlos. Mechanischer Fix:
+  `e` aus dem `console.error`-Aufruf entfernen (nur `errMsg` loggen, wie an anderer Stelle im
+  Code bereits üblich) oder gezielt nur unkritische Felder (`e.error?.message`) übergeben, statt
+  des ganzen Event-Objekts. Nicht in diesem Durchgang gefixt (Fund während laufender
+  Root-Cause-Analyse eines anderen Bugs, außerhalb von dessen Scope) — hier nur dokumentiert,
+  damit er nicht verloren geht.
 - [x] **`router.php`/`router.log` auf dem Live-Server manuell löschen** (2026-08-30) —
   ✅ ERLEDIGT. Waren bis inkl. `v3.14.1` live auf `map.oe5ith.at` deployt und über nginx'
   generischen `.php`-Catch-all öffentlich erreichbar (siehe `docs/security/owasp-top10-checklist.md`,
