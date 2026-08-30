@@ -1,7 +1,5 @@
 <?php
 
-require_once 'config.php';
-
 /**
  * Ruft einen Pfad gegen ORS_URL auf — reine Funktion, kein eigener HTTP-Endpoint. Nutzt
  * curl_request() aus config.php (ohne Auto-Header, siehe Task 1), da ORS lokal läuft und keine

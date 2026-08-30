@@ -1,7 +1,5 @@
 <?php
 
-require_once 'config.php';
-
 /**
  * Ruft einen Pfad gegen VALHALLA_URL auf — reine Funktion, kein eigener HTTP-Endpoint. Eigener,
  * schlanker curl-Aufruf statt curl_request() — bewusst von dessen (heute leerem, aber potenziell

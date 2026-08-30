@@ -25,6 +25,13 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   tatsächliche Deploy-Host (`deploy-website.sh` läuft `npm run build` direkt dort) ist von hier
   aus nicht einsehbar, daher `engines` bei `>=22` belassen statt auf `>=24` verschärft.
 
+### Behoben
+- **CI-Backend-Job (`PSR-12-Lint`) schlug fehl:** `api/ors-client.php`/`api/valhalla-client.php`
+  mischten `require_once 'config.php';` (Side Effect) mit einer Funktionsdeklaration in derselben
+  Datei (PSR1 `SideEffects`-Sniff). Die Zeile war zudem redundant — beide Aufrufer
+  (`routing-proxy.php`, `nearest-stations.php`) requiren `config.php` bereits selbst vorher —
+  daher in beiden Dateien entfernt statt den Sniff zu unterdrücken.
+
 ### Sicherheit
 - **3 `npm audit`-Schwachstellen in Dev-Dependencies behoben** (`fast-uri`, `js-yaml`, `nanoid`,
   alle High-Severity) — `npm audit fix` ohne `--force`, kein Major-Bump nötig. `npm audit` zeigt
