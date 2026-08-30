@@ -31,30 +31,43 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
   (macht sie zu reinen Funktions-Deklarationen, passend zu ihrem eigenen Docblock-Kommentar
   „reine Funktion, kein eigener HTTP-Endpoint"). `composer run lint` und
   `scripts/security-audit.sh` lokal grün, `npx tsc --noEmit`/`npm test` (406 grün) unberührt.
-- [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
-  Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
-  `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die
-  `TerraDraw`-Instanz neu auf, wenn ein Basemap-Wechsel (`setStyle()`) deren eigene, nicht in
-  `MapRegistry` verwaltete Sources/Layer gelöscht hat — nötig, da `terra-draw-maplibre-gl-adapter`
-  selbst keine `style.load`-Behandlung hat. Die dabei verworfene alte Instanz wird aber nie
-  `.stop()`t, wodurch ihre DOM-Event-Listener (`pointerdown`/`pointermove`/`pointerup`/
-  `keydown`/`keyup`/`contextmenu` auf dem Karten-Canvas) bis zum Verlassen der Seite
-  (`map.remove()`) bestehen bleiben — bei mehrfachem Basemap-Wechsel in einer Sitzung sammeln
-  sich so mehrere inerte Instanzen an. Bestätigt harmlos (jede verworfene Instanz bleibt
-  dauerhaft im `'render'`-Modus, dessen Handler No-Ops sind; kein Doppel-Registrieren, kein
-  Crash) und durch die Seitenlebensdauer begrenzt — deshalb bewusst nicht sofort behoben.
-  **Korrektur (2026-07-28):** der hier ursprünglich vorgeschlagene „mechanische Fix" (`this.draw.stop()`
-  vor dem Neuaufbau) ist falsch und würde einen Crash reintroduzieren — genau das wird im Code
-  bereits bewusst vermieden (`GraphSidebarAdapter.ts:122-134`, Commit `0e6aba4`, zeitlich *vor*
-  diesem TODO-Eintrag entstanden): `stop()` ruft intern `adapter.unregister()` auf, das ungeprüft
-  `map.removeSource('td-point'/'td-linestring'/'td-polygon')` aufruft. In `maplibre-gl`
-  (`Style.removeSource()`) wirft das synchron einen echten `Error` ("There is no source with
-  this ID=…"), wenn die Source nicht existiert — und genau das ist der Zustand, in dem
-  `reapplyLayers()` läuft (Sources sind durch `setStyle()` bereits weg, siehe Guard
-  `if (!this.map.getSource('td-polygon'))` direkt davor). Ein echter Fix bräuchte einen anderen
-  Ansatz (z.B. Dummy-Sources mit den `td-*`-IDs vor `stop()` anlegen, damit `removeSource()` nicht
-  ins Leere greift) — mehr Aufwand, hängt an internen, nicht offiziell dokumentierten
-  terra-draw-Source-IDs. Weiterhin bewusst nicht umgesetzt, da bestätigt harmlos.
+- [x] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel**
+  (2026-08-30) — ✅ ERLEDIGT. Gefunden im finalen Whole-Branch-Review der `/graph`-Seite
+  (2026-07-27), siehe Historie zu den beiden zuvor verworfenen Fix-Versuchen unten. Root Cause
+  des ursprünglich befürchteten Crashs bestätigt (per Live-Code-Lesen von `maplibre-gl`/
+  `terra-draw`/`terra-draw-maplibre-gl-adapter` in `node_modules`): `TerraDraw.stop()` →
+  `adapter.unregister()` ruft ungeprüft `map.removeSource('td-point'/'-linestring'/'-polygon')`
+  auf, `maplibre-gl`s `Style.removeSource()` wirft dabei synchron einen echten `Error`, wenn die
+  Source fehlt (anders als `removeLayer()`, das nur ein nicht-werfendes `ErrorEvent` feuert).
+  **Fix:** neue private `GraphSidebarAdapter.stopDrawSafely()` legt vor `this.draw.stop()` leere
+  Dummy-Sources unter den drei `td-*`-IDs an, falls sie durch einen Basemap-Wechsel bereits
+  verschwunden sind — macht `removeSource()` ungefährlich, `unregister()` entfernt die Dummies
+  selbst wieder. `reapplyLayers()` ruft das jetzt vor dem Neuaufbau auf (statt `stop()` wie
+  bisher ganz zu vermeiden), `destroy()` nutzt denselben Pfad. TDD: 2 Unit-Tests gegen die echte
+  `terra-draw`/`terra-draw-maplibre-gl-adapter`-Library (kein Mock, nur `maplibregl.Map` gefaked)
+  bestätigen kein Throw + entfernte DOM-Listener nach dem Ersetzen.
+  **Zweiter, live im Browser gefundener Bug (von den Unit-Tests nicht abgedeckt):** eine Race
+  zwischen `map`s `'style.load'`-Event (treibt `MapCore`s Restore → `reapplyLayers()`) und dem
+  `'load'`-Event (treibt den Konstruktor-`draw.start()`, verzögert falls `isStyleLoaded()` beim
+  Mount noch `false` ist) — läuft `reapplyLayers()` zuerst, ist `this.draw` noch nie gestartet
+  (`enabled === false`), `TerraDraw.stop()` wird dann laut Quelle zum No-op-Guard, die eben
+  angelegten Dummy-Sources bleiben liegen und kollidieren mit der direkt danach gebauten neuen
+  Instanz (`Error: Source "td-polygon" already exists`). Per Playwright gegen den echten
+  Dev-Server reproduziert (deterministisch bei zwei Basemap-Wechseln), Root Cause per
+  In-Page-`performance.now()`-Timestamps (nicht Vermutung) belegt. Fix:
+  `stopDrawSafely()` prüft jetzt zuerst `this.draw.enabled` und überspringt alles, wenn nie
+  gestartet. Dritter Unit-Test (RED→GREEN gesehen gegen den fehlenden Guard) deckt genau diesen
+  Fall ab. Alle 3 Fixe live gegen `/graph` verifiziert (2 Basemap-Wechsel hintereinander, danach
+  weiterhin funktionsfähiges Bbox-Zeichnen, Screenshot geprüft) — kein Crash mehr, 409 Tests
+  grün, 0 TypeScript-Fehler.
+  **Historie der beiden vorherigen, verworfenen Versuche:** ursprünglich als „harmlos, bewusst
+  nicht behoben" eingestuft (jede verworfene Instanz bleibt dauerhaft im `'render'`-Modus, dessen
+  Handler No-Ops sind — das stimmt weiterhin für den reinen Listener-Leak-Aspekt, war aber kein
+  Grund, den jetzt gefundenen, tatsächlich fixbaren Crash-Pfad nicht anzugehen).
+  **Korrektur (2026-07-28):** der damals ursprünglich vorgeschlagene „mechanische Fix" (nacktes
+  `this.draw.stop()` ohne Dummy-Sources) wäre tatsächlich falsch gewesen und hätte den oben
+  beschriebenen Crash reintroduziert — das jetzige `stopDrawSafely()` ist kein Rückfall auf
+  diesen verworfenen Ansatz, sondern behebt genau die damals identifizierte Lücke.
 - [x] **GitHub-Actions-Deprecation-Warnung: `actions/checkout@v4`/`actions/setup-node@v4` liefen
   erzwungen auf Node 24 statt Node 20** (2026-08-30) — ✅ ERLEDIGT. Beide Actions in
   `.github/workflows/ci.yml` auf `@v7` angehoben (nicht nur das Minimum `@v5`, das laut

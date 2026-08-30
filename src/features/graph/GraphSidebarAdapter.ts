@@ -119,24 +119,46 @@ export class GraphSidebarAdapter {
     // ungeprüft map.getSource('td-point').setData(...) auf eine nicht mehr existierende Source
     // aufruft (TypeError, Zeichnen bleibt dauerhaft kaputt bis Reload).
     //
-    // Bewusst NICHT this.draw.stop() auf der alten Instanz, um sie danach neu zu starten:
-    // stop() ruft intern adapter.unregister() auf, das ungeprüft removeLayer()/removeSource()
-    // für exakt diese bereits verschwundenen IDs aufruft. map.removeSource() auf eine
-    // nicht-existente Source wirft laut maplibre-gl-Quelle (Style.removeSource) einen echten,
-    // synchronen Error (nicht nur ein ErrorEvent wie removeLayer) — das würde unkontrolliert aus
-    // reapplyLayers() herausplatzen und die aufrufende MapCore-Restore-Sequenz abbrechen, bevor
-    // deren eigener MapRegistry.restore()-Schritt läuft. Stattdessen wird eine komplett neue
-    // TerraDraw+Adapter-Instanz gebaut; die alte wird ohne weiteren Methodenaufruf verworfen.
-    // Ihre DOM-Listener (pointerdown/-move/-up etc.) bleiben zwar am Canvas hängen, sind aber
-    // folgenlos: ihr Modus ist praktisch immer 'render' (das inerte No-op-Mode, in das nach
-    // jedem Zeichenvorgang und direkt nach dem Start zurückgeschaltet wird) - einzige
-    // Ausnahme wäre ein Basemap-Wechsel exakt während eines laufenden Rechteck-Zeichenvorgangs,
-    // ein enges Randzeitfenster, das der finale Review nicht als zu behebender Fall benannt hat.
+    // this.draw.stop() auf der alten Instanz, bevor eine neue gebaut wird — verhindert den
+    // DOM-Event-Listener-Leak (pointerdown/-move/-up/contextmenu/keydown/keyup bleiben sonst bis
+    // zum Verlassen der Seite aktiv am Canvas hängen). stopDrawSafely() legt dafür leere
+    // Dummy-Sources unter den td-*-IDs an, falls sie durch den Basemap-Wechsel bereits
+    // verschwunden sind (siehe deren JSDoc).
     if (!this.map.getSource('td-polygon')) {
+      this.stopDrawSafely();
       this.draw = this.createDraw();
       this.draw.start();
       this.draw.setMode('render');
     }
+  }
+
+  /**
+   * Stoppt `this.draw` sicher, auch wenn seine Sources (`td-point`/`td-linestring`/`td-polygon`)
+   * durch einen Basemap-Wechsel (`map.setStyle()`) bereits verschwunden sind.
+   * `terra-draw-maplibre-gl-adapter`s `unregister()` (aufgerufen von `TerraDraw.stop()`) ruft
+   * ungeprüft `map.removeSource()` für alle drei IDs auf — anders als `removeLayer()` (feuert nur
+   * ein `ErrorEvent` bei fehlender Layer) wirft `maplibre-gl` bei `removeSource()` auf eine nicht
+   * existente Source einen echten, synchronen `Error` (`Style.removeSource`,
+   * node_modules/maplibre-gl). Leere Dummy-Sources unter denselben IDs anlegen, falls sie fehlen,
+   * macht `removeSource()` ungefährlich — sie werden von `unregister()` selbst wieder entfernt.
+   */
+  private stopDrawSafely(): void {
+    // this.draw kann hier noch nie gestartet worden sein: der Konstruktor verzögert
+    // draw.start() auf das 'load'-Event, falls der Style beim ersten Mount noch nicht geladen
+    // ist (map.isStyleLoaded() === false) — MapCores 'style.load'-getriebene restore() kann
+    // reapplyLayers() aber schon vorher auslösen. TerraDraw.stop() ist dann ein No-op
+    // (this._enabled-Guard, siehe node_modules/terra-draw/dist), die unten angelegten
+    // Dummy-Sources blieben also liegen und würden mit der gleich danach gebauten neuen
+    // Instanz kollidieren (Error: Source "td-polygon" already exists). Nichts zu stoppen, wenn
+    // nie gestartet — einfach überspringen.
+    if (!this.draw.enabled) return;
+
+    for (const id of ['td-point', 'td-linestring', 'td-polygon']) {
+      if (!this.map.getSource(id)) {
+        this.map.addSource(id, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      }
+    }
+    this.draw.stop();
   }
 
   public handleMapClick(e: maplibregl.MapMouseEvent): void {
@@ -151,7 +173,7 @@ export class GraphSidebarAdapter {
   }
 
   public destroy(): void {
-    this.draw.stop();
+    this.stopDrawSafely();
     PopupManager.closePopup();
   }
 

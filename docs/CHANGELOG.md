@@ -4,6 +4,13 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Behoben
+- **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel behoben.**
+  `GraphSidebarAdapter` stoppt die alte Zeichnen-Instanz jetzt korrekt beim Basemap-Wechsel
+  (statt sie mit aktiven Listenern liegen zu lassen), inklusive eines dabei live im Browser
+  gefundenen zweiten Bugs (Race zwischen Style- und Karten-Ladevorgang, konnte in seltenen
+  Fällen zu einem Fehler führen). Details: `docs/TODO.md`.
+
 ### Sicherheit
 - **`api/router.php`/`api/router.log` (reine PHP-Dev-Server-Hilfsdateien) waren über nginx' generischen
   `.php`-Catch-all live erreichbar** (`map.oe5ith.at/api/router.php`) und schrieben bei jedem Aufruf
