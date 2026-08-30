@@ -6,17 +6,19 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
 ## Sonstiges
 
-- [ ] **CI-Backend-Job (`PSR-12-Lint`) schlägt fehl — vorbestehend, unabhängig vom
-  Node-24/`@v7`-Fix.** Gefunden beim Gegenprüfen des CI-Runs für Commit `a5c54a7` (2026-08-30):
-  `phpcs` meldet in `api/valhalla-client.php` und `api/ors-client.php` je eine PSR-Warnung („A
-  file should declare new symbols... or execute logic with side effects, but should not do
-  both" — Klasse/Funktion auf Zeile 10 definiert, erster Side-Effect auf Zeile 3) und beendet
-  sich dadurch mit Exit-Code 1 (`composer run lint` behandelt Warnings wie Errors). Bestätigt
-  vorbestehend: identischer Fehler bereits im Run für Commit `232803f` (vor allen Änderungen
-  dieser Session). Mechanischer Fix vermutlich: Datei in einen reinen Deklarations- und einen
-  reinen Ausführungs-Teil trennen, oder `phpcs.xml`/`composer.json`-Lint-Config so anpassen, dass
-  diese spezifische Sniff-Regel für Client-Dateien mit bewusstem Include-Side-Effect nicht
-  greift — noch nicht untersucht, welche der beiden Optionen hier passt.
+- [x] **CI-Backend-Job (`PSR-12-Lint`) schlägt fehl — vorbestehend, unabhängig vom
+  Node-24/`@v7`-Fix** (2026-08-30) — ✅ ERLEDIGT. Root Cause: `api/ors-client.php` und
+  `api/valhalla-client.php` mischten `require_once 'config.php';` (Side Effect) mit einer
+  `function ...()`-Deklaration in derselben Datei — genau das flaggt PSR1s `SideEffects`-Sniff
+  (Teil von PSR12). Geprüft, ob das ein breiteres Problem ist: alle anderen `api/*.php` mit
+  `require_once` sind reine Ausführungs-Skripte ohne eigene Top-Level-Funktion, nur diese beiden
+  „Client"-Helper-Dateien (aus `e1f9d14`, Valhalla-Rollout) mischen beides. Das
+  `require_once 'config.php';` in beiden Dateien war zudem redundant — die einzigen beiden
+  Aufrufer (`routing-proxy.php`, `nearest-stations.php`) requiren `config.php` bereits selbst,
+  bevor sie diese Client-Dateien requiren. Fix: die redundante Zeile in beiden Dateien gestrichen
+  (macht sie zu reinen Funktions-Deklarationen, passend zu ihrem eigenen Docblock-Kommentar
+  „reine Funktion, kein eigener HTTP-Endpoint"). `composer run lint` und
+  `scripts/security-audit.sh` lokal grün, `npx tsc --noEmit`/`npm test` (406 grün) unberührt.
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
   Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
   `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die
