@@ -6,6 +6,17 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
 ## Sonstiges
 
+- [ ] **CI-Backend-Job (`PSR-12-Lint`) schlägt fehl — vorbestehend, unabhängig vom
+  Node-24/`@v7`-Fix.** Gefunden beim Gegenprüfen des CI-Runs für Commit `a5c54a7` (2026-08-30):
+  `phpcs` meldet in `api/valhalla-client.php` und `api/ors-client.php` je eine PSR-Warnung („A
+  file should declare new symbols... or execute logic with side effects, but should not do
+  both" — Klasse/Funktion auf Zeile 10 definiert, erster Side-Effect auf Zeile 3) und beendet
+  sich dadurch mit Exit-Code 1 (`composer run lint` behandelt Warnings wie Errors). Bestätigt
+  vorbestehend: identischer Fehler bereits im Run für Commit `232803f` (vor allen Änderungen
+  dieser Session). Mechanischer Fix vermutlich: Datei in einen reinen Deklarations- und einen
+  reinen Ausführungs-Teil trennen, oder `phpcs.xml`/`composer.json`-Lint-Config so anpassen, dass
+  diese spezifische Sniff-Regel für Client-Dateien mit bewusstem Include-Side-Effect nicht
+  greift — noch nicht untersucht, welche der beiden Optionen hier passt.
 - [ ] **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel.**
   Gefunden im finalen Whole-Branch-Review der `/graph`-Seite (2026-07-27):
   `GraphSidebarAdapter.reapplyLayers()` (`src/features/graph/GraphSidebarAdapter.ts`) baut die
@@ -30,16 +41,16 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
   Ansatz (z.B. Dummy-Sources mit den `td-*`-IDs vor `stop()` anlegen, damit `removeSource()` nicht
   ins Leere greift) — mehr Aufwand, hängt an internen, nicht offiziell dokumentierten
   terra-draw-Source-IDs. Weiterhin bewusst nicht umgesetzt, da bestätigt harmlos.
-- [ ] **GitHub-Actions-Deprecation-Warnung: `actions/checkout@v4`/`actions/setup-node@v4` laufen
-  erzwungen auf Node 24 statt Node 20.** Gefunden beim Prüfen des CI-Runs von Commit `7b32f56`
-  (2026-08-11): beide CI-Jobs (`.github/workflows/ci.yml`) zeigen die Annotation „Node.js 20 is
-  deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24".
-  Betroffen: `actions/checkout@v4` (beide Jobs, `frontend` + `backend`), `actions/setup-node@v4`
-  (nur `frontend`) — `shivammathur/setup-php@v2` ist nicht betroffen. Aktuell nur eine Warnung,
-  kein Fehler (Runs laufen durch); falls GitHub Node 20 endgültig abschaltet, würde das den
-  CI-Run brechen. Mechanischer Fix: beide Actions in `.github/workflows/ci.yml` auf `@v5`
-  anheben (bzw. aktuell verfügbare Major-Version prüfen), danach `gh run watch` gegenprüfen, dass
-  die Warnung verschwindet und beide Jobs weiterhin grün sind.
+- [x] **GitHub-Actions-Deprecation-Warnung: `actions/checkout@v4`/`actions/setup-node@v4` liefen
+  erzwungen auf Node 24 statt Node 20** (2026-08-30) — ✅ ERLEDIGT. Beide Actions in
+  `.github/workflows/ci.yml` auf `@v7` angehoben (nicht nur das Minimum `@v5`, das laut
+  Release-Notes den `node24`-Runtime-Wechsel einführt). Per echtem `gh run watch` gegenverifiziert
+  (Commit `a5c54a7`, Run `33312503226`): Vergleich gegen den Vorgänger-Run (vor diesem Fix)
+  bestätigt, dass die Annotation dort noch auftrat und im neuen Run komplett fehlt. Frontend-Job
+  läuft grün durch. **Nebenbefund (nicht behoben, außerhalb des Scopes dieses Punkts):**
+  Backend-Job schlägt weiterhin fehl — vorbestehender PSR-12-Lint-Fehler (`phpcs` behandelt 2
+  Warnings in `api/valhalla-client.php`/`api/ors-client.php` als Exit-Code 1), bereits im
+  Vorgänger-Run vorhanden, unabhängig von diesem Fix.
 - [x] **`curl_request()` (`api/config.php`) ohne Timeout** (2026-07-28) — ✅ ERLEDIGT. Gefunden
   beim OWASP-Re-Audit (2026-07-25): die gemeinsame Helper-Funktion für `ors.php`/`geocoder.php`
   setzte kein `CURLOPT_TIMEOUT`/`CURLOPT_CONNECTTIMEOUT`, im Unterschied zu `adsb.php`/`ais.php`,
