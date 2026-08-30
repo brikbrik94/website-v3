@@ -18,6 +18,12 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 - **GitHub-Actions-Workflow (`ci.yml`): `actions/checkout`/`actions/setup-node` v4→v7** — behebt
   die „Node.js 20 is deprecated"-Warnung (beide Actions liefen erzwungen auf Node 24 statt ihrem
   eigenen Ziel Node 20; ab v5 laufen beide nativ auf `node24`).
+- **CI-Runner von Node 22 (Maintenance-LTS) auf Node 24 (Active-LTS) angehoben** — alle
+  Dependency-`engines`-Constraints geprüft (striktester Fall `>=22`), keine verlangt 24, also
+  risikolos. Neues `engines.node: ">=22"` in `package.json` dokumentiert erstmals die
+  unterstützte Node-Version (informativ, kein `engine-strict`). Bewusst nur CI betroffen — der
+  tatsächliche Deploy-Host (`deploy-website.sh` läuft `npm run build` direkt dort) ist von hier
+  aus nicht einsehbar, daher `engines` bei `>=22` belassen statt auf `>=24` verschärft.
 
 ### Sicherheit
 - **3 `npm audit`-Schwachstellen in Dev-Dependencies behoben** (`fast-uri`, `js-yaml`, `nanoid`,
