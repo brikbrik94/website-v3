@@ -1,5 +1,6 @@
 import { LegendEntry } from '../types/common';
 import type { RenderPartsChip, RenderColor } from './renderPartsLegend';
+import { resolveLegendIcon } from './LegendIconSprite';
 
 export interface AddLegendEntryOptions extends LegendEntry {
   onRemove?: () => void;
@@ -305,6 +306,25 @@ export class MapLegend {
           el.style.color = color ?? 'var(--null-ink, #666)';
           el.textContent = color ? '◆' : '?';
           chipEl.appendChild(el);
+
+          if (part.icon) {
+            // Fire-and-forget: das Sprite lädt asynchron aus dem gemeinsamen Marker-Spriteset
+            // (siehe LegendIconSprite.ts) und ersetzt bei Erfolg den Platzhalter. `_buildPartsChip`
+            // bleibt dadurch synchron — kein Ripple-Effekt auf addPartsRow()/_syncV3Legend()
+            // (siehe deren JSDoc: Legende wird bei JEDEM Layer-Toggle komplett neu aufgebaut).
+            resolveLegendIcon(part.icon).then((dataUrl) => {
+              // Bei schnellem Toggle-Off/On kann das Chip-Element schon wieder aus dem DOM
+              // entfernt sein, bevor das Sprite geladen ist — dann nicht mehr in ein
+              // verwaistes Element schreiben.
+              if (!dataUrl || !el.isConnected) return;
+              el.style.backgroundColor = 'transparent';
+              el.style.backgroundImage = `url(${dataUrl})`;
+              el.style.backgroundSize = 'contain';
+              el.style.backgroundPosition = 'center';
+              el.style.backgroundRepeat = 'no-repeat';
+              el.textContent = '';
+            });
+          }
           break;
         }
       }

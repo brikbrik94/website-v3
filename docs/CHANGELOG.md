@@ -2,6 +2,13 @@
 
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [Unreleased]
+
+### Hinzugefügt
+- **Echte Sprite-Icons in der Kartenlegende** für `icon`-Render-Parts (z.B. NAH-/RD-/NEF-/BRD-Stationsmarker)
+  statt eines generischen "?"-Platzhalters — gezeichnet aus dem gemeinsamen `oe5ith-markers`-Spriteset
+  (neues, eigenständiges Modul `src/lib/LegendIconSprite.ts`).
+
 ## [3.14.0] - 2026-08-30
 
 ### Hinzugefügt

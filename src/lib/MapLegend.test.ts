@@ -1,6 +1,10 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { MapLegend, type AddLegendEntryOptions } from './MapLegend';
+import { resolveLegendIcon } from './LegendIconSprite';
+
+vi.mock('./LegendIconSprite', () => ({ resolveLegendIcon: vi.fn() }));
+const resolveLegendIconMock = vi.mocked(resolveLegendIcon);
 
 function makeLegendFixture(): HTMLElement {
   const el = document.createElement('div');
@@ -250,6 +254,72 @@ describe('MapLegend.addPartsRow', () => {
     expect(el.classList.contains('map-legend--wide')).toBe(true);
     legend.clearEntries();
     expect(el.classList.contains('map-legend--wide')).toBe(false);
+  });
+});
+
+describe('MapLegend.addPartsRow — icon parts', () => {
+  let legend: MapLegend;
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    legend = new MapLegend(makeLegendFixture());
+    resolveLegendIconMock.mockReset();
+  });
+
+  function iconPart(icon: string) {
+    return [{ kind: 'icon' as const, color: null, stroke_color: null, opacity: 1, width: null, dasharray: null, radius: null, stroke_width: null, icon }];
+  }
+
+  it('renders the placeholder synchronously, before the sprite promise resolves', () => {
+    let resolveFn!: (v: string | null) => void;
+    resolveLegendIconMock.mockReturnValue(new Promise((r) => { resolveFn = r; }));
+
+    legend.addPartsRow({ id: 'pi1', label: 'Bergrettung', chips: [{ parts: iconPart('brd-pin'), itemColor: null }] });
+
+    const el = document.querySelector('.map-legend-parts-chip-icon') as HTMLElement;
+    expect(el).not.toBeNull();
+    expect(el.textContent).toBe('?');
+    expect(el.style.backgroundImage).toBe('');
+    resolveFn(null); // Deferred aufräumen, kein hängendes Promise nach dem Test.
+  });
+
+  it('sets the resolved sprite dataURL as background-image once the promise resolves', async () => {
+    resolveLegendIconMock.mockResolvedValue('data:image/png;base64,ABC');
+
+    legend.addPartsRow({ id: 'pi2', label: 'ADAC', chips: [{ parts: iconPart('nah-adac-luftrettung'), itemColor: null }] });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const el = document.querySelector('.map-legend-parts-chip-icon') as HTMLElement;
+    expect(el.style.backgroundImage).toContain('data:image/png;base64,ABC');
+    expect(el.textContent).toBe('');
+  });
+
+  it('leaves the "?" placeholder in place when the icon cannot be resolved', async () => {
+    resolveLegendIconMock.mockResolvedValue(null);
+
+    legend.addPartsRow({ id: 'pi3', label: 'Unbekannt', chips: [{ parts: iconPart('does-not-exist'), itemColor: null }] });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const el = document.querySelector('.map-legend-parts-chip-icon') as HTMLElement;
+    expect(el.textContent).toBe('?');
+    expect(el.style.backgroundImage).toBe('');
+  });
+
+  it('does not write into the chip once its row was removed before the promise resolves (regression: toggle-off race)', async () => {
+    let resolveFn!: (v: string | null) => void;
+    resolveLegendIconMock.mockReturnValue(new Promise((r) => { resolveFn = r; }));
+
+    legend.addPartsRow({ id: 'pi4', label: 'Bergrettung', chips: [{ parts: iconPart('brd-pin'), itemColor: null }] });
+    const el = document.querySelector('.map-legend-parts-chip-icon') as HTMLElement;
+    legend.removeEntry('pi4');
+
+    resolveFn('data:image/png;base64,ABC');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(el.style.backgroundImage).toBe('');
   });
 });
 
