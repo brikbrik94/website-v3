@@ -481,6 +481,112 @@ paths:
                 properties:
                   error: { type: string }
 
+  /radiosonden-sondes.php:
+    get:
+      summary: Aktuell aktive Radiosonden (Proxy, GeoJSON)
+      operationId: getRadiosondenSondes
+      responses:
+        "200":
+          description: "GeoJSON FeatureCollection aktiver Sonden (durchgereicht von api.oe5ith.at/radiosonden/api/sondes)"
+          content:
+            application/json:
+              schema: { type: object }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
+        "502":
+          description: "Upstream nicht erreichbar"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+                  code: { type: integer }
+                  type: { type: string, example: "FeatureCollection" }
+                  features: { type: array, items: {} }
+
+  /radiosonden-flights.php:
+    get:
+      summary: Radiosonden-Flüge, aktiv und abgeschlossen (Proxy)
+      operationId: getRadiosondenFlights
+      responses:
+        "200":
+          description: "Flugliste (durchgereicht von api.oe5ith.at/radiosonden/api/flights)"
+          content:
+            application/json:
+              schema: { type: array, items: {} }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
+        "502":
+          description: "Upstream nicht erreichbar"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+                  code: { type: integer }
+                  flights: { type: array, items: {} }
+
+  /radiosonden-track.php:
+    get:
+      summary: Flugbahn einer Radiosonde (Proxy, GeoJSON LineString)
+      operationId: getRadiosondenTrack
+      parameters:
+        - name: callsign
+          in: query
+          required: true
+          description: "Muss ^[A-Za-z0-9._-]{1,32}$ entsprechen (serverseitig geprüft), sonst 400."
+          schema: { type: string }
+        - name: hours
+          in: query
+          required: false
+          description: "Zeitfenster für die Flugbahn; ungültige Werte fallen serverseitig auf 24 zurück."
+          schema: { type: number, default: 24, minimum: 0, exclusiveMinimum: true, maximum: 8760 }
+      responses:
+        "200":
+          description: "GeoJSON LineString-Feature der Flugbahn (durchgereicht von api.oe5ith.at/radiosonden/api/sondes/{callsign}/track)"
+          content:
+            application/json:
+              schema: { type: object }
+        "400":
+          description: "callsign fehlt oder entspricht nicht dem erlaubten Muster"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Invalid or missing callsign" }
+        "405":
+          description: Nicht erlaubte HTTP-Methode (nur GET)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string, example: "Method not allowed" }
+        "502":
+          description: "Upstream nicht erreichbar"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: { type: string }
+                  code: { type: integer }
+
   /diag.php:
     get:
       summary: Erweiterter Diagnose-Endpoint (PHP/DB/ORS-Konnektivität)

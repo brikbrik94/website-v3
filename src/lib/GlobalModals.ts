@@ -19,6 +19,29 @@ export const initGlobalModals = () => {
           <button class="modal-close" data-close="changelog-modal" aria-label="Schließen"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="modal-body" id="changelog-modal-body">
+          <h2>[3.15.0] - 2026-09-15</h2>
+          <h3>Neuigkeiten & Features</h3>
+          <ul>
+            <li><strong>Neu: Radiosonden-Tracking:</strong> Die Tracking-Seite zeigt jetzt zusätzlich
+            zu Flugzeugen und Schiffen auch Wetterballon-Empfangsdaten der letzten 24 Stunden —
+            Live-Position bei aktivem Flug sowie die komplette Flugbahn, farblich nach Höhe
+            eingefärbt.</li>
+          </ul>
+          <h3>Verbesserungen & Fixes</h3>
+          <ul>
+            <li><strong>Karte:</strong> Die Höhen-Farbskala von Flugzeug- und Radiosonden-Tracking
+            wurde erweitert — normale Flugzeuge bleiben im lila Bereich, sehr hoch fliegende
+            Objekte (z.B. Privatjets, aufsteigende Radiosonden) werden rot bis schwarz dargestellt.
+            Die Flugbahn einer Radiosonde zeigt jetzt einen echten Höhenverlauf statt einer
+            einzelnen Farbe für die gesamte Strecke.</li>
+            <li><strong>Kartenwerkzeug „/graph":</strong> Ein Fehler, der nach mehrfachem
+            Kartenhintergrund-Wechsel zu hängengebliebenen internen Verarbeitungen führen konnte,
+            wurde behoben.</li>
+            <li><strong>Sicherheit:</strong> Zwei interne Entwicklungs-Hilfsdateien, die versehentlich
+            öffentlich erreichbar waren, wurden von der Auslieferung ausgeschlossen und auf dem
+            Server bereinigt.</li>
+          </ul>
+
           <h2>[3.14.1] - 2026-08-30</h2>
           <h3>Verbesserungen & Fixes</h3>
           <ul>

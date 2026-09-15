@@ -44,10 +44,36 @@ export const MAP_COLORS = {
   get alt5k() { return getCssVar('--alt-5k', '#38bdf8'); },
   get alt15k() { return getCssVar('--alt-15k', '#818cf8'); },
   get alt35k() { return getCssVar('--alt-35k', '#e879f9'); },
+  get alt40k() { return getCssVar('--alt-40k', '#ef4444'); },
   // Utility
   get white() { return getCssVar('--white', '#ffffff'); },
   get black() { return getCssVar('--black', '#000000'); }
 };
+
+/**
+ * Umrechnungsfaktor Meter → Fuß — die gemeinsame Höhenfarbskala (getAltitudeColorStops()) ist in
+ * Fuß kalibriert (ADS-B `alt_baro` ist nativ Fuß), Radiosonden-`altitude`/`max_altitude` aus der
+ * radiosonden-api sind dagegen in Metern (verifiziert über die Steigrate eines realen Flugs).
+ */
+export const METERS_TO_FEET = 3.28084;
+
+/**
+ * Gemeinsame Höhenfarb-Stufen für ADS-B- und Radiosonden-Layer (TrackingMapLayers.ts,
+ * RadiosondeMapLayers.ts) — eine Quelle, damit beide Domänen dieselbe Skala zeigen: Flugzeuge
+ * bleiben im lila Bereich (bis 35.000 ft), hochfliegende Privatjets werden rot (ab 40.000 ft),
+ * Radiosonden, die weit darüber steigen, laufen nach Schwarz aus (100.000 ft — typische
+ * Platzhöhe/Bersthöhe liegt bei ~30km ≈ 98.000 ft).
+ */
+export function getAltitudeColorStops(): (number | string)[] {
+  return [
+    0,      MAP_COLORS.alt0,
+    5000,   MAP_COLORS.alt5k,
+    15000,  MAP_COLORS.alt15k,
+    35000,  MAP_COLORS.alt35k,
+    40000,  MAP_COLORS.alt40k,
+    100000, MAP_COLORS.black
+  ];
+}
 
 // Fallbacks spiegeln die aktuellen oe5ith-ci-Werte (ab v1.22.0) 1:1 — nur für
 // Umgebungen ohne geladenes CI-Stylesheet (z.B. Tests), siehe getCssVar().

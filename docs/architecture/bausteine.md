@@ -150,6 +150,19 @@ Exports:
 - `LayoutMounts` (interface)
 - `LayoutHelper` (class)
 
+## `LegendIconSprite.ts`
+
+Liefert eine PNG-`dataURL` für ein Icon aus dem gemeinsamen Marker-Spriteset (z.B. "brd-pin"),
+oder `null` bei unbekanntem Namen oder Sheet-Ladefehler. Gezeichnet wird in nativer
+Sprite-Auflösung (keine Skalierung) — die Zielgröße im Legend-Chip steuert CSS, nicht dieses
+Modul.
+
+Import: `from '.../lib/LegendIconSprite'` (Pfad relativ zum aufrufenden Modul anpassen)
+
+Exports:
+- `resolveLegendIcon` (function)
+- `resetLegendIconCache` (function)
+
 ## `LongPressGesture.ts`
 
 Öffnet denselben Trigger-Pfad wie MapLibres 'contextmenu'-Event, aber über eine eigene
@@ -236,6 +249,8 @@ Import: `from '.../lib/MapStyles'` (Pfad relativ zum aufrufenden Modul anpassen)
 Exports:
 - `MAP_ROUTE_STYLES` (const)
 - `MAP_COLORS` (const)
+- `METERS_TO_FEET` (const)
+- `getAltitudeColorStops` (function)
 - `getIsochroneRingColor` (function)
 
 ## `OrsManeuverKind.ts`

@@ -1,7 +1,7 @@
 import * as maplibregl from 'maplibre-gl';
 import { type ExpressionSpecification } from 'maplibre-gl';
 import { MapCore } from '../../lib/MapCore';
-import { MAP_COLORS } from '../../lib/MapStyles';
+import { MAP_COLORS, getAltitudeColorStops } from '../../lib/MapStyles';
 import { MapRegistry } from '../../lib/MapRegistry';
 import { PopupManager } from '../../lib/PopupManager';
 import { attachHoverCursor } from '../../lib/HoverCursor';
@@ -61,17 +61,14 @@ export class TrackingMapLayers {
             id: 'adsb-tracks',
             type: 'line',
             source: 'adsb-tracks',
-            paint: { 
+            paint: {
                 'line-color': [
                     'interpolate', ['linear'],
                     ['coalesce', ['get', 'alt_mid'], 0],
-                    0,     MAP_COLORS.alt0,
-                    5000,  MAP_COLORS.alt5k,
-                    15000, MAP_COLORS.alt15k,
-                    35000, MAP_COLORS.alt35k
-                ], 
+                    ...getAltitudeColorStops()
+                ],
                 'line-width': ['case', ['==', ['get', 'hex'], (selectedId || '').toString()], ADSB_TRACK_WIDTH.selected, ADSB_TRACK_WIDTH.unselected],
-                'line-opacity': 0.8 
+                'line-opacity': 0.8
             },
             layout: { 
                 'line-join': 'round',
@@ -100,14 +97,11 @@ export class TrackingMapLayers {
                 'text-optional': true,
                 'visibility': this.adsbVisible ? 'visible' : 'none'
             },
-            paint: { 
+            paint: {
                 'icon-color': [
                     'interpolate', ['linear'],
                     ['coalesce', ['get', 'alt_baro'], 0],
-                    0,     MAP_COLORS.alt0,
-                    5000,  MAP_COLORS.alt5k,
-                    15000, MAP_COLORS.alt15k,
-                    35000, MAP_COLORS.alt35k
+                    ...getAltitudeColorStops()
                 ],
                 'icon-halo-color': MAP_COLORS.black,
                 'icon-halo-width': 1,

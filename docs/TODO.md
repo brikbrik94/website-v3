@@ -6,6 +6,20 @@ Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
 ## Sonstiges
 
+- [ ] **`/tracking`: zwei widersprüchliche, unabhängige Sichtbarkeits-Controls für ADS-B/AIS/Radiosonden.**
+  Gefunden beim visuellen Test des Radiosonden-Features (2026-09-15). Der Sidebar-Segmented-Filter
+  „Alle/ADS-B/AIS/Radiosonden" (`src/components/TrackingSidebar.ts:78`, Event `tracking-filter-change`
+  ausgewertet in `src/features/tracking/TrackingPage.ts:189-191`) filtert **nur die Sidebar-Liste**
+  (`updateTrackingList()`, `src/components/TrackingSidebar.ts:232-239`) — er hat **nie** die
+  Kartenlayer beeinflusst. Die 3 separaten Topbar-Icon-Buttons (Flugzeug/Schiff/Satellit,
+  `src/features/tracking/TrackingPage.ts:157-180`) steuern unabhängig davon additiv die
+  Kartenlayer-Sichtbarkeit (kein exklusives Verhalten). Nutzer erwartete beim Test ein exklusives
+  Alle/ADS-B/AIS/Sonden-Verhalten analog dem Sidebar-Filter, das **auch** die Karte steuert — nutzer-
+  seitig bewusst vertagt ("lassen wir das einmal so"), hier nur dokumentiert, damit die
+  Diskrepanz nicht verloren geht. Zwei Lösungsrichtungen wurden mit dem Nutzer besprochen, aber
+  keine gewählt: (a) Sidebar-Segmented-Filter steuert Liste UND Kartenlayer exklusiv, Topbar-Buttons
+  entfallen; (b) Topbar-Buttons werden zur exklusiven Gruppe (+ "Alle") umgebaut, Sidebar-Filter
+  bleibt reiner Listen-Filter.
 - [ ] **`MapCore.ts`s globaler `map.on('error', ...)`-Handler loggt das volle Event-Objekt.**
   Gefunden als Nebenbefund beim Debuggen des terra-draw-Event-Listener-Leaks (2026-08-30):
   `console.error(`[MapCore] Map error: ${errMsg}`, e)` übergibt das komplette MapLibre-Event

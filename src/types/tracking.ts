@@ -47,7 +47,7 @@ export interface TrackingItem {
     id: string | number;
     label?: string;
     info?: string;
-    type: 'adsb' | 'ais';
+    type: 'adsb' | 'ais' | 'radiosonde';
     lat: number;
     lon: number;
     details?: {
@@ -61,6 +61,51 @@ export interface TrackingItem {
     raw?: Aircraft | Ship;
     seen?: number;
 }
+
+// --- RADIOSONDEN TYPES (api.oe5ith.at/radiosonden, siehe radiosonden-*.php) ---
+
+export interface RadiosondeFlight {
+    callsign: string;
+    model: string | null;
+    subtype: string | null;
+    first_seen: string;
+    last_seen: string;
+    position_count: number;
+    max_altitude: number | null;
+    active: boolean;
+}
+
+export interface RadiosondeProperties {
+    callsign: string;
+    station: string;
+    model: string | null;
+    subtype: string | null;
+    altitude: number;
+    heading: number | null;
+    speed: number | null;
+    vel_h: number | null;
+    vel_v: number | null;
+    temp: number | null;
+    humidity: number | null;
+    pressure: number | null;
+    sats: number | null;
+    batt: number | null;
+    snr: number | null;
+    sonde_time: string;
+}
+
+export type RadiosondeFeature = GeoJSON.Feature<GeoJSON.Point, RadiosondeProperties>;
+export type RadiosondeFeatureCollection = GeoJSON.FeatureCollection<GeoJSON.Point, RadiosondeProperties>;
+
+export interface RadiosondeTrackProperties {
+    callsign: string;
+    point_count: number;
+    start_time: string;
+    end_time: string;
+    max_altitude: number | null;
+}
+
+export type RadiosondeTrackFeature = GeoJSON.Feature<GeoJSON.LineString, RadiosondeTrackProperties>;
 
 // --- GATEWAY TYPES ---
 

@@ -8,6 +8,7 @@ let lastItems: TrackingItem[] = [];
 const ENTITY_TYPE_BADGE_CLASS: Record<TrackingItem['type'], BadgeClass> = {
   adsb: 'badge-blue',
   ais: 'badge-gray',
+  radiosonde: 'badge-purple',
 };
 
 export const initTrackingSidebar = (
@@ -42,6 +43,16 @@ export const initTrackingSidebar = (
         </div>
         <div class="status-row">
           <div class="status-row-left">
+            <i class="fa-solid fa-satellite status-row-icon"></i>
+            <span class="status-row-name">Radiosonden (24h)</span>
+          </div>
+          <div class="status-row-right">
+            <span class="status-row-value" id="status-radiosonde-count">0</span>
+            <span class="status-dot off" id="status-radiosonde-dot"></span>
+          </div>
+        </div>
+        <div class="status-row">
+          <div class="status-row-left">
             <i class="fa-solid fa-tower-broadcast status-row-icon"></i>
             <span class="status-row-name">Receiver</span>
           </div>
@@ -68,6 +79,7 @@ export const initTrackingSidebar = (
         <button class="segmented-btn active" data-filter="all">Alle</button>
         <button class="segmented-btn" data-filter="adsb">ADS-B</button>
         <button class="segmented-btn" data-filter="ais">AIS</button>
+        <button class="segmented-btn" data-filter="radiosonde">Radiosonden</button>
       </div>
 
       <!-- TYP 8: Tracking-Liste -->
@@ -153,6 +165,18 @@ export const updateObjectDetail = (_item: TrackingItem | null) => {
   // Funktionalität ist jetzt in der Liste integriert (Accordion)
 };
 
+/**
+ * Eigenständig von updateTrackingServerStatus, da die Radiosonden-Quelle per REST-Polling
+ * (RadiosondenDataService) läuft, nicht über das WS-Gateway (ADS-B/AIS) — getrennter
+ * Online-Status, getrennter Zähler.
+ */
+export const updateRadiosondeStatus = (count: number, online: boolean) => {
+  const val = document.getElementById('status-radiosonde-count');
+  const dot = document.getElementById('status-radiosonde-dot');
+  if (val) val.textContent = String(count);
+  if (dot) dot.className = `status-dot ${online ? 'on' : 'off'}`;
+};
+
 export const updateTrackingServerStatus = (
   isConnected: boolean, 
   adsbCount: number = 0, 
@@ -224,10 +248,21 @@ export const updateTrackingList = (items: TrackingItem[], currentFilter: string)
     return;
   }
 
+  const ENTITY_TYPE_ICON: Record<TrackingItem['type'], string> = {
+    adsb: 'fa-plane',
+    ais: 'fa-ship',
+    radiosonde: 'fa-satellite',
+  };
+  const ENTITY_TYPE_LABEL: Record<TrackingItem['type'], string> = {
+    adsb: 'ADS-B',
+    ais: 'AIS',
+    radiosonde: 'Radiosonde',
+  };
+
   listEl.innerHTML = filteredItems.map(item => {
-    const icon = item.type === 'adsb' ? 'fa-plane' : 'fa-ship';
+    const icon = ENTITY_TYPE_ICON[item.type];
     const badgeClass = ENTITY_TYPE_BADGE_CLASS[item.type];
-    const badgeLabel = item.type === 'adsb' ? 'ADS-B' : 'AIS';
+    const badgeLabel = ENTITY_TYPE_LABEL[item.type];
     
     let kvHtml = '';
     if (item.details) {

@@ -26,11 +26,12 @@
   /* Verwende die installierte Monospace Schrift */
   --font-mono: "JetBrains Mono", monospace;
 
-  /* ADS-B Altitude Gradient Tokens */
+  /* Altitude Gradient Tokens (ADS-B + Radiosonden, siehe getAltitudeColorStops() in MapStyles.ts) */
   --alt-0:    #22c55e;
   --alt-5k:   #38bdf8;
   --alt-15k:  #818cf8;
   --alt-35k:  #e879f9;
+  --alt-40k:  #ef4444;
 
   /* Utility Colors */
   --white:    #ffffff;

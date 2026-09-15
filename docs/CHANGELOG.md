@@ -4,6 +4,28 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+## [3.15.0] - 2026-09-15
+
+### Hinzugefügt
+- **Radiosonden-Tracking auf der `/tracking`-Seite** — dritte Live-Quelle neben ADS-B/AIS: eigene
+  Empfänger-Daten von `api.oe5ith.at/radiosonden` (radiosonde_auto_rx), angebunden über 3 neue
+  schlanke PHP-Proxies (`api/radiosonden-{sondes,flights,track}.php`, Muster wie `adsb.php`/`ais.php`,
+  dokumentiert in `docs/openapi.yaml`). Zeigt Flüge der letzten 24h als Track-Linien plus Live-Position
+  bei aktivem Flug; neuer Sidebar-Filter „Radiosonden" und Topbar-Toggle. Neue Module:
+  `RadiosondenDataService` (REST-Polling, TDD-getestet: 24h-Fenster, Track-Cache/-Pruning,
+  Punkt-/Track-/Item-Building) und `RadiosondeMapLayers`.
+- **Gemeinsame Höhenfarbskala für ADS-B und Radiosonden** (`MapStyles.ts` `getAltitudeColorStops()`),
+  um 2 Stufen erweitert (40.000 ft rot, 100.000 ft schwarz) — Flugzeuge bleiben im lila Bereich,
+  hochfliegende Privatjets werden rot, Radiosonden weit darüber laufen nach Schwarz aus.
+  Radiosonden-`altitude` (Meter, radiosonden-api) wird dafür nach Fuß umgerechnet (`METERS_TO_FEET`).
+  Aktiv/beendet zeigt jetzt die Strichdicke (dick/dünn) statt der Farbe.
+- **Echter Höhenfarbverlauf entlang der Radiosonden-Flugbahn** — die radiosonden-api liefert seit
+  Kurzem 3D-Koordinaten (`[lon, lat, altitude_meters]`, RFC-7946-Höhe) im Track-Endpoint;
+  `RadiosondenDataService` zerlegt den Track clientseitig in 2-Punkt-Segmente (`alt_mid` = Höhen-
+  Mittelwert der beiden Endpunkte je Segment), `RadiosondeMapLayers` färbt jedes Segment einzeln
+  über dieselbe Höhenfarbskala. Vorher: eine einzelne Flachfarbe für den kompletten Track
+  (`max_altitude`) — MapLibre kann eine Linie sonst nicht vertex-weise einfärben.
+
 ### Behoben
 - **`/graph`: verwaiste terra-draw-Event-Listener nach mehrfachem Basemap-Wechsel behoben.**
   `GraphSidebarAdapter` stoppt die alte Zeichnen-Instanz jetzt korrekt beim Basemap-Wechsel
@@ -18,8 +40,8 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
   früher behobenen `diag.php`/`db.php`-Muster. Fix: beide Dateien per `--exclude` in
   `deploy-website.sh`s `api/`-Sync von der Auslieferung ausgeschlossen, statt einen weiteren
   nginx-`deny`-Block zu ergänzen (die Dateien werden in Produktion nie gebraucht). Details:
-  `docs/security/owasp-top10-checklist.md` (A01). **Noch offen:** bereits deployte Stände haben
-  die Dateien noch live liegen — manuelles Löschen auf dem Server nötig, siehe TODO.md.
+  `docs/security/owasp-top10-checklist.md` (A01). Bereits deployte Stände wurden auf dem Server
+  bereinigt und live verifiziert (2026-08-30, siehe `docs/TODO.md`).
 
 ## [3.14.1] - 2026-08-30
 
