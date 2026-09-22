@@ -4,6 +4,18 @@ Aufgaben im **aktuellen Scope**: Fixes, Cleanup, Erweiterungen an bereits besteh
 Neue, noch nicht existierende Features/Funktionen gehören in [ROADMAP.md](./ROADMAP.md), nicht hierher.
 Abgeschlossene Aufgaben wandern ins [TODO_ARCHIVE.md](./TODO_ARCHIVE.md).
 
+## Sicherheit
+
+- [ ] **`DB_PASS` (PostGIS, `web_api_user`) rotieren.** Stand ~4,5 Monate als hardcodierter
+  Fallback-Default in `api/config.php` öffentlich auf GitHub (siehe `docs/CHANGELOG.md`
+  „Unreleased" → Sicherheit, 2026-09-22). Git-History wurde per `git filter-repo` bereinigt und
+  force-gepusht, das macht die bereits erfolgte Exposition aber nicht ungeschehen (GitHub hält
+  verwaiste Objekte teils noch länger per SHA abrufbar). Passwort auf dem Produktions-Postgres
+  ändern und `config.local.php` auf dem Server entsprechend nachziehen. `ORS_API_KEY` war vom
+  selben Fund betroffen, ist aber laut `2494567` (lokale VPS-Adressen, kein Key mehr nötig)
+  vermutlich bereits funktionslos — trotzdem beim ORS-Betreiber prüfen/invalidieren, falls der
+  Key dort noch aktiv hinterlegt ist.
+
 ## Sonstiges
 
 - [ ] **`/tracking`: zwei widersprüchliche, unabhängige Sichtbarkeits-Controls für ADS-B/AIS/Radiosonden.**

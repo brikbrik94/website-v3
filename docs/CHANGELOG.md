@@ -4,6 +4,20 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 
 ## [Unreleased]
 
+### Sicherheit
+- **Hardcodierte Secrets (`DB_PASS`, `ORS_API_KEY`) rückwirkend aus der gesamten Git-History
+  entfernt.** Beide standen als Fallback-Default in `api/config.php` (eingeführt in `67a1145`,
+  2026-05-03; entfernt aus dem aktuellen Stand in `87accec`, 2026-07-08) sowie `ORS_API_KEY`
+  zusätzlich in einer initial committeten `.env` (`VITE_ORS_API_KEY`, ab `03c19bd`, entfernt aus
+  dem Tracking in `c475e92`). Da das Repo öffentlich auf GitHub liegt, waren beide Werte dadurch
+  ~4,5 Monate öffentlich einsehbar. Historie mit `git filter-repo --replace-text` bereinigt (alle
+  Commit-Hashes ab dem initialen Commit haben sich dadurch geändert) und per Force-Push auf
+  `origin/master` durchgesetzt; lokales Backup-Bundle vor dem Rewrite erstellt. **Offen:**
+  `DB_PASS` war zum Zeitpunkt der Bereinigung noch das aktive Produktions-Passwort des
+  `web_api_user` und muss unabhängig davon rotiert werden — History-Bereinigung macht die
+  bereits erfolgte Exposition nicht ungeschehen (siehe `docs/TODO.md`). `ORS_API_KEY` ist laut
+  `2494567` (Umstellung auf lokale VPS-Adressen ohne Key) vermutlich bereits funktionslos.
+
 ## [3.15.0] - 2026-09-15
 
 ### Hinzugefügt
